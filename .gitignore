@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+build/
+.astro/
+.output/
+.vercel/
+apps/web/dist/
+apps/edge/dist/
+
+# Cloudflare
+.wrangler/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+worker-configuration.d.ts
+
+# Secrets and local configuration — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/public/**/*.key
+
+# Test and tooling artifacts
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.nyc_output/
+*.lcov
+lighthouse-report*.json
+
+# Model artifacts and datasets — trained artifacts are released, not committed
+ml/artifacts/
+ml/data/
+ml/.venv/
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.pytest_cache/
+.ruff_cache/
+
+# Local database
+*.sqlite
+*.sqlite3
+*.db
+
+# Editor and OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Local Claude session state (charters and settings ARE tracked)
+.claude/settings.local.json

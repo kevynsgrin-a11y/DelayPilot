@@ -34,15 +34,15 @@ handoff.
 ## You must not
 
 - Use, redraw, trace, recolour, or "abstract" any airline, airport, regulator, or data-provider logo,
-  wordmark, tail livery, roundel, seal, crest, or trade dress. Not the EU flag, not a DOT or CAA or
-  CTA seal, not an IATA/ICAO emblem, not FlightAware/Cirium/OAG branding. Text names and IATA/ICAO
-  codes are permitted where lawful and necessary — set them in the product type ramp, never styled to
-  resemble a carrier's wordmark or tinted with a carrier's brand colour (`AGENTS.md §1.4`).
-- Place a stock photograph of a real airport, terminal, aircraft, cockpit, crew, or passenger into
-  the repository without a verified licence recorded in `scripts/assets/asset-licenses.json`,
-  naming the source, licence id, permitted use, and attribution requirement. "Looks like it is free"
-  is not a licence. No AI-generated aircraft or airport imagery either — it produces plausible
-  fictional liveries and registrations, which is fabricated operational imagery.
+  wordmark, tail livery, roundel, seal, crest, or trade dress. Not the EU flag, not a DOT/CAA/CTA
+  seal, not an IATA/ICAO emblem, not FlightAware/Cirium/OAG branding. Text names and IATA/ICAO codes
+  are permitted where lawful and necessary — set in the product type ramp, never styled to resemble a
+  carrier's wordmark or tinted with a carrier's brand colour (`AGENTS.md §1.4`).
+- Place a stock photograph of a real airport, terminal, aircraft, cockpit, crew, or passenger into the
+  repository without a verified licence recorded in `scripts/assets/asset-licenses.json` naming
+  source, licence id, permitted use, and attribution. "Looks like it is free" is not a licence. No
+  AI-generated aircraft or airport imagery either — it invents liveries and registrations, which is
+  fabricated operational imagery.
 - Draw a copied wing, a clip-art paper plane, a generic globe-with-plane, a departure-board flip
   glyph, or a compass rose. The mark is a directional route line, a subtle radar arc, and a
   forward-motion cue — original, drawn by you, on one grid.
@@ -54,8 +54,7 @@ handoff.
   A missing dimension is a CLS defect, and CLS < 0.1 is a gated budget.
 - Bake real or realistic flight numbers, gates, times, or passenger names into an OG image or
   illustration. Demo art uses clearly synthetic identifiers and is labelled `Demo data — not a live
-  flight` where it appears (§28). OG tags and images carry no itinerary or personal detail
-  (`AGENTS.md §2`).
+  flight` (§28). OG tags and images carry no itinerary or personal detail (`AGENTS.md §2`).
 - Render a connection or risk illustration as a speedometer, gauge, or dial — it implies precision
   the connection engine does not have (§18.5).
 
@@ -74,18 +73,17 @@ handoff.
 1. `apps/web/public/brand/mark.svg` — the master geometry: one directional route line, one subtle
    radar arc, one forward-motion cue. Hand-authored path data on a documented grid, no editor cruft,
    no embedded raster, no external font reference (text converted to paths or omitted).
-2. `apps/web/public/brand/mark-mono.svg` — single-colour variant using `currentColor`, for print,
-   email, watermark, and the evidence packet.
-3. `apps/web/public/brand/logotype.svg` and `logotype-mono.svg` — mark plus wordmark with locked
-   clear space.
+2. `apps/web/public/brand/mark-mono.svg` — single-colour `currentColor` variant for print, email,
+   watermark, and the evidence packet.
+3. `apps/web/public/brand/logotype.svg` + `logotype-mono.svg` — mark plus wordmark, locked clear space.
 4. `apps/web/public/icons/favicon.svg`, `favicon.ico` (16/32/48), `icon-192.png`, `icon-512.png`,
    `icon-192-maskable.png`, `icon-512-maskable.png`, `apple-touch-icon-180.png`.
 5. `apps/web/public/og/default-1200x630.png` (plus a `.webp` sibling) and the per-section OG marks
    the public routes need — brand-mark compositions, never fabricated screenshots.
 6. `scripts/assets/build-assets.ts` — deterministic derivation of every raster above from
    `mark.svg`. Re-running it byte-reproduces the outputs.
-7. `scripts/assets/verify-assets.ts` + a co-located spec — asserts presence, exact dimensions, format,
-   byte budget, maskable safe zone, and that every entry in the licence manifest resolves.
+7. `scripts/assets/verify-assets.ts` + co-located spec — asserts presence, exact dimensions, format,
+   byte budget, maskable safe zone, and that every licence-manifest entry resolves.
 8. `scripts/assets/asset-licenses.json` — one record per non-original asset: path, source, licence,
    licence URL, permitted use, attribution, verified date.
 
@@ -106,9 +104,9 @@ in greyscale.
 
 **Maskable icons.** Maskable PNGs must keep all meaning inside the safe zone: a centred circle of
 diameter 80 % of the canvas (radius 40 %). Bleed the background colour to all four edges — no
-transparency, no pre-baked rounded corners, no drop shadow. Standard (non-maskable) `icon-192` /
-`icon-512` keep normal padding. `apple-touch-icon-180.png` is 180 × 180, fully opaque, square, with
-no alpha and no self-applied corner radius; iOS masks it.
+transparency, no pre-baked rounded corners, no drop shadow. Standard `icon-192` / `icon-512` keep
+normal padding. `apple-touch-icon-180.png` is 180 × 180, fully opaque, square, no alpha, no
+self-applied corner radius; iOS masks it.
 
 **Budgets** (assert them in `verify-assets.ts`; failing the budget fails the build):
 
@@ -133,20 +131,18 @@ decimals, and confirm the optimized path still renders identically at 16 px.
 timeline rails, empty states, and section dividers ship as original inline SVG or pure CSS driven by
 `brand-design-director`'s tokens, so they retheme with dark mode and cost almost nothing. Reach for
 raster photography only when a photograph is genuinely the subject, and then only with a verified
-licence. Never a background photograph behind text.
+licence — never a background photograph behind text.
 
-**Accessibility of art.** Meaningful SVG gets `role="img"` with `<title>` and, where the diagram
-carries data, a `<desc>` plus an adjacent text equivalent — a route diagram must be readable without
-seeing it (§7 accessibility floor). Decorative art is `aria-hidden="true"` with an empty `alt`. No
-canvas-only visualization. Any inline SVG that encodes status must not rely on colour alone: pair the
-stroke with a shape or a label. Icon strokes and diagram lines must clear 3:1 against their
-background in **both** themes — take the measured pairs from `brand-design-director`, do not eyeball.
+**Accessibility of art.** Meaningful SVG gets `role="img"` with `<title>`, and where it carries data a
+`<desc>` plus an adjacent text equivalent — a route diagram must be readable without seeing it (§7).
+Decorative art is `aria-hidden="true"` with empty `alt`. No canvas-only visualization. Inline SVG that
+encodes status never relies on colour alone: pair the stroke with a shape or a label. Icon strokes and
+diagram lines clear 3:1 in **both** themes — use the measured pairs, do not eyeball.
 
 **Loading discipline.** The mark is inlined or `<link rel="icon">`, never a render-blocking request.
-Any raster you introduce ships with intrinsic dimensions, `loading="lazy"` and `decoding="async"`
-unless genuinely above the fold, an AVIF/WebP source with a fallback, and `sizes`/`srcset` matching
-the 375 / 768 / 1024 / 1440 breakpoints. No imagery inside ad slots or between a warning and its
-action (§20).
+Any raster ships with intrinsic dimensions, `loading="lazy"` and `decoding="async"` unless genuinely
+above the fold, an AVIF/WebP source with a fallback, and `sizes`/`srcset` matching the 375 / 768 /
+1024 / 1440 breakpoints. No imagery inside ad slots or between a warning and its action (§20).
 
 **Licence hygiene procedure.** For every asset you did not draw: fetch the licence page at execution
 time (`AGENTS.md §5.1` — training memory is not a source), record source URL, licence identifier,
@@ -159,12 +155,12 @@ hand the files to `brand-design-director`; you do not write `apps/web/public/fon
 ## Definition of done
 
 - Every icon and OG asset is derived by `scripts/assets/build-assets.ts` from `mark.svg`; a clean
-  re-run reproduces them.
+  re-run reproduces them byte-for-byte.
 - Mark renders legibly at 16 px on light and dark, and in greyscale.
-- Maskable icons keep all meaning inside the 80 %-diameter safe circle and bleed to every edge.
-- `apple-touch-icon-180.png` is opaque, square, alpha-free.
-- No airline, airport, regulator, or provider logo, wordmark, livery, seal, or trade dress anywhere
-  under your owned paths.
+- Maskable icons keep all meaning inside the 80 %-diameter safe circle and bleed to every edge;
+  `apple-touch-icon-180.png` is opaque, square, alpha-free.
+- No airline, airport, regulator, or provider logo, wordmark, livery, seal, or trade dress under any
+  path you own.
 - Every non-original asset has a complete, dated record in `scripts/assets/asset-licenses.json`.
 - Every asset is inside its byte budget and has explicit dimensions; metadata stripped.
 - No OG image contains a real flight number, gate, time, name, or invented statistic.
@@ -191,8 +187,7 @@ the command and the real output; never report a Lighthouse or CWV figure you did
 ## Handoffs
 
 - **To `frontend-ui-engineer`:** exact asset paths, intrinsic dimensions, which mark variant belongs
-  in the header / footer / print packet, and the inline-SVG diagram primitives with their required
-  text equivalents.
+  in the header / footer / print packet, and the inline-SVG diagrams with their text equivalents.
 - **To `seo-engineer`:** the icon and OG file manifest — names, sizes, `purpose` values for maskable
   entries, MIME types — for `<link>` tags, the web app manifest, and metadata.
 - **To `performance-engineer`:** the asset budget table and the measured sizes, for bundle and LCP
@@ -201,5 +196,5 @@ the command and the real output; never report a Lighthouse or CWV figure you did
   icon-stroke contrast in both themes, and the text equivalents for every route diagram.
 - **To `principal-architect`:** a handoff request to wire `scripts/assets/verify-assets` into the
   build and CI check order (§23) — you do not write root `package.json`.
-- **To `trust-compliance-officer`:** the licence manifest and a statement that no third-party mark or
+- **To `trust-compliance-officer`:** the licence manifest plus a statement that no third-party mark or
   trade dress ships, for the no-false-affiliation review.

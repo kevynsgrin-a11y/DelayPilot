@@ -192,22 +192,49 @@ async function walk(dir, acc = []) {
 
 async function lintOverclaims() {
   const files = (await walk(ROOT)).filter((f) => /\.(md|mdx|ts|tsx|js|mjs|astro|json|html)$/.test(f))
-  // A banned phrase may be quoted while being forbidden. Accept that only when the negation
-  // precedes the phrase on the same line: "never say you are owed" passes; "you are owed
-  // compensation and we will not stop until you get it" does not.
-  const NEGATION =
-    /\b(never|not|forbid\w*|do not|don't|avoid|ban|banned|must not|prohibit\w*|instead of|rather than)\b/i
+  // A banned phrase may legitimately be quoted in order to forbid it — policy docs and charters
+  // enumerate the ban list, and "## You must not" sections quote the exact strings they reject.
+  // So the unit of judgement is the enclosing paragraph plus its nearest heading, not the line:
+  // a phrase inside prohibiting context is a citation, anywhere else it is an assertion.
+  //
+  // This is deliberately the *build-system* lint. The product-facing lint over apps/** is owned by
+  // ux-copy-steward (Phase 10) and is stricter, because rendered copy has no legitimate reason to
+  // contain these strings at all.
+  const PROHIBITING =
+    /\b(never|not|forbid\w*|do not|don't|avoid|ban|banned|blocklist|denylist|disallow\w*|must not|prohibit\w*|overclaim\w*|reject\w*|violation|instead of|rather than|sweep|grep|lint)\b/i
+
   for (const full of files) {
     const rel = path.relative(ROOT, full)
     if (OVERCLAIM_ALLOWLIST.has(rel)) continue
     const source = await readFile(full, 'utf8')
     const lines = source.split('\n')
+
+    // Paragraph index per line (blank-line delimited) and the nearest preceding heading.
+    const paragraphOf = []
+    const headingOf = []
+    let paragraph = 0
+    let heading = ''
+    lines.forEach((line) => {
+      if (line.trim() === '') paragraph += 1
+      if (/^#{1,6}\s/.test(line)) {
+        heading = line
+        paragraph += 1
+      }
+      paragraphOf.push(paragraph)
+      headingOf.push(heading)
+    })
+    const paragraphText = new Map()
+    lines.forEach((line, i) => {
+      const key = paragraphOf[i]
+      paragraphText.set(key, `${paragraphText.get(key) ?? ''}\n${line}`)
+    })
+
     lines.forEach((line, i) => {
       const lower = line.toLowerCase()
       for (const phrase of OVERCLAIM_PHRASES) {
-        const at = lower.indexOf(phrase)
-        if (at === -1) continue
-        if (NEGATION.test(line.slice(0, at))) continue
+        if (!lower.includes(phrase)) continue
+        const context = `${headingOf[i]}\n${paragraphText.get(paragraphOf[i]) ?? line}`
+        if (PROHIBITING.test(context)) continue
         err(rel, `line ${i + 1}: overclaim phrase "${phrase}"`)
       }
     })

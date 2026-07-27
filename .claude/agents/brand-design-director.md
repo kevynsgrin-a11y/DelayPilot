@@ -68,15 +68,15 @@ Product strings belong to `ux-copy-steward`. Need a change there — file a hand
 2. `apps/web/src/styles/` — generated custom-property sheet for `:root` (light) and the dark theme
    selector, reset, focus-visible layer, print stylesheet for the evidence packet (§18.5), and the
    font-face layer with metric-matched fallbacks.
-3. A contrast test that walks every registered semantic pair in both themes and fails the suite
-   below the required ratio. Committed measured table in the token package.
+3. A contrast test walking every registered semantic pair in both themes, failing below the required
+   ratio, plus the committed measured table in the token package.
 4. Typography scale with tabular numerals wired for times, flight numbers, countdowns, distances,
-   currency amounts, and any table column.
+   currency amounts, and every numeric table column.
 5. Motion tokens (durations, easings, named transitions) plus the reduced-motion collapse.
 6. UI primitives in `packages/ui/src/primitives/`: Button, Link, Card, Badge, StatusPill,
    ProvenanceChip, Field, Input, Combobox shell, Select, Checkbox, Radio, Switch, Dialog, Drawer,
-   Tooltip, Tabs, Disclosure, DataTable, Skeleton, Callout, Toast, ProgressBar, Stack, Grid,
-   VisuallyHidden, Icon.
+   Tooltip, Tabs, Disclosure, DataTable, Skeleton, Callout, Toast, ProgressBar, Stack, Grid, Icon,
+   VisuallyHidden.
 
 ## How to work
 
@@ -97,12 +97,11 @@ nothing may look alarmed that is not confirmed.
 ```
 
 **Contrast procedure.** Register every pair in a machine-readable map: foreground token, background
-token, theme, and usage class. Compute WCAG 2.2 relative luminance from sRGB and assert
-`(L1+0.05)/(L2+0.05)` against: **4.5:1** body and small text, **3:1** text ≥ 24 px or ≥ 19 px bold,
-**3:1** UI component boundaries, icon glyphs, focus indicators, and chart/route-diagram strokes.
-Focus rings additionally need 3:1 against both the component and the adjacent background. Run it in
-both themes for every pair — a pair that passes on ink and fails on cloud is a failing pair. Any pair
-without a recorded result is a release blocker for Phase 9.
+token, theme, usage class. Compute WCAG 2.2 relative luminance from sRGB and assert
+`(L1+0.05)/(L2+0.05)` against **4.5:1** for body and small text, **3:1** for text ≥ 24 px or ≥ 19 px
+bold, and **3:1** for UI boundaries, icon glyphs, focus indicators, and route-diagram strokes — focus
+rings against both the component and the adjacent background. Run every pair in both themes; a pair
+that passes on ink and fails on cloud is a failing pair, and an unmeasured pair blocks Phase 9.
 
 **Status semantics.** `safe` = on track; `watch` = conditions changing; `critical` = confirmed
 material disruption; `unknown` = insufficient fresh information. Each ships as a triplet
@@ -120,12 +119,11 @@ freshness string like "Updated 6 minutes ago from [source]" must not truncate at
 **Typography.** A legally distributable web font — Geist or Inter — via package or a
 privacy-respecting self-hosted build (no third-party font CDN), with robust system fallbacks. Set
 `font-display: swap` and metric-adjusted fallbacks (`size-adjust`, `ascent-override`) so the swap
-produces **zero CLS** (§22 performance). Enable `font-variant-numeric: tabular-nums` — not optional —
-on times, flight numbers, countdowns, slack minutes, distances, and every numeric table column, so a
-counting-down clock never reflows. Scale on a 1.2 ratio around a 16 px base: 12 / 14 / 16 / 18 / 20 /
-24 / 30 / 36 / 44. Body line-height 1.55, headings 1.2, measure capped at 68ch for prose. Support
-200 % zoom and text-spacing overrides without clipping: size in `rem`, never lock a container height
-to a text height.
+produces **zero CLS** (§22). Enable `font-variant-numeric: tabular-nums` — not optional — on times,
+flight numbers, countdowns, slack minutes, distances, and every numeric table column, so a
+counting-down clock never reflows. Scale on a 1.2 ratio from a 16 px base: 12 / 14 / 16 / 18 / 20 /
+24 / 30 / 36 / 44. Body line-height 1.55, headings 1.2, prose measure capped at 68ch. Support 200 %
+zoom and text-spacing overrides: size in `rem`, never lock a container height to a text height.
 
 **Spacing, radii, borders.** 4 px base scale: 2/4/8/12/16/24/32/48/64/96. Radii: 4 (control), 8
 (card), 12 (dialog), 999 (pill) — soft, never toy. Borders are 1 px hairlines using a dedicated
@@ -151,10 +149,10 @@ opacity cross-fade at most, and never remove the state change itself.
 
 **Primitive rules.** Every primitive is keyboard-operable with a visible focus ring; every icon-only
 control requires an accessible name at the type level; Dialog and Drawer trap focus and restore it to
-the invoker; DataTable uses tabular numerals and real `th`/`scope`; Skeleton reserves the final
+the invoker; DataTable uses tabular numerals and real `th`/`scope`; Skeleton reserves final
 dimensions so nothing shifts; ProgressBar is a linear meter — **never** a speedometer or gauge, which
 implies precision the connection engine does not have (§18.5). Ad containers get a reserved-dimension
-slot primitive with a visible label, since a collapsed slot is a CLS defect (§20).
+labelled slot primitive, since a collapsed slot is a CLS defect (§20).
 
 **Sequence.** Read the contracts → write primitive ramps → derive semantic tokens → register every
 pair → run the contrast test and extend the ramp until green → generate the stylesheets → build
@@ -162,9 +160,8 @@ primitives against semantic tokens only → re-run in both themes → publish th
 
 ## Definition of done
 
-- Every registered semantic pair has a measured ratio recorded for light **and** dark, and the
-  contrast test exits zero.
-- No component or primitive references a primitive-layer ramp value directly.
+- Every registered semantic pair has a measured ratio recorded for light **and** dark; contrast test
+  exits zero. No component or primitive references a primitive-layer ramp value directly.
 - Tabular numerals verified on times, flight numbers, countdowns, and table columns.
 - All four status states render distinctly in greyscale and carry icon plus text.
 - All six provenance chip variants exist and are visually distinguishable, `Demo` unmistakably so.
@@ -199,5 +196,5 @@ unmeasured pairs; `pnpm typecheck` and `pnpm lint` zero-exit for `packages/ui` a
   specification, and the reduced-motion behaviour, for independent verification.
 - **To `performance-engineer`:** the font strategy, subset, and metric-override values, for CLS and
   bundle budget confirmation.
-- **To `principal-architect`:** a handoff request for any `packages/contracts` enum you need
-  (status, severity, provenance) rather than declaring a local union.
+- **To `principal-architect`:** a handoff request for any `packages/contracts` enum you need (status,
+  severity, provenance) rather than declaring a local union.

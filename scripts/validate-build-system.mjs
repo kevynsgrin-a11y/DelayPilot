@@ -145,9 +145,14 @@ async function validateCharters() {
     if (lineCount < MIN_LINES) warn(rel, `only ${lineCount} lines — likely under-specified`)
     if (lineCount > MAX_LINES) warn(rel, `${lineCount} lines — likely padded`)
 
+    // Ownership claims are the bullet list only. Charters often close the section with prose
+    // pointing at *other* agents' paths ("`packages/contracts/**` belongs to principal-architect");
+    // that is a disclaimer, not a claim, so only list items count.
     const ownSection = /\n## You own\n([\s\S]*?)\n## /.exec(fm.body)?.[1] ?? ''
-    const ownedPaths = [...ownSection.matchAll(/`([^`]+)`/g)]
-      .map((m) => m[1])
+    const ownedPaths = ownSection
+      .split('\n')
+      .filter((line) => /^\s*[-*]\s/.test(line))
+      .flatMap((line) => [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1]))
       .filter((p) => p.includes('/') || p.endsWith('.md') || p.endsWith('.txt'))
 
     if (ownedPaths.length === 0) warn(rel, '"You own" lists no backticked paths')
@@ -187,20 +192,49 @@ async function walk(dir, acc = []) {
 
 async function lintOverclaims() {
   const files = (await walk(ROOT)).filter((f) => /\.(md|mdx|ts|tsx|js|mjs|astro|json|html)$/.test(f))
+  // A banned phrase may legitimately be quoted in order to forbid it — policy docs and charters
+  // enumerate the ban list, and "## You must not" sections quote the exact strings they reject.
+  // So the unit of judgement is the enclosing paragraph plus its nearest heading, not the line:
+  // a phrase inside prohibiting context is a citation, anywhere else it is an assertion.
+  //
+  // This is deliberately the *build-system* lint. The product-facing lint over apps/** is owned by
+  // ux-copy-steward (Phase 10) and is stricter, because rendered copy has no legitimate reason to
+  // contain these strings at all.
+  const PROHIBITING =
+    /\b(never|not|forbid\w*|do not|don't|avoid|ban|banned|blocklist|denylist|disallow\w*|must not|prohibit\w*|overclaim\w*|reject\w*|violation|instead of|rather than|sweep|grep|lint)\b/i
+
   for (const full of files) {
     const rel = path.relative(ROOT, full)
     if (OVERCLAIM_ALLOWLIST.has(rel)) continue
-    const isCharter = rel.startsWith('.claude/agents/')
     const source = await readFile(full, 'utf8')
     const lines = source.split('\n')
+
+    // Paragraph index per line (blank-line delimited) and the nearest preceding heading.
+    const paragraphOf = []
+    const headingOf = []
+    let paragraph = 0
+    let heading = ''
+    lines.forEach((line) => {
+      if (line.trim() === '') paragraph += 1
+      if (/^#{1,6}\s/.test(line)) {
+        heading = line
+        paragraph += 1
+      }
+      paragraphOf.push(paragraph)
+      headingOf.push(heading)
+    })
+    const paragraphText = new Map()
+    lines.forEach((line, i) => {
+      const key = paragraphOf[i]
+      paragraphText.set(key, `${paragraphText.get(key) ?? ''}\n${line}`)
+    })
+
     lines.forEach((line, i) => {
       const lower = line.toLowerCase()
       for (const phrase of OVERCLAIM_PHRASES) {
         if (!lower.includes(phrase)) continue
-        // Charters and policy docs may quote a banned phrase while forbidding it.
-        const isProhibition = /\b(never|not|forbid|forbidden|do not|don't|avoid|ban|banned|must not|prohibit)\b/i.test(line)
-        if (isCharter && isProhibition) continue
-        if (isProhibition && rel.startsWith('docs/')) continue
+        const context = `${headingOf[i]}\n${paragraphText.get(paragraphOf[i]) ?? line}`
+        if (PROHIBITING.test(context)) continue
         err(rel, `line ${i + 1}: overclaim phrase "${phrase}"`)
       }
     })

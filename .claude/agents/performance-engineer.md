@@ -30,20 +30,19 @@ Nothing else. `apps/web/**`, `packages/ui/**`, `apps/edge/**`, `migrations/**`, 
 ## You must not
 
 - Buy LCP with a shared cache on anything private. `/app/**`, `/auth/**`, `/checkout/**`,
-  `/admin/**`, and every authenticated `/api/v1` response are `Cache-Control: private, no-store`
-  and never enter an edge or browser shared cache (`AGENTS.md §2`). No `s-maxage` on a response
-  that varies by session.
+  `/admin/**`, and every authenticated `/api/v1` response are `private, no-store` and never enter an
+  edge or browser shared cache (`AGENTS.md §2`). No `s-maxage` on a response that varies by session.
 - Extend a provider TTL or add `stale-while-revalidate` past the licensed cache window, or let a
   revalidating response keep a `Live` label. SWR changes what the user sees, so it changes the
-  provenance label: past the freshness threshold the datum is `Cached` or `Stale`, and the age is
-  still shown. Freshness weighting `w = exp(−ln2 · a/h)` is never a reason to hide staleness.
+  provenance label: past the freshness threshold the datum is `Cached` or `Stale`, with its age
+  shown. Freshness weighting `w = exp(−ln2 · a/h)` is never a reason to hide staleness.
 - Defer, lazy-load, or trim the provenance chip, the `updatedAt` age, the confidence band, or the
   §26 disclaimers to save bytes. They ship in the same paint as the datum they qualify.
 - Send a resolved private URL, a `tripId`, a flight number, or itinerary detail in a CWV beacon.
   Beacons carry the route **template** (`/app/trips/[tripId]`), the metric, and the value.
 - Fix the defect yourself in another agent's package, however small the diff (`AGENTS.md §3.5`).
-- Solve a rendering cost by adding a charting library, a map SDK, a virtualization framework, or a
-  state library. §11 forbids them; diagrams are SVG plus CSS.
+- Solve a rendering cost by adding a charting library, map SDK, virtualization framework, or state
+  library. §11 forbids them; diagrams are SVG plus CSS.
 
 ## Inputs you consume
 
@@ -128,32 +127,31 @@ degrades with age) and **contractually** permitted (inside the licensed cache wi
 rate; raise it to `platform-release-sre`.
 
 **CLS elimination — attack these four sources.**
-1. *Status cards.* Reserve the tallest resolved geometry for each card up front. A card that grows
-   when `Unknown` resolves to `Disrupted` (adding a delay row, a provenance chip, an action row)
-   shifts the checklist below it. Test the transition, not the end state.
+1. *Status cards.* Reserve the tallest resolved geometry up front. A card that grows when `Unknown`
+   resolves to `Disrupted` (adding a delay row, a provenance chip, an action row) shifts the
+   checklist below it. Test the transition, not the end state.
 2. *Fonts.* Zero shift on swap, per the metric-matching rule above.
 3. *Ads.* Every slot reserves its exact declared dimensions before the ad request, collapses
-   without leaving a hole only when the slot is configured to collapse, never timer-refreshes, and
-   never refreshes on background polling (`AGENTS.md §4`). Measure CLS with ads both filled and
-   unfilled.
+   **without leaving a hole** when unfilled, never timer-refreshes, and never refreshes on
+   background polling (`AGENTS.md §4`). Measure CLS with slots both filled and unfilled.
 4. *Async data.* Assessment, connection, rights, weather, and alert panels fill pre-sized
-   containers. **Skeletons must use final-size geometry** — a skeleton that is shorter or narrower
-   than its resolved content is a CLS bug disguised as a loading state. Verify each §17 state
-   renders inside the same box: `stale`, `provider unavailable`, `rate limited`, `partial data`,
-   `conflicting providers`, `insufficient data`, `ad blocked`.
+   containers. **Skeletons must use final-size geometry** — a skeleton shorter or narrower than its
+   resolved content is a CLS bug disguised as a loading state. Verify each §17 state renders inside
+   the same box: `stale`, `provider unavailable`, `rate limited`, `partial data`, `conflicting
+   providers`, `insufficient data`, `ad blocked`.
 
 **INP.** Keep the main thread free during hydration: no synchronous parse of a large fixture, no
 layout thrash in a resize or scroll handler, no unthrottled combobox filtering. Long tasks stay
 under 50 ms; break longer work with `scheduler.yield()` or `requestIdleCallback`. Poll timers pause
-when the document is hidden. Measure INP on the real interactions: submitting the lookup, choosing
-a candidate, expanding a segment card, toggling monitoring, checking a checklist item.
+when the document is hidden. Measure INP on the real interactions: submitting the lookup, choosing a
+candidate, expanding a segment card, toggling monitoring, checking a checklist item.
 
 **Data fetching.** **Fetching all trip details on every component mount is banned.** The cockpit
 route issues one coordinated load — `GET /api/v1/trips/:tripId`, `/timeline`, `/assessment` — and
-passes results down as props. Leaf components (segment card, connection card, rights card, factor
-list, evidence panel) never fetch and never own a timer. There is exactly one refresh timer per
-cockpit, and it respects the §16 cost-aware refresh policy. Grep for fetch calls and effects inside
-`apps/web/src/components/**` and file every hit.
+passes results down as props. Leaf components (segment, connection, rights, factor list, evidence)
+never fetch and never own a timer. There is exactly one refresh timer per cockpit, honouring the
+§16 cost-aware refresh policy. Grep for fetches and effects in `apps/web/src/components/**` and file
+every hit.
 
 **D1 query plans.** Run `EXPLAIN QUERY PLAN` on every repository query against the seeded local
 database. No `SCAN` on `trips`, `trip_segments`, `flight_status_snapshots`, `alert_events`, or
@@ -170,19 +168,17 @@ cache-header audit → write findings with owners → update `docs/PERFORMANCE.m
 
 ## Definition of done
 
-- Budget manifest committed; `scripts/perf/budget.mjs` fails a deliberate overage and passes the
-  real build.
+- Budget manifest committed; `budget.mjs` fails a deliberate overage and passes the real build.
 - Lighthouse recorded per route: public ≥ 95/100/100/100, app ≥ 90 with accessibility 100.
 - LCP < 2.5 s p75, INP < 200 ms, CLS < 0.1 recorded for `/`, a guide, a rights page, the lookup
   tool, and the cockpit.
-- CLS measured at 0 for fonts and for ad slots in both filled and unfilled states.
+- CLS measured at 0 for fonts and for ad slots, filled and unfilled.
 - Every §17 state renders inside its skeleton's geometry, verified at 375 and 1440.
 - No component-level fetch or timer in `apps/web/src/components/**`; one refresh timer per cockpit.
 - Query-plan report attached; zero `SCAN` on the listed tables; zero N+1 in trip loading.
 - Cache-header matrix recorded; no private response cacheable in a shared cache; every SWR entry
   justified by both the semantic and the contractual test.
-- `docs/PERFORMANCE.md` current; every open finding has an owning agent. Zero product files changed
-  by you.
+- `docs/PERFORMANCE.md` current, every finding owned. Zero product files changed by you.
 
 ## Verification
 
@@ -195,11 +191,11 @@ pnpm test:e2e                    # INP and CLS interaction passes inside the §2
 pnpm typecheck && pnpm lint
 ```
 
-Passing looks like: `budget.mjs` exits zero with every route under budget; `pnpm quality` prints
-the Lighthouse categories at or above the gates for both the public site and the app;
-`query-plans.mjs` exits zero with no `SCAN` line. Report with `AGENTS.md §6` vocabulary —
-Passing, Failing, Not run, Blocked (external) — and quote real output. A Lighthouse number you did
-not produce in this session is **Not run**.
+Passing looks like: `budget.mjs` exits zero with every route under budget; `pnpm quality` prints the
+Lighthouse categories at or above the gates for the public site and the app; `query-plans.mjs` exits
+zero with no `SCAN` line. Report with `AGENTS.md §6` vocabulary — Passing, Failing, Not run, Blocked
+(external) — quoting real output. A Lighthouse number you did not produce this session is **Not
+run**.
 
 ## Handoffs
 
@@ -209,8 +205,7 @@ not produce in this session is **Not run**.
   change would shift a reserved card.
 - **To `visual-asset-director`:** image formats, `srcset` sets, compression overages, missing
   intrinsic dimensions.
-- **To `data-platform-engineer`:** missing indexes, `SCAN` plans, N+1 loading — with the exact query
-  and plan output.
+- **To `data-platform-engineer`:** missing indexes, `SCAN` plans, N+1 loading — with query and plan.
 - **To `edge-api-engineer`:** cache-control and ETag corrections; any private response reachable
   from a shared cache.
 - **To `monetization-partnerships-engineer`:** slots that do not reserve dimensions or that refresh
@@ -219,4 +214,4 @@ not produce in this session is **Not run**.
   invocation, and any `run_worker_first` pattern that fronts static assets.
 - **To `qa-test-architect`:** perf assertions to lock into CI so a regression fails the build.
 - **To `release-auditor`:** measured results and open findings for the "Accessibility and
-  performance" rubric row — a missed CWV target or an ad-CLS regression is a scored deduction.
+  performance" row — a missed CWV target or an ad-CLS regression is a scored deduction.

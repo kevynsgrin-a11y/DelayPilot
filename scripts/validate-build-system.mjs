@@ -145,9 +145,14 @@ async function validateCharters() {
     if (lineCount < MIN_LINES) warn(rel, `only ${lineCount} lines — likely under-specified`)
     if (lineCount > MAX_LINES) warn(rel, `${lineCount} lines — likely padded`)
 
+    // Ownership claims are the bullet list only. Charters often close the section with prose
+    // pointing at *other* agents' paths ("`packages/contracts/**` belongs to principal-architect");
+    // that is a disclaimer, not a claim, so only list items count.
     const ownSection = /\n## You own\n([\s\S]*?)\n## /.exec(fm.body)?.[1] ?? ''
-    const ownedPaths = [...ownSection.matchAll(/`([^`]+)`/g)]
-      .map((m) => m[1])
+    const ownedPaths = ownSection
+      .split('\n')
+      .filter((line) => /^\s*[-*]\s/.test(line))
+      .flatMap((line) => [...line.matchAll(/`([^`]+)`/g)].map((m) => m[1]))
       .filter((p) => p.includes('/') || p.endsWith('.md') || p.endsWith('.txt'))
 
     if (ownedPaths.length === 0) warn(rel, '"You own" lists no backticked paths')
@@ -187,20 +192,22 @@ async function walk(dir, acc = []) {
 
 async function lintOverclaims() {
   const files = (await walk(ROOT)).filter((f) => /\.(md|mdx|ts|tsx|js|mjs|astro|json|html)$/.test(f))
+  // A banned phrase may be quoted while being forbidden. Accept that only when the negation
+  // precedes the phrase on the same line: "never say you are owed" passes; "you are owed
+  // compensation and we will not stop until you get it" does not.
+  const NEGATION =
+    /\b(never|not|forbid\w*|do not|don't|avoid|ban|banned|must not|prohibit\w*|instead of|rather than)\b/i
   for (const full of files) {
     const rel = path.relative(ROOT, full)
     if (OVERCLAIM_ALLOWLIST.has(rel)) continue
-    const isCharter = rel.startsWith('.claude/agents/')
     const source = await readFile(full, 'utf8')
     const lines = source.split('\n')
     lines.forEach((line, i) => {
       const lower = line.toLowerCase()
       for (const phrase of OVERCLAIM_PHRASES) {
-        if (!lower.includes(phrase)) continue
-        // Charters and policy docs may quote a banned phrase while forbidding it.
-        const isProhibition = /\b(never|not|forbid|forbidden|do not|don't|avoid|ban|banned|must not|prohibit)\b/i.test(line)
-        if (isCharter && isProhibition) continue
-        if (isProhibition && rel.startsWith('docs/')) continue
+        const at = lower.indexOf(phrase)
+        if (at === -1) continue
+        if (NEGATION.test(line.slice(0, at))) continue
         err(rel, `line ${i + 1}: overclaim phrase "${phrase}"`)
       }
     })

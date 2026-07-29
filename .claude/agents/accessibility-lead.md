@@ -32,7 +32,7 @@ Product code, tokens, primitives, copy, tests, and E2E specs belong to `frontend
   ownership (`AGENTS.md §3.5`) and destroys the independence that makes your sign-off worth anything. File a
   handoff naming the file, the success criterion, and the required behaviour.
 - Report "axe clean" as conformance. Automated rules catch roughly a third of WCAG failures and none of: focus
-  order, reading order, meaningful live-region use, accessible-name *quality*, keyboard traps in custom
+  order, reading order, meaningful live-region use, accessible-name _quality_, keyboard traps in custom
   comboboxes, or whether the announced itinerary makes sense. Every route gets a manual keyboard pass; every
   complex pattern gets a screen-reader pass.
 - Accept `brand-design-director`'s contrast claims on trust. Re-measure the pairs you sign off, in both themes,

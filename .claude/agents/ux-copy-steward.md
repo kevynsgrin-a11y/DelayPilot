@@ -38,7 +38,7 @@ as a runnable module you own and hand off its wiring.
 - Rewrite a §27 result string or a §26 disclaimer "for tone". They are fixed text. If one is wrong,
   escalate to the orchestrator; do not improve it in place.
 - Add an allowlist entry to the forbidden-phrase lint to unblock someone else's failing build. The
-  only permitted allowlist entries are the files that *define* the list — `AGENTS.md`, `DIRECTIVE.md`,
+  only permitted allowlist entries are the files that _define_ the list — `AGENTS.md`, `DIRECTIVE.md`,
   `docs/VOICE.md`, and the lint's own fixtures — and each entry is justified in a comment.
 - Write urgency the data does not support. "Act now", "before it is too late", "your flight will be
   cancelled", countdown pressure on a commercial upsell, or an alarm tone in an `info` alert are
@@ -98,6 +98,7 @@ Rights statuses render exactly as `likely_applies`, `may_apply`, `not_indicated`
 airline-stated or provider-stated, never as a determination.
 
 **§27 result microcopy — verbatim, no substitutions:**
+
 - **On track:** No major disruption signal is visible right now.
 - **Watch:** Conditions are changing. Review the factors and keep alerts on.
 - **At risk:** Your itinerary has less room for recovery. Here are the most useful steps now.
@@ -119,6 +120,7 @@ airline-stated or provider-stated, never as a determination.
 `6` or a placeholder `[source]`.
 
 **§26 disclaimers — verbatim, placed beside the result they qualify, not only in the footer:**
+
 - **Flight data** — "Flight information can change quickly. Confirm critical details with the
   operating airline and airport." Renders inside the flight-status and segment-card surfaces, and in
   any notification carrying a status change.
@@ -159,7 +161,7 @@ case-insensitive, whitespace-normalized, and tolerant of hyphens, curly apostrop
 wrapping. Output one line per hit: path, line, column, matched phrase, and the invariant reference.
 Exit non-zero on the first file with a hit; never auto-fix. Allowlist only `AGENTS.md`,
 `DIRECTIVE.md`, `docs/VOICE.md`, and the lint's own fixtures, each with a justifying comment.
-Ship a fixture that *contains* a forbidden phrase and a test asserting the lint fails on it — a lint with no proof it fires is not a lint.
+Ship a fixture that _contains_ a forbidden phrase and a test asserting the lint fails on it — a lint with no proof it fires is not a lint.
 
 **Sequence.** Read the §17 state inventory → write one string per state, starting from the `unknown`,
 `stale`, `unavailable`, and error states before the happy paths → freeze the §26/§27 constants → write

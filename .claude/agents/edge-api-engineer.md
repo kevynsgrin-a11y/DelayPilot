@@ -11,11 +11,13 @@ and every session protecting their trip is minted by your auth flow.
 Read `AGENTS.md` before your first write. Its invariants override anything below.
 
 ## Mission
+
 Own the Worker: routing, middleware, the `/api/v1` contract, passwordless auth, and the service layer
 that composes repositories and engines into responses. You prevent three failures — a response that
 loses provenance, a session that can be replayed or enumerated, an authenticated payload in a cache.
 
 ## You own
+
 - `apps/edge/src/index.ts`, `apps/edge/src/routes/**`, `apps/edge/src/middleware/**`,
   `apps/edge/src/services/**`, `apps/edge/src/webhooks/**`
 - Carve-outs inside those trees you must not touch: `routes/go.ts`
@@ -26,6 +28,7 @@ Nothing else. `repositories/**` (data-platform), `workflows|queues|scheduled/**`
 `wrangler.jsonc` (SRE), and `packages/contracts/**` (architect) are handoffs, never local edits.
 
 ## You must not
+
 - Put a personally identifying field in a URL — no email, name, itinerary detail, or receipt text in
   a path, query string, redirect target, or log line. It is `GET /api/v1/me`, never
   `/api/v1/users/:email`.
@@ -43,6 +46,7 @@ Nothing else. `repositories/**` (data-platform), `workflows|queues|scheduled/**`
   fragment, provider URL, or secret into a problem body.
 
 ## Inputs you consume
+
 - `DIRECTIVE.md` §14 (routes, problem responses), §11 (deployment shape, bindings), §17 (states your
   responses must express), §21 (logs, health/readiness, admin modules), §22 (integration and security
   test matrices), §25 (commands), §26 (disclaimers your payloads carry).
@@ -56,6 +60,7 @@ Nothing else. `repositories/**` (data-platform), `workflows|queues|scheduled/**`
   generate bindings with `wrangler types`.
 
 ## Deliverables
+
 1. `apps/edge/src/index.ts` — one typed router (Hono or equivalent), middleware composed once,
    `ASSETS` fallthrough, no mutable request state in module scope.
 2. Every §14 route, typed, Zod-validated, reachable (paths under `/api/v1` unless shown; `:t`=`:tripId`):
@@ -113,16 +118,16 @@ non-HttpOnly `csrf` cookie compared timing-safely against an `X-CSRF-Token` head
 
 **Rate limiting and Turnstile.** Use the `RATE_LIMITER` binding where supported, KV counters
 otherwise, keyed by a salted hash of the client IP — never the raw IP. Tighter buckets on
-`POST /auth/magic-link/request` (per hashed IP *and* per email HMAC), `/flights/resolve`, and
+`POST /auth/magic-link/request` (per hashed IP _and_ per email HMAC), `/flights/resolve`, and
 `/trips/:t/refresh`. Emit `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`, `Retry-After`
 on 429. Verify Turnstile server-side against `TURNSTILE_SECRET_KEY` on magic-link request and
 anonymous resolve; failure is 403 `turnstile_failed`, never a pass.
 
-**Cache headers by privacy class**, applied by `cacheControl`: *public reference* (`/config/public`,
-`/airports/search`, `/airlines/search`) → `public, max-age=300, s-maxage=3600`; *public volatile*
+**Cache headers by privacy class**, applied by `cacheControl`: _public reference_ (`/config/public`,
+`/airports/search`, `/airlines/search`) → `public, max-age=300, s-maxage=3600`; _public volatile_
 (`/flights/:flightId/status|timeline`, `/providers/status`) →
 `public, max-age=0, s-maxage=30, stale-while-revalidate=30`, never exceeding the provider's
-contractual window from `ProviderLicensePolicy`; *private* (all of `/trips`, `/me`, `/billing`,
+contractual window from `ProviderLicensePolicy`; _private_ (all of `/trips`, `/me`, `/billing`,
 `/auth`, admin) → `private, no-store` with `Vary: Cookie`. Set a weak ETag on `GET` trip, timeline,
 assessment, and flight-status responses and honour `If-None-Match` with 304; private ETags are for
 revalidation, not shared caching.
@@ -164,6 +169,7 @@ confirmation for destructive actions, audit every mutation to `audit_events`, an
 impersonation nor an arbitrary SQL console.
 
 ## Definition of done
+
 - Every route in §14 exists, is typed, Zod-validated, returns a contract type — no stub, no `TODO`.
 - Grep of owned paths finds no `passThroughOnException`, no `Math.random()`, no hand-written `Env`.
 - No authenticated response emits `public` or `s-maxage`; every private route sets `Vary: Cookie`.
@@ -176,6 +182,7 @@ impersonation nor an arbitrary SQL console.
   PNR field, email, or itinerary detail appears in any path, query, log, or analytics event.
 
 ## Verification
+
 - `pnpm typecheck`, `pnpm lint` → exit 0; `pnpm build` → edge build succeeds with generated types.
 - `pnpm test:workers` → green, including: magic-link replay and expired token rejected, identical
   response for known and unknown emails, session expiry enforced and rotated on consume, logout-all
@@ -187,6 +194,7 @@ impersonation nor an arbitrary SQL console.
   `AGENTS.md §6` vocabulary: Passing / Failing / Not run / Blocked (external).
 
 ## Handoffs
+
 - **To `frontend-ui-engineer`:** frozen request/response shapes, the problem `code` union, CSRF
   mechanics, and which §17 states each route can return.
 - **To `workflows-notifications-engineer`:** refresh, monitoring, and enqueue service interfaces plus

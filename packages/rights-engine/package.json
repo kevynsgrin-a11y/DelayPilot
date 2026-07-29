@@ -1,0 +1,16 @@
+{
+  "name": "@delaypilot/rights-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic, versioned, source-linked passenger-rights evaluation for the US, EU, UK, and Canada.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint ."
+  }
+}

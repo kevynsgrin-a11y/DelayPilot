@@ -13,16 +13,16 @@ an acceptance gate, and an independent reviewer. Nothing advances past a red gat
 
 ## 1. Product identity
 
-| Field | Value |
-| --- | --- |
-| Product | DelayPilot |
-| Repo slug | `delay-pilot` |
-| Domain | Configured via `PUBLIC_SITE_URL`. Assume no domain is purchased. |
-| Category | Consumer flight-disruption intelligence: connection-risk planning, passenger-rights guidance, itinerary monitoring, evidence organization |
-| Launch market | United States, with rights modules for EU, UK, Canada |
-| Revenue | Privacy-respectful display ads, disclosed contextual affiliates, one-time Trip Pass, Plus subscription, Family plan |
-| Hosting | Cloudflare Workers + Static Assets, D1, KV, Queues, Workflows, optional R2, Turnstile, Workers observability |
-| Quality bar | ≥ 95/100 under the Part IV rubric, with zero critical defects |
+| Field         | Value                                                                                                                                     |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Product       | DelayPilot                                                                                                                                |
+| Repo slug     | `delay-pilot`                                                                                                                             |
+| Domain        | Configured via `PUBLIC_SITE_URL`. Assume no domain is purchased.                                                                          |
+| Category      | Consumer flight-disruption intelligence: connection-risk planning, passenger-rights guidance, itinerary monitoring, evidence organization |
+| Launch market | United States, with rights modules for EU, UK, Canada                                                                                     |
+| Revenue       | Privacy-respectful display ads, disclosed contextual affiliates, one-time Trip Pass, Plus subscription, Family plan                       |
+| Hosting       | Cloudflare Workers + Static Assets, D1, KV, Queues, Workflows, optional R2, Turnstile, Workers observability                              |
+| Quality bar   | ≥ 95/100 under the Part IV rubric, with zero critical defects                                                                             |
 
 ## 2. What a traveler must be able to do
 
@@ -75,7 +75,7 @@ be re-verified by `regulatory-source-steward` before any rule set is published.
   publication date and computed effective date are verified. Events before that date are assessed
   under the currently effective EC 261 framework. **Applying the reform early is a critical defect.**
 - **US:** on 2026-07-08 the DOT extended limited enforcement discretion for certain renumbered
-  flights through 2027-07-07. Model as *enforcement guidance*, never as repeal of the refund rule.
+  flights through 2027-07-07. Model as _enforcement guidance_, never as repeal of the refund rule.
 - **Canada:** proposed reforms are not law because a consultation document exists. Activate a
   Canadian rule version only after verifying it is in force.
 - **US airline dashboard commitments** are voluntary and distinct from statutory refund rights.
@@ -121,6 +121,7 @@ an invitation to invent a local shape.
 Each phase lists: owners → deliverable → exit gate → reviewer.
 
 ### Phase 0 — Audit and plan
+
 - **Owners:** `build-orchestrator`
 - **Deliverable:** repository audit; `docs/BUILD_PLAN.md` (state, decisions, sequencing, risks);
   branch and commit conventions confirmed.
@@ -128,6 +129,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** none (self-evident artifacts).
 
 ### Phase 1 — Foundation
+
 - **Owners:** `principal-architect` → then `platform-release-sre` (bindings, CI skeleton)
 - **Deliverable:** pnpm workspace; strict `tsconfig.base.json`; lint/format; package skeletons for
   `contracts`, `domain`, `providers`, `risk-engine`, `rights-engine`, `connection-engine`,
@@ -139,6 +141,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `security-privacy-engineer` (no secrets committed; strict flags on).
 
 ### Phase 2 — Contracts and domain
+
 - **Owners:** `principal-architect`; `security-privacy-engineer` (crypto envelopes, identifier HMAC)
 - **Deliverable:** every shared Zod schema and type in §12–§13 (flights, segments, snapshots,
   provenance, assessments, rights, connection, entitlements, alerts, problem responses);
@@ -149,6 +152,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `qa-test-architect`.
 
 ### Phase 3 — Data platform
+
 - **Owners:** `data-platform-engineer`
 - **Deliverable:** all D1 migrations for §12; typed repositories with no dynamic SQL; airport and
   airline reference seeds with IANA zones; retention/deletion/export job repositories.
@@ -157,6 +161,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `security-privacy-engineer`.
 
 ### Phase 4 — Providers, weather, airspace
+
 - **Owners:** `integrations-provider-engineer`
 - **Deliverable:** `FlightDataProvider` interface + capability flags; `FixtureFlightProvider`
   (complete, deterministic, covering every state in §17); AeroAPI / Cirium / OAG adapters that
@@ -170,6 +175,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `regulatory-source-steward` (licence policy correctness).
 
 ### Phase 5 — Rights engine and source registry
+
 - **Owners:** `regulatory-source-steward` (registry, verification, effective dates) → then
   `rights-rules-engineer` (engine, rule sets)
 - **Deliverable:** source registry seeded and verified from §20; versioned rule sets for US, EU, UK,
@@ -182,6 +188,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `trust-compliance-officer` (no legal overclaim in any output string).
 
 ### Phase 6 — Risk and connection engines
+
 - **Owners:** `risk-modeling-scientist`, `connection-risk-engineer` (parallel; disjoint paths)
 - **Deliverable:** offline `ml/` pipeline (ingest → validate → normalize → leakage check → train →
   calibrate → evaluate → export → model card → drift baseline → checksum); model registry;
@@ -194,6 +201,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `release-auditor` (numbers integrity), `risk-modeling-scientist` reviews connection.
 
 ### Phase 7 — Edge API and auth
+
 - **Owners:** `edge-api-engineer`
 - **Deliverable:** the complete route surface in §14; middleware — request ID, structured logging,
   strict CORS, CSRF for cookie mutations, idempotency keys, rate limiting, Turnstile, RFC 9457
@@ -205,6 +213,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `security-privacy-engineer`.
 
 ### Phase 8 — Monitoring, notifications, billing
+
 - **Owners:** `workflows-notifications-engineer`, `billing-entitlements-engineer` (parallel)
 - **Deliverable:** trip-monitoring Workflow with the §16 lifecycle; typed idempotent queue jobs with
   DLQ; cost-aware refresh policy that coalesces users on the same public flight; alert evaluation
@@ -217,6 +226,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `security-privacy-engineer` (webhooks, entitlement trust boundary).
 
 ### Phase 9 — Design system and assets
+
 - **Owners:** `brand-design-director` → `visual-asset-director` (parallel after tokens land)
 - **Deliverable:** design tokens (§7) with measured contrast, light + dark; typography scale with
   tabular numerals; motion language honouring `prefers-reduced-motion`; UI primitives; original SVG
@@ -227,6 +237,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `accessibility-lead`.
 
 ### Phase 10 — Frontend: public site and application
+
 - **Owners:** `frontend-ui-engineer`, with `ux-copy-steward` (strings) in parallel
 - **Deliverable:** public routes (§18.1) including homepage in the §18.3 order; flight lookup (no PNR
   field); trip cockpit; segment, connection, rights, action-checklist, evidence, source/freshness
@@ -237,6 +248,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `accessibility-lead` + `ux-copy-steward`.
 
 ### Phase 11 — SEO, content, monetization
+
 - **Owners:** `seo-engineer`, `content-editorial-lead`, `monetization-partnerships-engineer` (parallel)
 - **Deliverable:** metadata system, canonicals, robots, sitemaps, structured data limited to visible
   content, content-quality gate, `ads.txt` / `security.txt` / `llms.txt`, IndexNow; the 20 launch
@@ -250,6 +262,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `trust-compliance-officer`.
 
 ### Phase 12 — Quality sweep
+
 - **Owners:** `qa-test-architect`, `accessibility-lead`, `performance-engineer`,
   `security-privacy-engineer` (parallel)
 - **Deliverable:** complete unit/property/contract/integration/E2E/visual/security suites (§22);
@@ -261,6 +274,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `release-auditor`.
 
 ### Phase 13 — Operations and documentation
+
 - **Owners:** `platform-release-sre`, then every agent for its own doc
 - **Deliverable:** CI with the §23 checks; preview and production deploy paths; migration
   application and record; structured logs, metrics, `/health` and `/readiness`; the runbook set;
@@ -270,6 +284,7 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 - **Reviewer:** `release-auditor`.
 
 ### Phase 14 — Audit and release gate
+
 - **Owners:** `release-auditor`
 - **Deliverable:** `docs/QUALITY_REPORT.md` — scored against the Part IV rubric, with every deduction
   itemized, evidence-linked, and assigned to an owning agent.
@@ -279,13 +294,13 @@ Each phase lists: owners → deliverable → exit gate → reviewer.
 
 ## 6. Cross-phase standing assignments
 
-| Concern | Standing owner | Cadence |
-| --- | --- | --- |
-| Forbidden-phrase lint (legal overclaim, fake certainty) | `ux-copy-steward` | every phase touching strings |
-| Source re-verification | `regulatory-source-steward` | Phase 5, and before any release |
-| Ad placement conformance | `trust-compliance-officer` | Phases 11–14 |
-| Bundle and CWV budgets | `performance-engineer` | Phases 10–14 |
-| Invariant regression | `release-auditor` | Phases 12–14 |
+| Concern                                                 | Standing owner              | Cadence                         |
+| ------------------------------------------------------- | --------------------------- | ------------------------------- |
+| Forbidden-phrase lint (legal overclaim, fake certainty) | `ux-copy-steward`           | every phase touching strings    |
+| Source re-verification                                  | `regulatory-source-steward` | Phase 5, and before any release |
+| Ad placement conformance                                | `trust-compliance-officer`  | Phases 11–14                    |
+| Bundle and CWV budgets                                  | `performance-engineer`      | Phases 10–14                    |
+| Invariant regression                                    | `release-auditor`           | Phases 12–14                    |
 
 ---
 
@@ -346,9 +361,9 @@ family member monitoring someone else · disrupted passenger choosing travel vs 
 traveler organizing evidence · frequent traveler wanting persistent monitoring · research visitor
 landing on a rights guide.
 
-Jobs: *Tell me what is happening · how reliable it is · what may happen next · what to do now · what
+Jobs: _Tell me what is happening · how reliable it is · what may happen next · what to do now · what
 rights may apply · help me preserve evidence without legal promises · alert me only when something
-meaningful changes.*
+meaningful changes._
 
 ## 9. Scope
 
@@ -371,13 +386,13 @@ purchase of hotels/cars/insurance/flights.
 
 Plans are **data-driven entitlements**. No plan string or price literal in a component.
 
-| Plan | Default display price | Entitlements |
-| --- | --- | --- |
-| Free | — | Anonymous lookup, basic timeline, basic assessment, source-linked rights estimate, 1 active saved trip after signup, limited email alerts, ads on eligible surfaces, no card required |
-| Trip Pass | `$19 one time` | 1 monitored itinerary, monitoring from purchase → 30 days after final scheduled arrival (configurable), email + push, full connection and rights detail, evidence timeline, printable packet, ad-free for that trip, no auto-renewal |
-| Plus | `$6.99/month` or `$49/year` | 5 active trips, 12 months history, email + push, multiple saved travelers (no identity documents), risk-factor history, evidence packets, saved preferences, ad-free authenticated experience, member discounts only when real and contracted |
-| Family | `$79/year` | 6 members, shared monitoring, 10 active trips, per-traveler quiet hours and preferences, shared emergency contact notes (no medical or government ID), ad-free |
-| Professional | not marketed at launch | Interfaces only: team dashboard, API access, travel-manager workflows, batch monitoring, SLA reporting |
+| Plan         | Default display price       | Entitlements                                                                                                                                                                                                                                  |
+| ------------ | --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Free         | —                           | Anonymous lookup, basic timeline, basic assessment, source-linked rights estimate, 1 active saved trip after signup, limited email alerts, ads on eligible surfaces, no card required                                                         |
+| Trip Pass    | `$19 one time`              | 1 monitored itinerary, monitoring from purchase → 30 days after final scheduled arrival (configurable), email + push, full connection and rights detail, evidence timeline, printable packet, ad-free for that trip, no auto-renewal          |
+| Plus         | `$6.99/month` or `$49/year` | 5 active trips, 12 months history, email + push, multiple saved travelers (no identity documents), risk-factor history, evidence packets, saved preferences, ad-free authenticated experience, member discounts only when real and contracted |
+| Family       | `$79/year`                  | 6 members, shared monitoring, 10 active trips, per-traveler quiet hours and preferences, shared emergency contact notes (no medical or government ID), ad-free                                                                                |
+| Professional | not marketed at launch      | Interfaces only: team dashboard, API access, travel-manager workflows, batch monitoring, SLA reporting                                                                                                                                        |
 
 **Billing rules:** Stripe Checkout + Customer Portal + signature-verified webhooks; Price IDs in
 config or plan records; idempotent event processing; verify signatures against the raw body;
@@ -772,11 +787,11 @@ pre-existing-disruption caution.
 Editorial workflow: draft → source review → legal/factual review → publishable → published →
 review due → stale. **Only `published` enters the sitemap.**
 
-**18.7 Responsive rules.** *Mobile:* primary lookup visible without scrolling past marketing;
+**18.7 Responsive rules.** _Mobile:_ primary lookup visible without scrolling past marketing;
 vertical itinerary; sticky bottom bar only when it covers nothing; no dense two-column cards;
 legible times and codes; drawers instead of side panels; connection action above monetization;
-44×44 px minimum targets. *Tablet:* two-column results where appropriate; single logical form
-reading order. *Desktop:* bounded readable width; 12-column cockpit with 8 columns for
+44×44 px minimum targets. _Tablet:_ two-column results where appropriate; single logical form
+reading order. _Desktop:_ bounded readable width; 12-column cockpit with 8 columns for
 action/itinerary and 4 for source/alerts/secondary; hierarchy and whitespace over a wall of equal
 cards.
 
@@ -1006,18 +1021,18 @@ state must be unmistakable.
 
 ## 30. Rubric (100 points)
 
-| Area | Pts | Criteria |
-| --- | --- | --- |
-| Architecture and maintainability | 10 | Coherent boundaries · strict types · current Cloudflare practice · migration discipline · no duplicated business rules · no dead architecture |
-| Core product completeness | 15 | Lookup · itinerary · status · connection · rights · actions · monitoring · evidence · billing · family sharing · admin |
-| Data and rights correctness | 15 | Provenance · freshness · licence guard · versioned rules · effective dates · official sources · no legal overclaim |
-| Algorithms and model integrity | 10 | Correct formulas · validation · calibration gates · no leakage · no fake probabilities · model card |
-| Visual design and UX | 15 | Original brand · professional hierarchy · responsive · complete states · clear uncertainty · no template feel · no panic language |
-| Accessibility and performance | 10 | WCAG 2.2 AA · tested keyboard · Lighthouse · Core Web Vitals · bundle budgets · no ad CLS |
-| Security and privacy | 10 | Threat model · auth · encryption · authorization · retention · no PNR · safe logs · webhooks · abuse protection |
-| SEO and content quality | 5 | Indexable utility · source-backed content · content gate · structured data · sitemap/canonical/noindex correctness |
-| Monetization integrity | 5 | Ads separated from controls · `ads.txt` · premium suppression · disclosed affiliates · Stripe entitlements · no crisis exploitation |
-| Testing and operations | 5 | Unit/property/integration/E2E/a11y/visual/security · CI · observability · runbooks · rollback |
+| Area                             | Pts | Criteria                                                                                                                                      |
+| -------------------------------- | --- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Architecture and maintainability | 10  | Coherent boundaries · strict types · current Cloudflare practice · migration discipline · no duplicated business rules · no dead architecture |
+| Core product completeness        | 15  | Lookup · itinerary · status · connection · rights · actions · monitoring · evidence · billing · family sharing · admin                        |
+| Data and rights correctness      | 15  | Provenance · freshness · licence guard · versioned rules · effective dates · official sources · no legal overclaim                            |
+| Algorithms and model integrity   | 10  | Correct formulas · validation · calibration gates · no leakage · no fake probabilities · model card                                           |
+| Visual design and UX             | 15  | Original brand · professional hierarchy · responsive · complete states · clear uncertainty · no template feel · no panic language             |
+| Accessibility and performance    | 10  | WCAG 2.2 AA · tested keyboard · Lighthouse · Core Web Vitals · bundle budgets · no ad CLS                                                     |
+| Security and privacy             | 10  | Threat model · auth · encryption · authorization · retention · no PNR · safe logs · webhooks · abuse protection                               |
+| SEO and content quality          | 5   | Indexable utility · source-backed content · content gate · structured data · sitemap/canonical/noindex correctness                            |
+| Monetization integrity           | 5   | Ads separated from controls · `ads.txt` · premium suppression · disclosed affiliates · Stripe entitlements · no crisis exploitation           |
+| Testing and operations           | 5   | Unit/property/integration/E2E/a11y/visual/security · CI · observability · runbooks · rollback                                                 |
 
 **Release gate:** ≥ 95/100 · no critical security, privacy, legal, billing, accessibility,
 data-licensing, or rights-engine issue · no broken control · no fake live data · no visible

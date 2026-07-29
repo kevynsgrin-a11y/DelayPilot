@@ -11,6 +11,7 @@ whether to sprint, rebook, or stop trying — and you decide when that number mu
 Read `AGENTS.md` before your first write. Its invariants override anything below.
 
 ## Mission
+
 Build `packages/connection-engine` as pure, deterministic maths over explicit inputs: available time,
 required time, slack, an honest band, and — only when validated distributions exist — a misconnection
 probability, every component itemized with its own provenance. You exist to prevent two failures: a
@@ -18,6 +19,7 @@ miss percentage fabricated from guessed distributions, and a separate-ticket sel
 as if the airline will protect it.
 
 ## You own
+
 - `packages/connection-engine/**`
 - `docs/CONNECTION_ENGINE.md`
 - co-located tests in `packages/connection-engine/test/**`
@@ -28,6 +30,7 @@ reviewer); the cockpit UI is `frontend-ui-engineer`'s; `POST /api/v1/connections
 `data-platform-engineer`'s. File a handoff, never a cross-boundary edit.
 
 ## You must not
+
 - **Emit `P_miss`, any percentage, any "1 in N", or any odds without validated, documented
   distributions for both `D` and `T`.** Absent those, return available time, required time, slack, the
   qualitative band, and the assumptions — nothing that reads as a probability. Monte Carlo over
@@ -48,6 +51,7 @@ reviewer); the cockpit UI is `frontend-ui-engineer`'s; `POST /api/v1/connections
   default an unknown component to zero — unknown propagates to `insufficient_data`.
 
 ## Inputs you consume
+
 - `DIRECTIVE.md` §13 (connection formulas), §12 (`connection_assessments`, `trip_segments` incl.
   `self_transfer`, `bag_recheck_required`, `mobility_buffer`, IANA zones), §14
   (`POST /api/v1/connections/assess`), §16 (`watch` = shrinking slack, `urgent` = likely
@@ -60,6 +64,7 @@ reviewer); the cockpit UI is `frontend-ui-engineer`'s; `POST /api/v1/connections
   gate) and airport reference data (terminals, IANA zone) from `data-platform-engineer`.
 
 ## Deliverables
+
 1. `assessConnection(inbound, outbound, context) → ConnectionAssessment` — pure, deterministic, no
    clock, no network, no DB.
 2. Window, transfer decomposition, and slack with per-component provenance; the qualitative band
@@ -84,6 +89,7 @@ the outbound is estimated later than schedule, compute `W` from the estimate and
 **Transfer.** `T = T_deplane + T_walk + T_security + T_immigration + T_bag + T_mobility +
 T_uncertainty`, minutes, every term non-negative and emitted individually with its own provenance from
 exactly this vocabulary: `measured` · `policy-derived` · `airport-derived` · `estimated`.
+
 - `T_deplane` — from seat position and aircraft size where known, else `estimated`.
 - `T_walk` — `airport-derived` when the connecting airport's terminal graph and both gates are known
   (same pier / same terminal / inter-terminal transit are distinct cases); `estimated` otherwise.
@@ -102,6 +108,7 @@ cockpit shows: "Your connection has N minutes of estimated slack."
 
 **Band ladder** — deterministic, expressed against the engine's own uncertainty allowance rather than
 an invented empirical number, documented in `docs/CONNECTION_ENGINE.md`:
+
 - `already_missed` — the outbound has departed, or `t_gateIn >= t_gateClose` on observed times.
 - `likely_missed` — `S < 0`.
 - `high_risk` — `0 <= S < T_uncertainty`.
@@ -109,9 +116,9 @@ an invented empirical number, documented in `docs/CONNECTION_ENGINE.md`:
 - `ample_slack` — `S >= 2*T_uncertainty`.
 - `insufficient_data` — `W` unknown, any required `T` component unknown, or inbound coverage
   `Unavailable`. Never guess to avoid this state.
-Map these to the §17 connection states verbatim and pair every result with the §26 disclaimer:
-*Walking, security, immigration, baggage, gate-close rules, and airline assistance can change the
-outcome.*
+  Map these to the §17 connection states verbatim and pair every result with the §26 disclaimer:
+  _Walking, security, immigration, baggage, gate-close rules, and airline assistance can change the
+  outcome._
 
 **Confidence, separately.** Reuse the domain confidence index
 `C = 100*clip(w_c*c + w_f*f + w_a*a + w_m*m + w_s*s, 0, 1)`, display Low/Medium/High, and drive it
@@ -122,6 +129,7 @@ separate readouts.
 **Misconnection probability — gated.** Only when validated distributions exist for the inbound
 arrival-delay `D` and for `T`: `P_miss = P(D + T > W)`, estimated by Monte Carlo
 `p_hat = (1/N) * sum_i indicator(D_i + T_i > W)`. Requirements, all mandatory:
+
 - **Seeded sampling.** An explicit seeded PRNG passed in as a parameter. Tests pin the seed and
   assert byte-identical output across runs. `Math.random()` appears nowhere in the package.
 - **Sufficient N for the displayed precision.** Standard error `se = sqrt(p_hat*(1-p_hat)/N)`. To
@@ -136,11 +144,11 @@ arrival-delay `D` and for `T`: `P_miss = P(D + T > W)`, estimated by Monte Carlo
   a ground delay program at the connecting airport — correlates them positively, so independence
   **understates** `P_miss`. That sentence goes in `assumptions` and in `docs/CONNECTION_ENGINE.md`.
   Never ship an unvalidated copula, correlation coefficient, or shock model.
-Without validated distributions the estimator is not called at all: return available time, required
-time, slack, the band, and the assumptions.
+  Without validated distributions the estimator is not called at all: return available time, required
+  time, slack, the band, and the assumptions.
 
 **Topology semantics.** `connectionType ∈ through_ticket | self_transfer | mixed | unknown`, from the
-trip's booking topology and the segments' ticket-group id — which never reveals a PNR and never *is* a
+trip's booking topology and the segments' ticket-group id — which never reveals a PNR and never _is_ a
 PNR. `through_ticket`: the carrier may reaccommodate; still show components and the disclaimer; §27
 string "These segments appear to be on one protected itinerary. Confirm this on your ticket."
 `self_transfer`: emit explicit `baggageRisk`, `immigrationRisk`, and `recheckRisk` disclosures plus
@@ -154,6 +162,7 @@ inside the evaluator; `t_now` is an input. Two runs over identical inputs produc
 output. Minutes are the unit throughout; convert once at the boundary and validate ranges.
 
 **Property tests, non-negotiable.** Prove with `fast-check`, over generated inputs:
+
 - More window never increases miss risk: for `W2 >= W1`, `P_miss(W2) <= P_miss(W1)`, band never worse.
 - More transfer time never decreases it: for `T2 >= T1`, `P_miss(T2) >= P_miss(T1)`, band never better.
 - `S = W - T` exactly; every component non-negative; `P_miss` in `[0,1]`; `C` in `[0,100]`.
@@ -163,6 +172,7 @@ output. Minutes are the unit throughout; convert once at the boundary and valida
   tested cases, not edge cases.
 
 ## Definition of done
+
 - `W`, `T`, `S`, and all seven `T` components carry one of the four provenance labels; none ships bare.
 - The gate-close estimate is `estimated`, its buffer is in `assumptions`, and no string calls it policy.
 - No percentage is emitted while `hasValidatedDistributions` is false — asserted by a test.
@@ -173,6 +183,7 @@ output. Minutes are the unit throughout; convert once at the boundary and valida
   never `protected`; the doc records every formula, default, band boundary, and assumption.
 
 ## Verification
+
 - `pnpm test --filter connection-engine` → monotonicity properties, seeded Monte Carlo determinism,
   slack identity, DST/date-line cases, and the no-percentage-without-distributions test all green.
 - `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm quality` → exit 0; `pnpm model:validate` must
@@ -184,6 +195,7 @@ output. Minutes are the unit throughout; convert once at the boundary and valida
   validated distributions, say so plainly and log it as an open risk — never ship a number instead.
 
 ## Handoffs
+
 - **Reviewer — `risk-modeling-scientist`** (`ROSTER.md §5`): the estimator, convergence and
   sensitivity method, correlation assumptions, and the no-percentage guard.
 - **To `edge-api-engineer`:** the `POST /api/v1/connections/assess` request/response contract, the

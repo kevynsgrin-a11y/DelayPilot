@@ -75,13 +75,13 @@ It ships in the **footer of every public page** — every §18.1 route from `/` 
 `/guides/[slug]`, `/methodology/`, `/pricing/`, and `/status/`. Verify it is real rendered text in the layout footer — not an
 image, not `sr-only`, not behind a "Legal" accordion, not truncated, not hidden at a breakpoint. One byte-exact string.
 
-**The five result-adjacent disclaimers (§26), verbatim, near the result and not only in the footer:** *Flight data* — "Flight
+**The five result-adjacent disclaimers (§26), verbatim, near the result and not only in the footer:** _Flight data_ — "Flight
 information can change quickly. Confirm critical details with the operating airline and airport." beside every status/timeline
-surface. *Prediction* — "This is an estimate, not an airline decision or safety forecast." beside every delay/cancellation
-assessment, including every `Heuristic risk band`. *Connection* — "Walking, security, immigration, baggage, gate-close rules,
-and airline assistance can change the outcome." inside the connection cockpit. *Rights* — "Informational estimate, not legal
+surface. _Prediction_ — "This is an estimate, not an airline decision or safety forecast." beside every delay/cancellation
+assessment, including every `Heuristic risk band`. _Connection_ — "Walking, security, immigration, baggage, gate-close rules,
+and airline assistance can change the outcome." inside the connection cockpit. _Rights_ — "Informational estimate, not legal
 advice. Eligibility depends on the full facts, current law, and the airline or regulator's determination." inside every rights
-card and the evidence packet. *Affiliate* — "Partner link · DelayPilot may earn a commission if you purchase. This does not
+card and the evidence packet. _Affiliate_ — "Partner link · DelayPilot may earn a commission if you purchase. This does not
 change our assessment." beside a standalone affiliate link, with the fuller §20 module text ("…does not change our operational
 or passenger-rights assessment.") in an affiliate module. Audit placement, not just presence: each must sit adjacent to its
 result at 375/768/1024/1440 px and survive print.
@@ -92,7 +92,7 @@ case-insensitively, including `data/fixtures/**`, `packages/notifications/src/te
 claim", "we will win", "the airline must pay", "guaranteed connection", "your flight will be cancelled" — both spellings. Add
 the §7 never-list: "we know the airline is at fault", "claim now before it is too late" (permitted only beside an accurate
 source-linked official deadline), "AI-powered" as the value proposition, and unsubstantiated "best" / "most accurate" / "#1".
-The only legitimate hits are the files that *define* the list. Then the positive side: rights output uses only `likely_applies`,
+The only legitimate hits are the files that _define_ the list. Then the positive side: rights output uses only `likely_applies`,
 `may_apply`, `not_indicated`, `cannot_determine`, `future_rule_not_active` and phrases outcomes as "may apply", "estimated
 rights", "based on the facts entered"; no surface converts contextual evidence into legal cause (nearby weather, a provider
 reason string, or a NAS event is airline-stated / provider-stated / observed context, never a determination); the EU 2026 reform
@@ -124,14 +124,14 @@ commission without visible disclosure, no travel-insurance link in a view where 
 credit-card promotion in a crisis action card. And the ordering invariant: utility and official rights always precede any
 commercial suggestion, on mobile too — never a commercial partner presented as the remedy for a statutory right (`§4`).
 
-**Dark-pattern audit — four families, each with a concrete test.** *Fake urgency*: countdown timers, "act now", "before it is
+**Dark-pattern audit — four families, each with a concrete test.** _Fake urgency_: countdown timers, "act now", "before it is
 too late", "only today", scarcity claims, or an alarm tone on an `info`-severity alert; urgency is permitted only beside an
-accurate, source-linked official deadline (a real APPR or EC 261 claim window, cited). *Crisis exploitation*: an upgrade prompt,
+accurate, source-linked official deadline (a real APPR or EC 261 claim window, cited). _Crisis exploitation_: an upgrade prompt,
 ad, or affiliate module placed before value is shown, in an `urgent`-severity view, or between a disruption warning and its
 action — §18.5 puts the upgrade prompt only after value is shown and monetization only after the complete action area.
-*Confusing cancel flows*: cancellation reachable from `/app/billing/` in the same number of steps as purchase, using the plain
+_Confusing cancel flows_: cancellation reachable from `/app/billing/` in the same number of steps as purchase, using the plain
 word "Cancel", honouring cancel-at-period-end and showing the real end date; no guilt copy, no confirm-shaming, no support-only
-cancellation, no hidden Stripe Portal link. *Pre-checked consent*: every consent, marketing, and notification control defaults
+cancellation, no hidden Stripe Portal link. _Pre-checked consent_: every consent, marketing, and notification control defaults
 to off; rejecting is one action and no harder than accepting; the one-click marketing unsubscribe is separate from operational
 messages (§16).
 

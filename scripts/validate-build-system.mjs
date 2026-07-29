@@ -191,7 +191,9 @@ async function walk(dir, acc = []) {
 }
 
 async function lintOverclaims() {
-  const files = (await walk(ROOT)).filter((f) => /\.(md|mdx|ts|tsx|js|mjs|astro|json|html)$/.test(f))
+  const files = (await walk(ROOT)).filter((f) =>
+    /\.(md|mdx|ts|tsx|js|mjs|astro|json|html)$/.test(f),
+  )
   // A banned phrase may legitimately be quoted in order to forbid it — policy docs and charters
   // enumerate the ban list, and "## You must not" sections quote the exact strings they reject.
   // So the unit of judgement is the enclosing paragraph plus its nearest heading, not the line:

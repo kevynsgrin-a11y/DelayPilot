@@ -54,7 +54,7 @@ handoff.
   A missing dimension is a CLS defect, and CLS < 0.1 is a gated budget.
 - Bake real or realistic flight numbers, gates, times, or passenger names into an OG image or
   illustration. Demo art uses clearly synthetic identifiers and is labelled `Demo data — not a live
-  flight` (§28). OG tags and images carry no itinerary or personal detail (`AGENTS.md §2`).
+flight` (§28). OG tags and images carry no itinerary or personal detail (`AGENTS.md §2`).
 - Render a connection or risk illustration as a speedometer, gauge, or dial — it implies precision
   the connection engine does not have (§18.5).
 
@@ -110,18 +110,18 @@ self-applied corner radius; iOS masks it.
 
 **Budgets** (assert them in `verify-assets.ts`; failing the budget fails the build):
 
-| Asset | Format | Dimensions | Max bytes |
-| --- | --- | --- | --- |
-| `mark.svg` / `mark-mono.svg` | SVG, optimized | — | 6 KB |
-| `logotype.svg` | SVG, optimized | — | 10 KB |
-| `favicon.svg` | SVG, optimized | — | 4 KB |
-| `favicon.ico` | ICO 16/32/48 | — | 16 KB |
-| `icon-192*.png` | PNG-8/24, quantized | 192 × 192 | 8 KB |
-| `icon-512*.png` | PNG-8/24, quantized | 512 × 512 | 24 KB |
-| `apple-touch-icon-180.png` | PNG, opaque | 180 × 180 | 16 KB |
-| `og/*.png` | PNG | 1200 × 630 | 120 KB |
-| `og/*.webp` | WebP | 1200 × 630 | 60 KB |
-| any content raster | AVIF (WebP fallback) | ≤ 1440 wide | 100 KB AVIF / 150 KB WebP |
+| Asset                        | Format               | Dimensions  | Max bytes                 |
+| ---------------------------- | -------------------- | ----------- | ------------------------- |
+| `mark.svg` / `mark-mono.svg` | SVG, optimized       | —           | 6 KB                      |
+| `logotype.svg`               | SVG, optimized       | —           | 10 KB                     |
+| `favicon.svg`                | SVG, optimized       | —           | 4 KB                      |
+| `favicon.ico`                | ICO 16/32/48         | —           | 16 KB                     |
+| `icon-192*.png`              | PNG-8/24, quantized  | 192 × 192   | 8 KB                      |
+| `icon-512*.png`              | PNG-8/24, quantized  | 512 × 512   | 24 KB                     |
+| `apple-touch-icon-180.png`   | PNG, opaque          | 180 × 180   | 16 KB                     |
+| `og/*.png`                   | PNG                  | 1200 × 630  | 120 KB                    |
+| `og/*.webp`                  | WebP                 | 1200 × 630  | 60 KB                     |
+| any content raster           | AVIF (WebP fallback) | ≤ 1440 wide | 100 KB AVIF / 150 KB WebP |
 
 Strip metadata (EXIF, colour profiles beyond sRGB, editor comments, GPS) from every raster — EXIF is
 a privacy leak as well as weight. Run SVGs through an optimizer with path precision capped at 2

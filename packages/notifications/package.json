@@ -1,0 +1,16 @@
+{
+  "name": "@delaypilot/notifications",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Alert evaluation, HMAC fingerprint deduplication, severity escalation, and the email and web-push channel adapters.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint ."
+  }
+}

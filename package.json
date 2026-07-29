@@ -1,0 +1,49 @@
+{
+  "name": "delay-pilot",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DelayPilot — consumer flight-disruption intelligence. Cloudflare Workers + Static Assets, D1, KV, Queues, Workflows.",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=10.0.0"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "pnpm -r typecheck",
+    "test": "vitest run",
+    "test:workers": "node -e \"console.error('pnpm test:workers is not implemented yet. Owner: qa-test-architect, DIRECTIVE.md Phase 12. It will run Vitest under @cloudflare/vitest-pool-workers against apps/edge. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "test:e2e": "node -e \"console.error('pnpm test:e2e is not implemented yet. Owner: qa-test-architect, DIRECTIVE.md Phase 12. It will run the 20 Playwright flows in DIRECTIVE.md section 22. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "test:a11y": "node -e \"console.error('pnpm test:a11y is not implemented yet. Owner: accessibility-lead, DIRECTIVE.md Phase 12. It will run axe-core over every primary route. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "test:seo": "node -e \"console.error('pnpm test:seo is not implemented yet. Owner: seo-engineer, DIRECTIVE.md Phase 11. It will assert canonical and title uniqueness, sitemap membership, and that no private route is indexable. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "test:security": "node -e \"console.error('pnpm test:security is not implemented yet. Owner: security-privacy-engineer, DIRECTIVE.md Phase 12. It will cover IDOR, CSRF, magic-link replay, forged webhooks, redirect allowlist, and secret scanning. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "build": "pnpm --filter @delaypilot/web build && pnpm --filter @delaypilot/edge build",
+    "quality": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm test:workers && pnpm test:e2e && pnpm test:a11y && pnpm test:seo && pnpm test:security",
+    "dev": "pnpm -r --parallel dev",
+    "preview": "pnpm build && pnpm --filter @delaypilot/edge preview",
+    "smoke": "node -e \"console.error('pnpm smoke is not implemented yet. Owner: platform-release-sre, DIRECTIVE.md Phase 13. It will probe a running preview for health, robots, sitemap, ads.txt, and the app shell. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "deploy": "pnpm build && pnpm --filter @delaypilot/edge deploy",
+    "db:migrate:local": "node -e \"console.error('pnpm db:migrate:local is not implemented yet. Owner: data-platform-engineer, DIRECTIVE.md Phase 3. No migration exists in migrations/ yet, so a green result here would be meaningless. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "db:seed:local": "node -e \"console.error('pnpm db:seed:local is not implemented yet. Owner: data-platform-engineer, DIRECTIVE.md Phase 3. It will seed airport and airline reference data with IANA zones. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "db:migrate:remote": "node -e \"console.error('pnpm db:migrate:remote is not implemented yet. Owner: data-platform-engineer, DIRECTIVE.md Phase 3. It additionally requires a real Cloudflare D1 database id. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "model:validate": "node -e \"console.error('pnpm model:validate is not implemented yet. Owner: risk-modeling-scientist, DIRECTIVE.md Phase 6. No model artifact exists, and DelayPilot ships a heuristic risk band until one is calibrated. Failing loudly rather than reporting a false green.'); process.exit(1)\"",
+    "validate:build-system": "node scripts/validate-build-system.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.1.1",
+    "eslint": "10.8.0",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-plugin-astro": "3.0.1",
+    "globals": "17.8.0",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.65.0",
+    "vitest": "4.1.10"
+  }
+}

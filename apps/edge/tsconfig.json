@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/tsconfig",
+  "//": "Owner: principal-architect. Extends the mandatory strict flags in tsconfig.base.json; relaxing one here is a release-blocking defect (AGENTS.md §3.1).",
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // WebWorker replaces the DOM lib: this is a Workers isolate, not a browser.
+    "lib": ["ES2023", "WebWorker"],
+    "types": ["./worker-configuration.d.ts"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx"
+  },
+  "include": ["src/**/*.ts", "worker-configuration.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

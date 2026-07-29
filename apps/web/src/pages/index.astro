@@ -1,0 +1,60 @@
+---
+/**
+ * Minimal homepage.
+ *
+ * The full homepage in DIRECTIVE.md section 18.3 — hero lookup, demo result, connection-risk and
+ * passenger-rights explainers, pricing, source strip — is Phase 10 and belongs to
+ * frontend-ui-engineer. This page carries only statements that are true today: what DelayPilot is,
+ * how it treats uncertainty, and the independence disclaimer required by AGENTS.md section 1.4.
+ *
+ * It deliberately contains no call-to-action control, because the flight lookup it would open does
+ * not exist yet, and a control that does nothing is a dead control (AGENTS.md section 1.6).
+ */
+const title = 'DelayPilot — Stay ahead of flight disruptions'
+const description =
+  'Track a flight, understand connection risk, and see the refund, care, and rebooking rules that may apply.'
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <header>
+      <p><strong>DelayPilot</strong></p>
+    </header>
+
+    <main>
+      <h1>Stay ahead of flight disruptions.</h1>
+
+      <p>
+        Track a flight, understand connection risk, and see the refund, care, and rebooking rules
+        that may apply—before airport chaos makes the decision for you.
+      </p>
+
+      <p>Source-linked status · Versioned passenger-rights rules · No booking code required</p>
+
+      <h2>How this site handles uncertainty</h2>
+
+      <p>
+        Every piece of flight information DelayPilot shows carries where it came from and how old it
+        is. When no trustworthy source has answered, the answer is <em>unknown</em>, and it says so
+        rather than filling the gap. Passenger-rights guidance is an informational estimate tied to
+        a dated, versioned rule set with links to the official source — not a determination, and not
+        legal advice.
+      </p>
+    </main>
+
+    <footer>
+      <p>
+        DelayPilot is an independent travel-information tool. It is not an airline, airport,
+        government agency, law firm, claims company, or flight-data provider. Guidance is
+        informational and may not reflect every fact in your case.
+      </p>
+    </footer>
+  </body>
+</html>

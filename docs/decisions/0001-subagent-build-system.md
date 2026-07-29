@@ -16,10 +16,10 @@ Two properties of the problem drive this decision:
 1. **Failure is asymmetric.** Most defects are cosmetic. A small set — a fabricated gate number, a
    percentage from an uncalibrated model, an EC 261 reform applied before its effective date, an ad
    rendered beside a refund control — are product-destroying and legally hazardous. They are also
-   the defects a *builder* is least able to see in its own output, because each one is produced by
+   the defects a _builder_ is least able to see in its own output, because each one is produced by
    the same instinct that makes the rest of the work look finished.
-2. **Breadth exceeds coherent single-context authorship.** Doing regulatory rule modelling *and*
-   calibration statistics *and* ad policy well in one continuous pass means each is done at the
+2. **Breadth exceeds coherent single-context authorship.** Doing regulatory rule modelling _and_
+   calibration statistics _and_ ad policy well in one continuous pass means each is done at the
    quality of a generalist skimming a specification.
 
 ## Decision
@@ -47,7 +47,7 @@ quality decays across a specification this wide as context fills.
 each other, and "who owns this file" becomes a per-dispatch judgment call that eventually fails.
 
 **Layer-based split (frontend / backend / infra).** Rejected: the highest-risk concerns — rights
-correctness, provenance, calibration honesty, ad placement — cut *across* layers. Splitting by
+correctness, provenance, calibration honesty, ad placement — cut _across_ layers. Splitting by
 layer distributes each risk across several owners, which is the same as owning it nowhere.
 
 **Human review gates between phases.** Rejected for the build itself (the directive requires

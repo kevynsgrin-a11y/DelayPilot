@@ -31,7 +31,7 @@ and recorded here rather than inherited.
 | `.claude/agents/*.md`                          | 25 runnable charters — the build system itself.                                                                                          |
 | `docs/BUILD_PLAN.md`                           | This file.                                                                                                                               |
 | `docs/decisions/0001-subagent-build-system.md` | ADR recording why the build is organized this way.                                                                                       |
-| `scripts/validate-agents.mjs`                  | Structural validator for the charter set; runnable in CI.                                                                                |
+| `scripts/validate-build-system.mjs`            | Structural validator for the charter set; runnable in CI.                                                                                |
 
 ## 3. Why a multi-agent build rather than one long linear pass
 
@@ -136,15 +136,21 @@ a fail-closed production path. None blocks any phase from completing.
 | The EU 2026 reform gets applied early                    | Stored as `adopted_not_effective`; property test proves a future rule cannot bind an earlier event |
 | Provider licence terms exceeded by caching or display    | `ProviderLicensePolicy` guard; readiness fails closed; steward reviews                             |
 | Parallel agents collide on files                         | Single-writer ownership + disjointness check before every parallel dispatch                        |
-| Charters drift from the directive over time              | `scripts/validate-agents.mjs` in CI; ownership and invariant audits                                |
+| Charters drift from the directive over time              | `scripts/validate-build-system.mjs` in CI; ownership and invariant audits                          |
 | Ads creep toward action controls                         | Placement conformance test + independent `trust-compliance-officer` review                         |
 | "Passing" claimed without execution                      | `AGENTS.md §6` vocabulary; orchestrator re-runs gates itself                                       |
 
 ## 9. Next command
 
+Phase 0 and Phase 1 are complete and merged. Phase 1 delivered the pnpm workspace, strict
+TypeScript configuration, ten package skeletons, the Astro site, and the edge Worker with
+`/api/v1/health`; `pnpm build`, `typecheck`, `lint`, and `format:check` all pass.
+
+Phase 2 is next:
+
 ```
-# Start Phase 1 in Claude Code
-> Use the principal-architect subagent to execute DIRECTIVE.md Phase 1 (Foundation).
+# Start Phase 2 in Claude Code
+> Use the principal-architect subagent to execute DIRECTIVE.md Phase 2 (Contracts and domain).
 ```
 
 The orchestrator dispatch must state: the phase, its acceptance criteria, the upstream contracts now

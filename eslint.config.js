@@ -26,6 +26,12 @@ export default tseslint.config(
       '**/.wrangler/**',
       '**/worker-configuration.d.ts',
       'ml/**',
+      // design/v0-preview is a v0-generated Next.js app kept as a VISUAL REFERENCE only.
+      // It is never built, deployed, or served — apps/web is the shipped site. It is not
+      // linted because it was not written against AGENTS.md §3.1, and holding reference
+      // material to production rules would only produce noise. Its components are ported
+      // into apps/web by frontend-ui-engineer, and the ported code IS linted.
+      'design/**',
     ],
   },
 

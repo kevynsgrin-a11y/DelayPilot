@@ -69,3 +69,7 @@ pnpm-debug.log*
 
 # Local Claude session state (charters and settings ARE tracked)
 .claude/settings.local.json
+
+# v0 design reference — not built, not deployed (see design/v0-preview/README.md)
+design/v0-preview/node_modules/
+design/v0-preview/.next/

@@ -1,0 +1,124 @@
+# DelayPilot CI — the Phase 1 subset of the required checks. THIS IS NOT FULL CI.
+#
+# DIRECTIVE.md §23 requires 18 checks in a fixed order. This workflow runs the six that exist and
+# genuinely pass today (Phase 1, "Foundation"), plus two repo-local gates. Every other required
+# check is deliberately absent: the script behind it exits 1 on purpose until its owning phase
+# lands (read the stub messages in the root package.json). AGENTS.md §6 — a stub reporting a false
+# green is worse than a failure, and a permanently red pipeline is a pipeline everyone stops
+# reading. Do not conclude from this file that the repository has full CI. It does not.
+#
+# Present here, with §23 numbering:
+#    1  frozen-lockfile install   pnpm install --frozen-lockfile
+#    2  format                    pnpm format:check
+#    3  lint                      pnpm lint
+#    4  typecheck                 pnpm typecheck   (runs `wrangler types` for apps/edge first)
+#    8  web build                 pnpm build → @delaypilot/web  (astro build)
+#    9  edge build                pnpm build → @delaypilot/edge (wrangler deploy --dry-run)
+#
+# Absent, with the phase that adds each (DIRECTIVE.md §5 phase list):
+#    5  unit                  pnpm test             Phase 2  — no test file exists; vitest exits 1
+#    6  property              pnpm test             Phase 2  — lands with contracts + domain
+#    7  Workers integration   pnpm test:workers     Phase 12 — qa-test-architect
+#   10  migration validation  pnpm db:migrate:local Phase 3  — no migrations/ directory yet
+#   11  rights-rule validation                      Phase 5  — rights-rules-engineer
+#   12  content-quality gate                        Phase 11 — content-editorial-lead
+#   13  SEO validation        pnpm test:seo         Phase 11 — seo-engineer
+#   14  accessibility smoke   pnpm test:a11y        Phase 12 — accessibility-lead
+#   15  Playwright            pnpm test:e2e         Phase 12 — qa-test-architect
+#   16  bundle budgets                              Phase 12 — performance-engineer
+#   17  dependency audit                            Phase 12 — security-privacy-engineer
+#   18  secret scan           pnpm test:security    Phase 12 — security-privacy-engineer
+#
+# Also absent for the same reason: pnpm quality (it chains all of the above), pnpm smoke
+# (Phase 13), pnpm model:validate (Phase 6), pnpm db:seed:local (Phase 3).
+#
+# The last two steps below are repo-local gates, not part of the 18, and they substitute for none
+# of them:
+#   - scripts/validate-build-system.mjs   — charter frontmatter, ownership collisions, overclaim
+#                                           lint over the agent system (Phase 0 artifact).
+#   - scripts/assets/compress-images.mjs  — per-image byte budgets on emitted AVIF/WebP (Phase 9
+#                                           asset pipeline). This is an *image* budget only; §23
+#                                           check 16, JS/CSS bundle budgets, is still absent.
+#
+# There is no deploy job, on purpose. Deployment is Phase 13. `wrangler deploy` requires four
+# external inputs this repository does not have: CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, a
+# real D1 `database_id`, and a real KV namespace `id` (both omitted in apps/edge/wrangler.jsonc
+# rather than invented — see the comment at its "Required bindings" section). A deploy job today
+# would fail closed on every run and teach people to ignore red. When it lands: preview per PR,
+# production only from the protected branch, and no secret ever exposed to a fork-triggered run.
+#
+# Owner: platform-release-sre (docs/agents/ROSTER.md §3, `.github/workflows/**`).
+# Every command below was executed locally and exited zero before this file was added
+# (AGENTS.md §6). Node and pnpm versions are read from package.json (`engines.node`,
+# `packageManager`) so this workflow cannot drift from the repository's declared toolchain.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege. This workflow reads code and nothing else: no packages:write, no id-token, no
+# contents:write. Fork PRs therefore run with a read-only token and no repository secrets.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  verify:
+    name: Verify (Phase 1 subset of DIRECTIVE.md §23)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # Verified against the installed wrangler 4.114.0 CLI text, not from memory:
+      # "You can override this for individual projects with the environment variable
+      # `WRANGLER_SEND_METRICS=true/false`." CI builds should not report telemetry.
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      # Actions are pinned to a full commit SHA, never a moving tag. The trailing comment records
+      # the tag that SHA resolved to at the time of pinning; re-resolve before bumping.
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes. Do not leave a credential in .git/config for later steps to find.
+          persist-credentials: false
+
+      - name: Set up Node from package.json engines
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          # Reads engines.node (">=22.12.0"). Never hardcode a version here: a workflow that
+          # disagrees with the manifest is how a build passes CI and fails on a developer's box.
+          node-version-file: package.json
+
+      - name: Set up pnpm from package.json packageManager, with a cached store
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+        with:
+          # `version` omitted on purpose: the action reads packageManager (pnpm@10.33.0).
+          # `cache: true` caches the pnpm *store* keyed on pnpm-lock.yaml — never build output,
+          # which must be reproduced on every run rather than trusted from a previous one.
+          cache: true
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build (web then edge)
+        run: pnpm build
+
+      - name: Validate build system
+        run: node scripts/validate-build-system.mjs
+
+      - name: Check image budgets
+        run: node scripts/assets/compress-images.mjs --check apps/web/public/images

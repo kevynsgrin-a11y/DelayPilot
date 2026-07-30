@@ -7,6 +7,7 @@ import {
   ConnectionExplainer,
   RightsExplainer,
   MonitoringDemo,
+  TravelJourney,
   Pricing,
   SourceStrip,
   Guides,
@@ -30,6 +31,8 @@ export default function HomePage() {
         <RightsExplainer />
         {/* monitoring / alert demo */}
         <MonitoringDemo />
+        {/* travel journey showcase */}
+        <TravelJourney />
         {/* pricing cards */}
         <Pricing />
         {/* source & methodology strip */}

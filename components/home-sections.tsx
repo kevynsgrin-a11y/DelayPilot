@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Radar,
   Link2,
@@ -18,12 +19,26 @@ import { FlightLookupForm } from "./flight-lookup-form";
 import { SegmentCard } from "./segment-card";
 import { Panel, DemoBanner, SourceLine } from "./provenance";
 import { RiskBand, StatusPill } from "./status";
+import { ImageSection, ImageCard } from "./image-section";
 import { demoSegments } from "@/lib/demo";
 
 /* ---------------- Hero + trust line ---------------- */
 export function Hero() {
   return (
     <section className="relative overflow-hidden border-b border-border bg-surface">
+      {/* Background image with overlay */}
+      <div className="absolute inset-0" aria-hidden="true">
+        <Image
+          src="/images/hero-traveler.png"
+          alt=""
+          fill
+          className="object-cover opacity-[0.08] dark:opacity-[0.12]"
+          priority
+          sizes="100vw"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-surface/50 via-surface/80 to-surface" />
+      </div>
+
       {/* faint radar-arc motif, decorative */}
       <div
         aria-hidden="true"
@@ -146,31 +161,43 @@ export function WhatWeTell() {
       icon: Radar,
       title: "What is happening",
       body: "Current status, schedule changes, and gate or terminal moves where licensed data supports them.",
+      image: "/images/frustrated-waiting.png",
+      imageAlt: "Traveler checking flight status in airport lobby",
     },
     {
       icon: Gauge,
       title: "How much to trust it",
       body: "Every datum carries its source, freshness, and a provenance label. Unknown is a designed state, never a blank.",
+      image: "/images/monitoring-peace.png",
+      imageAlt: "Relaxed traveler with confidence in flight information",
     },
     {
       icon: Split,
       title: "What may happen next",
       body: "A transparent, qualitative risk band for delay, cancellation, and connection — with the factors that drive it.",
+      image: "/images/connection-stress.png",
+      imageAlt: "Traveler navigating airport connection",
     },
     {
       icon: ListChecks,
       title: "What to do now",
       body: "A prioritized next-best-action checklist for the disruption in front of you. We never act on your behalf.",
+      image: "/images/rights-empowered.png",
+      imageAlt: "Empowered traveler at service desk",
     },
     {
       icon: Scale,
       title: "Which rules may apply",
       body: "Source-linked passenger-rights guidance for the US, EU, UK, and Canada, versioned by effective date.",
+      image: "/images/success-boarding.png",
+      imageAlt: "Happy passengers boarding aircraft",
     },
     {
       icon: FileClock,
       title: "A record you can use",
       body: "A factual chronology and receipt organizer you can export as a printable evidence packet.",
+      image: "/images/business-comfort.png",
+      imageAlt: "Comfortable traveler in premium cabin",
     },
   ];
   return (
@@ -191,16 +218,31 @@ export function WhatWeTell() {
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <Panel key={f.title} className="p-5">
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-500/10 text-sky-500 dark:text-sky-400">
-                <f.icon className="h-6 w-6" aria-hidden="true" />
-              </span>
-              <h3 className="mt-4 text-base font-semibold text-foreground">
-                {f.title}
-              </h3>
-              <p className="mt-1.5 text-sm leading-relaxed text-muted">
-                {f.body}
-              </p>
+            <Panel key={f.title} className="group overflow-hidden p-0">
+              <div className="relative aspect-[16/9] overflow-hidden">
+                <Image
+                  src={f.image}
+                  alt={f.imageAlt}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+                <div
+                  aria-hidden="true"
+                  className="absolute inset-0 bg-gradient-to-t from-surface via-surface/60 to-transparent"
+                />
+                <span className="absolute bottom-3 left-3 flex h-11 w-11 items-center justify-center rounded-xl bg-surface/90 text-sky-500 backdrop-blur-sm dark:text-sky-400">
+                  <f.icon className="h-6 w-6" aria-hidden="true" />
+                </span>
+              </div>
+              <div className="p-5">
+                <h3 className="text-base font-semibold text-foreground">
+                  {f.title}
+                </h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted">
+                  {f.body}
+                </p>
+              </div>
             </Panel>
           ))}
         </div>
@@ -216,7 +258,11 @@ export function ConnectionExplainer() {
       aria-labelledby="conn-heading"
       className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8"
     >
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+      <ImageSection
+        imageSrc="/images/connection-stress.png"
+        imageAlt="Traveler rushing through airport terminal to make a connection"
+        imagePosition="right"
+      >
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
             Connection risk
@@ -244,33 +290,7 @@ export function ConnectionExplainer() {
             See a connection check <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
         </div>
-        <Panel className="p-5">
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-safe-500/40 bg-safe-500/10 px-3 py-1 text-sm font-semibold text-safe-500">
-              <ShieldCheck className="h-4 w-4" aria-hidden="true" /> Protected
-              through-ticket
-            </span>
-            <span className="tnum text-sm text-muted">DEN · Denver</span>
-          </div>
-          <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-            {[
-              { k: "Available", v: "41" },
-              { k: "Required", v: "23" },
-              { k: "Slack", v: "18" },
-            ].map((s) => (
-              <div key={s.k} className="rounded-xl border border-border bg-surface-raised p-3">
-                <div className="tnum text-2xl font-semibold text-foreground">
-                  {s.v}
-                </div>
-                <div className="text-xs text-muted">{s.k} min</div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-4">
-            <RiskBand level="moderate" />
-          </div>
-        </Panel>
-      </div>
+      </ImageSection>
     </section>
   );
 }
@@ -282,46 +302,36 @@ export function RightsExplainer() {
       aria-labelledby="rights-heading"
       className="border-y border-border bg-surface"
     >
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-14 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8">
-        <Panel className="order-2 p-5 lg:order-1">
-          <div className="flex items-center justify-between">
-            <h3 className="text-base font-semibold text-foreground">Refund</h3>
-            <StatusPill tone="watch" size="sm">
-              May apply
-            </StatusPill>
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <ImageSection
+          imageSrc="/images/rights-empowered.png"
+          imageAlt="Confident traveler discussing options at airport service desk"
+          imagePosition="left"
+        >
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
+              Passenger rights
+            </p>
+            <h2
+              id="rights-heading"
+              className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl text-balance"
+            >
+              What may apply — never what you are owed
+            </h2>
+            <p className="mt-3 text-muted text-pretty">
+              Rights render as versioned data with effective dates, not prose
+              buried in an app. Each answer comes first; the reasoning and the
+              official source are one tap away. We say &quot;may apply&quot; — never
+              &quot;guaranteed compensation.&quot;
+            </p>
+            <Link
+              href="/rights"
+              className="mt-5 inline-flex h-11 items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-contrast hover:opacity-90"
+            >
+              See a rights estimate <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </Link>
           </div>
-          <p className="mt-2 text-sm text-muted">
-            A significant delay or cancellation may entitle you to a refund if
-            you choose not to travel — under the cited rule version.
-          </p>
-          <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs text-muted">
-            <span>US-DOT rule set v2026.04</span>
-            <span className="tnum">Effective 2026-04-01</span>
-          </div>
-        </Panel>
-        <div className="order-1 lg:order-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
-            Passenger rights
-          </p>
-          <h2
-            id="rights-heading"
-            className="mt-2 text-2xl font-semibold tracking-tight text-foreground sm:text-3xl text-balance"
-          >
-            What may apply — never what you are owed
-          </h2>
-          <p className="mt-3 text-muted text-pretty">
-            Rights render as versioned data with effective dates, not prose
-            buried in an app. Each answer comes first; the reasoning and the
-            official source are one tap away. We say &quot;may apply&quot; — never
-            &quot;guaranteed compensation.&quot;
-          </p>
-          <Link
-            href="/rights"
-            className="mt-5 inline-flex h-11 items-center gap-1.5 rounded-lg bg-accent px-4 text-sm font-semibold text-accent-contrast hover:opacity-90"
-          >
-            See a rights estimate <ArrowRight className="h-4 w-4" aria-hidden="true" />
-          </Link>
-        </div>
+        </ImageSection>
       </div>
     </section>
   );
@@ -351,7 +361,11 @@ export function MonitoringDemo() {
       aria-labelledby="monitor-heading"
       className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8"
     >
-      <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+      <ImageSection
+        imageSrc="/images/monitoring-peace.png"
+        imageAlt="Relaxed traveler in airport lounge with peace of mind"
+        imagePosition="right"
+      >
         <div>
           <p className="text-sm font-semibold uppercase tracking-wide text-sky-600 dark:text-sky-400">
             Monitoring
@@ -368,40 +382,97 @@ export function MonitoringDemo() {
             shift in connection slack — not on a timer, and never twice for the
             same event.
           </p>
-        </div>
-        <Panel className="p-5">
-          <div className="mb-3 flex items-center gap-2">
-            <Bell className="h-5 w-5 text-sky-500 dark:text-sky-400" aria-hidden="true" />
-            <h3 className="text-base font-semibold text-foreground">
-              Recent alerts
-            </h3>
-            <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-safe-500">
-              <span className="relative flex h-2 w-2" aria-hidden="true">
-                <span className="dp-live-dot absolute inline-flex h-2 w-2 rounded-full bg-safe-500" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-safe-500" />
+          <Panel className="mt-6 p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <Bell className="h-5 w-5 text-sky-500 dark:text-sky-400" aria-hidden="true" />
+              <h3 className="text-base font-semibold text-foreground">
+                Recent alerts
+              </h3>
+              <span className="ml-auto inline-flex items-center gap-1.5 text-xs font-medium text-safe-500">
+                <span className="relative flex h-2 w-2" aria-hidden="true">
+                  <span className="dp-live-dot absolute inline-flex h-2 w-2 rounded-full bg-safe-500" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-safe-500" />
+                </span>
+                Monitoring
               </span>
-              Monitoring
-            </span>
-          </div>
-          <ul className="space-y-2">
-            {alerts.map((a) => (
-              <li
-                key={a.title}
-                className="flex items-start gap-3 rounded-xl border border-border p-3"
-              >
-                <StatusPill tone={a.tone} size="sm">
-                  {a.tone === "watch" ? "Change" : "OK"}
-                </StatusPill>
-                <div>
-                  <div className="text-sm font-medium text-foreground">
-                    {a.title}
+            </div>
+            <ul className="space-y-2">
+              {alerts.map((a) => (
+                <li
+                  key={a.title}
+                  className="flex items-start gap-3 rounded-xl border border-border p-3"
+                >
+                  <StatusPill tone={a.tone} size="sm">
+                    {a.tone === "watch" ? "Change" : "OK"}
+                  </StatusPill>
+                  <div>
+                    <div className="text-sm font-medium text-foreground">
+                      {a.title}
+                    </div>
+                    <div className="tnum text-xs text-muted">{a.meta}</div>
                   </div>
-                  <div className="tnum text-xs text-muted">{a.meta}</div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Panel>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+        </div>
+      </ImageSection>
+    </section>
+  );
+}
+
+/* ---------------- Travel journey showcase ---------------- */
+export function TravelJourney() {
+  const moments = [
+    {
+      image: "/images/success-boarding.png",
+      imageAlt: "Happy passengers boarding aircraft with smiling flight attendant",
+      title: "Boarding with confidence",
+      description: "Know your connection is protected before you step on the plane.",
+    },
+    {
+      image: "/images/happy-family.png",
+      imageAlt: "Happy family seated comfortably in airplane seats",
+      title: "Peace of mind in the air",
+      description: "Real-time updates mean no surprises when you land.",
+    },
+    {
+      image: "/images/business-comfort.png",
+      imageAlt: "Business traveler resting comfortably in premium cabin",
+      title: "Rest easy",
+      description: "Monitoring continues even while you sleep at 35,000 feet.",
+    },
+  ];
+
+  return (
+    <section
+      aria-labelledby="journey-heading"
+      className="border-y border-border bg-surface"
+    >
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h2
+            id="journey-heading"
+            className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl text-balance"
+          >
+            From uncertainty to arrival
+          </h2>
+          <p className="mx-auto mt-2 max-w-2xl text-muted text-pretty">
+            DelayPilot turns travel anxiety into informed confidence — so you
+            can focus on the journey, not the what-ifs.
+          </p>
+        </div>
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {moments.map((m) => (
+            <ImageCard
+              key={m.title}
+              imageSrc={m.image}
+              imageAlt={m.imageAlt}
+              title={m.title}
+              description={m.description}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );

@@ -10,21 +10,35 @@ apply—before airport chaos makes the decision for you.
 
 ## What this repository currently contains
 
-**The build system, not yet the product.** Phase 0 is complete: the constitution, the master build
-directive, the specialist roster, and 25 runnable agent charters. Phases 1–14 build the application.
+**The build system and an empty foundation — not the product.** Phases 0 and 1 of 14 are complete:
+the constitution, the master build directive, the specialist roster, 25 runnable agent charters, and
+a workspace that installs, typechecks, lints, and builds. Phases 2–14 build the application.
+
+Nothing a traveler would use exists yet: there is no flight lookup, no rights engine, no connection
+assessment, no trip cockpit, and no database. `apps/web` serves one minimal homepage and `apps/edge`
+answers one health endpoint.
 
 Being precise about this matters more than looking finished — the same discipline the product itself
 requires (`AGENTS.md §1`).
 
-| Present today                                                                        | Status         |
-| ------------------------------------------------------------------------------------ | -------------- |
-| `AGENTS.md` — invariants that override everything                                    | ✅             |
-| `DIRECTIVE.md` — phased build directive + full product spec + release rubric         | ✅             |
-| `docs/agents/ROSTER.md` — 25 agents, single-writer path ownership, reviewer pairings | ✅             |
-| `.claude/agents/*.md` — runnable charters                                            | ✅             |
-| `docs/BUILD_PLAN.md` — repo audit, decisions, sequencing, risk register              | ✅             |
-| `scripts/validate-build-system.mjs` — structural + ownership + overclaim validator   | ✅             |
-| Application code (`apps/`, `packages/`, `migrations/`, `ml/`)                        | ⬜ Phases 1–14 |
+| Present today                                                                                      | Status          |
+| -------------------------------------------------------------------------------------------------- | --------------- |
+| `AGENTS.md` — invariants that override everything                                                  | ✅ Phase 0      |
+| `DIRECTIVE.md` — phased build directive + full product spec + release rubric                       | ✅ Phase 0      |
+| `docs/agents/ROSTER.md` — 25 agents, single-writer path ownership, reviewer pairings               | ✅ Phase 0      |
+| `.claude/agents/*.md` — runnable charters                                                          | ✅ Phase 0      |
+| `docs/BUILD_PLAN.md` — repo audit, decisions, sequencing, risk register                            | ✅ Phase 0      |
+| `scripts/validate-build-system.mjs` — structural + ownership + overclaim validator                 | ✅ Phase 0      |
+| pnpm workspace, strict TypeScript base config, ESLint + Prettier gates, `.env.example`             | ✅ Phase 1      |
+| `apps/web` — Astro, pre-rendered; one minimal homepage (full homepage is Phase 10)                 | ✅ Phase 1      |
+| `apps/edge` — Worker + Hono, `/api/v1/health`, RFC 9457 problems, `ASSETS` fallthrough             | ✅ Phase 1      |
+| `packages/*` — ten package skeletons that build and typecheck, no logic yet                        | ✅ Phase 1      |
+| [`design/v0-preview/`](design/v0-preview/README.md) — v0 design reference, never built or deployed | reference only  |
+| Contracts and domain utilities (`packages/contracts`, `packages/domain`)                           | ⬜ Phase 2      |
+| `migrations/` (D1 schema) and `data/` (reference data, rights rule sets, fixtures)                 | ⬜ Phase 3      |
+| Providers, engines, edge API, auth, notifications, billing, UI, SEO                                | ⬜ Phases 4–11  |
+| `ml/` (calibration, evaluation, model cards)                                                       | ⬜ Phase 6      |
+| Test suites, operations docs, release gate                                                         | ⬜ Phases 12–14 |
 
 ## What DelayPilot will do
 
@@ -60,6 +74,9 @@ based on which facts.
 
 ## Architecture
 
+The target layout. Directories arrive with their phase — see the status table above for what exists
+today.
+
 ```
 apps/web      Astro public site (pre-rendered, SEO-first) + React islands for the app
 apps/edge     Cloudflare Worker — /api/v1, /auth, /webhooks, Workflows, Queues, scheduled jobs
@@ -68,6 +85,7 @@ packages/     contracts · domain · providers · rights-engine · risk-engine �
 ml/           offline training, calibration, evaluation, model cards (Python)
 data/         airports · airlines · rights sources and rule sets · fixtures · seeds
 migrations/   ordered D1 migrations
+design/       visual design reference (v0 Next.js output) — never built, linted, or deployed
 docs/         architecture, data model, API, rights engine, privacy, security, runbooks, quality
 ```
 
@@ -76,32 +94,47 @@ Workflows (trip monitoring), optional R2 (uploads disabled by default), Turnstil
 
 ## Quickstart
 
+Requires Node ≥ 22.12 and pnpm ≥ 10.
+
 ```bash
 git clone <repo> && cd DelayPilot
-node scripts/validate-build-system.mjs     # verify the agent system is intact
+pnpm install --frozen-lockfile
 ```
+
+These exit zero today:
+
+```bash
+node scripts/validate-build-system.mjs     # charter structure, ownership, overclaim lint
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm build
+```
+
+`pnpm dev` starts both long-running servers — Astro on `:4321`, `wrangler dev` on `:8787`, where
+`GET /api/v1/health` answers.
 
 Then, in Claude Code:
 
 ```
-> Use the principal-architect subagent to execute DIRECTIVE.md Phase 1 (Foundation).
+> Use the principal-architect subagent to execute DIRECTIVE.md Phase 2 (Contracts and domain).
 ```
 
-Product commands land as their phases complete; the full list is in `DIRECTIVE.md §25`:
+The rest of `DIRECTIVE.md §25` exits non-zero on purpose until the phase that owns it lands. A stub
+that reports a false green is worse than a failure (`AGENTS.md §6`):
 
 ```bash
-pnpm install --frozen-lockfile
-pnpm dev                # web + edge, fixture provider, demo mode
-pnpm db:migrate:local && pnpm db:seed:local
-pnpm typecheck && pnpm lint && pnpm test && pnpm build
-pnpm test:workers && pnpm test:e2e && pnpm test:a11y && pnpm test:seo && pnpm test:security
-pnpm quality            # scored audit → docs/QUALITY_REPORT.md
+pnpm test                                        # no suites yet — Phase 2 onward
+pnpm db:migrate:local && pnpm db:seed:local      # Phase 3
+pnpm model:validate                              # Phase 6
+pnpm test:seo                                    # Phase 11
+pnpm test:workers && pnpm test:e2e && pnpm test:a11y && pnpm test:security   # Phase 12
+pnpm smoke                                       # Phase 13
+pnpm quality            # the full scored audit → docs/QUALITY_REPORT.md
 ```
 
 ## External inputs required before production
 
-Every one has a complete adapter, a validated config contract, an `.env.example` entry, a labelled
-demo path, and a fail-closed production path. None blocks development.
+Each will ship with a complete adapter, a validated config contract, an `.env.example` entry, a
+labelled demo path, and a fail-closed production path. None blocks development. `.env.example`
+already enumerates every key by name and shape, with no values.
 
 Cloudflare account and binding IDs · a purchased domain for `PUBLIC_SITE_URL` · flight-data provider
 credentials **and the commercial licence permitting consumer display** · Stripe keys and Price IDs ·

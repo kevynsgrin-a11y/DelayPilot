@@ -15,7 +15,7 @@
  *   node scripts/assets/compress-images.mjs --check <outDir>   # budget check only, no writes
  */
 
-import { readdir, mkdir, stat, readFile, writeFile } from 'node:fs/promises'
+import { readdir, mkdir, stat, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import process from 'node:process'
 import sharp from 'sharp'

@@ -1,0 +1,16 @@
+{
+  "name": "@delaypilot/providers",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Flight, weather, and airspace provider abstraction: adapters, normalization, the licence policy guard, and the reliability layer.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint ."
+  }
+}

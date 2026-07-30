@@ -1,0 +1,16 @@
+{
+  "name": "@delaypilot/risk-engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Disruption risk assessment: the shipped heuristic band, the model registry boundary, and the calibrated-artifact gate.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "types": "./src/index.ts",
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint ."
+  }
+}

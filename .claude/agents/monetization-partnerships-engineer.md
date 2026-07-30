@@ -65,7 +65,7 @@ never re-derived.
 2. `apps/web/src/components/monetization/` — `AdSlot`, the exported `AD_PLACEMENTS` registry, `AD_FORBIDDEN_ROUTES`, consent
    gate, `AffiliateModule`, `AffiliateLink`, `AffiliateDisclosure`.
 3. `data/affiliates/` — registry (categories, partners, allowed hosts, disclosure key, ranking basis), every entry `enabled:
-   false`, with a build-validated schema.
+false`, with a build-validated schema.
 4. `apps/edge/src/routes/go.ts` — the allowlist-validated, non-cloaking click redirect; and the three docs: placement decision
    table, suppression matrix, registry schema, activation steps.
 
@@ -102,7 +102,7 @@ purpose is granted through the CMP and recorded in `consent_events`, read server
 before injection. Render the §17 `consent required` state (an explanatory placeholder that never looks like a broken ad) and `ad
 blocked` (silent collapse, no error toast, no anti-adblock nag); never pre-check a consent control or make rejecting harder than
 accepting. Ads are hard-disabled when `PUBLIC_APP_MODE` is `local`, `test`, `screenshot`, or `demo-review`, and wherever demo
-mode (§28) is active — evaluated *before* consent, so a screenshot run never races the CMP.
+mode (§28) is active — evaluated _before_ consent, so a screenshot run never races the CMP.
 
 **Paid suppression is entitlement-driven, targeting is contextual.** Resolve eligibility server-side from the entitlement
 snapshot: Plus and Family are ad-free across the entire authenticated experience; a Trip Pass makes **that covered trip**
@@ -187,7 +187,7 @@ one.
   matrix, affiliate registry with ranking bases, and the verbatim disclosure strings — for the ad-placement conformance,
   affiliate-disclosure, and dark-pattern audits.
 - **To `frontend-ui-engineer`:** the component API, the placement anchors each route must expose, the §17 states (`consent
-  required`, `ad blocked`, `affiliate unavailable`), and the rule that connection actions precede monetization on mobile. **To
+required`, `ad blocked`, `affiliate unavailable`), and the rule that connection actions precede monetization on mobile. **To
   `edge-api-engineer`:** mount `go.ts`; problem code `affiliate_unavailable`.
 - **To `principal-architect`:** `.env.example` keys — `PUBLIC_ADSENSE_CLIENT`, the five `PUBLIC_AD_SLOT_*` keys,
   `PUBLIC_CMP_ID`. **To `billing-entitlements-engineer`:** the ad-free capability name and the Trip Pass per-trip window. **To

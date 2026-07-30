@@ -1,0 +1,20 @@
+{
+  "name": "@delaypilot/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DelayPilot public site and authenticated app shell. Pre-rendered Astro; the build output is served by apps/edge through the ASSETS binding.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "typecheck": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "astro": "7.1.4"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "typescript": "6.0.3"
+  }
+}

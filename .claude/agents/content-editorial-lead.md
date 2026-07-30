@@ -39,7 +39,7 @@ Everything else in `apps/web/src/pages/**` is `frontend-ui-engineer`'s. `lib/seo
 - Apply the EU 2026 reform. Council gave final clearance on 2026-07-13; it enters into force 12
   months and 20 days after Official Journal publication and is stored as `adopted_not_effective`
   until `regulatory-source-steward` verifies the OJ date. Applying it early is a **critical** defect.
-  The reform article describes *adopted vs effective*, side by side, and applies neither early nor
+  The reform article describes _adopted vs effective_, side by side, and applies neither early nor
   retroactively.
 - State or imply a general US federal cash-compensation right for ordinary delays or cancellations.
   It does not exist. US refund rules, voluntary dashboard commitments, denied-boarding rules,
@@ -118,19 +118,19 @@ summary, a law firm's blog, a claims company, or an aggregator. Every citation s
 the page title, and the date it was last verified. If a claim cannot be traced to a primary source,
 delete the claim — do not soften it into a hedge.
 
-**Jurisdiction-specific writing rules.** *US:* refunds are the statutory layer; dashboard commitments
+**Jurisdiction-specific writing rules.** _US:_ refunds are the statutory layer; dashboard commitments
 are voluntary and go in a clearly separate module; the July 2026 DOT enforcement discretion for
 flight-number-only changes runs through 2027-07-07 and is written as enforcement guidance, never as
-repeal. *EU:* currently effective EC 261 only; bands €250 / €400 / €600 with the possible 50 %
+repeal. _EU:_ currently effective EC 261 only; bands €250 / €400 / €600 with the possible 50 %
 rerouting reduction, rendered from the rule set; extraordinary circumstances explained as an airline
-assertion subject to determination, never as a fact you can infer from weather. *UK:* UK261 per CAA —
+assertion subject to determination, never as a fact you can infer from weather. _UK:_ UK261 per CAA —
 £220 under 1,500 km, £350 for 1,500–3,500 km, £260 or £520 for longer flights depending on arrival
-delay; a separate-ticket self-transfer is never a protected through journey. *Canada:* APPR
+delay; a separate-ticket self-transfer is never a protected through journey. _Canada:_ APPR
 within-control / within-control-required-for-safety / outside-control, large airline CAD 400 / 700 /
 1,000 and small airline CAD 125 / 250 / 500 for qualifying within-control non-safety cases, airline
 size taken from the official source; proposed reforms are not law and are not written as law.
-Everywhere: a provider's or airline's stated disruption reason is an *airline-stated* or
-*provider-stated* cause, never a determination, and nearby weather never proves an extraordinary
+Everywhere: a provider's or airline's stated disruption reason is an _airline-stated_ or
+_provider-stated_ cause, never a determination, and nearby weather never proves an extraordinary
 circumstance.
 
 **Airport page contract.** May appear: airport name, IATA/ICAO codes, IANA time zone, terminal list,

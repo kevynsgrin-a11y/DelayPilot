@@ -77,12 +77,12 @@ CLS < 0.1**. A route missing any one of these is failing — there is no weighte
 
 **Budget manifest (launch values; tighten, never loosen without an orchestrator decision).**
 
-| Surface | Initial JS (gz) | CSS (gz) | LCP image | Total transfer |
-| --- | --- | --- | --- | --- |
-| `/`, `/guides/[slug]`, `/passenger-rights/**`, all §18.1 marketing routes | ≤ 30 KB | ≤ 25 KB | ≤ 120 KB | ≤ 300 KB |
-| `/flight-status/`, `/delay-risk/`, `/connection-risk/` (tool routes) | ≤ 60 KB | ≤ 30 KB | ≤ 120 KB | ≤ 400 KB |
-| `/app/**` shell | ≤ 160 KB | ≤ 40 KB | n/a | ≤ 500 KB |
-| Any lazy chunk (billing, admin, evidence packet, risk-factor detail) | ≤ 60 KB | — | — | — |
+| Surface                                                                   | Initial JS (gz) | CSS (gz) | LCP image | Total transfer |
+| ------------------------------------------------------------------------- | --------------- | -------- | --------- | -------------- |
+| `/`, `/guides/[slug]`, `/passenger-rights/**`, all §18.1 marketing routes | ≤ 30 KB         | ≤ 25 KB  | ≤ 120 KB  | ≤ 300 KB       |
+| `/flight-status/`, `/delay-risk/`, `/connection-risk/` (tool routes)      | ≤ 60 KB         | ≤ 30 KB  | ≤ 120 KB  | ≤ 400 KB       |
+| `/app/**` shell                                                           | ≤ 160 KB        | ≤ 40 KB  | n/a       | ≤ 500 KB       |
+| Any lazy chunk (billing, admin, evidence packet, risk-factor detail)      | ≤ 60 KB         | —        | —         | —              |
 
 **Public-page JS is minimal by construction.** Astro pre-renders; React ships only inside islands. On `/` the hero
 lookup is the single `client:load` island — demo result, explainers, pricing cards, guides strip, and affiliate
@@ -120,17 +120,18 @@ degrades with age) **and contractually** permitted (inside the licensed cache wi
 to `platform-release-sre`.
 
 **CLS elimination — attack these four sources.**
-1. *Status cards.* Reserve the tallest resolved geometry up front. A card that grows when `Unknown` resolves to
+
+1. _Status cards._ Reserve the tallest resolved geometry up front. A card that grows when `Unknown` resolves to
    `Disrupted` (adding a delay row, a provenance chip, an action row) shifts the checklist below it. Test the
    transition, not the end state.
-2. *Fonts.* Zero shift on swap, per the metric-matching rule above.
-3. *Ads.* Every slot reserves its exact declared dimensions before the ad request, collapses **without leaving a
+2. _Fonts._ Zero shift on swap, per the metric-matching rule above.
+3. _Ads._ Every slot reserves its exact declared dimensions before the ad request, collapses **without leaving a
    hole** when unfilled, never timer-refreshes, and never refreshes on background polling (`AGENTS.md §4`). Measure
    CLS with slots both filled and unfilled.
-4. *Async data.* Assessment, connection, rights, weather, and alert panels fill pre-sized containers. **Skeletons
+4. _Async data._ Assessment, connection, rights, weather, and alert panels fill pre-sized containers. **Skeletons
    must use final-size geometry** — a skeleton shorter or narrower than its resolved content is a CLS bug disguised
    as a loading state. Verify each §17 state renders inside the same box: `stale`, `provider unavailable`, `rate
-   limited`, `partial data`, `conflicting providers`, `insufficient data`, `ad blocked`.
+limited`, `partial data`, `conflicting providers`, `insufficient data`, `ad blocked`.
 
 **INP.** Keep the main thread free during hydration: no synchronous parse of a large fixture, no layout thrash in a
 resize or scroll handler, no unthrottled combobox filtering. Long tasks stay under 50 ms; break longer work with

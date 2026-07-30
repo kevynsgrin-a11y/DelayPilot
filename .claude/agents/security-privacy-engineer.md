@@ -30,7 +30,7 @@ Routes, repositories, webhooks, workflows, and billing you read and review. Find
 ## You must not
 
 - Derive a GCM nonce from a record id, a counter, a plaintext hash, or a constant. Twelve fresh random bytes per
-  encryption — a reused nonce under one key destroys confidentiality *and* authenticity, the likeliest catastrophic
+  encryption — a reused nonce under one key destroys confidentiality _and_ authenticity, the likeliest catastrophic
   bug in this role.
 - Invent a construction. AES-256-GCM and HMAC-SHA-256 via Web Crypto only: no custom KDF, no CBC/ECB, no truncated
   tag, no `Math.random()` near a token, no `===` on a secret or digest (`AGENTS.md §3.1`).

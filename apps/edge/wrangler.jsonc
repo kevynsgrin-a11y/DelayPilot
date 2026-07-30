@@ -1,0 +1,137 @@
+{
+  // Every key below was checked against the JSON schema shipped by the installed Wrangler
+  // (node_modules/wrangler/config-schema.json, wrangler 4.114.0) rather than from memory.
+  // See docs/decisions/0002-foundation-stack-and-versions.md.
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+
+  "name": "delaypilot-edge",
+  "main": "src/index.ts",
+
+  // DIRECTIVE.md section 3.6: the compatibility date is the actual execution date of the build
+  // that set it, never a value copied from a document.
+  "compatibility_date": "2026-07-27",
+
+  // Enables the Workers Node.js compatibility surface (node:crypto, node:buffer,
+  // AsyncLocalStorage). Required later by the Stripe SDK and by request-scoped logging context.
+  // It does not license arbitrary Node APIs: AGENTS.md section 3.1 still bans Node-only APIs
+  // without verified Workers support, and eslint.config.js enforces the unsupported-module list.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // DIRECTIVE.md section 21: a deliberate sampling rate, not a default.
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+  },
+
+  // ---------------------------------------------------------------------------------------------
+  // Static assets (ASSETS binding)
+  //
+  // apps/web is fully pre-rendered; this Worker serves that build. `run_worker_first` lists only
+  // the dynamic prefixes, so public pages are served straight from the edge asset cache and are
+  // never fronted by the Worker (DIRECTIVE.md section 11, "selective run_worker_first patterns
+  // rather than fronting every asset").
+  //
+  // `not_found_handling` is "none" because apps/web has no 404 page yet; unmatched requests fall
+  // through to the Worker. frontend-ui-engineer adds src/pages/404.astro in Phase 10, at which
+  // point this becomes "404-page".
+  // ---------------------------------------------------------------------------------------------
+  "assets": {
+    "directory": "../web/dist",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none",
+    "run_worker_first": ["/api/*", "/auth/*", "/webhooks/*", "/go/*"],
+  },
+
+  // ---------------------------------------------------------------------------------------------
+  // Required bindings (DIRECTIVE.md section 11)
+  //
+  // Resource identifiers (D1 `database_id`, KV `id`) are external inputs supplied by a Cloudflare
+  // account that does not exist yet. Wrangler's schema makes both optional, so they are omitted
+  // rather than filled with an invented UUID. Local development uses Miniflare's local D1 and KV;
+  // `wrangler deploy` fails closed until real ids are configured. Activation steps live in
+  // .env.example and, from Phase 13, docs/DEPLOYMENT.md.
+  // ---------------------------------------------------------------------------------------------
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "delaypilot",
+      "migrations_dir": "../../migrations",
+    },
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+    },
+  ],
+
+  "queues": {
+    "producers": [
+      { "binding": "ALERT_QUEUE", "queue": "delaypilot-alerts" },
+      { "binding": "ALERT_QUEUE_DLQ", "queue": "delaypilot-alerts-dlq" },
+    ],
+  },
+
+  // TRIP_MONITOR_WORKFLOW (DIRECTIVE.md section 11) is deliberately not declared yet.
+  //
+  // Wrangler requires the `class_name` of a Workflow binding to be exported from the entrypoint,
+  // and rejects the build otherwise:
+  //   "Your Worker depends on the following Workflows, which are not exported in your entrypoint"
+  // The two ways to satisfy it today are both defects. Exporting a do-nothing TripMonitorWorkflow
+  // is a placeholder (AGENTS.md section 1.6) that would silently succeed if anything dispatched it,
+  // and apps/edge/src/workflows/** belongs to workflows-notifications-engineer, not to Phase 1
+  // (docs/agents/ROSTER.md section 3).
+  //
+  // So the binding arrives together with its implementation in Phase 8, in one change, from its
+  // owning agent. Until then the config declares only bindings that are real.
+  //
+  // "workflows": [
+  //   {
+  //     "binding": "TRIP_MONITOR_WORKFLOW",
+  //     "name": "delaypilot-trip-monitor",
+  //     "class_name": "TripMonitorWorkflow"
+  //   }
+  // ],
+
+  // Cloudflare's rate limiting binding. `namespace_id` is a Worker-local identifier, not an
+  // account credential. The limit below is a conservative default so the binding is usable;
+  // edge-api-engineer owns the real per-route policy in Phase 7 (DIRECTIVE.md section 14).
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 60, "period": 60 },
+    },
+  ],
+
+  // Wrangler generates `Env` members for these and warns in local dev when one is missing, which
+  // is how the secret names reach the type system without any value entering source control
+  // (AGENTS.md section 2). Set them with `wrangler secret put <NAME>` in production and in
+  // apps/edge/.dev.vars locally. TURNSTILE_SITE_KEY is not confidential, but it is an external
+  // input with no known value, so it is supplied the same way rather than hard-coded.
+  "secrets": {
+    "required": [
+      "TURNSTILE_SECRET_KEY",
+      "TURNSTILE_SITE_KEY",
+      "ENCRYPTION_PRIMARY_KEY",
+      "HMAC_IDENTIFIER_KEY",
+      "SESSION_SIGNING_KEY",
+    ],
+  },
+
+  // Non-secret configuration whose values are known and true for local development.
+  // DOCUMENT_UPLOADS_ENABLED is false per docs/BUILD_PLAN.md section 4: no malware-scanning
+  // pipeline exists, so the R2 DOCUMENTS binding stays unconfigured.
+  "vars": {
+    "DELAYPILOT_ENV": "development",
+    "DEMO_MODE_ENABLED": "true",
+    "DOCUMENT_UPLOADS_ENABLED": "false",
+  },
+
+  // Conditional bindings from DIRECTIVE.md section 11 — DOCUMENTS (R2), ANALYTICS, AI,
+  // EMAIL_PROVIDER_*, VAPID_*, SMS_PROVIDER_*, STRIPE_*, flight-provider credentials, CMP and ad
+  // slot identifiers, affiliate identifiers — are deliberately absent. Each is documented in
+  // .env.example with its activation steps, and each subsystem fails closed while unconfigured.
+  // They are added by their owning agent in the phase that implements them, never in advance.
+}

@@ -126,20 +126,20 @@ missing evidence · official source URLs · disclaimer. Save-as-PDF via the prin
 useful, regenerate after edits. Never auto-email, auto-submit, or phrase it as a demand letter.
 
 **The §17 state matrix — every state gets a render and a fixture:**
-*Flight data:* initial · searching · multiple matches · no match · invalid flight · scheduled ·
+_Flight data:_ initial · searching · multiple matches · no match · invalid flight · scheduled ·
 delayed · canceled · diverted · returned · departed · landed · stale · provider unavailable · rate
 limited · demo · partial data · conflicting providers.
-*Trip:* anonymous · saved · monitoring pending/active/paused/completed · entitlement expired · shared
+_Trip:_ anonymous · saved · monitoring pending/active/paused/completed · entitlement expired · shared
 read-only · shared editable · deleted.
-*Connection:* none · protected · self-transfer · mixed ticket · unknown topology · ample slack ·
+_Connection:_ none · protected · self-transfer · mixed ticket · unknown topology · ample slack ·
 watch · high risk · likely missed · already missed · insufficient data.
-*Rights:* covered · possibly covered · not covered · cause unknown · notice unknown · future rule ·
+_Rights:_ covered · possibly covered · not covered · cause unknown · notice unknown · future rule ·
 stale rule review · official source unavailable · assessment changed after new facts.
-*Billing:* free · Trip Pass available · checkout · purchased · subscription active · payment failed ·
+_Billing:_ free · Trip Pass available · checkout · purchased · subscription active · payment failed ·
 canceled at period end · expired · refunded · Stripe unavailable · billing not configured.
-*Notifications:* permission prompt · denied · email unverified · push enabled · quiet hours ·
+_Notifications:_ permission prompt · denied · email unverified · push enabled · quiet hours ·
 delivery failure · suppressed duplicate · escalation · resolved.
-*General:* offline · slow network · unsupported browser · empty · skeleton · error boundary ·
+_General:_ offline · slow network · unsupported browser · empty · skeleton · error boundary ·
 maintenance · consent required · ad blocked · affiliate unavailable.
 Conflicting providers shows both snapshots, names the newest high-quality source, and lowers
 confidence — it never silently picks a winner.
@@ -148,11 +148,11 @@ confidence — it never silently picks a winner.
 `Unavailable`, `Heuristic risk band` — plus "Updated N minutes ago from [source]". A risk band with no calibrated
 model always shows `Heuristic risk band`. §26 disclaimers sit beside the result they qualify, not only the footer.
 
-**Responsive (§18.7).** *Mobile (375):* primary lookup visible without scrolling past marketing;
+**Responsive (§18.7).** _Mobile (375):_ primary lookup visible without scrolling past marketing;
 vertical itinerary; sticky bottom bar only when it covers nothing; no dense two-column cards; drawers
 instead of side panels; connection action above any monetization; targets ≥ 44 × 44 px.
-*Tablet (768):* two-column results where appropriate, one logical form reading order.
-*Desktop (1024/1440):* bounded readable width; 12-column cockpit grid with **8 columns for
+_Tablet (768):_ two-column results where appropriate, one logical form reading order.
+_Desktop (1024/1440):_ bounded readable width; 12-column cockpit grid with **8 columns for
 action/itinerary and 4 for source/alerts/secondary**; hierarchy and whitespace over a wall of equal
 cards. Visual regression runs at 375 / 768 / 1024 / 1440 in both themes.
 

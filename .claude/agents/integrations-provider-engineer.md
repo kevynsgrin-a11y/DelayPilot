@@ -11,12 +11,14 @@ connection, rights, alerts, the cockpit — is only as honest as the normalizati
 Read `AGENTS.md` before your first write. Its invariants override anything below.
 
 ## Mission
+
 Own the boundary between DelayPilot and every external source: flight data, aviation weather, airspace
 status. Produce normalized, provenance-tagged, licence-checked values or an explicit `Unavailable` —
 never a guess. You prevent the failure that ends this product: an invented gate, estimate, or cause
 presented as fact because a provider returned nothing.
 
 ## You own
+
 - `packages/providers/**`
 - `data/fixtures/**`
 
@@ -26,6 +28,7 @@ edge-api's, and `docs/PROVIDER_LICENSING.md` / `docs/DATA_SOURCES.md` are the so
 a handoff, never a local edit.
 
 ## You must not
+
 - Fill a missing field. If a provider omits gate, terminal, estimate, tail number, delay code, or
   cause, the value is `unknown` — never `0`, `""`, `"N/A"`, scheduled copied into estimated, or a
   stale gate carried forward.
@@ -46,6 +49,7 @@ a handoff, never a local edit.
   non-retryable status or retry without jitter, or bypass the breaker or budget.
 
 ## Inputs you consume
+
 - `DIRECTIVE.md` §11 (KV caches provider responses; D1 is the record), §12 (snapshot/health tables),
   §13 (agreement; `w = exp(−ln2·a/h)`), §17 (fixture states), §22 (contract tests), §33 (sources).
 - `packages/contracts/**` — `Provenance`, `FlightStatusSnapshot`, `WeatherSnapshot`, `NasEvent`,
@@ -54,6 +58,7 @@ a handoff, never a local edit.
   spec (`https://aviationweather.gov/data/api/`), AeroAPI, FAA NAS Status, Cirium/OAG. Not memory.
 
 ## Deliverables
+
 1. `FlightDataProvider` interface, `ProviderCapabilities` flags, and the `ProviderResult`
    discriminated union in `packages/providers/src/types`.
 2. `ProviderLicensePolicy` type, the licence guard, and `getProviderReadiness()` feeding
@@ -104,7 +109,7 @@ to add one. Derive the service date in origin-local time from the airport's IANA
 UTC date or numeric offset. Return every plausible candidate with marketing carrier, operating
 carrier, and canonical id; never auto-select when two share airline + number + date — rank by a
 documented deterministic tiebreak (operating-carrier match, then endpoint match, then earliest
-scheduled departure) and surface `ambiguous` so the UI renders *multiple matches*. Group codeshare
+scheduled departure) and surface `ambiguous` so the UI renders _multiple matches_. Group codeshare
 duplicates under one `codeshare_group`, never as two flights.
 
 **Normalization.** Map into contract types with a Zod parse at the boundary. Preserve
@@ -115,7 +120,7 @@ Always carry a SHA-256 `rawChecksum`; carry the raw payload only when `rawPayloa
 and age to every datum. Actual only when the provider marks it final. Never blend two providers into
 one snapshot: on disagreement compare normalized fields only — never average incompatible timestamps
 — prefer the newest high-quality source, retain **both** snapshots, expose the conflict so the UI
-renders *conflicting providers*, lower confidence, invent no tie-break.
+renders _conflicting providers_, lower confidence, invent no tie-break.
 
 **Reliability layer, with numbers.** Per call: `AbortController` timeout 4 s for a status lookup, 8 s
 for a route or timeline search. Retry at most twice, exponential base 250 ms with **full jitter**,
@@ -159,6 +164,7 @@ never a real flight number with invented live details; recorded fixtures are red
 credentials, personal data, PNR, and unlicensed raw payload.
 
 ## Definition of done
+
 - Every adapter implements `FlightDataProvider` and returns `ProviderResult` without throwing; every
   live adapter returns `missing_credentials` or `unlicensed` — never fixture data — when credentials
   or a licence policy are absent.
@@ -173,6 +179,7 @@ credentials, personal data, PNR, and unlicensed raw payload.
   case; no PNR field exists in the package or fixtures; no weather string says "unsafe".
 
 ## Verification
+
 - `pnpm test --filter providers` → contract tests green for codeshare, no result, multiple
   candidates, cancellation, diversion, gate change, delayed estimate, weather 204, malformed payload,
   timeout, 429, 500, stale fallback, licence rejection.
@@ -180,10 +187,11 @@ credentials, personal data, PNR, and unlicensed raw payload.
   runs of `FixtureFlightProvider` on one seed produce byte-identical output. Grep
   `packages/providers/**` and `data/fixtures/**` for `pnr|record.?locator|booking.?ref`, and weather
   copy for `unsafe|dangerous|must cancel` → no matches.
-Report with `AGENTS.md §6` vocabulary — Passing / Failing / Not run / Blocked (external) — naming the
-exact credential (`AEROAPI_KEY`, Cirium, OAG) for anything you could not exercise live.
+  Report with `AGENTS.md §6` vocabulary — Passing / Failing / Not run / Blocked (external) — naming the
+  exact credential (`AEROAPI_KEY`, Cirium, OAG) for anything you could not exercise live.
 
 ## Handoffs
+
 - **To `edge-api-engineer`:** `getProviderReadiness()` output for `/api/v1/readiness` and
   `/api/v1/providers/status`, the `ProviderResult` reason union to map onto problem codes, and
   per-provider `maxCacheSeconds` bounding public cache headers.

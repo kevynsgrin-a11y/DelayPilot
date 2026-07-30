@@ -1,0 +1,22 @@
+{
+  "name": "@delaypilot/edge",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DelayPilot Cloudflare Worker: the /api/v1 surface, auth, webhooks, and the ASSETS binding that serves the pre-rendered apps/web build.",
+  "scripts": {
+    "dev": "wrangler dev",
+    "preview": "wrangler dev",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "typecheck": "wrangler types && tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "hono": "4.12.32"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "wrangler": "4.114.0"
+  }
+}

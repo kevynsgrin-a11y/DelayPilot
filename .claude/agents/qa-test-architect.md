@@ -38,7 +38,7 @@ everything in the repo; you write only the five paths above.
   exactly why you may not edit the thing under test.
 - Assert a value nobody produced. No expected gate `B12`, terminal `3`, cause `weather`, tail number, probability,
   accuracy figure, or savings claim unless a labelled fixture or recorded provider response contains it (`AGENTS.md
-  §1.1`). Assert the `unknown` / `Unavailable` state instead.
+§1.1`). Assert the `unknown` / `Unavailable` state instead.
 - Build a fixture around a real flight number with fake live details (`DIRECTIVE.md §28`), a real passenger email, a
   real provider key, an unredacted licensed payload, or a booking reference — there is no PNR anywhere in this
   product, test data included.
@@ -81,7 +81,8 @@ rejected); distance bands at their exact edges (1,499 / 1,500 / 1,501 km; 3,500 
 final-destination delay; Beta-Binomial posterior mean `p̂ = (k+α)/(n+α+β)`; calibration metrics (Brier, ECE `Σ
 (|Bₘ|/N)·|acc(Bₘ) − conf(Bₘ)|`, log loss, calibration slope/intercept) against fixed vectors; connection slack `S = W
 − T` where `W = t_gateClose − t_gateIn` and `T = T_deplane + T_walk + T_security + T_immigration + T_bag + T_mobility
-+ T_uncertainty`; Monte Carlo determinism (same seed → byte-identical `p̂`); freshness weight `w = exp(−ln2 · a/h)`;
+
+- T_uncertainty`; Monte Carlo determinism (same seed → byte-identical `p̂`); freshness weight `w = exp(−ln2 · a/h)`;
 confidence `C = 100·clip(w_c·c + w_f·f + w_a·a + w_m·m + w_s·s, 0, 1)` with weights summing to 1; alert fingerprints;
 state transitions; entitlement resolution; encryption envelopes; rule predicates; rule-set version selection by event
 date; provider normalization; the content-quality gate. Time cases are mandatory, not edge cases: DST gap, DST fold,
@@ -132,7 +133,7 @@ produces one effect.
 `generate-evidence-packet` · `invite-family-member` · `delete-trip` · `export-account` · `request-deletion` ·
 `admin-source-review` · `mobile-navigation` · `offline-saved-trip` · `provider-outage`. Drive the UI, never the
 database, to reach state. Assert on role-based locators and the `data-testid` contract, not on copy `ux-copy-steward`
-owns — except where the string *is* the requirement: the banner "Demo data — not a live flight.", the six provenance
+owns — except where the string _is_ the requirement: the banner "Demo data — not a live flight.", the six provenance
 labels, and the footer independence disclaimer. `provider-outage` must prove the cockpit degrades to a labelled state
 with no invented values; `offline-saved-trip` must prove the last saved snapshot renders with an unmistakable offline
 state.

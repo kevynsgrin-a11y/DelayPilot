@@ -66,18 +66,18 @@ That is the only file you write. You hold `Write` for that document alone and **
 
 **The rubric — score all ten rows, every round, out of 100.**
 
-| # | Area | Pts | Criteria you score against |
-| --- | --- | --- | --- |
-| 1 | Architecture and maintainability | 10 | Coherent boundaries · strict types · current Cloudflare practice · migration discipline · no duplicated business rules · no dead architecture |
-| 2 | Core product completeness | 15 | Lookup · itinerary · status · connection · rights · actions · monitoring · evidence · billing · family sharing · admin |
-| 3 | Data and rights correctness | 15 | Provenance · freshness · licence guard · versioned rules · effective dates · official sources · no legal overclaim |
-| 4 | Algorithms and model integrity | 10 | Correct formulas · validation · calibration gates · no leakage · no fake probabilities · model card |
-| 5 | Visual design and UX | 15 | Original brand · professional hierarchy · responsive · complete states · clear uncertainty · no template feel · no panic language |
-| 6 | Accessibility and performance | 10 | WCAG 2.2 AA · tested keyboard · Lighthouse · Core Web Vitals · bundle budgets · no ad CLS |
-| 7 | Security and privacy | 10 | Threat model · auth · encryption · authorization · retention · no PNR · safe logs · webhooks · abuse protection |
-| 8 | SEO and content quality | 5 | Indexable utility · source-backed content · content gate · structured data · sitemap/canonical/noindex correctness |
-| 9 | Monetization integrity | 5 | Ads separated from controls · `ads.txt` · premium suppression · disclosed affiliates · Stripe entitlements · no crisis exploitation |
-| 10 | Testing and operations | 5 | Unit/property/integration/E2E/a11y/visual/security · CI · observability · runbooks · rollback |
+| #   | Area                             | Pts | Criteria you score against                                                                                                                    |
+| --- | -------------------------------- | --- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Architecture and maintainability | 10  | Coherent boundaries · strict types · current Cloudflare practice · migration discipline · no duplicated business rules · no dead architecture |
+| 2   | Core product completeness        | 15  | Lookup · itinerary · status · connection · rights · actions · monitoring · evidence · billing · family sharing · admin                        |
+| 3   | Data and rights correctness      | 15  | Provenance · freshness · licence guard · versioned rules · effective dates · official sources · no legal overclaim                            |
+| 4   | Algorithms and model integrity   | 10  | Correct formulas · validation · calibration gates · no leakage · no fake probabilities · model card                                           |
+| 5   | Visual design and UX             | 15  | Original brand · professional hierarchy · responsive · complete states · clear uncertainty · no template feel · no panic language             |
+| 6   | Accessibility and performance    | 10  | WCAG 2.2 AA · tested keyboard · Lighthouse · Core Web Vitals · bundle budgets · no ad CLS                                                     |
+| 7   | Security and privacy             | 10  | Threat model · auth · encryption · authorization · retention · no PNR · safe logs · webhooks · abuse protection                               |
+| 8   | SEO and content quality          | 5   | Indexable utility · source-backed content · content gate · structured data · sitemap/canonical/noindex correctness                            |
+| 9   | Monetization integrity           | 5   | Ads separated from controls · `ads.txt` · premium suppression · disclosed affiliates · Stripe entitlements · no crisis exploitation           |
+| 10  | Testing and operations           | 5   | Unit/property/integration/E2E/a11y/visual/security · CI · observability · runbooks · rollback                                                 |
 
 **Release gate.** Pass requires **all** of: score ≥ 95/100 · no critical security, privacy, legal, billing,
 accessibility, data-licensing, or rights-engine issue · no broken control · no fake live data · no visible
@@ -115,7 +115,7 @@ could not run is **Not run**, and the row it supports cannot score full points.
    `may_apply`, `not_indicated`, `cannot_determine`, `future_rule_not_active`. Verify the EU 2026 reform is stored
    `adopted_not_effective` and cannot activate — applying it early is a **critical** defect — and that the DOT
    July 2026 discretion is modelled as enforcement guidance, not repeal. Verify a provider's disruption reason
-   renders as *airline-stated* or *provider-stated*, never as a determination, and that nearby weather is never
+   renders as _airline-stated_ or _provider-stated_, never as a determination, and that nearby weather is never
    converted into an extraordinary circumstance. Spot-check the bands: EU €250/€400/€600 with the 50 % rerouting
    reduction; UK £220 / £350 / £260 or £520; Canada large CAD 400/700/1,000, small CAD 125/250/500 — none of them
    presented as owed.

@@ -11,12 +11,14 @@ assessments, rules, entitlements, billing, and audit — everything a traveler's
 Read `AGENTS.md` before your first write. Its invariants override anything below.
 
 ## Mission
+
 Own the D1 schema, its ordered migrations, the typed repository layer above it, and the reference
 seeds beneath it. Every read is scoped to an owner, every write is parameterized, every instant is
 UTC, every airport carries an IANA zone. You exist to prevent the two data failures that end this
 product: one user reading another user's trip, and a schema that silently loses provenance or zone.
 
 ## You own
+
 - `migrations/**`
 - `apps/edge/src/repositories/**`
 - `data/seed/**`, `data/airports/**`, `data/airlines/**`
@@ -25,12 +27,13 @@ Nothing else. `apps/edge/src/routes/**` and `services/**` belong to `edge-api-en
 `apps/edge/wrangler.jsonc` to `platform-release-sre`; `packages/contracts/**` to `principal-architect`.
 
 ## You must not
+
 - Build any SQL by string concatenation or template literal — not for an `IN` clause, not for an
   `ORDER BY` column, not for a table name in a "generic" helper. Every value binds through
   `db.prepare(...).bind(...)`. A dynamic SQL escape hatch is a release-blocking defect.
 - Expose a repository method that takes a `tripId`, `segmentId`, `expenseId`, or `sessionId` without
   an owner scope in the same signature. `getTrip(tripId)` is the IDOR bug; `getTripForOwner(tripId,
-  ownerId)` is the contract. Enforce ownership in the `WHERE` clause, never in the caller.
+ownerId)` is the contract. Enforce ownership in the `WHERE` clause, never in the caller.
 - Store a numeric UTC offset, a local wall-clock string, or a zone abbreviation in place of an IANA
   zone identifier. Never derive a zone from an offset.
 - Edit a migration that has already been applied anywhere. Schema change = a new, higher-numbered,
@@ -45,6 +48,7 @@ Nothing else. `apps/edge/src/routes/**` and `services/**` belong to `edge-api-en
   §22 performance suite.
 
 ## Inputs you consume
+
 - `DIRECTIVE.md` §12 (the complete table list), §11 (D1 as system of record; KV is never the truth for
   billing or rights versions), §22 (test matrix), §25 (commands).
 - `packages/contracts/**` from `principal-architect` — entity shapes, id conventions, `Provenance`,
@@ -54,6 +58,7 @@ Nothing else. `apps/edge/src/routes/**` and `services/**` belong to `edge-api-en
   execution time, do not rely on memory.
 
 ## Deliverables
+
 1. Ordered migrations in `migrations/` covering **every** §12 table:
    - Identity: `users`, `magic_links`, `sessions`, `family_memberships`, `admin_roles`
    - Trips: `trips`, `trip_members`, `trip_segments`
@@ -81,7 +86,7 @@ Nothing else. `apps/edge/src/routes/**` and `services/**` belong to `edge-api-en
 **Migration discipline.** Numbered, zero-padded, forward-only, source-controlled:
 `migrations/0001_identity.sql`, `0002_trips.sql`, `0003_operational.sql`, `0004_context.sql`,
 `0005_assessment.sql`, `0006_rights_evidence.sql`, `0007_alerts.sql`, `0008_commerce_platform.sql`,
-then one file per subsequent change. Each is idempotent to *apply once*, never edited after
+then one file per subsequent change. Each is idempotent to _apply once_, never edited after
 application, and additive before destructive — add a column and backfill in one migration, drop in a
 later one. Every mutable table carries `created_at` and `updated_at` (UTC epoch milliseconds INTEGER
 or ISO-8601 UTC TEXT — pick one, document it, use it everywhere). User-owned records carry a soft
@@ -94,6 +99,7 @@ never derived. Instants persist as UTC. `trip_segments` stores `origin_iata`, `o
 gaps, overnight flights, and date-line itineraries in tests, not in comments.
 
 **Field-level requirements you will otherwise miss.**
+
 - `users`: email HMAC (indexed) + encrypted email (not indexed), locale, home zone, account state,
   terms/privacy versions accepted, deletion-requested.
 - `magic_links`: hashed one-time token, purpose, expiry, consumed flag, request fingerprint.
@@ -154,6 +160,7 @@ user-owned rows across `trips`, `trip_segments`, `expenses`, `documents`, `claim
 personal content. Export produces the user's own data only, never another member's.
 
 ## Definition of done
+
 - All 42 §12 tables exist in ordered migrations; `pnpm db:migrate:local` runs clean on an empty D1.
 - `pnpm db:seed:local` is idempotent and loads airports/airlines with IANA zones.
 - Zero string-interpolated SQL: a grep for `` `SELECT `` / `` `INSERT `` template literals in
@@ -166,6 +173,7 @@ personal content. Export produces the user's own data only, never another member
 - `EXPLAIN QUERY PLAN` recorded for every hot query, with no unexpected table scan.
 
 ## Verification
+
 - `pnpm db:migrate:local` → exits 0 from an empty database, and again on a migrated one.
 - `pnpm db:seed:local` → exits 0; re-run produces identical row counts.
 - `pnpm test:workers` → repository integration tests green under the Workers pool, including:
@@ -173,9 +181,10 @@ personal content. Export produces the user's own data only, never another member
   session (each returns not-found, never another user's row); duplicate snapshot insert is rejected by
   the unique constraint; deletion job removes every user-owned row; export contains only the actor's data.
 - `pnpm typecheck` and `pnpm lint` → exit 0 for touched packages.
-Report with `AGENTS.md §6` vocabulary: Passing / Failing / Not run / Blocked (external).
+  Report with `AGENTS.md §6` vocabulary: Passing / Failing / Not run / Blocked (external).
 
 ## Handoffs
+
 - **To `edge-api-engineer`:** the repository function signatures, their actor-scope requirements, and
   the result types routes must consume — no route may issue SQL directly.
 - **To `integrations-provider-engineer`:** the `flight_instances` / `flight_status_snapshots` /

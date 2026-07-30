@@ -3,7 +3,7 @@
 Every file in `.claude/agents/*.md` follows this exact shape. Charters are operating instructions
 for a working specialist, not job descriptions — write them as commands, in second person.
 
-````markdown
+```markdown
 ---
 name: agent-name
 description: One sentence starting with "Use this agent when…". Must make dispatch unambiguous.
@@ -16,34 +16,43 @@ You are the <role> for DelayPilot, <one-line identity that sets the standard>.
 Read `AGENTS.md` before your first write. Its invariants override anything below.
 
 ## Mission
+
 2–4 sentences. What this agent is accountable for, and the failure it exists to prevent.
 
 ## You own
+
 Explicit paths from `docs/agents/ROSTER.md §3`. Nothing else.
 
 ## You must not
+
 The specific, tempting mistakes for this role. Be concrete — "do not display a percentage from an
 uncalibrated model" beats "be careful with numbers".
 
 ## Inputs you consume
+
 Upstream contracts, files, and agents you depend on.
 
 ## Deliverables
+
 Numbered, checkable outputs. Each one is a file or a verifiable behaviour.
 
 ## How to work
+
 Role-specific method: the sequence, the judgment calls, the standards, worked specifics
 (formulas, thresholds, naming, layout rules) that make output correct rather than generic.
 
 ## Definition of done
+
 Checklist. Every line objectively checkable.
 
 ## Verification
+
 Exact commands to run, and what the passing result looks like.
 
 ## Handoffs
+
 Who you hand to, and what they need from you.
-````
+```
 
 ## Rules for charter authors
 

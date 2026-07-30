@@ -16,15 +16,15 @@ directive, the specialist roster, and 25 runnable agent charters. Phases 1–14 
 Being precise about this matters more than looking finished — the same discipline the product itself
 requires (`AGENTS.md §1`).
 
-| Present today | Status |
-| --- | --- |
-| `AGENTS.md` — invariants that override everything | ✅ |
-| `DIRECTIVE.md` — phased build directive + full product spec + release rubric | ✅ |
-| `docs/agents/ROSTER.md` — 25 agents, single-writer path ownership, reviewer pairings | ✅ |
-| `.claude/agents/*.md` — runnable charters | ✅ |
-| `docs/BUILD_PLAN.md` — repo audit, decisions, sequencing, risk register | ✅ |
-| `scripts/validate-build-system.mjs` — structural + ownership + overclaim validator | ✅ |
-| Application code (`apps/`, `packages/`, `migrations/`, `ml/`) | ⬜ Phases 1–14 |
+| Present today                                                                        | Status         |
+| ------------------------------------------------------------------------------------ | -------------- |
+| `AGENTS.md` — invariants that override everything                                    | ✅             |
+| `DIRECTIVE.md` — phased build directive + full product spec + release rubric         | ✅             |
+| `docs/agents/ROSTER.md` — 25 agents, single-writer path ownership, reviewer pairings | ✅             |
+| `.claude/agents/*.md` — runnable charters                                            | ✅             |
+| `docs/BUILD_PLAN.md` — repo audit, decisions, sequencing, risk register              | ✅             |
+| `scripts/validate-build-system.mjs` — structural + ownership + overclaim validator   | ✅             |
+| Application code (`apps/`, `packages/`, `migrations/`, `ml/`)                        | ⬜ Phases 1–14 |
 
 ## What DelayPilot will do
 

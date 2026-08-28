@@ -1,0 +1,42 @@
+# DelayPilot static-asset response headers.
+#
+# Why this file exists as well as the middleware in apps/edge/src/index.ts:
+# wrangler.jsonc sets `run_worker_first` to a list of dynamic prefixes only
+# ("/api/*", "/auth/*", "/webhooks/*", "/go/*"), so Cloudflare serves every HTML page
+# straight from the edge asset cache WITHOUT invoking the Worker. Verified locally with a
+# marker header: GET / and GET /index.html never reach Worker middleware, while
+# GET /api/* and unmatched paths do. A Worker-only header policy would therefore have
+# left every real page — the ones that actually render HTML — with no CSP and no
+# clickjacking protection.
+#
+# Cloudflare parses this file rather than serving it; it never appears as a public asset.
+# Reference: https://developers.cloudflare.com/workers/static-assets/headers/
+#
+# Owner note: apps/web/public/** is seo-engineer territory in docs/agents/ROSTER.md §3.
+# This file is a pre-Phase-11 security baseline added under direct owner instruction after
+# an external audit; the Phase 11/12 owners should fold it into their wider work rather
+# than treat it as settled.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+
+# CSP notes, so the next person does not loosen this by guesswork:
+#
+# - script-src 'self'  — the current build emits ZERO script tags (verified against
+#   apps/web/dist/index.html). 'self' is already permissive relative to what ships today;
+#   it is set rather than 'none' so the first Phase 10 React island does not require a
+#   simultaneous CSP change.
+# - style-src 'unsafe-inline' — the current build emits ZERO inline styles, so this is not
+#   yet earned. It is present because Astro inlines small stylesheets by default
+#   (build.inlineStylesheets: 'auto'), so the first real stylesheet from Phase 9 tokens
+#   would otherwise be blocked at the moment it lands. Phase 10/11 hardening: move to
+#   hashes or nonces, or set build.inlineStylesheets: 'never', then drop 'unsafe-inline'.
+# - img-src data: — required by the placeholder favicon (<link rel="icon" href="data:,">)
+#   in apps/web/src/pages/index.astro. Drop `data:` once a real favicon file ships.
+# - No frame-src / media-src / worker-src is listed: default-src 'self' already covers
+#   them, and enumerating directives the site does not use invites drift.

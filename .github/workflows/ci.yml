@@ -120,5 +120,12 @@ jobs:
       - name: Validate build system
         run: node scripts/validate-build-system.mjs
 
+      # The security policy is necessarily written twice — apps/web/public/_headers covers static
+      # assets, which never invoke the Worker, and the middleware in apps/edge/src/index.ts covers
+      # Worker-generated responses, which never see _headers. This check fails the build when the
+      # two drift apart, because nothing else in the toolchain would notice a half-protected site.
+      - name: Validate security-header parity
+        run: node scripts/validate-security-headers.mjs
+
       - name: Check image budgets
         run: node scripts/assets/compress-images.mjs --check apps/web/public/images

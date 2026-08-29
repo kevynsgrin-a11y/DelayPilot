@@ -22,6 +22,53 @@ import { Hono } from 'hono'
 const app = new Hono<{ Bindings: Env }>()
 
 /**
+ * Security response headers for everything this Worker generates.
+ *
+ * This covers only half the surface. wrangler.jsonc lists selective `run_worker_first`
+ * prefixes, so Cloudflare serves pre-rendered HTML straight from the edge asset cache and
+ * never invokes this Worker for it — verified locally with a marker header: `/` and
+ * `/index.html` do not reach this middleware, while `/api/*` and unmatched paths do. The
+ * matching policy for static assets therefore lives in apps/web/public/_headers, and the
+ * two must be kept in step. Changing one without the other silently protects half the site.
+ *
+ * The CSP is deliberately identical to the static one so that a page and an API error
+ * response cannot disagree about what is executable. Rationale for each directive, and the
+ * conditions under which 'unsafe-inline' and `data:` should be dropped, are documented once
+ * in apps/web/public/_headers rather than duplicated here.
+ *
+ * Owner note: apps/edge/src/** is edge-api-engineer's in docs/agents/ROSTER.md §3, and the
+ * full middleware stack (request id, CORS, CSRF, idempotency, problem responses) is Phase 7.
+ * This is a pre-Phase-7 security baseline added under direct owner instruction after an
+ * external audit found no security headers on any response; Phase 7 should absorb it.
+ */
+const SECURITY_HEADERS: Readonly<Record<string, string>> = {
+  'x-content-type-options': 'nosniff',
+  'x-frame-options': 'DENY',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'permissions-policy': 'geolocation=(), camera=(), microphone=(), payment=()',
+  'strict-transport-security': 'max-age=63072000; includeSubDomains; preload',
+  'content-security-policy':
+    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+    "img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; " +
+    "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+}
+
+app.use('*', async (c, next) => {
+  await next()
+
+  /**
+   * A Response returned by a binding's `fetch()` — the ASSETS fallthrough below — carries an
+   * immutable headers guard, so `headers.set()` on it throws. Rebuilding through the Response
+   * constructor yields an equivalent response with mutable headers. Doing this unconditionally
+   * keeps one code path instead of branching on where the response came from.
+   */
+  c.res = new Response(c.res.body, c.res)
+  for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
+    c.res.headers.set(name, value)
+  }
+})
+
+/**
  * DIRECTIVE.md §21: /health is liveness only. It asserts that this isolate is executing and
  * nothing more — no binding probes, no dependency checks, no configuration detail, no version of
  * any secret. Readiness (bindings, migrations, provider licence policy, in-force rule sets, Stripe

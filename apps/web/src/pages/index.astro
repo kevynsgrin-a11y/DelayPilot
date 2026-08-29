@@ -13,6 +13,24 @@
 const title = 'DelayPilot — Stay ahead of flight disruptions'
 const description =
   'Track a flight, understand connection risk, and see the refund, care, and rebooking rules that may apply.'
+
+/**
+ * A canonical URL and an og:url need an absolute origin. That origin comes from
+ * PUBLIC_SITE_URL through `site` in astro.config.mjs, which is deliberately left undefined
+ * until a real domain is configured. When it is absent these two tags are omitted entirely
+ * rather than emitted against an example or guessed origin: a canonical pointing at the
+ * wrong host is worse than no canonical, and inventing one would be exactly the kind of
+ * fabricated value AGENTS.md §1.1 forbids.
+ *
+ * The origin-independent tags below always ship, because they are true regardless of where
+ * the site is served from.
+ *
+ * Owner note: the full metadata system — title templates, per-route canonicals, structured
+ * data, sitemap — is seo-engineer's in Phase 11 (DIRECTIVE.md §19). This is the homepage
+ * baseline only, added under direct owner instruction after an external audit found no
+ * canonical, Open Graph, or Twitter tags anywhere in the build.
+ */
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
 ---
 
 <html lang="en">
@@ -21,6 +39,22 @@ const description =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DelayPilot" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+    {
+      /* summary, not summary_large_image: no og:image ships until a real social card exists.
+        A card tag promising an image that 404s is a dead reference (AGENTS.md §1.6). */
+    }
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
     <link rel="icon" href="data:," />
   </head>
   <body>

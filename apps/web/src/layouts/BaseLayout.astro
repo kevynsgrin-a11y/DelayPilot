@@ -1,0 +1,146 @@
+---
+/**
+ * Shared shell for every public page.
+ *
+ * Consolidates what was previously inlined in index.astro: the metadata block, the independence
+ * disclaimer required by AGENTS.md section 1.4, and the header/footer chrome. Pages supply only
+ * their own title, description and body.
+ *
+ * The visual language is ported from design/v0-preview (Tailwind/Next.js, reference-only, never
+ * shipped) into plain CSS in ../styles/tokens.css. Nothing here ships a flight number, gate, time,
+ * airline, price, statistic or rights conclusion — the v0 homepage's demo content is generated
+ * fiction (design/v0-preview/README.md) and none of it reaches a rendered surface.
+ *
+ * Owner note: apps/web/src/** is frontend-ui-engineer's in docs/agents/ROSTER.md section 3, and the
+ * full page set is Phase 10. This is a pre-Phase-10 shell added under direct owner instruction so
+ * the site has a real visual identity before its domain is repointed to Cloudflare; Phase 10 should
+ * absorb it rather than treat it as settled.
+ */
+import '../styles/tokens.css'
+
+interface Props {
+  title: string
+  description: string
+  /** Marks the current nav item so it can carry aria-current="page". */
+  nav?: 'home' | 'privacy' | 'terms'
+}
+
+const { title, description, nav } = Astro.props
+
+/**
+ * A canonical URL and an og:url need an absolute origin, which comes from PUBLIC_SITE_URL through
+ * `site` in astro.config.mjs. That variable is deliberately undefined until a real domain is
+ * configured, so both tags are omitted rather than emitted against a guessed origin: a canonical
+ * pointing at the wrong host is worse than no canonical, and inventing one is the kind of
+ * fabricated value AGENTS.md section 1.1 forbids.
+ */
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
+
+const year = 2026
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DelayPilot" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+
+    {
+      /* summary, not summary_large_image: no og:image ships until a real social card exists.
+        A card tag promising an image that 404s is a dead reference (AGENTS.md section 1.6). */
+    }
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+
+    {
+      /* The brand mark ships as an inline SVG below rather than a favicon file: the icon set
+        (favicon, apple-touch, maskable) belongs to visual-asset-director in Phase 9, and shipping
+        a <link rel="icon"> pointing at a file that does not exist would be a dead reference
+        (AGENTS.md section 1.6). The empty data: URI suppresses the browser's default /favicon.ico
+        request without claiming an icon exists. */
+    }
+    <link rel="icon" href="data:," />
+
+    {/* theme-color follows the same system preference the stylesheet does. */}
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eef5fb" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050b16" />
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to main content</a>
+
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <a class="wordmark" href="/">
+          {
+            /* DelayPilot's own mark: a radar arc, a dashed route line and a heading marker.
+              No airline, airport, regulator or provider logo, wordmark or trade dress
+              (AGENTS.md section 1.4). Ported from design/v0-preview/components/logo.tsx. */
+          }
+          <svg
+            viewBox="0 0 32 32"
+            fill="none"
+            width="28"
+            height="28"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <circle cx="16" cy="16" r="13" stroke="var(--border-strong)" stroke-width="1.5"
+            ></circle>
+            <path
+              d="M16 16 A13 13 0 0 1 27 9"
+              stroke="var(--accent)"
+              stroke-width="1.5"
+              stroke-linecap="round"></path>
+            <path
+              d="M6 22 L26 10"
+              stroke="var(--accent)"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-dasharray="2 3"></path>
+            <path d="M22 9.5 L27 8 L25.5 13 Z" fill="var(--accent)"></path>
+            <circle cx="16" cy="16" r="2.5" fill="var(--accent)"></circle>
+          </svg>
+          <span>Delay<span class="wordmark__accent">Pilot</span></span>
+        </a>
+
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/" aria-current={nav === 'home' ? 'page' : undefined}>Home</a>
+          <a href="/privacy/" aria-current={nav === 'privacy' ? 'page' : undefined}>Privacy</a>
+          <a href="/terms/" aria-current={nav === 'terms' ? 'page' : undefined}>Terms</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main" class="shell">
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell">
+        <nav class="site-footer__nav" aria-label="Footer">
+          <a href="/">Home</a>
+          <a href="/privacy/">Privacy</a>
+          <a href="/terms/">Terms</a>
+        </nav>
+
+        <p class="disclaimer">
+          DelayPilot is an independent travel-information tool. It is not an airline, airport,
+          government agency, law firm, claims company, or flight-data provider. Guidance is
+          informational and may not reflect every fact in your case.
+        </p>
+
+        <p>&copy; {year} DelayPilot</p>
+      </div>
+    </footer>
+  </body>
+</html>

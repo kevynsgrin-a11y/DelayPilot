@@ -7,6 +7,35 @@
   "name": "delaypilot-edge",
   "main": "src/index.ts",
 
+  // ---------------------------------------------------------------------------------------------
+  // Public origins.
+  //
+  // `workers_dev` and `preview_urls` both default to TRUE. Left at their defaults, every deploy
+  // would publish a second and third fully public copy of the site at
+  // delaypilot-edge.<subdomain>.workers.dev and at per-version preview URLs — origins nobody
+  // intended, that serve the same pages as the real domain, and that a crawler can reach. For a
+  // site whose canonical URL discipline is a release gate (DIRECTIVE.md section 19), shipping
+  // duplicate indexable origins by accident is a defect, so both are switched off explicitly.
+  //
+  // With `workers_dev` false, `routes` is what gives the Worker an address. `custom_domain: true`
+  // attaches the hostname as a Workers Custom Domain, which Cloudflare serves proxied — that is
+  // also the fix for the audit finding that both records are currently grey-clouded, bypassing
+  // WAF, DDoS mitigation and the edge cache.
+  //
+  // CUTOVER NOTE: delaypilot.app and www.delaypilot.app currently hold CNAME records pointing at a
+  // Vercel deployment. Attaching a custom domain conflicts with an existing record for the same
+  // hostname, so the FIRST deploy either replaces them or fails on the conflict — it is the moment
+  // the domain stops being served by Vercel and starts being served by this Worker. That is
+  // intentional and is the whole point of the change, but it is not reversible by a `git revert`:
+  // reverting restores this file, not the DNS records.
+  // ---------------------------------------------------------------------------------------------
+  "workers_dev": false,
+  "preview_urls": false,
+  "routes": [
+    { "pattern": "delaypilot.app", "custom_domain": true },
+    { "pattern": "www.delaypilot.app", "custom_domain": true },
+  ],
+
   // DIRECTIVE.md section 3.6: the compatibility date is the actual execution date of the build
   // that set it, never a value copied from a document.
   "compatibility_date": "2026-07-27",
@@ -123,9 +152,22 @@
   // Non-secret configuration whose values are known and true for local development.
   // DOCUMENT_UPLOADS_ENABLED is false per docs/BUILD_PLAN.md section 4: no malware-scanning
   // pipeline exists, so the R2 DOCUMENTS binding stays unconfigured.
+  // ---------------------------------------------------------------------------------------------
+  // Non-secret configuration.
+  //
+  // These are PRODUCTION values, because this file has no `env.*` block: `wrangler deploy` publishes
+  // the top-level `vars` verbatim. They previously read DELAYPILOT_ENV="development" and
+  // DEMO_MODE_ENABLED="true", which meant the first real deploy would have shipped a production
+  // Worker that believed it was in development and had demo mode switched on — the exact condition
+  // AGENTS.md section 1.5 forbids ("Never substitute fixture data for live data at runtime outside
+  // explicit demo mode. Production readiness must fail rather than silently serve fixtures").
+  //
+  // Local development overrides these in apps/edge/.dev.vars, which wrangler dev reads in
+  // preference to this block and .gitignore already excludes. See .dev.vars.example.
+  // ---------------------------------------------------------------------------------------------
   "vars": {
-    "DELAYPILOT_ENV": "development",
-    "DEMO_MODE_ENABLED": "true",
+    "DELAYPILOT_ENV": "production",
+    "DEMO_MODE_ENABLED": "false",
     "DOCUMENT_UPLOADS_ENABLED": "false",
   },
 

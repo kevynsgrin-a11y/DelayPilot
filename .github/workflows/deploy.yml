@@ -1,0 +1,198 @@
+# Production deploy to Cloudflare Workers.
+#
+# WHY THIS EXISTS
+# ---------------
+# An external pre-launch audit found delaypilot.app being served by a Vercel deployment unrelated to
+# this repository, while the Worker this repository builds had never been deployed anywhere. This
+# workflow is the mechanism that moves the domain onto the Worker and keeps it there, so that what
+# is reviewed here is what is served.
+#
+# ARMING IT
+# ---------
+# One repository secret is required: CLOUDFLARE_API_TOKEN. Create it at
+# https://dash.cloudflare.com/profile/api-tokens with, at minimum:
+#
+#   Account · Workers Scripts        · Edit    (upload the Worker and its static assets)
+#   Account · Workers KV Storage     · Edit    (the CACHE binding)
+#   Account · D1                     · Edit    (the DB binding)
+#   Account · Queues                 · Edit    (the ALERT_QUEUE producer bindings)
+#   Zone    · Workers Routes         · Edit    (attach delaypilot.app as a Custom Domain)
+#   Zone    · DNS                    · Edit    (the Custom Domain rewrites the apex/www records)
+#
+# Scope it to the delaypilot.app zone and the owning account, not to All Accounts. Until the secret
+# exists this workflow is skipped, not failed — an unarmed deploy is a pending task, not a red build.
+#
+# CLOUDFLARE_ACCOUNT_ID is read from the same secret store rather than committed, because it
+# identifies the account even though it is not itself a credential.
+#
+# FIRST RUN PERFORMS THE CUTOVER
+# ------------------------------
+# apps/edge/wrangler.jsonc declares delaypilot.app and www.delaypilot.app as Workers Custom Domains.
+# Those hostnames currently hold CNAME records pointing at Vercel. The first successful run of this
+# workflow is therefore the moment the public site changes hands. If Cloudflare refuses because of
+# the conflicting records, the run fails loudly with that error and the records have to be removed
+# before retrying — a clear failure, not a half-migrated domain.
+#
+# WHAT IT DOES NOT DO YET
+# -----------------------
+# DIRECTIVE.md section 23 additionally requires per-PR preview deploys, ordered D1 migrations with a
+# migration record, and post-deploy smoke tests. None of those exist yet: there are no migrations
+# (migrations/ is empty and pnpm db:migrate:local deliberately exits 1), and pnpm smoke is a stub.
+# Adding steps that pretend to run them would be worse than their absence. platform-release-sre owns
+# closing that gap in Phase 13.
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  # Manual re-run, for the case where a deploy failed on something outside the repository — an
+  # expired token, a DNS conflict — and the fix was made in Cloudflare rather than in a commit.
+  workflow_dispatch:
+
+# One deploy at a time, and never cancel one midway: a Worker upload interrupted between the script
+# and its static assets is exactly the partial state this guards against.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Cloudflare
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      # The deploy is armed by a secret this repository does not yet hold. Without this guard the
+      # job would fail on every push to main until someone adds it, training everyone to ignore a
+      # red build. A missing credential is a pending setup task, not a broken pipeline, so the
+      # deploy steps below are skipped and the job ends green with an explanation.
+      #
+      # Secrets are not usable in a job-level `if:`, so the check is a step that publishes an
+      # output the later steps gate on.
+      - name: Check whether the deploy is armed
+        id: guard
+        env:
+          HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+          HAS_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
+        run: |
+          if [ "$HAS_TOKEN" = "true" ] && [ "$HAS_ACCOUNT" = "true" ]; then
+            echo "armed=true" >> "$GITHUB_OUTPUT"
+            echo "Both secrets present — this run will deploy."
+          else
+            echo "armed=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Deploy skipped. Add the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets to arm it. See the header of this file for the exact token scopes."
+          fi
+
+      - name: Checkout
+        if: steps.guard.outputs.armed == 'true'
+        uses: actions/checkout@v5
+
+      - name: Set up Node from package.json engines
+        if: steps.guard.outputs.armed == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+
+      - name: Set up pnpm from package.json packageManager, with a cached store
+        if: steps.guard.outputs.armed == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          cache: true
+
+      - name: Install dependencies (frozen lockfile)
+        if: steps.guard.outputs.armed == 'true'
+        run: pnpm install --frozen-lockfile
+
+      # The same gates ci.yml runs. They are repeated here rather than assumed: this workflow can be
+      # triggered manually and by a direct push, so it must not rely on a CI run having happened on
+      # this exact commit. A deploy that skips the gates is how an unreviewed regression reaches
+      # production.
+      - name: Format check
+        if: steps.guard.outputs.armed == 'true'
+        run: pnpm format:check
+
+      - name: Lint
+        if: steps.guard.outputs.armed == 'true'
+        run: pnpm lint
+
+      - name: Typecheck
+        if: steps.guard.outputs.armed == 'true'
+        run: pnpm typecheck
+
+      - name: Validate build system
+        if: steps.guard.outputs.armed == 'true'
+        run: node scripts/validate-build-system.mjs
+
+      - name: Validate security-header parity
+        if: steps.guard.outputs.armed == 'true'
+        run: node scripts/validate-security-headers.mjs
+
+      - name: Validate colour contrast
+        if: steps.guard.outputs.armed == 'true'
+        run: node scripts/validate-contrast.mjs
+
+      - name: Check image budgets
+        if: steps.guard.outputs.armed == 'true'
+        run: node scripts/assets/compress-images.mjs --check apps/web/public/images
+
+      # PUBLIC_SITE_URL is what turns on the canonical and og:url tags in
+      # apps/web/src/layouts/BaseLayout.astro. Without it the build omits them rather than guessing
+      # an origin, so a deploy that forgets it ships pages with no canonical — correct, but not what
+      # production wants.
+      - name: Build the site
+        if: steps.guard.outputs.armed == 'true'
+        run: pnpm --filter @delaypilot/web build
+        env:
+          PUBLIC_SITE_URL: https://delaypilot.app
+
+      - name: Confirm the built pages carry a canonical
+        if: steps.guard.outputs.armed == 'true'
+        run: |
+          if ! grep -q 'rel="canonical"' apps/web/dist/index.html; then
+            echo "No canonical in the built homepage — PUBLIC_SITE_URL did not reach the build."
+            exit 1
+          fi
+          echo "Canonical present:"
+          grep -o '<link rel="canonical"[^>]*>' apps/web/dist/index.html
+
+      - name: Deploy the Worker and its static assets
+        if: steps.guard.outputs.armed == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/edge
+          # apps/web must already be built: wrangler.jsonc points the ASSETS binding at ../web/dist.
+          command: deploy
+
+      # A deploy that returns success while the site 500s is the failure mode worth catching here.
+      # This asserts the liveness endpoint answers and that the security headers the audit added are
+      # actually present on the real origin, not just in local dev.
+      - name: Smoke check the deployed origin
+        if: steps.guard.outputs.armed == 'true'
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4 5; do
+            code=$(curl -s -o /tmp/health.json -w "%{http_code}" --max-time 15 \
+              https://delaypilot.app/api/v1/health || echo "000")
+            if [ "$code" = "200" ]; then break; fi
+            echo "health returned $code (attempt $attempt) — retrying"
+            sleep $((attempt * 5))
+          done
+          test "$code" = "200" || { echo "Health check failed after 5 attempts."; exit 1; }
+          cat /tmp/health.json; echo
+
+          missing=""
+          headers=$(curl -s -D - -o /dev/null --max-time 15 https://delaypilot.app/)
+          for h in content-security-policy strict-transport-security x-frame-options \
+                   x-content-type-options referrer-policy permissions-policy; do
+            echo "$headers" | grep -qi "^$h:" || missing="$missing $h"
+          done
+          if [ -n "$missing" ]; then
+            echo "Security headers missing from the deployed homepage:$missing"
+            exit 1
+          fi
+          echo "All six security headers present on the deployed homepage."

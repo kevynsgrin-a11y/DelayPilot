@@ -23,20 +23,24 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
 # CSP notes, so the next person does not loosen this by guesswork:
 #
-# - script-src 'self'  — the current build emits ZERO script tags (verified against
-#   apps/web/dist/index.html). 'self' is already permissive relative to what ships today;
-#   it is set rather than 'none' so the first Phase 10 React island does not require a
-#   simultaneous CSP change.
-# - style-src 'unsafe-inline' — the current build emits ZERO inline styles, so this is not
-#   yet earned. It is present because Astro inlines small stylesheets by default
-#   (build.inlineStylesheets: 'auto'), so the first real stylesheet from Phase 9 tokens
-#   would otherwise be blocked at the moment it lands. Phase 10/11 hardening: move to
-#   hashes or nonces, or set build.inlineStylesheets: 'never', then drop 'unsafe-inline'.
-# - img-src data: — required by the placeholder favicon (<link rel="icon" href="data:,">)
-#   in apps/web/src/pages/index.astro. Drop `data:` once a real favicon file ships.
+# - script-src 'self'  — the current build emits ZERO script tags (verified against the built
+#   apps/web/dist/*.html). 'self' is set rather than 'none' so the first Phase 10 React island
+#   does not require a simultaneous CSP change. Note this ALSO means no inline script: the
+#   conventional pre-paint theme-toggle script is therefore forbidden by our own policy, which
+#   is why apps/web/src/styles/tokens.css selects the dark theme with prefers-color-scheme and
+#   no JavaScript at all. A future toggle can still use an external same-origin <script src>
+#   without weakening anything here.
+# - style-src 'self' — NO 'unsafe-inline'. This is earned, not assumed: apps/web/astro.config.mjs
+#   pins build.inlineStylesheets to 'never', so the build cannot emit an inline <style>, and the
+#   built HTML is verified to contain none. If that setting ever returns to 'auto', every page
+#   renders unstyled until 'unsafe-inline' comes back here AND in apps/edge/src/index.ts.
+# - img-src data: — required by the empty-data-URI favicon (<link rel="icon" href="data:,">) in
+#   apps/web/src/layouts/BaseLayout.astro, which suppresses the default /favicon.ico request
+#   without claiming an icon that does not exist. Drop `data:` when visual-asset-director ships
+#   the real icon set in Phase 9.
 # - No frame-src / media-src / worker-src is listed: default-src 'self' already covers
 #   them, and enumerating directives the site does not use invites drift.

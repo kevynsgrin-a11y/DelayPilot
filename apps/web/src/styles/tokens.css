@@ -1,0 +1,452 @@
+/**
+ * DelayPilot design tokens — framework-free.
+ *
+ * Ported from `design/v0-preview/app/globals.css`, which is Tailwind v4 source and is
+ * reference-only, never shipped (`design/v0-preview/README.md`). Public pages must ship
+ * near-zero JavaScript to hold LCP < 2.5s and Lighthouse >= 95 (`DIRECTIVE.md §22`), so the
+ * token layer is lifted as plain custom properties and no Tailwind build step is introduced.
+ *
+ * ---------------------------------------------------------------------------------------------
+ * WHY SOME VALUES DIFFER FROM THE v0 SOURCE
+ * ---------------------------------------------------------------------------------------------
+ * `DIRECTIVE.md §7` sets a WCAG 2.2 AA floor and the Phase 9 exit gate requires contrast to be
+ * *measured* in both themes, not eyeballed. Measuring every token pair in the v0 palette against
+ * every surface it is used on returns 24 failures out of 48 pairs — including the primary button
+ * (white on `#087bfd`-family accent at 4.39:1) and every status colour on every light surface,
+ * with light-theme amber at 2.40:1.
+ *
+ * Shipping those verbatim would fail the accessibility gate on the majority of the palette. So:
+ *
+ *   - The FIXED PALETTE below keeps the v0 hex values EXACTLY. It is the brand, and it is what
+ *     non-text uses (dots, fills, rules, decorative marks) draw from, where the 4.5:1 text
+ *     threshold does not apply.
+ *   - The SEMANTIC TEXT TOKENS are corrected to the minimum hue-preserving darkening (light) or
+ *     lightening (dark) that reaches 4.5:1 against the hardest surface each is used on. The
+ *     shifts are small — most are under 0.07 in HSL lightness — so the palette's character is
+ *     unchanged. Each corrected value carries its measured ratio in a comment.
+ *
+ * The correction is deliberately minimal rather than a re-design: the owner asked to keep the v0
+ * visual identity, and the smallest change that clears the gate is the one that honours both.
+ * `scripts/validate-contrast.mjs` re-measures every pair in CI, so a future edit that reintroduces
+ * a failing pair fails the build instead of shipping.
+ *
+ * Every hex is either read directly from the v0 source or computed from it by the documented
+ * minimal-shift rule. None is invented (`AGENTS.md §1.1`).
+ */
+
+/* ------------------------------------------------------------------------------------------- */
+/* 1. Fixed palette — v0 verbatim, identical in both themes.                                    */
+/*    Source: design/v0-preview/app/globals.css lines 12-31.                                    */
+/*    Use these for fills, dots, rules and marks — not for small text on a light surface.        */
+/* ------------------------------------------------------------------------------------------- */
+:root {
+  --color-ink-1000: #050b16;
+  --color-ink-950: #07111f;
+  --color-ink-900: #0b1728;
+  --color-ink-800: #13243a;
+
+  --color-cloud-50: #f8fbff;
+  --color-cloud-100: #eef5fb;
+  --color-cloud-200: #dce8f2;
+
+  --color-slate-500: #62758a;
+  --color-slate-700: #34465a;
+
+  --color-sky-400: #31c5ff;
+  --color-sky-500: #0ba8ea;
+  --color-sky-600: #087fbd;
+
+  --color-safe-500: #168f6a;
+  --color-watch-500: #d99014;
+  --color-critical-500: #d9485f;
+  --color-unknown-500: #738197;
+
+  --radius: 0.75rem;
+  --radius-sm: 0.5rem;
+  --radius-lg: 1rem;
+
+  --font-sans:
+    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Inter and Geist Mono are named in the v0 source but no font file is served and no webfont is
+     loaded. Naming a family the site does not ship would silently fall back anyway, so the stacks
+     above start at the system UI font. A real webfont is Phase 9 work for visual-asset-director,
+     with its own budget (DIRECTIVE.md §22). */
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* 2. Semantic tokens — LIGHT.                                                                  */
+/*    Surfaces are v0 verbatim. Text tokens are AA-corrected; measured ratios are against        */
+/*    --background #eef5fb, the darkest (hardest) of the three light surfaces.                   */
+/* ------------------------------------------------------------------------------------------- */
+:root {
+  --background: #eef5fb; /* v0 verbatim */
+  --surface: #ffffff; /* v0 verbatim */
+  --surface-raised: #f8fbff; /* v0 verbatim */
+  --border: #dce8f2; /* v0 verbatim */
+  --border-strong: #c3d4e2; /* v0 verbatim */
+
+  --foreground: #07111f; /* v0 verbatim — 17.21:1 */
+  --muted: #5f7286; /* v0 #62758a was 4.31:1 -> 4.50:1 */
+  --accent: #0776b0; /* v0 #087fbd was 3.99:1 -> 4.52:1; also fixes white-on-accent (4.39 -> 4.68) */
+  --accent-contrast: #ffffff;
+
+  --status-safe: #147f5e; /* v0 #168f6a was 3.69:1 -> 4.52:1 */
+  --status-watch: #99650e; /* v0 #d99014 was 2.40:1 -> 4.52:1 */
+  --status-critical: #d32d48; /* v0 #d9485f was 3.79:1 -> 4.50:1 */
+  --status-unknown: #637186; /* v0 #738197 was 3.59:1 -> 4.51:1 */
+
+  color-scheme: light;
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* 3. Semantic tokens — DARK.                                                                   */
+/*    Selected by system preference only. There is deliberately no theme-toggle script: the      */
+/*    site's CSP is `script-src 'self'` with no 'unsafe-inline' (apps/web/public/_headers), so    */
+/*    the conventional inline pre-paint theme script would be BLOCKED by our own policy. Pure    */
+/*    prefers-color-scheme needs no script at all, so it cannot flash and cannot be blocked.     */
+/*    A manual toggle remains possible later WITHOUT weakening the CSP, because an external      */
+/*    same-origin `<script src>` in <head> is already allowed by `script-src 'self'`.            */
+/*                                                                                              */
+/*    Measured ratios are against --surface-raised #13243a, the lightest (hardest) dark surface. */
+/* ------------------------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #050b16; /* v0 verbatim */
+    --surface: #0b1728; /* v0 verbatim */
+    --surface-raised: #13243a; /* v0 verbatim */
+    --border: #13243a; /* v0 verbatim */
+    --border-strong: #24384f; /* v0 verbatim */
+
+    --foreground: #f8fbff; /* v0 verbatim — 15.09:1 */
+    --muted: #8ba0b4; /* v0 verbatim — 5.80:1 */
+    --accent: #31c5ff; /* v0 verbatim — 7.87:1 */
+    --accent-contrast: #050b16; /* v0 verbatim — 7.87:1 on accent */
+
+    --status-safe: #189c74; /* v0 #168f6a was 3.86:1 -> 4.51:1 */
+    --status-watch: #d99014; /* v0 verbatim — 5.93:1 */
+    --status-critical: #de6175; /* v0 #d9485f was 3.76:1 -> 4.53:1 */
+    --status-unknown: #7e8b9f; /* v0 #738197 was 3.96:1 -> 4.53:1 */
+
+    color-scheme: dark;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* 4. Base.                                                                                     */
+/* ------------------------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
+  font-weight: 800;
+}
+
+h2 {
+  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.75rem);
+  font-weight: 700;
+}
+
+h3 {
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+p {
+  margin: 0;
+  text-wrap: pretty;
+}
+
+a {
+  color: var(--accent);
+  text-underline-offset: 0.2em;
+}
+
+/* Visible focus ring on every interactive element (WCAG 2.2 AA, DIRECTIVE.md §7).
+   Ported from the v0 source, with the border-radius override dropped: forcing 4px onto every
+   focused control squares off otherwise-rounded controls. `outline` already follows the element's
+   own radius. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Tabular numerals for clock times, flight numbers, countdowns and durations, so digits keep a
+   constant width as values update (v0 verbatim). */
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum' 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ------------------------------------------------------------------------------------------- */
+/* 5. Layout and components used by the public pages.                                           */
+/* ------------------------------------------------------------------------------------------- */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+}
+
+.shell {
+  width: 100%;
+  max-width: 68rem;
+  margin-inline: auto;
+  padding-inline: clamp(1rem, 0.5rem + 2vw, 2rem);
+}
+
+.site-header {
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 85%, transparent);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4rem;
+  flex-wrap: wrap;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 700;
+  font-size: 1.125rem;
+  letter-spacing: -0.02em;
+  color: var(--foreground);
+  text-decoration: none;
+}
+
+.wordmark__accent {
+  color: var(--accent);
+}
+
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  font-size: 0.9375rem;
+}
+
+.site-nav a {
+  color: var(--muted);
+  text-decoration: none;
+  padding-block: 0.25rem;
+}
+
+.site-nav a:hover,
+.site-nav a[aria-current='page'] {
+  color: var(--foreground);
+}
+
+.hero {
+  padding-block: clamp(3rem, 2rem + 5vw, 5.5rem) clamp(2rem, 1.5rem + 3vw, 3.5rem);
+  display: grid;
+  gap: 1.5rem;
+  max-width: 46rem;
+}
+
+.lede {
+  font-size: clamp(1.0625rem, 1rem + 0.5vw, 1.25rem);
+  color: var(--muted);
+}
+
+.trust-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: 0.9375rem;
+  color: var(--muted);
+}
+
+.trust-line li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.trust-line li::before {
+  content: '';
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: 50%;
+  background: var(--accent);
+  flex: none;
+}
+
+.section {
+  padding-block: clamp(2rem, 1.5rem + 3vw, 3.5rem);
+  border-top: 1px solid var(--border);
+  display: grid;
+  gap: 1.25rem;
+}
+
+.section__intro {
+  max-width: 46rem;
+  color: var(--muted);
+}
+
+.card-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+}
+
+.card p {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+/* The provenance vocabulary is fixed at exactly six values (AGENTS.md §1.2). These chips render
+   the label itself; they never stand in for a value, and they are not decorative. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.chip--unavailable {
+  color: var(--status-unknown);
+}
+
+.chip--demo {
+  color: var(--status-watch);
+}
+
+.chip__dot {
+  inline-size: 0.4rem;
+  block-size: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.prose {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+.prose h2 {
+  margin-top: 1rem;
+}
+
+.prose p,
+.prose li {
+  color: var(--muted);
+}
+
+.prose strong {
+  color: var(--foreground);
+}
+
+.prose ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.meta {
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.site-footer {
+  border-top: 1px solid var(--border);
+  padding-block: 2rem 2.5rem;
+  margin-top: 1rem;
+  display: grid;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+
+.site-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+}
+
+.site-footer__nav a {
+  color: var(--muted);
+}
+
+.disclaimer {
+  max-width: 52rem;
+}

@@ -48,7 +48,7 @@ const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   'permissions-policy': 'geolocation=(), camera=(), microphone=(), payment=()',
   'strict-transport-security': 'max-age=63072000; includeSubDomains; preload',
   'content-security-policy':
-    "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; " +
+    "default-src 'self'; script-src 'self'; style-src 'self'; " +
     "img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; " +
     "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 }
@@ -66,6 +66,47 @@ app.use('*', async (c, next) => {
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
     c.res.headers.set(name, value)
   }
+})
+
+/**
+ * Interim rate limit on the API surface.
+ *
+ * wrangler.jsonc already declares a RATE_LIMITER binding (60 requests / 60s) that no route called,
+ * so the limit was provisioned and doing nothing. This wires it to /api/* only — static pages are
+ * served from the edge asset cache without invoking this Worker at all, so rate limiting them here
+ * would be both impossible and wrong.
+ *
+ * The key is the client IP. AGENTS.md §2 forbids storing a raw IP, and this does not: the value is
+ * passed to the binding for the duration of the check and is never persisted, logged, or attached
+ * to any record.
+ *
+ * This sits AFTER the security-headers middleware in registration order, which matters: that
+ * middleware sets its headers after `await next()` returns, so it still decorates the 429 produced
+ * here. A rejected request gets the same CSP and frame protections as an accepted one.
+ *
+ * The real per-route policy — differentiated limits, Turnstile on the expensive routes, retry-after
+ * semantics — is edge-api-engineer's in Phase 7 (DIRECTIVE.md §14). This is a single conservative
+ * ceiling so the surface is not unbounded in the meantime, not that policy.
+ */
+app.use('/api/*', async (c, next) => {
+  const key = c.req.header('cf-connecting-ip') ?? 'unknown'
+  const { success } = await c.env.RATE_LIMITER.limit({ key })
+
+  if (!success) {
+    return c.json(
+      {
+        type: 'https://delaypilot.app/problems/rate-limited',
+        title: 'Too Many Requests',
+        status: 429,
+        detail: 'Too many requests from this client. Retry shortly.',
+      },
+      429,
+      { 'content-type': 'application/problem+json', 'cache-control': 'no-store' },
+    )
+  }
+
+  await next()
+  return undefined
 })
 
 /**

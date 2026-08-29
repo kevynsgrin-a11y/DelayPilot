@@ -1,0 +1,99 @@
+---
+/**
+ * Privacy policy.
+ *
+ * Every sentence here must be TRUE of the site as it exists today, not a boilerplate policy
+ * describing a product that has not been built. Today the site is a set of static pages with no
+ * account system, no forms, no analytics, no advertising and no third-party script of any kind.
+ * Saying more than that would be a fabricated claim in the other direction (AGENTS.md section 1.1),
+ * and a policy that overstates collection is as misleading as one that understates it.
+ *
+ * The commitments in "What this site will never collect" are not aspirational: they are binding
+ * invariants from AGENTS.md section 2 that the build is held to.
+ *
+ * This page must be rewritten — not appended to — the moment any account, alert, analytics or
+ * advertising surface ships. docs/agents/ROSTER.md section 3 assigns the policy pages to
+ * trust-compliance-officer; this is a pre-Phase-11 baseline added under direct owner instruction
+ * because the site had no privacy page at all.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro'
+
+const title = 'Privacy — DelayPilot'
+const description =
+  'What DelayPilot collects today (almost nothing), and what it is built never to collect.'
+
+const lastUpdated = '29 August 2026'
+---
+
+<BaseLayout title={title} description={description} nav="privacy">
+  <section class="hero">
+    <h1>Privacy</h1>
+    <p class="lede">
+      What this site collects today, stated plainly — and the things it is built never to collect.
+    </p>
+    <p class="meta">Last updated: {lastUpdated}</p>
+  </section>
+
+  <section class="section">
+    <div class="prose">
+      <h2>What this site collects today</h2>
+
+      <p>
+        <strong>No account. No forms. No tracking.</strong> As of the date above, DelayPilot is a set
+        of static informational pages. There is no sign-up, no login, no flight lookup, and no form of
+        any kind. The site sets no cookies, runs no analytics, serves no advertising, and loads no third-party
+        script.
+      </p>
+
+      <p>
+        The site is served through Cloudflare. Like any web host, Cloudflare records standard server
+        request logs — including IP address, user agent, requested path and timestamp — and retains
+        them under its own policy for security and reliability purposes. We do not add to those
+        logs, query them for analytics, or combine them with anything else.
+      </p>
+
+      <h2>What this site will never collect</h2>
+
+      <p>
+        These are binding rules on the product, not preferences. They hold as new features ship:
+      </p>
+
+      <ul>
+        <li>
+          <strong>No booking reference.</strong> DelayPilot will never ask for a PNR or record locator.
+          It is not an input, not a database column, not a URL parameter, and not a log field.
+        </li>
+        <li>
+          <strong>No identity documents.</strong> Never a passport, government ID, Known Traveler Number,
+          redress number, card number, or airline account credential.
+        </li>
+        <li>
+          <strong>No access to your accounts.</strong> DelayPilot will never read your email inbox, sign
+          in to an airline on your behalf, or submit a claim, refund request, or rebooking for you.
+        </li>
+        <li>
+          <strong>No personal detail in logs or analytics.</strong> No email address, display name, itinerary
+          detail, receipt text, notification payload, or raw IP address is written into application logs,
+          analytics events, page titles, or URLs.
+        </li>
+      </ul>
+
+      <h2>When this page changes</h2>
+
+      <p>
+        This page will be rewritten before — not after — any feature that collects personal data
+        goes live. That rewrite will say exactly what is collected, why, how long it is kept, and
+        how to have it deleted. The date at the top is the record of when the description last
+        matched the site.
+      </p>
+
+      <h2>Contact</h2>
+
+      <p>
+        Questions about this page can be raised through the project's public repository. No contact
+        form is offered here, because a form that collects an email address would contradict the
+        section above.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

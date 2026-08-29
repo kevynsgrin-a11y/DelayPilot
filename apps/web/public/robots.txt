@@ -1,0 +1,23 @@
+# DelayPilot crawl policy.
+#
+# The private prefixes below are the exact routes AGENTS.md section 2 requires to be
+# "noindex, nofollow, noarchive" with opaque identifiers. Disallowing them here is belt and
+# braces: the authoritative control is the per-response robots directive those routes will carry
+# when they ship in Phases 7-10. A Disallow line is a request, not an access control, so nothing
+# private depends on it.
+#
+# No Sitemap: line yet. The sitemap is generated in Phase 11 (DIRECTIVE.md section 19,
+# seo-engineer). Pointing crawlers at a sitemap URL that returns 404 would be a dead reference
+# (AGENTS.md section 1.6) and Search Console reports it as a fetch error, so the line arrives with
+# the file it references rather than ahead of it.
+#
+# Owner note: apps/web/public/robots.txt is seo-engineer's in docs/agents/ROSTER.md section 3.
+# This is a pre-Phase-11 baseline added under direct owner instruction after an external audit
+# found no robots.txt at all.
+
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /auth/
+Disallow: /checkout/
+Disallow: /admin/

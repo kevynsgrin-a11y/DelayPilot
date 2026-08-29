@@ -127,5 +127,12 @@ jobs:
       - name: Validate security-header parity
         run: node scripts/validate-security-headers.mjs
 
+      # DIRECTIVE.md §7 sets a WCAG 2.2 AA floor and the Phase 9 exit gate requires contrast to be
+      # measured rather than eyeballed. The palette was ported from design/v0-preview, where 24 of
+      # 48 pairs failed AA; the failing values were corrected token by token, and this keeps them
+      # corrected.
+      - name: Validate colour contrast
+        run: node scripts/validate-contrast.mjs
+
       - name: Check image budgets
         run: node scripts/assets/compress-images.mjs --check apps/web/public/images

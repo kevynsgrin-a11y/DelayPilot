@@ -22,5 +22,24 @@ export default defineConfig({
   trailingSlash: 'always',
   build: {
     format: 'directory',
+
+    /**
+     * Never inline a stylesheet into the HTML.
+     *
+     * Astro's default is 'auto', which inlines any stylesheet under ~4kB. That is a performance
+     * win in isolation, but it makes the presence of an inline <style> depend on how large the CSS
+     * happens to be on a given day — and an inline <style> requires `style-src 'unsafe-inline'` in
+     * the Content-Security-Policy shipped by apps/web/public/_headers and apps/edge/src/index.ts.
+     *
+     * Pinning this to 'never' makes the output deterministic, which is what lets that CSP drop
+     * 'unsafe-inline' entirely rather than carry it defensively against a future small stylesheet.
+     * Trading one cached external request for a strictly stronger script/style policy is the right
+     * side of that trade for a site whose whole value proposition is being trustworthy.
+     *
+     * If this is ever set back to 'auto', the CSP in BOTH policy files must regain 'unsafe-inline'
+     * or every page will render unstyled. scripts/validate-security-headers.mjs keeps the two
+     * policies in step with each other, but it cannot know about this setting.
+     */
+    inlineStylesheets: 'never',
   },
 })

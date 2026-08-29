@@ -1,0 +1,20 @@
+# Local development overrides for apps/edge.
+#
+# Copy to `.dev.vars` (gitignored) to run the Worker locally with development settings.
+# `wrangler dev` reads this file in preference to the `vars` block in wrangler.jsonc, which holds
+# PRODUCTION values because `wrangler deploy` publishes that block verbatim.
+#
+# Secrets listed under `secrets.required` in wrangler.jsonc (TURNSTILE_SECRET_KEY,
+# TURNSTILE_SITE_KEY, ENCRYPTION_PRIMARY_KEY, HMAC_IDENTIFIER_KEY, SESSION_SIGNING_KEY) also belong
+# in `.dev.vars` locally and in `wrangler secret put <NAME>` in production. Never commit a real
+# value for any of them (AGENTS.md section 2).
+
+DELAYPILOT_ENV=development
+
+# Demo mode is OFF in production and must stay off there. It exists so the fixture provider can be
+# exercised locally without a licensed provider (AGENTS.md section 1.5).
+DEMO_MODE_ENABLED=true
+
+# No malware-scanning pipeline exists, so uploads stay disabled in every environment until one does
+# (docs/BUILD_PLAN.md section 4).
+DOCUMENT_UPLOADS_ENABLED=false

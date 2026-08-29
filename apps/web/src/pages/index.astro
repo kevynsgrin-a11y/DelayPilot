@@ -1,94 +1,148 @@
 ---
 /**
- * Minimal homepage.
+ * Homepage.
  *
  * The full homepage in DIRECTIVE.md section 18.3 — hero lookup, demo result, connection-risk and
  * passenger-rights explainers, pricing, source strip — is Phase 10 and belongs to
- * frontend-ui-engineer. This page carries only statements that are true today: what DelayPilot is,
- * how it treats uncertainty, and the independence disclaimer required by AGENTS.md section 1.4.
+ * frontend-ui-engineer. This page carries only statements that are true today.
  *
- * It deliberately contains no call-to-action control, because the flight lookup it would open does
- * not exist yet, and a control that does nothing is a dead control (AGENTS.md section 1.6).
+ * It deliberately contains no flight-lookup control, because the lookup it would open does not
+ * exist yet, and a control that does nothing is a dead control (AGENTS.md section 1.6). For the
+ * same reason there is no pricing section (no billing exists), no demo flight result (every flight
+ * number, airline, gate and time in design/v0-preview/lib/demo.ts is generated fiction, and two of
+ * its airline codes collide with live IATA designators), and no statistic of any kind.
+ *
+ * What it does instead is state the operating rules the product is actually built on. Those are
+ * true today, they are enforced in code and in AGENTS.md, and they are the reason to trust the
+ * thing when it does ship.
  */
+import BaseLayout from '../layouts/BaseLayout.astro'
+
 const title = 'DelayPilot — Stay ahead of flight disruptions'
 const description =
   'Track a flight, understand connection risk, and see the refund, care, and rebooking rules that may apply.'
 
-/**
- * A canonical URL and an og:url need an absolute origin. That origin comes from
- * PUBLIC_SITE_URL through `site` in astro.config.mjs, which is deliberately left undefined
- * until a real domain is configured. When it is absent these two tags are omitted entirely
- * rather than emitted against an example or guessed origin: a canonical pointing at the
- * wrong host is worse than no canonical, and inventing one would be exactly the kind of
- * fabricated value AGENTS.md §1.1 forbids.
- *
- * The origin-independent tags below always ship, because they are true regardless of where
- * the site is served from.
- *
- * Owner note: the full metadata system — title templates, per-route canonicals, structured
- * data, sitemap — is seo-engineer's in Phase 11 (DIRECTIVE.md §19). This is the homepage
- * baseline only, added under direct owner instruction after an external audit found no
- * canonical, Open Graph, or Twitter tags anywhere in the build.
- */
-const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
+/** The six-value provenance vocabulary is fixed by AGENTS.md section 1.2. It is not paraphrasable. */
+const provenance = [
+  {
+    label: 'Live',
+    meaning: 'A licensed provider returned a fresh response within its freshness threshold.',
+  },
+  {
+    label: 'Cached',
+    meaning: 'A prior licensed response, still inside the permitted cache window.',
+  },
+  {
+    label: 'Stale',
+    meaning: 'Past the normal freshness threshold, still shown — and shown as stale.',
+  },
+  { label: 'Demo', meaning: 'Fixture data, always labelled “Demo data — not a live flight.”' },
+  {
+    label: 'Unavailable',
+    meaning: 'No trustworthy response exists. The answer is unknown, and says so.',
+  },
+  {
+    label: 'Heuristic risk band',
+    meaning: 'A qualitative band. No calibrated model is deployed, so no percentage is shown.',
+  },
+]
+
+const commitments = [
+  {
+    heading: 'No booking reference. Ever.',
+    body: 'DelayPilot never asks for a PNR or record locator — not as an input, not in a URL, not in a log. It is not a field anywhere in the product.',
+  },
+  {
+    heading: 'Every datum carries its source',
+    body: 'Where a value came from and how old it is travels with it from the provider all the way to the pixel. A number with no provenance does not get displayed.',
+  },
+  {
+    heading: '“May apply”, never “you are owed”',
+    body: 'Passenger-rights output is an informational estimate tied to a dated, versioned rule set with links to the official source. It is not a determination, and not legal advice.',
+  },
+  {
+    heading: 'Unknown is a designed answer',
+    body: 'When no trustworthy source has answered, the interface says so. It does not fill the gap with a plausible guess, a blank, or a zero.',
+  },
+]
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+<BaseLayout title={title} description={description} nav="home">
+  <section class="hero">
+    <h1>Stay ahead of flight disruptions.</h1>
 
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="DelayPilot" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+    <p class="lede">
+      Track a flight, understand connection risk, and see the refund, care, and rebooking rules that
+      may apply—before airport chaos makes the decision for you.
+    </p>
 
-    {
-      /* summary, not summary_large_image: no og:image ships until a real social card exists.
-        A card tag promising an image that 404s is a dead reference (AGENTS.md §1.6). */
-    }
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
+    <ul class="trust-line">
+      <li>Source-linked status</li>
+      <li>Versioned passenger-rights rules</li>
+      <li>No booking code required</li>
+    </ul>
+  </section>
 
-    <link rel="icon" href="data:," />
-  </head>
-  <body>
-    <header>
-      <p><strong>DelayPilot</strong></p>
-    </header>
+  <section class="section">
+    <h2>How this site handles uncertainty</h2>
 
-    <main>
-      <h1>Stay ahead of flight disruptions.</h1>
+    <p class="section__intro">
+      Every piece of flight information DelayPilot shows carries where it came from and how old it
+      is. These six labels are the entire vocabulary — there are no synonyms, and none of them is
+      ever omitted to make a screen look tidier.
+    </p>
 
+    <dl class="card-grid">
+      {
+        provenance.map((item) => (
+          <div class="card">
+            <dt>
+              <h3>{item.label}</h3>
+            </dt>
+            <dd style="margin: 0;">
+              <p>{item.meaning}</p>
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+  </section>
+
+  <section class="section">
+    <h2>What DelayPilot will not do</h2>
+
+    <p class="section__intro">
+      People read a tool like this while standing at a gate, tired, about to make an expensive and
+      irreversible decision. These are the rules the product is built under, and they are enforced
+      in the codebase rather than promised in marketing copy.
+    </p>
+
+    <div class="card-grid">
+      {
+        commitments.map((item) => (
+          <article class="card">
+            <h3>{item.heading}</h3>
+            <p>{item.body}</p>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Where the build is today</h2>
+
+    <div class="prose">
       <p>
-        Track a flight, understand connection risk, and see the refund, care, and rebooking rules
-        that may apply—before airport chaos makes the decision for you.
+        DelayPilot is under construction and this page is the honest state of it. There is no flight
+        lookup yet, no account, and no live provider connected — so rather than show a demo flight
+        with invented times and gates, the site shows nothing it cannot source.
       </p>
-
-      <p>Source-linked status · Versioned passenger-rights rules · No booking code required</p>
-
-      <h2>How this site handles uncertainty</h2>
-
       <p>
-        Every piece of flight information DelayPilot shows carries where it came from and how old it
-        is. When no trustworthy source has answered, the answer is <em>unknown</em>, and it says so
-        rather than filling the gap. Passenger-rights guidance is an informational estimate tied to
-        a dated, versioned rule set with links to the official source — not a determination, and not
-        legal advice.
+        <span class="chip chip--unavailable"><span class="chip__dot"></span>Unavailable</span> is the
+        label that applies to live flight data right now, and it will keep applying until a licensed provider
+        is connected under a recorded licence.
       </p>
-    </main>
-
-    <footer>
-      <p>
-        DelayPilot is an independent travel-information tool. It is not an airline, airport,
-        government agency, law firm, claims company, or flight-data provider. Guidance is
-        informational and may not reflect every fact in your case.
-      </p>
-    </footer>
-  </body>
-</html>
+    </div>
+  </section>
+</BaseLayout>

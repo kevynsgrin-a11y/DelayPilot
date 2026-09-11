@@ -1,0 +1,1097 @@
+/**
+ * Primitive styles.
+ *
+ * Every value here is a SEMANTIC or COMPONENT token. No literal colour, and no reference to a
+ * primitive ramp step (`--color-*`): packages/ui/test/tokens.test.ts fails this file if one
+ * appears. The pairs these rules produce are the pairs measured in
+ * packages/ui/src/tokens/CONTRAST.md.
+ *
+ * Motion: state change only (`DIRECTIVE.md §7`). Every transition below is a response to hover,
+ * press, check or open. There is no keyframe, no loop, no pulse, and nothing transitions a layout
+ * property — no width, height, padding, margin or inset animation anywhere in this file. Under
+ * `prefers-reduced-motion: reduce` the duration tokens collapse to 1ms in tokens.css and every one
+ * of these transitions goes with them, without removing the state change itself.
+ *
+ * Load order: apps/web/src/styles/tokens.css first, this second.
+ */
+
+/* --------------------------------------------------------------------------------------------- */
+/* Icon                                                                                           */
+/* --------------------------------------------------------------------------------------------- */
+.dp-icon {
+  flex: none;
+  vertical-align: -0.125em;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* VisuallyHidden — removed from the visual layer, kept in the accessibility tree.                 */
+/* --------------------------------------------------------------------------------------------- */
+.dp-visually-hidden {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Stack and Grid                                                                                 */
+/* --------------------------------------------------------------------------------------------- */
+.dp-stack {
+  display: flex;
+  min-inline-size: 0;
+}
+
+.dp-stack--column {
+  flex-direction: column;
+}
+
+.dp-stack--row {
+  flex-direction: row;
+}
+
+.dp-stack--wrap {
+  flex-wrap: wrap;
+}
+
+.dp-stack--align-start {
+  align-items: flex-start;
+}
+
+.dp-stack--align-center {
+  align-items: center;
+}
+
+.dp-stack--align-end {
+  align-items: flex-end;
+}
+
+.dp-stack--align-stretch {
+  align-items: stretch;
+}
+
+.dp-stack--align-baseline {
+  align-items: baseline;
+}
+
+.dp-stack--justify-start {
+  justify-content: flex-start;
+}
+
+.dp-stack--justify-center {
+  justify-content: center;
+}
+
+.dp-stack--justify-end {
+  justify-content: flex-end;
+}
+
+.dp-stack--justify-between {
+  justify-content: space-between;
+}
+
+.dp-grid {
+  display: grid;
+  gap: var(--grid-gutter);
+  min-inline-size: 0;
+}
+
+.dp-grid--equal {
+  grid-template-columns: 1fr;
+}
+
+/* The cockpit is one column in source order below 1024px: on a phone the itinerary and the action
+   must be read before the secondary panel (DIRECTIVE.md §18.7). */
+.dp-grid--cockpit {
+  grid-template-columns: 1fr;
+}
+
+.dp-grid__primary,
+.dp-grid__secondary {
+  min-inline-size: 0;
+}
+
+@media (min-width: 1024px) {
+  .dp-grid--equal {
+    grid-template-columns: repeat(var(--dp-grid-columns, 2), minmax(0, 1fr));
+  }
+
+  /* 12 columns, 8 for action and itinerary, 4 for source, alerts and secondary. */
+  .dp-grid--cockpit {
+    grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
+  }
+
+  .dp-grid--cockpit > .dp-grid__primary {
+    grid-column: span var(--grid-cockpit-primary);
+  }
+
+  .dp-grid--cockpit > .dp-grid__secondary {
+    grid-column: span var(--grid-cockpit-secondary);
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Card                                                                                           */
+/* --------------------------------------------------------------------------------------------- */
+.dp-card {
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  padding: var(--space-16);
+  break-inside: avoid;
+}
+
+.dp-card--raised {
+  background-color: var(--surface-card);
+}
+
+.dp-card--flat {
+  background-color: transparent;
+}
+
+@media (min-width: 768px) {
+  .dp-card {
+    padding: var(--space-24);
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Badge                                                                                          */
+/* --------------------------------------------------------------------------------------------- */
+.dp-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-8);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-ui);
+}
+
+.dp-badge--neutral {
+  color: var(--text-secondary);
+  background-color: var(--surface-sunken);
+  border-color: var(--border-interactive);
+}
+
+.dp-badge--accent {
+  color: var(--text-accent);
+  background-color: var(--accent-subtle-bg);
+  border-color: var(--border-accent);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Button — 44x44px minimum target (DIRECTIVE.md §18.7).                                          */
+/* --------------------------------------------------------------------------------------------- */
+.dp-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-block-size: var(--target-min);
+  min-inline-size: var(--target-min);
+  padding-inline: var(--space-16);
+  border-radius: var(--radius-control);
+  border: var(--border-width-hairline) solid transparent;
+  font-family: inherit;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-ui);
+  cursor: pointer;
+  text-align: center;
+  transition:
+    background-color var(--motion-transition-control),
+    border-color var(--motion-transition-control),
+    color var(--motion-transition-control);
+}
+
+.dp-button--block {
+  inline-size: 100%;
+}
+
+.dp-button--icon-only {
+  padding-inline: 0;
+  inline-size: var(--target-min);
+}
+
+.dp-button--primary {
+  background-color: var(--accent-bg);
+  color: var(--text-on-accent);
+}
+
+.dp-button--primary:hover {
+  background-color: var(--accent-bg-hover);
+}
+
+.dp-button--primary:active {
+  background-color: var(--accent-bg-active);
+}
+
+.dp-button--secondary {
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+  border-color: var(--border-interactive);
+}
+
+.dp-button--secondary:hover {
+  background-color: var(--surface-sunken);
+}
+
+.dp-button--ghost {
+  background-color: transparent;
+  color: var(--text-accent);
+}
+
+.dp-button--ghost:hover {
+  background-color: var(--accent-subtle-bg);
+}
+
+.dp-button:disabled {
+  cursor: not-allowed;
+  color: var(--text-disabled);
+  background-color: var(--surface-sunken);
+  border-color: var(--border-hairline);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Link                                                                                           */
+/* --------------------------------------------------------------------------------------------- */
+.dp-link {
+  color: var(--text-accent);
+  text-underline-offset: 0.2em;
+}
+
+/* An inline link inside a sentence is exempt from the 44px target rule (WCAG 2.2 SC 2.5.8, inline
+   exception). A standalone link is a control and takes the full target. */
+.dp-link--standalone {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-block-size: var(--target-min);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dp-link--icon-only {
+  justify-content: center;
+  min-inline-size: var(--target-min);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* StatusPill — shape, label and tone together. None of the three is optional.                     */
+/* --------------------------------------------------------------------------------------------- */
+.dp-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-ui);
+  transition:
+    background-color var(--motion-transition-state),
+    border-color var(--motion-transition-state),
+    color var(--motion-transition-state);
+}
+
+.dp-status-pill__icon {
+  font-size: var(--icon-size-16);
+}
+
+.dp-status-pill__detail {
+  font-weight: var(--font-weight-regular);
+}
+
+.dp-status-pill--safe {
+  color: var(--status-safe-fg);
+  background-color: var(--status-safe-bg);
+  border-color: var(--status-safe-border);
+}
+
+.dp-status-pill--watch {
+  color: var(--status-watch-fg);
+  background-color: var(--status-watch-bg);
+  border-color: var(--status-watch-border);
+}
+
+.dp-status-pill--critical {
+  color: var(--status-critical-fg);
+  background-color: var(--status-critical-bg);
+  border-color: var(--status-critical-border);
+}
+
+.dp-status-pill--unknown {
+  color: var(--status-unknown-fg);
+  background-color: var(--status-unknown-bg);
+  border-color: var(--status-unknown-border);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* ProvenanceChip — the six AGENTS.md §1.2 variants, all with visible text.                        */
+/*                                                                                                */
+/* The chip WRAPS rather than truncating: "Updated 6 minutes ago from [source]" has to survive at  */
+/* 375px, and an ellipsis in a timestamp is a dropped datum.                                      */
+/* --------------------------------------------------------------------------------------------- */
+.dp-chip {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-8);
+  max-inline-size: 100%;
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-ui);
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.dp-chip__icon {
+  font-size: var(--icon-size-16);
+}
+
+.dp-chip__freshness {
+  font-weight: var(--font-weight-regular);
+}
+
+.dp-chip--live {
+  color: var(--chip-live-fg);
+  background-color: var(--chip-live-bg);
+  border-color: var(--chip-live-border);
+}
+
+.dp-chip--cached {
+  color: var(--chip-cached-fg);
+  background-color: var(--chip-cached-bg);
+  border-color: var(--chip-cached-border);
+}
+
+.dp-chip--stale {
+  color: var(--chip-stale-fg);
+  background-color: var(--chip-stale-bg);
+  border-color: var(--chip-stale-border);
+}
+
+/* Demo is built from none of the status hues: a 2px dashed boundary over a diagonal hatch, and a
+   square hatched-swatch glyph. It must be impossible to mistake for Live at a glance. */
+.dp-chip--demo {
+  color: var(--chip-demo-fg);
+  background-color: var(--chip-demo-bg);
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--chip-demo-hatch) 0 2px,
+    transparent 2px 7px
+  );
+  border-color: var(--chip-demo-border);
+  border-style: dashed;
+  border-width: var(--border-width-emphasis);
+  border-radius: var(--radius-control);
+}
+
+.dp-chip--unavailable {
+  color: var(--chip-unavailable-fg);
+  background-color: var(--chip-unavailable-bg);
+  border-color: var(--chip-unavailable-border);
+}
+
+/* Wider, and never styled like a probability: there is no calibrated model behind it. */
+.dp-chip--heuristic {
+  color: var(--chip-heuristic-fg);
+  background-color: var(--chip-heuristic-bg);
+  border-color: var(--chip-heuristic-border);
+  border-radius: var(--radius-control);
+  padding-inline: var(--space-16);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Field, Input, Select, Combobox                                                                 */
+/* --------------------------------------------------------------------------------------------- */
+.dp-field {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.dp-field__label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.dp-field__requirement {
+  font-weight: var(--font-weight-regular);
+  color: var(--text-secondary);
+}
+
+.dp-field__hint {
+  margin: 0;
+  font-size: var(--font-size-14);
+  color: var(--text-secondary);
+}
+
+/* The message is text. An input that turned red and said nothing would be colour as the only
+   signal (DIRECTIVE.md §7 accessibility floor). */
+.dp-field__error {
+  margin: 0;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  color: var(--status-critical-fg);
+}
+
+.dp-input,
+.dp-select__control,
+.dp-combobox__input {
+  inline-size: 100%;
+  min-block-size: var(--target-min);
+  padding: var(--space-8) var(--space-12);
+  border: var(--border-width-hairline) solid var(--border-interactive);
+  border-radius: var(--radius-control);
+  background-color: var(--surface-card);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-ui);
+  transition: border-color var(--motion-transition-control);
+}
+
+.dp-input[aria-invalid='true'],
+.dp-combobox__input[aria-invalid='true'] {
+  border-color: var(--status-critical-border);
+  border-width: var(--border-width-emphasis);
+}
+
+.dp-input:disabled,
+.dp-select__control:disabled,
+.dp-combobox__input:disabled {
+  color: var(--text-disabled);
+  background-color: var(--surface-sunken);
+}
+
+.dp-select {
+  position: relative;
+  display: block;
+}
+
+.dp-select__control {
+  appearance: none;
+  padding-inline-end: var(--space-32);
+}
+
+.dp-select__chevron {
+  position: absolute;
+  inset-inline-end: var(--space-12);
+  inset-block-start: 50%;
+  translate: 0 -50%;
+  font-size: var(--icon-size-20);
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.dp-combobox {
+  position: relative;
+}
+
+.dp-combobox__listbox {
+  position: absolute;
+  z-index: 20;
+  inset-inline: 0;
+  margin-block-start: var(--space-4);
+  padding: var(--space-4);
+  list-style: none;
+  max-block-size: 18rem;
+  overflow-y: auto;
+  background-color: var(--surface-card);
+  border: var(--border-width-hairline) solid var(--border-interactive);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-elevated);
+}
+
+.dp-combobox__option {
+  min-block-size: var(--target-min);
+  display: flex;
+  align-items: center;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-control);
+  cursor: pointer;
+}
+
+.dp-combobox__option.is-active,
+.dp-combobox__option[aria-selected='true'] {
+  background-color: var(--accent-subtle-bg);
+  color: var(--text-primary);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Checkbox, Radio, Switch                                                                        */
+/*                                                                                                */
+/* The native input stays in the DOM and covers the whole label, so the target is the full row and */
+/* platform behaviour is untouched. The focus ring moves from the transparent input to the drawn   */
+/* box, which is what a sighted keyboard user is actually looking at.                              */
+/* --------------------------------------------------------------------------------------------- */
+.dp-choice {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-block-size: var(--target-min);
+  cursor: pointer;
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-ui);
+}
+
+.dp-choice__input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.dp-choice__box {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--icon-size-20);
+  block-size: var(--icon-size-20);
+  border: var(--border-width-hairline) solid var(--border-interactive);
+  border-radius: var(--radius-control);
+  background-color: var(--surface-card);
+  color: var(--text-on-accent);
+  transition:
+    background-color var(--motion-transition-control),
+    border-color var(--motion-transition-control);
+}
+
+.dp-choice--radio .dp-choice__box {
+  border-radius: var(--radius-pill);
+}
+
+.dp-choice__mark {
+  font-size: var(--font-size-14);
+  opacity: 0;
+}
+
+.dp-choice__dial {
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-pill);
+  background-color: var(--text-on-accent);
+  opacity: 0;
+}
+
+.dp-choice__input:checked ~ .dp-choice__box,
+.dp-choice__input:indeterminate ~ .dp-choice__box {
+  background-color: var(--accent-bg);
+  border-color: var(--accent-bg);
+}
+
+.dp-choice__input:checked ~ .dp-choice__box .dp-choice__mark,
+.dp-choice__input:indeterminate ~ .dp-choice__box .dp-choice__mark,
+.dp-choice__input:checked ~ .dp-choice__box .dp-choice__dial {
+  opacity: 1;
+}
+
+.dp-choice__input:disabled ~ .dp-choice__label {
+  color: var(--text-disabled);
+}
+
+.dp-choice__input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.dp-choice__input:focus-visible ~ .dp-choice__box {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--focus-ring-halo);
+}
+
+.dp-switch__control {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-12);
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-8);
+  border: var(--border-width-hairline) solid transparent;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-16);
+  cursor: pointer;
+}
+
+.dp-switch__track {
+  flex: none;
+  position: relative;
+  inline-size: 2.5rem;
+  block-size: var(--icon-size-20);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid var(--border-interactive);
+  background-color: var(--surface-sunken);
+  transition:
+    background-color var(--motion-transition-control),
+    border-color var(--motion-transition-control);
+}
+
+.dp-switch__knob {
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-start: 1px;
+  inline-size: var(--space-16);
+  block-size: var(--space-16);
+  border-radius: var(--radius-pill);
+  background-color: var(--border-interactive);
+  transition: translate var(--motion-transition-control);
+}
+
+.dp-switch__control[aria-checked='true'] .dp-switch__track {
+  background-color: var(--accent-bg);
+  border-color: var(--accent-bg);
+}
+
+.dp-switch__control[aria-checked='true'] .dp-switch__knob {
+  translate: 1.25rem 0;
+  background-color: var(--text-on-accent);
+}
+
+/* The state is also written as words, so the knob position is never the only signal. */
+.dp-switch__state {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Dialog and Drawer                                                                              */
+/* --------------------------------------------------------------------------------------------- */
+.dp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16);
+}
+
+.dp-overlay__scrim {
+  position: absolute;
+  inset: 0;
+  background-color: var(--surface-scrim);
+}
+
+.dp-dialog,
+.dp-drawer {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  background-color: var(--surface-elevated);
+  border: var(--border-width-hairline) solid var(--border-emphasis);
+  box-shadow: var(--shadow-overlay);
+  max-block-size: 100%;
+  overflow: auto;
+}
+
+/* The shared focus layer replaces box-shadow, which would drop the elevation the moment focus
+   landed on the panel itself. The ring is drawn inside the edge instead, so a full-width drawer
+   cannot push it off-screen. */
+.dp-dialog:focus-visible,
+.dp-drawer:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: calc(-1 * var(--focus-ring-offset));
+  box-shadow: var(--shadow-overlay);
+}
+
+.dp-dialog {
+  inline-size: min(34rem, 100%);
+  border-radius: var(--radius-dialog);
+  padding: var(--space-24);
+}
+
+.dp-dialog__header,
+.dp-drawer__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.dp-dialog__title,
+.dp-drawer__title {
+  margin: 0;
+  font-size: var(--font-size-20);
+  line-height: var(--line-height-heading);
+}
+
+.dp-dialog__body,
+.dp-drawer__body {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.dp-dialog__footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  justify-content: flex-end;
+}
+
+.dp-drawer {
+  padding: var(--space-24);
+}
+
+.dp-drawer--bottom {
+  margin-block-start: auto;
+  inline-size: 100%;
+  border-start-start-radius: var(--radius-dialog);
+  border-start-end-radius: var(--radius-dialog);
+}
+
+.dp-drawer--end {
+  margin-inline-start: auto;
+  block-size: 100%;
+  inline-size: min(26rem, 100%);
+  border-start-start-radius: var(--radius-dialog);
+  border-end-start-radius: var(--radius-dialog);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Tooltip                                                                                        */
+/* --------------------------------------------------------------------------------------------- */
+.dp-tooltip {
+  position: relative;
+  display: inline-flex;
+}
+
+.dp-tooltip__bubble {
+  position: absolute;
+  z-index: 40;
+  inset-block-end: calc(100% + var(--space-8));
+  inset-inline-start: 0;
+  inline-size: max-content;
+  max-inline-size: 18rem;
+  padding: var(--space-8) var(--space-12);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-inverse);
+  color: var(--text-inverse);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-ui);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Tabs                                                                                           */
+/* --------------------------------------------------------------------------------------------- */
+.dp-tabs__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  border-block-end: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+.dp-tabs__tab {
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-12);
+  border: 0;
+  border-block-end: var(--border-width-emphasis) solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition:
+    color var(--motion-transition-control),
+    border-color var(--motion-transition-control);
+}
+
+/* Selected is marked by the underline and by aria-selected, not by colour alone. */
+.dp-tabs__tab.is-selected {
+  color: var(--text-primary);
+  border-block-end-color: var(--border-accent);
+}
+
+.dp-tabs__panel {
+  padding-block-start: var(--space-16);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Disclosure                                                                                     */
+/* --------------------------------------------------------------------------------------------- */
+.dp-disclosure {
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-card);
+}
+
+.dp-disclosure__summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-block-size: var(--target-min);
+  padding: var(--space-8) var(--space-16);
+  cursor: pointer;
+  font-weight: var(--font-weight-semibold);
+  list-style: none;
+}
+
+.dp-disclosure__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* A rotation, not a height animation: animating the panel's height would animate a layout
+   property, which is forbidden everywhere (ADR 0003 rule 3). */
+.dp-disclosure__marker {
+  color: var(--text-secondary);
+  rotate: -90deg;
+  transition: rotate var(--motion-transition-control);
+}
+
+.dp-disclosure[open] .dp-disclosure__marker {
+  rotate: 0deg;
+}
+
+.dp-disclosure__content {
+  padding: 0 var(--space-16) var(--space-16);
+  display: grid;
+  gap: var(--space-12);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* DataTable                                                                                      */
+/* --------------------------------------------------------------------------------------------- */
+.dp-table {
+  overflow-x: auto;
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-card);
+}
+
+.dp-table__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-14);
+}
+
+.dp-table__caption {
+  padding: var(--space-12) var(--space-16);
+  text-align: start;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.dp-table__head {
+  padding: var(--space-8) var(--space-16);
+  text-align: start;
+  vertical-align: bottom;
+  background-color: var(--surface-sunken);
+  border-block-end: var(--border-width-hairline) solid var(--border-emphasis);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dp-table__cell {
+  padding: var(--space-12) var(--space-16);
+  text-align: start;
+  vertical-align: top;
+  border-block-start: var(--border-width-hairline) solid var(--border-hairline);
+  color: var(--text-primary);
+}
+
+.dp-table__cell--row-header {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Times, flight numbers, durations, distances and amounts: fixed-width figures and end alignment,
+   so a value updating after a refresh does not reflow its column. */
+.dp-table__cell--numeric,
+.dp-table__head.dp-table__cell--numeric {
+  text-align: end;
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Skeleton — reserves the final dimensions. No shimmer: loops are forbidden here.                 */
+/* --------------------------------------------------------------------------------------------- */
+.dp-skeleton {
+  display: inline-block;
+  background-color: var(--surface-sunken);
+}
+
+.dp-skeleton--control {
+  border-radius: var(--radius-control);
+}
+
+.dp-skeleton--card {
+  border-radius: var(--radius-card);
+}
+
+.dp-skeleton--pill {
+  border-radius: var(--radius-pill);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* ProgressBar — a linear meter. Never a gauge (DIRECTIVE.md §18.5).                               */
+/*                                                                                                */
+/* The fill is scaled, not resized: a value updating after a refresh is a permitted state change,  */
+/* but animating inline-size would animate a layout property, which is forbidden. Linear easing,   */
+/* because progress that eases is progress that is lying about its rate.                           */
+/* --------------------------------------------------------------------------------------------- */
+.dp-progress {
+  inline-size: 100%;
+}
+
+.dp-progress__track {
+  display: block;
+  inline-size: 100%;
+  block-size: var(--space-8);
+  border-radius: var(--radius-pill);
+  background-color: var(--surface-sunken);
+  overflow: hidden;
+}
+
+.dp-progress__fill {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  transform-origin: 0 50%;
+  scale: var(--dp-progress-fraction, 0) 1;
+  transition: scale var(--motion-base) var(--motion-ease-linear);
+}
+
+[dir='rtl'] .dp-progress__fill {
+  transform-origin: 100% 50%;
+}
+
+.dp-progress--safe .dp-progress__fill {
+  background-color: var(--status-safe-fg);
+}
+
+.dp-progress--watch .dp-progress__fill {
+  background-color: var(--status-watch-fg);
+}
+
+.dp-progress--critical .dp-progress__fill {
+  background-color: var(--status-critical-fg);
+}
+
+.dp-progress--unknown .dp-progress__fill {
+  background-color: var(--status-unknown-fg);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Callout and Toast — the four DIRECTIVE.md §16 severities on the four status tones.              */
+/* Nothing pulses: an attention animation on a critical state is forbidden (ADR 0003 rule 3).      */
+/* --------------------------------------------------------------------------------------------- */
+.dp-callout,
+.dp-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-12);
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid;
+  border-radius: var(--radius-card);
+}
+
+.dp-callout__icon,
+.dp-toast__icon {
+  font-size: var(--icon-size-20);
+  flex: none;
+}
+
+.dp-callout__content,
+.dp-toast__content {
+  display: grid;
+  gap: var(--space-4);
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.dp-callout__title,
+.dp-toast__title {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.dp-callout__body,
+.dp-toast__body {
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dp-callout__action {
+  flex: none;
+}
+
+.dp-callout--info,
+.dp-toast--info {
+  color: var(--severity-info-fg);
+  background-color: var(--severity-info-bg);
+  border-color: var(--severity-info-border);
+}
+
+.dp-callout--watch,
+.dp-toast--watch {
+  color: var(--severity-watch-fg);
+  background-color: var(--severity-watch-bg);
+  border-color: var(--severity-watch-border);
+}
+
+.dp-callout--urgent,
+.dp-toast--urgent {
+  color: var(--severity-urgent-fg);
+  background-color: var(--severity-urgent-bg);
+  border-color: var(--severity-urgent-border);
+}
+
+.dp-callout--resolved,
+.dp-toast--resolved {
+  color: var(--severity-resolved-fg);
+  background-color: var(--severity-resolved-bg);
+  border-color: var(--severity-resolved-border);
+}
+
+.dp-toast {
+  box-shadow: var(--shadow-elevated);
+  background-color: var(--surface-elevated);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* AdSlot — reserved dimensions, labelled, never collapsing (AGENTS.md §4, DIRECTIVE.md §20).      */
+/* --------------------------------------------------------------------------------------------- */
+.dp-ad-slot {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  border: var(--border-width-hairline) dashed var(--border-hairline);
+  border-radius: var(--radius-card);
+  background-color: var(--surface-base);
+}
+
+.dp-ad-slot__label {
+  font-size: var(--font-size-12);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dp-ad-slot__frame {
+  flex: 1 1 auto;
+  min-block-size: 0;
+  overflow: hidden;
+}

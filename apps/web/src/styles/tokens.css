@@ -1,141 +1,471 @@
 /**
- * DelayPilot design tokens — framework-free.
+ * DelayPilot design tokens — GENERATED FILE, DO NOT EDIT BY HAND.
  *
- * Ported from `design/v0-preview/app/globals.css`, which is Tailwind v4 source and is
- * reference-only, never shipped (`design/v0-preview/README.md`). Public pages must ship
- * near-zero JavaScript to hold LCP < 2.5s and Lighthouse >= 95 (`DIRECTIVE.md §22`), so the
- * token layer is lifted as plain custom properties and no Tailwind build step is introduced.
+ * Source of truth: packages/ui/src/tokens/ (owner: brand-design-director).
+ * Regenerate:      pnpm --filter @delaypilot/ui tokens:build
+ * Drift check:     pnpm test  (packages/ui/test/tokens.test.ts regenerates in memory and asserts
+ *                  byte-equality with this file, so a hand edit fails the suite.)
  *
- * ---------------------------------------------------------------------------------------------
- * WHY SOME VALUES DIFFER FROM THE v0 SOURCE
- * ---------------------------------------------------------------------------------------------
- * `DIRECTIVE.md §7` sets a WCAG 2.2 AA floor and the Phase 9 exit gate requires contrast to be
- * *measured* in both themes, not eyeballed. Measuring every token pair in the v0 palette against
- * every surface it is used on returns 24 failures out of 48 pairs — including the primary button
- * (white on `#087bfd`-family accent at 4.39:1) and every status colour on every light surface,
- * with light-theme amber at 2.40:1.
+ * Layers: primitive ramps -> semantic tokens -> component tokens. A rule references the semantic or
+ * component layer; only a semantic token names a ramp step. Framework-free custom properties, no
+ * build step in apps/web, because the public pages ship near-zero JavaScript to hold LCP < 2.5 s
+ * and Lighthouse >= 95 (DIRECTIVE.md §22).
  *
- * Shipping those verbatim would fail the accessibility gate on the majority of the palette. So:
+ * Contrast: every pair used for text, for a non-text boundary or glyph, and for the focus ring is
+ * registered in packages/ui/src/tokens/pairs.ts and measured in BOTH themes by
+ * packages/ui/test/contrast.test.ts. The measured table is committed at
+ * packages/ui/src/tokens/CONTRAST.md. scripts/validate-contrast.mjs re-measures the shipped values
+ * out of this file in CI.
  *
- *   - The FIXED PALETTE below keeps the v0 hex values EXACTLY. It is the brand, and it is what
- *     non-text uses (dots, fills, rules, decorative marks) draw from, where the 4.5:1 text
- *     threshold does not apply.
- *   - The SEMANTIC TEXT TOKENS are corrected to the minimum hue-preserving darkening (light) or
- *     lightening (dark) that reaches 4.5:1 against the hardest surface each is used on. The
- *     shifts are small — most are under 0.07 in HSL lightness — so the palette's character is
- *     unchanged. Each corrected value carries its measured ratio in a comment.
- *
- * The correction is deliberately minimal rather than a re-design: the owner asked to keep the v0
- * visual identity, and the smallest change that clears the gate is the one that honours both.
- * `scripts/validate-contrast.mjs` re-measures every pair in CI, so a future edit that reintroduces
- * a failing pair fails the build instead of shipping.
- *
- * Every hex is either read directly from the v0 source or computed from it by the documented
- * minimal-shift rule. None is invented (`AGENTS.md §1.1`).
+ * Motion: state change only (DIRECTIVE.md §7). The --motion-reveal*, --motion-ambient-cycle and
+ * --motion-view-transition tokens exist only for the narrow public-marketing-route allowance in
+ * docs/decisions/0003-marketing-motion-allowance.md and are forbidden inside any data-bearing
+ * component. All of them collapse under prefers-reduced-motion: reduce.
  */
 
-/* ------------------------------------------------------------------------------------------- */
-/* 1. Fixed palette — v0 verbatim, identical in both themes.                                    */
-/*    Source: design/v0-preview/app/globals.css lines 12-31.                                    */
-/*    Use these for fills, dots, rules and marks — not for small text on a light surface.        */
-/* ------------------------------------------------------------------------------------------- */
-:root {
-  --color-ink-1000: #050b16;
-  --color-ink-950: #07111f;
-  --color-ink-900: #0b1728;
-  --color-ink-800: #13243a;
-
-  --color-cloud-50: #f8fbff;
-  --color-cloud-100: #eef5fb;
-  --color-cloud-200: #dce8f2;
-
-  --color-slate-500: #62758a;
-  --color-slate-700: #34465a;
-
-  --color-sky-400: #31c5ff;
-  --color-sky-500: #0ba8ea;
-  --color-sky-600: #087fbd;
-
-  --color-safe-500: #168f6a;
-  --color-watch-500: #d99014;
-  --color-critical-500: #d9485f;
-  --color-unknown-500: #738197;
-
-  --radius: 0.75rem;
-  --radius-sm: 0.5rem;
-  --radius-lg: 1rem;
-
-  --font-sans:
-    ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
-
-  /* Inter and Geist Mono are named in the v0 source but no font file is served and no webfont is
-     loaded. Naming a family the site does not ship would silently fall back anyway, so the stacks
-     above start at the system UI font. A real webfont is Phase 9 work for visual-asset-director,
-     with its own budget (DIRECTIVE.md §22). */
+/* --------------------------------------------------------------------------------------------- */
+/* 0. Fonts.                                                                                     */
+/* --------------------------------------------------------------------------------------------- */
+/* Geist Sans, SIL Open Font License 1.1 (verified: `npm view geist license` -> SIL OPEN FONT    */
+/* LICENSE; licence text at /fonts/LICENSE-Geist.txt). Self-hosted and served same-origin: no    */
+/* third-party font CDN, so no font request leaks a reader's IP to a third party (AGENTS.md §2). */
+/* Exactly two faces ship, 400 and 600, subset to Latin — nothing may request 700+, which would  */
+/* synthesise a face.                                                                            */
+/* --------------------------------------------------------------------------------------------- */
+/* ZERO-CLS SWAP. 'Geist Sans Fallback' is the same metric-matched face the browser would have   */
+/* used anyway (Arial, or Liberation Sans where Arial is absent — the two are metric-compatible  */
+/* by design), re-declared with overrides so a line of text occupies the same space before and   */
+/* after the swap. The overrides were computed with fontTools 4.65 from the real font files:     */
+/* --------------------------------------------------------------------------------------------- */
+/*   size-adjust    = mean advance width of the corpus in Geist (in em) divided by the same      */
+/*                    mean in Liberation Sans.                                                   */
+/*   ascent/descent = Geist hhea ascender 1005 / descender -295 over unitsPerEm 1000,            */
+/*                    divided by size-adjust so the scaled fallback lands on the same line box.  */
+/*   line-gap       = Geist hhea lineGap 0.                                                      */
+/* --------------------------------------------------------------------------------------------- */
+/* The corpus is the 1121 characters of DIRECTIVE.md §27 result microcopy — the product's own    */
+/* English UI text, so the match is tuned to the sentences actually rendered rather than to a    */
+/* pangram. Measured means, in em: 400 0.461548 Geist vs 0.440375 fallback;                      */
+/* 600 0.483093 vs 0.47539. Geist uses USE_TYPO_METRICS with hhea == OS/2 typo,                  */
+/* so there is no hhea/typo ambiguity to resolve.                                                */
+/* --------------------------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('/fonts/geist-sans-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00ff, U+2013-2014, U+2018-201d, U+2022, U+2026, U+2212, U+20ac;
 }
 
-/* ------------------------------------------------------------------------------------------- */
-/* 2. Semantic tokens — LIGHT.                                                                  */
-/*    Surfaces are v0 verbatim. Text tokens are AA-corrected; measured ratios are against        */
-/*    --background #eef5fb, the darkest (hardest) of the three light surfaces.                   */
-/* ------------------------------------------------------------------------------------------- */
+@font-face {
+  font-family: 'Geist Sans';
+  src: url('/fonts/geist-sans-latin-600.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00ff, U+2013-2014, U+2018-201d, U+2022, U+2026, U+2212, U+20ac;
+}
+
+@font-face {
+  font-family: 'Geist Sans Fallback';
+  src: local('Arial'), local('Liberation Sans'), local('Helvetica Neue'), local('Helvetica');
+  font-weight: 400;
+  font-style: normal;
+  size-adjust: 104.81%;
+  ascent-override: 95.89%;
+  descent-override: 28.15%;
+  line-gap-override: 0%;
+}
+
+@font-face {
+  font-family: 'Geist Sans Fallback';
+  src:
+    local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'),
+    local('LiberationSans-Bold'), local('Helvetica Bold');
+  font-weight: 600;
+  font-style: normal;
+  size-adjust: 101.62%;
+  ascent-override: 98.9%;
+  descent-override: 29.03%;
+  line-gap-override: 0%;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 1. Primitive ramps. The only literal colours in the system, identical in both themes.         */
+/*    The sixteen §7 seeds are verbatim. Every extension records its derivation and its          */
+/*    measured result in packages/ui/src/tokens/primitive.ts and in CONTRAST.md.                 */
+/* --------------------------------------------------------------------------------------------- */
 :root {
-  --background: #eef5fb; /* v0 verbatim */
-  --surface: #ffffff; /* v0 verbatim */
-  --surface-raised: #f8fbff; /* v0 verbatim */
-  --border: #dce8f2; /* v0 verbatim */
-  --border-strong: #c3d4e2; /* v0 verbatim */
+  --color-ink-1000: #050b16; /* §7 seed */
+  --color-ink-950: #07111f; /* §7 seed */
+  --color-ink-900: #0b1728; /* §7 seed */
+  --color-ink-800: #13243a; /* §7 seed */
+  --color-cloud-0: #ffffff; /* extension */
+  --color-cloud-50: #f8fbff; /* §7 seed */
+  --color-cloud-100: #eef5fb; /* §7 seed */
+  --color-cloud-200: #dce8f2; /* §7 seed */
+  --color-cloud-300: #c3d4e2; /* extension */
+  --color-slate-300: #7a8da1; /* extension */
+  --color-slate-500: #62758a; /* §7 seed */
+  --color-slate-600: #58687b; /* extension */
+  --color-slate-700: #34465a; /* §7 seed */
+  --color-sky-50: #e5f4fd; /* extension */
+  --color-sky-300: #55cfff; /* extension */
+  --color-sky-400: #31c5ff; /* §7 seed */
+  --color-sky-500: #0ba8ea; /* §7 seed */
+  --color-sky-600: #087fbd; /* §7 seed */
+  --color-sky-700: #076ca1; /* extension */
+  --color-sky-800: #066293; /* extension */
+  --color-sky-900: #065781; /* extension */
+  --color-sky-950: #062438; /* extension */
+  --color-safe-50: #e6f2f3; /* extension */
+  --color-safe-400: #189d74; /* extension */
+  --color-safe-500: #168f6a; /* §7 seed */
+  --color-safe-700: #127456; /* extension */
+  --color-safe-950: #082023; /* extension */
+  --color-watch-50: #f6f2ec; /* extension */
+  --color-watch-500: #d99014; /* §7 seed */
+  --color-watch-600: #b07510; /* extension */
+  --color-watch-700: #8d5d0d; /* extension */
+  --color-watch-950: #272016; /* extension */
+  --color-critical-50: #f6edf2; /* extension */
+  --color-critical-400: #de6275; /* extension */
+  --color-critical-500: #d9485f; /* §7 seed */
+  --color-critical-700: #c32841; /* extension */
+  --color-critical-950: #271522; /* extension */
+  --color-unknown-50: #edf1f7; /* extension */
+  --color-unknown-400: #7f8ba0; /* extension */
+  --color-unknown-500: #738197; /* §7 seed */
+  --color-unknown-700: #5b677b; /* extension */
+  --color-unknown-950: #171e2b; /* extension */
+}
 
-  --foreground: #07111f; /* v0 verbatim — 17.21:1 */
-  --muted: #5f7286; /* v0 #62758a was 4.31:1 -> 4.50:1 */
-  --accent: #0776b0; /* v0 #087fbd was 3.99:1 -> 4.52:1; also fixes white-on-accent (4.39 -> 4.68) */
-  --accent-contrast: #ffffff;
+/* --------------------------------------------------------------------------------------------- */
+/* 2. Scales. Theme-independent: type, space, radius, border, size, layout, motion.              */
+/*    Breakpoints are NOT tokens — a custom property cannot be used in a media query condition.  */
+/*    They are 375 / 768 / 1024 / 1440 px, exported from @delaypilot/ui/tokens, and are          */
+/*    written literally into the media queries that need them.                                   */
+/* --------------------------------------------------------------------------------------------- */
+:root {
+  /* Typography */
+  --font-sans:
+    'Geist Sans', 'Geist Sans Fallback', ui-sans-serif, system-ui, -apple-system, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+  --line-height-body: 1.55;
+  --line-height-heading: 1.2;
+  --line-height-ui: 1.35;
+  --letter-spacing-tight: -0.02em;
+  --font-variant-tabular: tabular-nums;
 
-  --status-safe: #147f5e; /* v0 #168f6a was 3.69:1 -> 4.52:1 */
-  --status-watch: #99650e; /* v0 #d99014 was 2.40:1 -> 4.52:1 */
-  --status-critical: #d32d48; /* v0 #d9485f was 3.79:1 -> 4.50:1 */
-  --status-unknown: #637186; /* v0 #738197 was 3.59:1 -> 4.51:1 */
+  /* Type scale (1.2 ratio from 16px) */
+  --font-size-12: 0.75rem;
+  --font-size-14: 0.875rem;
+  --font-size-16: 1rem;
+  --font-size-18: 1.125rem;
+  --font-size-20: 1.25rem;
+  --font-size-24: 1.5rem;
+  --font-size-30: 1.875rem;
+  --font-size-36: 2.25rem;
+  --font-size-44: 2.75rem;
+
+  /* Space (4px base) */
+  --space-2: 0.125rem;
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  --space-48: 3rem;
+  --space-64: 4rem;
+  --space-96: 6rem;
+
+  /* Radius */
+  --radius-control: 0.25rem;
+  --radius-card: 0.5rem;
+  --radius-dialog: 0.75rem;
+  --radius-pill: 999px;
+
+  /* Border and focus */
+  --border-width-hairline: 1px;
+  --border-width-emphasis: 2px;
+  --focus-ring-width: 2px;
+  --focus-ring-offset: 2px;
+
+  /* Size */
+  --target-min: 2.75rem;
+  --icon-size-16: 1rem;
+  --icon-size-20: 1.25rem;
+
+  /* Layout and cockpit grid */
+  --layout-shell-max: 68rem;
+  --layout-prose-max: 68ch;
+  --grid-columns: 12;
+  --grid-gutter: 1.5rem;
+  --grid-cockpit-primary: 8;
+  --grid-cockpit-secondary: 4;
+
+  /* Motion */
+  --motion-fast: 120ms;
+  --motion-base: 180ms;
+  --motion-slow: 240ms;
+  --motion-ease-entrance: cubic-bezier(0, 0, 0.2, 1);
+  --motion-ease-linear: linear;
+  --motion-transition-control: var(--motion-fast) var(--motion-ease-entrance);
+  --motion-transition-state: var(--motion-base) var(--motion-ease-entrance);
+  --motion-reveal: 240ms;
+  --motion-reveal-distance: 16px;
+  --motion-ambient-cycle: 12s;
+  --motion-view-transition: 180ms;
+
+  /* Compatibility aliases for the pre-Phase-10 public pages. */
+  --radius: var(--radius-dialog);
+  --radius-sm: var(--radius-card);
+  --radius-lg: var(--radius-dialog);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 3. Semantic tokens — DARK, explicit user override.                                            */
+/*    Emitted first so that the CI contrast parser reads the light block (4) as the light theme. */
+/*    Specificity (0,2,0) means it beats both the bare `:root` default and the system-preference */
+/*    block at the end of the file, so an explicit choice wins in both directions.               */
+/* --------------------------------------------------------------------------------------------- */
+:root[data-theme='dark'] {
+  /* Surfaces, text, borders, focus, accent. */
+  --surface-base: #050b16; /* --color-ink-1000 */
+  --surface-card: #0b1728; /* --color-ink-900 */
+  --surface-elevated: #13243a; /* --color-ink-800 */
+  --surface-sunken: #07111f; /* --color-ink-950 */
+  --surface-inverse: #eef5fb; /* --color-cloud-100 */
+  --text-primary: #f8fbff; /* --color-cloud-50 */
+  --text-secondary: #7a8da1; /* --color-slate-300 */
+  --text-disabled: #62758a; /* --color-slate-500 */
+  --text-inverse: #07111f; /* --color-ink-950 */
+  --text-on-accent: #050b16; /* --color-ink-1000 */
+  --text-accent: #31c5ff; /* --color-sky-400 */
+  --border-hairline: #13243a; /* --color-ink-800 */
+  --border-emphasis: #34465a; /* --color-slate-700 */
+  --border-interactive: #62758a; /* --color-slate-500 */
+  --border-accent: #31c5ff; /* --color-sky-400 */
+  --focus-ring: #31c5ff; /* --color-sky-400 */
+  --focus-ring-halo: #050b16; /* --color-ink-1000 */
+  --accent-bg: #31c5ff; /* --color-sky-400 */
+  --accent-bg-hover: #55cfff; /* --color-sky-300 */
+  --accent-bg-active: #0ba8ea; /* --color-sky-500 */
+  --accent-subtle-bg: #062438; /* --color-sky-950 */
+  --status-safe-fg: #189d74; /* --color-safe-400 */
+  --status-safe-bg: #082023; /* --color-safe-950 */
+  --status-safe-border: #168f6a; /* --color-safe-500 */
+  --status-watch-fg: #d99014; /* --color-watch-500 */
+  --status-watch-bg: #272016; /* --color-watch-950 */
+  --status-watch-border: #d99014; /* --color-watch-500 */
+  --status-critical-fg: #de6275; /* --color-critical-400 */
+  --status-critical-bg: #271522; /* --color-critical-950 */
+  --status-critical-border: #d9485f; /* --color-critical-500 */
+  --status-unknown-fg: #7f8ba0; /* --color-unknown-400 */
+  --status-unknown-bg: #171e2b; /* --color-unknown-950 */
+  --status-unknown-border: #738197; /* --color-unknown-500 */
+
+  /* Values with no measurable ratio: a translucent scrim and two shadows. */
+  --surface-scrim: rgb(5 11 22 / 0.72);
+  --shadow-elevated: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.45);
+  --shadow-overlay: 0 2px 4px rgb(0 0 0 / 0.55), 0 16px 40px rgb(0 0 0 / 0.5);
+
+  /* Compatibility aliases. Literal hexes, not var(): scripts/validate-contrast.mjs
+     parses hex declarations and requires eleven of these names per theme. */
+  --background: #050b16; /* --surface-base */
+  --surface: #0b1728; /* --surface-card */
+  --surface-raised: #13243a; /* --surface-elevated */
+  --foreground: #f8fbff; /* --text-primary */
+  --muted: #7a8da1; /* --text-secondary */
+  --accent: #31c5ff; /* --text-accent */
+  --accent-contrast: #050b16; /* --text-on-accent */
+  --status-safe: #189d74; /* --status-safe-fg */
+  --status-watch: #d99014; /* --status-watch-fg */
+  --status-critical: #de6275; /* --status-critical-fg */
+  --status-unknown: #7f8ba0; /* --status-unknown-fg */
+  --border: #13243a; /* --border-hairline */
+  --border-strong: #34465a; /* --border-emphasis */
+
+  color-scheme: dark;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 4. Semantic tokens — LIGHT. The default when no preference and no override is expressed.      */
+/*    Dark mode is not an inversion of this: both themes are authored as first-class palettes    */
+/*    in packages/ui/src/tokens/semantic.ts, and each is measured on its own.                    */
+/* --------------------------------------------------------------------------------------------- */
+:root {
+  /* Surfaces, text, borders, focus, accent. */
+  --surface-base: #eef5fb; /* --color-cloud-100 */
+  --surface-card: #ffffff; /* --color-cloud-0 */
+  --surface-elevated: #f8fbff; /* --color-cloud-50 */
+  --surface-sunken: #dce8f2; /* --color-cloud-200 */
+  --surface-inverse: #0b1728; /* --color-ink-900 */
+  --text-primary: #07111f; /* --color-ink-950 */
+  --text-secondary: #58687b; /* --color-slate-600 */
+  --text-disabled: #62758a; /* --color-slate-500 */
+  --text-inverse: #f8fbff; /* --color-cloud-50 */
+  --text-on-accent: #ffffff; /* --color-cloud-0 */
+  --text-accent: #076ca1; /* --color-sky-700 */
+  --border-hairline: #dce8f2; /* --color-cloud-200 */
+  --border-emphasis: #c3d4e2; /* --color-cloud-300 */
+  --border-interactive: #62758a; /* --color-slate-500 */
+  --border-accent: #087fbd; /* --color-sky-600 */
+  --focus-ring: #087fbd; /* --color-sky-600 */
+  --focus-ring-halo: #ffffff; /* --color-cloud-0 */
+  --accent-bg: #076ca1; /* --color-sky-700 */
+  --accent-bg-hover: #066293; /* --color-sky-800 */
+  --accent-bg-active: #065781; /* --color-sky-900 */
+  --accent-subtle-bg: #e5f4fd; /* --color-sky-50 */
+  --status-safe-fg: #127456; /* --color-safe-700 */
+  --status-safe-bg: #e6f2f3; /* --color-safe-50 */
+  --status-safe-border: #168f6a; /* --color-safe-500 */
+  --status-watch-fg: #8d5d0d; /* --color-watch-700 */
+  --status-watch-bg: #f6f2ec; /* --color-watch-50 */
+  --status-watch-border: #b07510; /* --color-watch-600 */
+  --status-critical-fg: #c32841; /* --color-critical-700 */
+  --status-critical-bg: #f6edf2; /* --color-critical-50 */
+  --status-critical-border: #d9485f; /* --color-critical-500 */
+  --status-unknown-fg: #5b677b; /* --color-unknown-700 */
+  --status-unknown-bg: #edf1f7; /* --color-unknown-50 */
+  --status-unknown-border: #738197; /* --color-unknown-500 */
+
+  /* Values with no measurable ratio: a translucent scrim and two shadows. */
+  --surface-scrim: rgb(5 11 22 / 0.56);
+  --shadow-elevated: 0 1px 2px rgb(5 11 22 / 0.06), 0 8px 24px rgb(5 11 22 / 0.1);
+  --shadow-overlay: 0 2px 4px rgb(5 11 22 / 0.08), 0 16px 40px rgb(5 11 22 / 0.14);
+
+  /* Compatibility aliases. Literal hexes, not var(): scripts/validate-contrast.mjs
+     parses hex declarations and requires eleven of these names per theme. */
+  --background: #eef5fb; /* --surface-base */
+  --surface: #ffffff; /* --surface-card */
+  --surface-raised: #f8fbff; /* --surface-elevated */
+  --foreground: #07111f; /* --text-primary */
+  --muted: #58687b; /* --text-secondary */
+  --accent: #076ca1; /* --text-accent */
+  --accent-contrast: #ffffff; /* --text-on-accent */
+  --status-safe: #127456; /* --status-safe-fg */
+  --status-watch: #8d5d0d; /* --status-watch-fg */
+  --status-critical: #c32841; /* --status-critical-fg */
+  --status-unknown: #5b677b; /* --status-unknown-fg */
+  --border: #dce8f2; /* --border-hairline */
+  --border-strong: #c3d4e2; /* --border-emphasis */
 
   color-scheme: light;
 }
 
-/* ------------------------------------------------------------------------------------------- */
-/* 3. Semantic tokens — DARK.                                                                   */
-/*    Selected by system preference only. There is deliberately no theme-toggle script: the      */
-/*    site's CSP is `script-src 'self'` with no 'unsafe-inline' (apps/web/public/_headers), so    */
-/*    the conventional inline pre-paint theme script would be BLOCKED by our own policy. Pure    */
-/*    prefers-color-scheme needs no script at all, so it cannot flash and cannot be blocked.     */
-/*    A manual toggle remains possible later WITHOUT weakening the CSP, because an external      */
-/*    same-origin `<script src>` in <head> is already allowed by `script-src 'self'`.            */
-/*                                                                                              */
-/*    Measured ratios are against --surface-raised #13243a, the lightest (hardest) dark surface. */
-/* ------------------------------------------------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #050b16; /* v0 verbatim */
-    --surface: #0b1728; /* v0 verbatim */
-    --surface-raised: #13243a; /* v0 verbatim */
-    --border: #13243a; /* v0 verbatim */
-    --border-strong: #24384f; /* v0 verbatim */
+/* --------------------------------------------------------------------------------------------- */
+/* 5. Semantic tokens — LIGHT, explicit user override. Wins over a system dark preference.       */
+/* --------------------------------------------------------------------------------------------- */
+:root[data-theme='light'] {
+  /* Surfaces, text, borders, focus, accent. */
+  --surface-base: #eef5fb; /* --color-cloud-100 */
+  --surface-card: #ffffff; /* --color-cloud-0 */
+  --surface-elevated: #f8fbff; /* --color-cloud-50 */
+  --surface-sunken: #dce8f2; /* --color-cloud-200 */
+  --surface-inverse: #0b1728; /* --color-ink-900 */
+  --text-primary: #07111f; /* --color-ink-950 */
+  --text-secondary: #58687b; /* --color-slate-600 */
+  --text-disabled: #62758a; /* --color-slate-500 */
+  --text-inverse: #f8fbff; /* --color-cloud-50 */
+  --text-on-accent: #ffffff; /* --color-cloud-0 */
+  --text-accent: #076ca1; /* --color-sky-700 */
+  --border-hairline: #dce8f2; /* --color-cloud-200 */
+  --border-emphasis: #c3d4e2; /* --color-cloud-300 */
+  --border-interactive: #62758a; /* --color-slate-500 */
+  --border-accent: #087fbd; /* --color-sky-600 */
+  --focus-ring: #087fbd; /* --color-sky-600 */
+  --focus-ring-halo: #ffffff; /* --color-cloud-0 */
+  --accent-bg: #076ca1; /* --color-sky-700 */
+  --accent-bg-hover: #066293; /* --color-sky-800 */
+  --accent-bg-active: #065781; /* --color-sky-900 */
+  --accent-subtle-bg: #e5f4fd; /* --color-sky-50 */
+  --status-safe-fg: #127456; /* --color-safe-700 */
+  --status-safe-bg: #e6f2f3; /* --color-safe-50 */
+  --status-safe-border: #168f6a; /* --color-safe-500 */
+  --status-watch-fg: #8d5d0d; /* --color-watch-700 */
+  --status-watch-bg: #f6f2ec; /* --color-watch-50 */
+  --status-watch-border: #b07510; /* --color-watch-600 */
+  --status-critical-fg: #c32841; /* --color-critical-700 */
+  --status-critical-bg: #f6edf2; /* --color-critical-50 */
+  --status-critical-border: #d9485f; /* --color-critical-500 */
+  --status-unknown-fg: #5b677b; /* --color-unknown-700 */
+  --status-unknown-bg: #edf1f7; /* --color-unknown-50 */
+  --status-unknown-border: #738197; /* --color-unknown-500 */
 
-    --foreground: #f8fbff; /* v0 verbatim — 15.09:1 */
-    --muted: #8ba0b4; /* v0 verbatim — 5.80:1 */
-    --accent: #31c5ff; /* v0 verbatim — 7.87:1 */
-    --accent-contrast: #050b16; /* v0 verbatim — 7.87:1 on accent */
+  /* Values with no measurable ratio: a translucent scrim and two shadows. */
+  --surface-scrim: rgb(5 11 22 / 0.56);
+  --shadow-elevated: 0 1px 2px rgb(5 11 22 / 0.06), 0 8px 24px rgb(5 11 22 / 0.1);
+  --shadow-overlay: 0 2px 4px rgb(5 11 22 / 0.08), 0 16px 40px rgb(5 11 22 / 0.14);
 
-    --status-safe: #189c74; /* v0 #168f6a was 3.86:1 -> 4.51:1 */
-    --status-watch: #d99014; /* v0 verbatim — 5.93:1 */
-    --status-critical: #de6175; /* v0 #d9485f was 3.76:1 -> 4.53:1 */
-    --status-unknown: #7e8b9f; /* v0 #738197 was 3.96:1 -> 4.53:1 */
+  /* Compatibility aliases. Literal hexes, not var(): scripts/validate-contrast.mjs
+     parses hex declarations and requires eleven of these names per theme. */
+  --background: #eef5fb; /* --surface-base */
+  --surface: #ffffff; /* --surface-card */
+  --surface-raised: #f8fbff; /* --surface-elevated */
+  --foreground: #07111f; /* --text-primary */
+  --muted: #58687b; /* --text-secondary */
+  --accent: #076ca1; /* --text-accent */
+  --accent-contrast: #ffffff; /* --text-on-accent */
+  --status-safe: #127456; /* --status-safe-fg */
+  --status-watch: #8d5d0d; /* --status-watch-fg */
+  --status-critical: #c32841; /* --status-critical-fg */
+  --status-unknown: #5b677b; /* --status-unknown-fg */
+  --border: #dce8f2; /* --border-hairline */
+  --border-strong: #c3d4e2; /* --border-emphasis */
 
-    color-scheme: dark;
-  }
+  color-scheme: light;
 }
 
-/* ------------------------------------------------------------------------------------------- */
-/* 4. Base.                                                                                     */
-/* ------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+/* 6. Component tokens. Aliases onto the semantic layer — never a ramp step, never a literal.    */
+/*    The six provenance chip variants of AGENTS.md §1.2, and the four DIRECTIVE.md §16          */
+/*    severities mapped onto the same four status tones rather than onto a fifth colour.         */
+/* --------------------------------------------------------------------------------------------- */
+:root {
+  --chip-live-fg: var(--status-safe-fg);
+  --chip-live-bg: var(--status-safe-bg);
+  --chip-live-border: var(--status-safe-border);
+  --chip-cached-fg: var(--text-secondary);
+  --chip-cached-bg: var(--surface-sunken);
+  --chip-cached-border: var(--border-interactive);
+  --chip-stale-fg: var(--status-watch-fg);
+  --chip-stale-bg: var(--status-watch-bg);
+  --chip-stale-border: var(--status-watch-border);
+  --chip-demo-fg: var(--text-primary);
+  --chip-demo-bg: var(--surface-card);
+  --chip-demo-border: var(--border-interactive);
+  --chip-demo-hatch: var(--border-hairline);
+  --chip-unavailable-fg: var(--status-unknown-fg);
+  --chip-unavailable-bg: var(--status-unknown-bg);
+  --chip-unavailable-border: var(--status-unknown-border);
+  --chip-heuristic-fg: var(--status-unknown-fg);
+  --chip-heuristic-bg: var(--status-unknown-bg);
+  --chip-heuristic-border: var(--status-unknown-border);
+  --severity-info-fg: var(--status-unknown-fg);
+  --severity-info-bg: var(--status-unknown-bg);
+  --severity-info-border: var(--status-unknown-border);
+  --severity-watch-fg: var(--status-watch-fg);
+  --severity-watch-bg: var(--status-watch-bg);
+  --severity-watch-border: var(--status-watch-border);
+  --severity-urgent-fg: var(--status-critical-fg);
+  --severity-urgent-bg: var(--status-critical-bg);
+  --severity-urgent-border: var(--status-critical-border);
+  --severity-resolved-fg: var(--status-safe-fg);
+  --severity-resolved-bg: var(--status-safe-bg);
+  --severity-resolved-border: var(--status-safe-border);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 7. Reset and base.                                                                            */
+/*    Sizing is in rem throughout and no container height is locked to a text height, so 200%    */
+/*    zoom and text-spacing overrides reflow instead of clipping (DIRECTIVE.md §22).             */
+/* --------------------------------------------------------------------------------------------- */
 *,
 *::before,
 *::after {
@@ -148,37 +478,43 @@ html {
 
 body {
   margin: 0;
-  background-color: var(--background);
-  color: var(--foreground);
+  background-color: var(--surface-base);
+  color: var(--text-primary);
   font-family: var(--font-sans);
-  font-size: 1rem;
-  line-height: 1.6;
+  font-size: var(--font-size-16);
+  line-height: var(--line-height-body);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
 h1,
 h2,
-h3 {
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+h3,
+h4 {
   margin: 0;
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+  font-weight: var(--font-weight-semibold);
   text-wrap: balance;
 }
 
+/* 36px at 375px, 44px at 1440px. The rem floor keeps text-only zoom working; the vw term is
+   bounded at both ends so nothing overflows a 375px viewport. */
 h1 {
-  font-size: clamp(2rem, 1.4rem + 2.6vw, 3.25rem);
-  font-weight: 800;
+  font-size: clamp(var(--font-size-36), 2.074rem + 0.751vw, var(--font-size-44));
 }
 
+/* 24px at 375px, 30px at 1440px.                                                                */
 h2 {
-  font-size: clamp(1.35rem, 1.1rem + 1vw, 1.75rem);
-  font-weight: 700;
+  font-size: clamp(var(--font-size-24), 1.368rem + 0.563vw, var(--font-size-30));
 }
 
 h3 {
-  font-size: 1.0625rem;
-  font-weight: 700;
+  font-size: var(--font-size-20);
+}
+
+h4 {
+  font-size: var(--font-size-18);
 }
 
 p {
@@ -187,266 +523,455 @@ p {
 }
 
 a {
-  color: var(--accent);
+  color: var(--text-accent);
   text-underline-offset: 0.2em;
 }
 
-/* Visible focus ring on every interactive element (WCAG 2.2 AA, DIRECTIVE.md §7).
-   Ported from the v0 source, with the border-radius override dropped: forcing 4px onto every
-   focused control squares off otherwise-rounded controls. `outline` already follows the element's
-   own radius. */
-:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
+code,
+kbd,
+samp,
+pre {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-14);
 }
 
-/* Tabular numerals for clock times, flight numbers, countdowns and durations, so digits keep a
-   constant width as values update (v0 verbatim). */
+img,
+svg,
+video {
+  max-width: 100%;
+  height: auto;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 8. Focus. A 2px ring at a 2px offset, with the gap filled by --focus-ring-halo so the ring    */
+/*    never abuts a fill of its own hue. Both adjacent colours are measured at >= 3:1 in both    */
+/*    themes (WCAG 2.2 SC 2.4.11 / 2.4.13) — see CONTRAST.md, usage class "focus".               */
+/* --------------------------------------------------------------------------------------------- */
+:where(a, button, input, select, textarea, summary, [tabindex], [contenteditable]):focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  box-shadow: 0 0 0 var(--focus-ring-offset) var(--focus-ring-halo);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 9. Utilities.                                                                                 */
+/* --------------------------------------------------------------------------------------------- */
+
+/* Tabular numerals. Required, not optional, on clock times, flight numbers, countdowns, slack
+   minutes, distances, currency amounts and every numeric table column, so a counting-down value
+   never reflows the line it sits on. Verified against the shipped subset: the ten default digit
+   advances are 663/384/619/613/615/626/593/524/604/593 units, and the ten tnum digits are all
+   600 units. */
 .tnum {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: var(--font-variant-tabular);
   font-feature-settings: 'tnum' 1;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.001ms !important;
-    scroll-behavior: auto !important;
-  }
+/* Print hooks for the evidence packet (DIRECTIVE.md §18.5). Published contract for
+   frontend-ui-engineer: .dp-no-print is dropped from print, .dp-print-only appears only in print,
+   and .dp-print-url expands its links' hrefs so an official source URL survives on paper. */
+.dp-print-only {
+  display: none;
 }
 
-/* ------------------------------------------------------------------------------------------- */
-/* 5. Layout and components used by the public pages.                                           */
-/* ------------------------------------------------------------------------------------------- */
+/* --------------------------------------------------------------------------------------------- */
+/* 10. Page layer for the pre-Phase-10 public pages.                                             */
+/* --------------------------------------------------------------------------------------------- */
+/*     apps/web/src/layouts/BaseLayout.astro and apps/web/src/pages/*.astro are                  */
+/*     frontend-ui-engineer's files and are rebuilt on @delaypilot/ui primitives in the next     */
+/*     session. Until then these class names must keep working, so they are re-expressed on the  */
+/*     new tokens rather than deleted. This whole section is replaced, not extended.             */
+/* --------------------------------------------------------------------------------------------- */
 .skip-link {
   position: absolute;
   left: -9999px;
   top: 0;
   z-index: 100;
-  padding: 0.75rem 1rem;
-  background: var(--surface);
-  color: var(--foreground);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
-  font-weight: 600;
+  padding: var(--space-12) var(--space-16);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: var(--border-width-hairline) solid var(--border-emphasis);
+  border-radius: var(--radius-card);
+  font-weight: var(--font-weight-semibold);
   text-decoration: none;
 }
 
 .skip-link:focus {
-  left: 1rem;
-  top: 1rem;
+  left: var(--space-16);
+  top: var(--space-16);
 }
 
 .shell {
   width: 100%;
-  max-width: 68rem;
+  max-width: var(--layout-shell-max);
   margin-inline: auto;
-  padding-inline: clamp(1rem, 0.5rem + 2vw, 2rem);
+  padding-inline: clamp(var(--space-16), 0.5rem + 2vw, var(--space-32));
 }
 
 .site-header {
-  border-bottom: 1px solid var(--border);
-  background: color-mix(in srgb, var(--surface) 85%, transparent);
+  border-bottom: var(--border-width-hairline) solid var(--border-hairline);
+  background: var(--surface-card);
 }
 
 .site-header__inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  min-height: 4rem;
+  gap: var(--space-16);
+  min-height: var(--space-64);
   flex-wrap: wrap;
 }
 
 .wordmark {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  font-weight: 700;
-  font-size: 1.125rem;
-  letter-spacing: -0.02em;
-  color: var(--foreground);
+  gap: var(--space-8);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-18);
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--text-primary);
   text-decoration: none;
 }
 
 .wordmark__accent {
-  color: var(--accent);
+  color: var(--text-accent);
 }
 
 .site-nav {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
-  font-size: 0.9375rem;
+  gap: var(--space-24);
+  font-size: var(--font-size-14);
 }
 
 .site-nav a {
-  color: var(--muted);
+  color: var(--text-secondary);
   text-decoration: none;
-  padding-block: 0.25rem;
+  padding-block: var(--space-12);
+  min-height: var(--target-min);
+  display: inline-flex;
+  align-items: center;
 }
 
 .site-nav a:hover,
 .site-nav a[aria-current='page'] {
-  color: var(--foreground);
+  color: var(--text-primary);
 }
 
 .hero {
-  padding-block: clamp(3rem, 2rem + 5vw, 5.5rem) clamp(2rem, 1.5rem + 3vw, 3.5rem);
+  padding-block: clamp(var(--space-48), 2rem + 5vw, var(--space-96))
+    clamp(var(--space-32), 1.5rem + 3vw, var(--space-48));
   display: grid;
-  gap: 1.5rem;
-  max-width: 46rem;
+  gap: var(--space-24);
+  max-width: var(--layout-prose-max);
 }
 
 .lede {
-  font-size: clamp(1.0625rem, 1rem + 0.5vw, 1.25rem);
-  color: var(--muted);
+  font-size: var(--font-size-18);
+  color: var(--text-secondary);
 }
 
 .trust-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1rem;
+  gap: var(--space-8) var(--space-16);
   padding: 0;
   margin: 0;
   list-style: none;
-  font-size: 0.9375rem;
-  color: var(--muted);
+  font-size: var(--font-size-14);
+  color: var(--text-secondary);
 }
 
 .trust-line li {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--space-8);
 }
 
 .trust-line li::before {
   content: '';
-  inline-size: 0.375rem;
-  block-size: 0.375rem;
-  border-radius: 50%;
-  background: var(--accent);
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: var(--border-accent);
   flex: none;
 }
 
 .section {
-  padding-block: clamp(2rem, 1.5rem + 3vw, 3.5rem);
-  border-top: 1px solid var(--border);
+  padding-block: clamp(var(--space-32), 1.5rem + 3vw, var(--space-48));
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
   display: grid;
-  gap: 1.25rem;
+  gap: var(--space-24);
 }
 
 .section__intro {
-  max-width: 46rem;
-  color: var(--muted);
+  max-width: var(--layout-prose-max);
+  color: var(--text-secondary);
 }
 
 .card-grid {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-16);
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
 }
 
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface-card);
+  border: var(--border-width-hairline) solid var(--border-hairline);
   border-radius: var(--radius);
-  padding: 1.25rem;
+  padding: var(--space-24);
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-8);
   align-content: start;
 }
 
 .card p {
-  color: var(--muted);
-  font-size: 0.9375rem;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
 }
 
 /* The provenance vocabulary is fixed at exactly six values (AGENTS.md §1.2). These chips render
-   the label itself; they never stand in for a value, and they are not decorative. */
+   the label itself; they never stand in for a value, and they are not decorative. The full
+   six-variant primitive is ProvenanceChip in packages/ui/src/primitives/. */
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  border: 1px solid currentColor;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.4;
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-8);
+  border-radius: var(--radius-pill);
+  border: var(--border-width-hairline) solid currentcolor;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-ui);
   white-space: nowrap;
 }
 
 .chip--unavailable {
-  color: var(--status-unknown);
+  color: var(--chip-unavailable-fg);
+  background: var(--chip-unavailable-bg);
 }
 
 .chip--demo {
-  color: var(--status-watch);
+  color: var(--chip-demo-fg);
+  background: var(--chip-demo-bg);
+  border-style: dashed;
+  border-width: var(--border-width-emphasis);
 }
 
 .chip__dot {
-  inline-size: 0.4rem;
-  block-size: 0.4rem;
-  border-radius: 50%;
-  background: currentColor;
+  inline-size: var(--space-8);
+  block-size: var(--space-8);
+  border-radius: var(--radius-pill);
+  background: currentcolor;
   flex: none;
 }
 
 .prose {
   display: grid;
-  gap: 1rem;
-  max-width: 44rem;
+  gap: var(--space-16);
+  max-width: var(--layout-prose-max);
 }
 
 .prose h2 {
-  margin-top: 1rem;
+  margin-top: var(--space-16);
 }
 
 .prose p,
 .prose li {
-  color: var(--muted);
+  color: var(--text-secondary);
 }
 
 .prose strong {
-  color: var(--foreground);
+  color: var(--text-primary);
 }
 
 .prose ul {
   margin: 0;
-  padding-left: 1.25rem;
+  padding-left: var(--space-24);
   display: grid;
-  gap: 0.5rem;
+  gap: var(--space-8);
 }
 
 .meta {
-  font-size: 0.875rem;
-  color: var(--muted);
+  font-size: var(--font-size-14);
+  color: var(--text-secondary);
 }
 
 .site-footer {
-  border-top: 1px solid var(--border);
-  padding-block: 2rem 2.5rem;
-  margin-top: 1rem;
+  border-top: var(--border-width-hairline) solid var(--border-hairline);
+  padding-block: var(--space-32) var(--space-48);
+  margin-top: var(--space-16);
   display: grid;
-  gap: 1rem;
-  font-size: 0.875rem;
-  color: var(--muted);
+  gap: var(--space-16);
+  font-size: var(--font-size-14);
+  color: var(--text-secondary);
 }
 
 .site-footer__nav {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
+  gap: var(--space-12) var(--space-24);
 }
 
 .site-footer__nav a {
-  color: var(--muted);
+  color: var(--text-secondary);
 }
 
 .disclaimer {
-  max-width: 52rem;
+  max-width: var(--layout-prose-max);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 11. Reduced motion.                                                                           */
+/*     Every duration collapses, the reveal travel goes to zero and the ambient cycle stops.     */
+/*     ADR 0003 rule 4: reveals become instant, ambient motifs render a single static frame,     */
+/*     view transitions are off — and the state change itself is never removed, because the      */
+/*     final state is applied either way.                                                        */
+/* --------------------------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-fast: 1ms;
+    --motion-base: 1ms;
+    --motion-slow: 1ms;
+    --motion-reveal: 1ms;
+    --motion-reveal-distance: 0px;
+    --motion-ambient-cycle: 0s;
+    --motion-view-transition: 1ms;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+    view-transition-name: none !important;
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 12. Semantic tokens — DARK, system preference.                                                */
+/*     LAST block in this file containing a literal hex. See the block-order note at the top of  */
+/*     packages/ui/src/tokens/css.ts: anything carrying light values placed after this would be  */
+/*     read by scripts/validate-contrast.mjs as part of the dark theme.                          */
+/* --------------------------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Surfaces, text, borders, focus, accent. */
+    --surface-base: #050b16; /* --color-ink-1000 */
+    --surface-card: #0b1728; /* --color-ink-900 */
+    --surface-elevated: #13243a; /* --color-ink-800 */
+    --surface-sunken: #07111f; /* --color-ink-950 */
+    --surface-inverse: #eef5fb; /* --color-cloud-100 */
+    --text-primary: #f8fbff; /* --color-cloud-50 */
+    --text-secondary: #7a8da1; /* --color-slate-300 */
+    --text-disabled: #62758a; /* --color-slate-500 */
+    --text-inverse: #07111f; /* --color-ink-950 */
+    --text-on-accent: #050b16; /* --color-ink-1000 */
+    --text-accent: #31c5ff; /* --color-sky-400 */
+    --border-hairline: #13243a; /* --color-ink-800 */
+    --border-emphasis: #34465a; /* --color-slate-700 */
+    --border-interactive: #62758a; /* --color-slate-500 */
+    --border-accent: #31c5ff; /* --color-sky-400 */
+    --focus-ring: #31c5ff; /* --color-sky-400 */
+    --focus-ring-halo: #050b16; /* --color-ink-1000 */
+    --accent-bg: #31c5ff; /* --color-sky-400 */
+    --accent-bg-hover: #55cfff; /* --color-sky-300 */
+    --accent-bg-active: #0ba8ea; /* --color-sky-500 */
+    --accent-subtle-bg: #062438; /* --color-sky-950 */
+    --status-safe-fg: #189d74; /* --color-safe-400 */
+    --status-safe-bg: #082023; /* --color-safe-950 */
+    --status-safe-border: #168f6a; /* --color-safe-500 */
+    --status-watch-fg: #d99014; /* --color-watch-500 */
+    --status-watch-bg: #272016; /* --color-watch-950 */
+    --status-watch-border: #d99014; /* --color-watch-500 */
+    --status-critical-fg: #de6275; /* --color-critical-400 */
+    --status-critical-bg: #271522; /* --color-critical-950 */
+    --status-critical-border: #d9485f; /* --color-critical-500 */
+    --status-unknown-fg: #7f8ba0; /* --color-unknown-400 */
+    --status-unknown-bg: #171e2b; /* --color-unknown-950 */
+    --status-unknown-border: #738197; /* --color-unknown-500 */
+
+    /* Values with no measurable ratio: a translucent scrim and two shadows. */
+    --surface-scrim: rgb(5 11 22 / 0.72);
+    --shadow-elevated: 0 1px 2px rgb(0 0 0 / 0.5), 0 8px 24px rgb(0 0 0 / 0.45);
+    --shadow-overlay: 0 2px 4px rgb(0 0 0 / 0.55), 0 16px 40px rgb(0 0 0 / 0.5);
+
+    /* Compatibility aliases. Literal hexes, not var(): scripts/validate-contrast.mjs
+       parses hex declarations and requires eleven of these names per theme. */
+    --background: #050b16; /* --surface-base */
+    --surface: #0b1728; /* --surface-card */
+    --surface-raised: #13243a; /* --surface-elevated */
+    --foreground: #f8fbff; /* --text-primary */
+    --muted: #7a8da1; /* --text-secondary */
+    --accent: #31c5ff; /* --text-accent */
+    --accent-contrast: #050b16; /* --text-on-accent */
+    --status-safe: #189d74; /* --status-safe-fg */
+    --status-watch: #d99014; /* --status-watch-fg */
+    --status-critical: #de6275; /* --status-critical-fg */
+    --status-unknown: #7f8ba0; /* --status-unknown-fg */
+    --border: #13243a; /* --border-hairline */
+    --border-strong: #34465a; /* --border-emphasis */
+
+    color-scheme: dark;
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 13. Print — the evidence packet (DIRECTIVE.md §18.5).                                         */
+/* --------------------------------------------------------------------------------------------- */
+/*     Placed after the dark block on purpose: an evidence packet printed from a dark theme      */
+/*     wastes ink and is harder to read on paper, and the selector list below includes           */
+/*     :root[data-theme='dark'] so it also outranks an explicit dark override.                   */
+/* --------------------------------------------------------------------------------------------- */
+/*     Every declaration here is a var() reference, never a literal hex, so this block cannot be */
+/*     mistaken for a theme by the CI contrast parser. The surfaces it selects are already       */
+/*     measured light-theme combinations: text on --color-cloud-0 is the light theme's           */
+/*     --surface-card, and text on --color-cloud-100 is its --surface-base.                      */
+/* --------------------------------------------------------------------------------------------- */
+@media print {
+  :root,
+  :root[data-theme='dark'],
+  :root[data-theme='light'] {
+    --surface-base: var(--color-cloud-0);
+    --surface-card: var(--color-cloud-0);
+    --surface-elevated: var(--color-cloud-0);
+    --surface-sunken: var(--color-cloud-100);
+    --text-primary: var(--color-ink-950);
+    --text-secondary: var(--color-slate-600);
+    --text-accent: var(--color-sky-700);
+    --border-hairline: var(--color-cloud-300);
+    --border-emphasis: var(--color-slate-500);
+    --shadow-elevated: none;
+    --shadow-overlay: none;
+    color-scheme: light;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+
+  body {
+    background: none;
+  }
+
+  .dp-no-print {
+    display: none !important;
+  }
+
+  .dp-print-only {
+    display: revert;
+  }
+
+  /* An official source URL is evidence. On paper the href is the only way to read it. */
+  .dp-print-url a[href^='http']::after {
+    content: ' <' attr(href) '>';
+    font-size: var(--font-size-12);
+    word-break: break-all;
+  }
+
+  .card {
+    break-inside: avoid;
+  }
 }

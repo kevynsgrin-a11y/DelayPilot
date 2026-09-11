@@ -1,0 +1,26 @@
+<!--
+  GENERATED FILE — do not edit. Written by scripts/assets/build-assets.mjs from
+  apps/web/public/brand/mark.svg. Edit the source and re-run the script; a hand edit here is lost on the
+  next build and breaks the single-geometry guarantee.
+-->
+<!--
+  Single-colour variant: the advance dot takes `currentColor` with the rest of the mark, for
+  print, email, watermarking and the evidence packet, where one ink is the only safe
+  assumption. Geometry is byte-identical to mark.svg.
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width="24"
+  height="24"
+  fill="none"
+  role="img"
+  aria-labelledby="dp-mark-mono-title"
+>
+  <title id="dp-mark-mono-title">DelayPilot</title>
+  <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.25 19.32A5.2 5.2 0 0 1 4.64 11.32" stroke-width="2" />
+    <path d="M8.9 14.3C10.7 11.62 12.97 9.42 15.7 7.7" stroke-width="2.6" />
+  </g>
+  <circle cx="19.59" cy="5.25" r="1.7" fill="currentColor" />
+</svg>

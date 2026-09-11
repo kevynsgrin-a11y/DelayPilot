@@ -1,0 +1,54 @@
+<!--
+  Decorative route fan. Owner: visual-asset-director.
+
+  Permitted as an ambient decorative motif on the public marketing routes only, under ADR 0003
+  rule 2b: original SVG art, aria-hidden, carrying no text and no data, at most two motifs per
+  route, cycle at most 12 s, paused off-screen, collapsing to this single static frame under
+  prefers-reduced-motion. No motion is baked in; the animation belongs to frontend-ui-engineer's
+  stylesheet. See scripts/assets/MOTIFS.md for the CSS hooks and the offset-path contract.
+
+  (CSS custom properties are named in this comment without their leading double hyphen, because an
+  XML comment may not contain one.)
+
+  HOOKS   #route-1, #route-2, #route-3   the three arcs. Their `d` values are reproduced verbatim
+                                         in scripts/assets/MOTIFS.md so they can be pasted into
+                                         `offset-path: path('...')` where `url(#id)` is not usable.
+          .packet                        three travelling dots. Each is authored AT a point on its
+                                         own route, so the no-CSS and reduced-motion frame is
+                                         already correct. A rule that enables travel must zero the
+                                         geometry properties in the same rule
+                                         (`cx: 0; cy: 0; offset-path: url(#route-1);`), otherwise
+                                         the authored position and the motion offset compose and
+                                         the dot lands off the line.
+          #hub                           the shared origin.
+  COLOUR  `motif-line` and `motif-accent` custom properties, falling back to currentColor.
+
+  The arcs are drawn geometry, not a projection of anything: they are not a map, they encode no
+  city pair, they carry no airport code and they are not live traffic (AGENTS.md §1.1).
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 480 240"
+  width="480"
+  height="240"
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g
+    stroke="var(--motif-line, currentColor)"
+    stroke-width="1.5"
+    stroke-linecap="round"
+    stroke-opacity="var(--motif-line-opacity, 0.34)"
+  >
+    <path id="route-1" d="M28 196C150 118 286 82 452 62" />
+    <path id="route-2" d="M28 196C158 174 296 148 452 116" />
+    <path id="route-3" d="M28 196C140 212 296 210 452 180" />
+  </g>
+  <g fill="var(--motif-accent, currentColor)">
+    <circle id="hub" cx="28" cy="196" r="3" fill-opacity="var(--motif-line-opacity, 0.34)" />
+    <circle class="packet" cx="244.66" cy="101.09" r="3.5" />
+    <circle class="packet" cx="251.42" cy="155.73" r="3.5" />
+    <circle class="packet" cx="245.41" cy="204.4" r="3.5" />
+  </g>
+</svg>

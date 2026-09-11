@@ -1,0 +1,116 @@
+# S2 mark — legibility evidence
+
+Produced by `node scripts/assets/build-assets.mjs --evidence`. Everything here is **generated**:
+delete the folder and re-run and you get the same bytes back. Nothing in it is shipped to a
+browser — `design/**` is excluded from lint, formatting and the build.
+
+For: `accessibility-lead`, as the Phase 9 reviewer of 16 px legibility, greyscale, and icon-stroke
+contrast in both themes.
+
+---
+
+## 1. What is in here
+
+| file pattern | what it is |
+| --- | --- |
+| `mark-{16,24,32}-{light,dark}.png` | `apps/web/public/brand/mark.svg` — all three elements — drawn at its real pixel size on the theme surface |
+| `mark-{16,24,32}-{light,dark}-grey.png` | the same render, desaturated |
+| `mark-contact-{light,dark}.png` | all three sizes, 8× nearest-neighbour, on neutral 18% grey |
+| `favicon-{16,24,32}.png` | the shipped reduction (`apps/web/public/icons/favicon.svg`) at its real pixel size |
+| `favicon-{16,24,32}-grey.png` | the same, desaturated |
+| `favicon-contact.png` | all three sizes, 8× nearest-neighbour |
+
+The favicon set is emitted **once**, not once per theme. The reduction carries its own opaque ink
+plate, so it is byte-identical on a light and a dark page; shipping `favicon-16-light.png` and
+`favicon-16-dark.png` as identical files would imply a theme response the artwork does not have.
+
+The contact sheets are nearest-neighbour upscales, so what you are looking at is the actual device
+pixel grid, not a smoothed impression of it. The tiles share a baseline so the three sizes are
+directly comparable.
+
+## 2. What to look at, in order
+
+**1. `favicon-contact.png`, leftmost tile (16 px).** This is the tile the gate is about. The
+browser tab, the bookmark bar and the ICO's smallest member all render this. Check that the route
+line reads as a single continuous rising stroke, that the advance dot is a distinct round shape
+with visible separation from the stroke end, and that neither has broken into disconnected pixels.
+
+**2. `mark-contact-light.png` and `mark-contact-dark.png`, leftmost tile.** This is the full mark
+— radar arc included — at 16 px, and it is the reason the favicon is a reduction. The arc is
+2.0 grid units, which is 1.33 device px at 16 px: it survives as a grey smudge, not as an arc.
+That is the expected and accepted outcome, not a defect to fix by thickening the arc; thickening
+it would break the "arc thinner than the route line" relationship that the mark is built on.
+**The reduction is the 16 px artifact. The full mark's floor is 24 px.** Confirm you agree with
+that line, because it is the one design judgement in this deliverable that a reviewer could
+reasonably overturn.
+
+**3. The 24 px and 32 px tiles of `mark-contact-*`.** The arc should be legible as an arc at 24 px
+and clearly separate from the route line at 32 px. The clear gap between the route origin and the
+arc is 2.90 grid units, which is 2.9 px at 24 px.
+
+**4. The `-grey` files.** The mark's two colours collapse to similar greys, and they are supposed
+to. The advance dot is distinguished by being a **separate round shape at a distance from the
+stroke**, not by being blue: colour is never the only differentiator (`DIRECTIVE §7` accessibility
+floor). Check that the dot is still obviously a detached dot with the hue removed.
+
+**5. Dark versus light.** `mark-16-dark.png` against `mark-16-light.png`. The mark is
+`currentColor` for the arc and route line, so it inherits whatever the page text inherits; only
+the advance dot is a fixed accent.
+
+## 3. Measured contrast, both themes
+
+Computed with the WCAG 2.x relative-luminance formula over the hexes in
+`apps/web/src/styles/tokens.css`. Non-text graphics need **3:1** (WCAG 2.2, 1.4.11).
+
+Arc and route line are `currentColor`, so they take `--foreground`:
+
+| surface | `--foreground` | ratio |
+| --- | --- | --- |
+| light `--surface` `#ffffff` | `#07111f` | 18.94:1 |
+| light `--surface-raised` `#f8fbff` | `#07111f` | 18.25:1 |
+| light `--background` `#eef5fb` | `#07111f` | 17.21:1 |
+| dark `--background` `#050b16` | `#f8fbff` | 18.98:1 |
+| dark `--surface` `#0b1728` | `#f8fbff` | 17.33:1 |
+| dark `--surface-raised` `#13243a` | `#f8fbff` | 15.09:1 |
+
+Advance dot. Its authored value is `--color-sky-600` `#087fbd`, chosen because it is the only value
+in the sky ramp that clears 3:1 on **every** surface in **both** themes — which is what an
+`<img src="mark.svg">`, an email client or a print stylesheet gets, with no CSS context at all:
+
+| surface | `#087fbd` fallback | `#31c5ff` dark override | `#076ca1` light override |
+| --- | --- | --- | --- |
+| light `--surface` `#ffffff` | 4.39:1 | 1.99:1 | 5.72:1 |
+| light `--surface-raised` `#f8fbff` | 4.23:1 | 1.92:1 | 5.52:1 |
+| light `--background` `#eef5fb` | 3.99:1 | 1.81:1 | 5.20:1 |
+| dark `--background` `#050b16` | 4.49:1 | 9.91:1 | 3.44:1 |
+| dark `--surface` `#0b1728` | 4.10:1 | 9.05:1 | 3.14:1 |
+| dark `--surface-raised` `#13243a` | 3.56:1 | 7.87:1 | 2.74:1 |
+| icon plate `#07111f` | 4.31:1 | 9.52:1 | 3.31:1 |
+
+Read the two override columns together: each theme accent is excellent in its own theme and
+**fails** in the other — `#31c5ff` is 1.81:1 on light `--background`, `#076ca1` is 2.74:1 on dark
+`--surface-raised`. That is the whole reason the authored fallback is neither of them. The
+recommendation to `frontend-ui-engineer` is to set `--brand-mark-accent` per theme, which is an
+improvement on an already-compliant fallback, not a fix for a failure. Never set either override
+globally.
+
+Every raster icon draws on the `#07111f` plate with `#f8fbff` strokes (18.25:1) and a `#31c5ff` dot
+(9.52:1), so the icon set is a fixed, measured pair regardless of page theme. The light-theme
+evidence renders here use `#076ca1`, the light `--accent`, because that is what a themed page will
+show.
+
+These hexes are not transcribed. `scripts/assets/brand-colors.mjs` records the primitive token each
+came from, and `node scripts/assets/verify-assets.mjs` asserts that `tokens.css` still declares that
+token with that value — so a token change fails the asset spec instead of silently re-colouring
+thirteen files.
+
+## 4. What this evidence does not cover
+
+- **No Lighthouse or Core Web Vitals figure appears anywhere in this folder**, because none was
+  measured in the session that produced it (`AGENTS.md §6`). Byte sizes are measured and are in
+  `node scripts/assets/verify-assets.mjs` output.
+- Rendering here is librsvg (via `sharp`). Browser rasterisers antialias slightly differently.
+  If 16 px legibility is marginal in your judgement, check a real browser tab before accepting or
+  rejecting — this is evidence, not a substitute for looking.
+- The greyscale renders are a desaturation, not a simulation of any specific colour-vision
+  deficiency. They test the "not colour alone" property, which is the property the floor requires.

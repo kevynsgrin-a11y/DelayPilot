@@ -1,0 +1,42 @@
+<!--
+  Decorative radar scope. Owner: visual-asset-director.
+
+  Permitted as an ambient decorative motif on the public marketing routes only, under ADR 0003
+  rule 2b: original SVG art, aria-hidden, carrying no text and no data, at most two motifs per
+  route, cycle at most 12 s, paused off-screen, and collapsing to this single static frame under
+  prefers-reduced-motion. No motion is baked in here; the animation belongs to
+  frontend-ui-engineer's stylesheet. See scripts/assets/MOTIFS.md for the CSS hooks.
+
+  (CSS custom properties are named in this comment without their leading double hyphen, because an
+  XML comment may not contain one.)
+
+  HOOKS   #rings  three concentric range rings, static.
+          #sweep  the rotating element. transform-box defaults to view-box for SVG, so
+                  `transform-origin: 50% 50%` resolves to (120, 120), the scope centre.
+  COLOUR  `motif-line` custom property, falling back to currentColor, so the motif retint with
+          the theme instead of carrying a hard-coded hex.
+
+  This is a radar scope, not a compass rose: there are no cardinal ticks, no star, no bearing
+  ring, no lettering. It references no airline, airport, regulator or provider mark (AGENTS.md
+  §1.4).
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 240 240"
+  width="240"
+  height="240"
+  fill="none"
+  stroke="var(--motif-line, currentColor)"
+  aria-hidden="true"
+  focusable="false"
+>
+  <g id="rings" stroke-width="1.5" stroke-opacity="var(--motif-ring-opacity, 0.22)">
+    <circle cx="120" cy="120" r="40" />
+    <circle cx="120" cy="120" r="72" />
+    <circle cx="120" cy="120" r="104" />
+  </g>
+  <g id="sweep" stroke-width="2" stroke-linecap="round" stroke-opacity="var(--motif-sweep-opacity, 0.5)">
+    <path d="M120 120H224" />
+    <path d="M224 120A104 104 0 0 0 179.65 34.81" />
+  </g>
+</svg>

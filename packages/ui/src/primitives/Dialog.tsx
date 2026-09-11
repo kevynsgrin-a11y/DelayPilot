@@ -7,12 +7,17 @@
  *
  * `closeLabel` is required and has no default: the accessible name of the close control is product
  * copy, and copy belongs to ux-copy-steward.
+ *
+ * `headingLevel` exists because a dialog opened from a section under an `<h3>` would otherwise emit
+ * a hard-coded `<h2>` and break the page's heading order (`docs/ACCESSIBILITY.md` F14).
  */
 
 import { useId, useRef, type JSX, type ReactNode } from 'react'
 import { cx } from './class-names.ts'
 import { Icon } from './Icon.tsx'
 import { useFocusTrap } from './use-focus-trap.ts'
+
+const HEADING_TAG = { 2: 'h2', 3: 'h3', 4: 'h4' } as const
 
 export interface DialogProps {
   readonly open: boolean
@@ -24,6 +29,8 @@ export interface DialogProps {
   readonly closeLabel: string
   /** Action row. Kept out of the scrolling body so the primary action never scrolls away. */
   readonly footer?: ReactNode
+  /** Heading level for the title. Set it to match the section the dialog was opened from. */
+  readonly headingLevel?: 2 | 3 | 4
   readonly className?: string
 }
 
@@ -34,9 +41,11 @@ export function Dialog({
   children,
   closeLabel,
   footer,
+  headingLevel = 2,
   className,
 }: DialogProps): JSX.Element | null {
   const titleId = useId()
+  const Heading = HEADING_TAG[headingLevel]
   const ref = useRef<HTMLDivElement>(null)
   useFocusTrap(open, ref)
 
@@ -66,9 +75,9 @@ export function Dialog({
         }}
       >
         <div className="dp-dialog__header">
-          <h2 className="dp-dialog__title" id={titleId}>
+          <Heading className="dp-dialog__title" id={titleId}>
             {title}
-          </h2>
+          </Heading>
           <button
             type="button"
             className="dp-button dp-button--ghost dp-button--icon-only"

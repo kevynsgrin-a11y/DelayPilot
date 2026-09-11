@@ -21,13 +21,13 @@ visible text (`Live`, `Cached`, `Stale`, `Demo`, `Unavailable`, `Heuristic risk 
 
 ## Summary
 
-94 registered pairs, measured in 2 themes: 188 measurements,
+103 registered pairs, measured in 2 themes: 206 measurements,
 0 failing, 0 unmeasured.
 
 | Theme | Measurements | Tightest | Tightest pair                                 | Its floor |
 | ----- | ------------ | -------- | --------------------------------------------- | --------- |
-| light | 94           | 3.12:1   | `--status-watch-border` on `--surface-sunken` | 3:1       |
-| dark  | 94           | 3.30:1   | `--text-disabled` on `--surface-elevated`     | 3:1       |
+| light | 103          | 3.12:1   | `--status-watch-border` on `--surface-sunken` | 3:1       |
+| dark  | 103          | 3.30:1   | `--text-disabled` on `--surface-elevated`     | 3:1       |
 
 ## Text — WCAG 2.2 SC 1.4.3, floor 4.5:1
 
@@ -161,6 +161,12 @@ Where these render:
 | `--border-accent`          | `--surface-card`     | #087fbd on #ffffff | 4.39:1 | #31c5ff on #0b1728 | 9.04:1 | pass   |
 | `--border-accent`          | `--surface-elevated` | #087fbd on #f8fbff | 4.23:1 | #31c5ff on #13243a | 7.87:1 | pass   |
 | `--border-accent`          | `--surface-sunken`   | #087fbd on #dce8f2 | 3.52:1 | #31c5ff on #07111f | 9.52:1 | pass   |
+| `--border-accent`          | `--accent-subtle-bg` | #087fbd on #e5f4fd | 3.90:1 | #31c5ff on #062438 | 8.01:1 | pass   |
+| `--accent-bg`              | `--surface-base`     | #076ca1 on #eef5fb | 5.20:1 | #31c5ff on #050b16 | 9.90:1 | pass   |
+| `--accent-bg`              | `--surface-card`     | #076ca1 on #ffffff | 5.72:1 | #31c5ff on #0b1728 | 9.04:1 | pass   |
+| `--accent-bg`              | `--surface-elevated` | #076ca1 on #f8fbff | 5.51:1 | #31c5ff on #13243a | 7.87:1 | pass   |
+| `--accent-bg`              | `--surface-sunken`   | #076ca1 on #dce8f2 | 4.59:1 | #31c5ff on #07111f | 9.52:1 | pass   |
+| `--accent-bg`              | `--accent-subtle-bg` | #076ca1 on #e5f4fd | 5.09:1 | #31c5ff on #062438 | 8.01:1 | pass   |
 | `--status-safe-border`     | `--surface-base`     | #168f6a on #eef5fb | 3.69:1 | #168f6a on #050b16 | 4.85:1 | pass   |
 | `--status-safe-border`     | `--surface-card`     | #168f6a on #ffffff | 4.06:1 | #168f6a on #0b1728 | 4.42:1 | pass   |
 | `--status-safe-border`     | `--surface-elevated` | #168f6a on #f8fbff | 3.91:1 | #168f6a on #13243a | 3.85:1 | pass   |
@@ -180,14 +186,20 @@ Where these render:
 
 Where these render:
 
-- `--border-interactive` on `--surface-base` — Input, select, checkbox, radio, switch track and secondary button boundary. Also the Cached chip boundary and the minimum weight for a route-diagram stroke.
-- `--border-interactive` on `--surface-card` — Input, select, checkbox, radio, switch track and secondary button boundary. Also the Cached chip boundary and the minimum weight for a route-diagram stroke.
-- `--border-interactive` on `--surface-elevated` — Input, select, checkbox, radio, switch track and secondary button boundary. Also the Cached chip boundary and the minimum weight for a route-diagram stroke.
-- `--border-interactive` on `--surface-sunken` — Input, select, checkbox, radio, switch track and secondary button boundary. Also the Cached chip boundary and the minimum weight for a route-diagram stroke.
-- `--border-accent` on `--surface-base` — Selected tab underline and accent-outlined control boundary.
-- `--border-accent` on `--surface-card` — Selected tab underline and accent-outlined control boundary.
-- `--border-accent` on `--surface-elevated` — Selected tab underline and accent-outlined control boundary.
-- `--border-accent` on `--surface-sunken` — Selected tab underline and accent-outlined control boundary.
+- `--border-interactive` on `--surface-base` — Input, select, checkbox, radio, switch track and secondary button boundary. Also --progress-track-border, the 1px outline that makes the UNFILLED part of a meter perceivable (without it a 40% and a 90% reading are two bars with nothing to be different from), the Cached chip boundary, and the minimum weight for a route-diagram stroke.
+- `--border-interactive` on `--surface-card` — Input, select, checkbox, radio, switch track and secondary button boundary. Also --progress-track-border, the 1px outline that makes the UNFILLED part of a meter perceivable (without it a 40% and a 90% reading are two bars with nothing to be different from), the Cached chip boundary, and the minimum weight for a route-diagram stroke.
+- `--border-interactive` on `--surface-elevated` — Input, select, checkbox, radio, switch track and secondary button boundary. Also --progress-track-border, the 1px outline that makes the UNFILLED part of a meter perceivable (without it a 40% and a 90% reading are two bars with nothing to be different from), the Cached chip boundary, and the minimum weight for a route-diagram stroke.
+- `--border-interactive` on `--surface-sunken` — Input, select, checkbox, radio, switch track and secondary button boundary. Also --progress-track-border, the 1px outline that makes the UNFILLED part of a meter perceivable (without it a 40% and a 90% reading are two bars with nothing to be different from), the Cached chip boundary, and the minimum weight for a route-diagram stroke.
+- `--border-accent` on `--surface-base` — Selected tab underline, accent-outlined control boundary, and the 2px inline-start bar marking the SELECTED combobox option against the listbox fill.
+- `--border-accent` on `--surface-card` — Selected tab underline, accent-outlined control boundary, and the 2px inline-start bar marking the SELECTED combobox option against the listbox fill.
+- `--border-accent` on `--surface-elevated` — Selected tab underline, accent-outlined control boundary, and the 2px inline-start bar marking the SELECTED combobox option against the listbox fill.
+- `--border-accent` on `--surface-sunken` — Selected tab underline, accent-outlined control boundary, and the 2px inline-start bar marking the SELECTED combobox option against the listbox fill.
+- `--border-accent` on `--accent-subtle-bg` — The 2px inline-start bar marking the selected combobox option, measured against the tint of the row it sits on rather than against the listbox fill.
+- `--accent-bg` on `--surface-base` — A filled accent component against the surface behind it: the primary Button, the checked Checkbox box, the checked Switch track, and the inverted ACTIVE combobox option — the aria-activedescendant target, whose only visual marker this is.
+- `--accent-bg` on `--surface-card` — A filled accent component against the surface behind it: the primary Button, the checked Checkbox box, the checked Switch track, and the inverted ACTIVE combobox option — the aria-activedescendant target, whose only visual marker this is.
+- `--accent-bg` on `--surface-elevated` — A filled accent component against the surface behind it: the primary Button, the checked Checkbox box, the checked Switch track, and the inverted ACTIVE combobox option — the aria-activedescendant target, whose only visual marker this is.
+- `--accent-bg` on `--surface-sunken` — A filled accent component against the surface behind it: the primary Button, the checked Checkbox box, the checked Switch track, and the inverted ACTIVE combobox option — the aria-activedescendant target, whose only visual marker this is.
+- `--accent-bg` on `--accent-subtle-bg` — The active combobox option against a SELECTED one immediately above or below it. The two states are different rows and must not read as one: the option Enter commits is inverted, the committed value is tinted.
 - `--status-safe-border` on `--surface-base` — StatusPill "safe" boundary on a bare surface.
 - `--status-safe-border` on `--surface-card` — StatusPill "safe" boundary on a bare surface.
 - `--status-safe-border` on `--surface-elevated` — StatusPill "safe" boundary on a bare surface.
@@ -241,28 +253,34 @@ Where these render:
 
 ## Decorative — no floor applies, measured and recorded with the reason
 
-| Foreground          | Background           | Light values       | Light  | Dark values        | Dark   | Result |
-| ------------------- | -------------------- | ------------------ | ------ | ------------------ | ------ | ------ |
-| `--border-hairline` | `--surface-base`     | #dce8f2 on #eef5fb | 1.13:1 | #13243a on #050b16 | 1.25:1 | exempt |
-| `--border-hairline` | `--surface-card`     | #dce8f2 on #ffffff | 1.24:1 | #13243a on #0b1728 | 1.14:1 | exempt |
-| `--border-hairline` | `--surface-elevated` | #dce8f2 on #f8fbff | 1.19:1 | #13243a on #13243a | 1.00:1 | exempt |
-| `--border-emphasis` | `--surface-base`     | #c3d4e2 on #eef5fb | 1.37:1 | #34465a on #050b16 | 2.03:1 | exempt |
-| `--border-emphasis` | `--surface-card`     | #c3d4e2 on #ffffff | 1.51:1 | #34465a on #0b1728 | 1.85:1 | exempt |
-| `--border-emphasis` | `--surface-elevated` | #c3d4e2 on #f8fbff | 1.46:1 | #34465a on #13243a | 1.61:1 | exempt |
-| `--border-emphasis` | `--surface-sunken`   | #c3d4e2 on #dce8f2 | 1.21:1 | #34465a on #07111f | 1.95:1 | exempt |
-| `--surface-sunken`  | `--surface-card`     | #dce8f2 on #ffffff | 1.24:1 | #07111f on #0b1728 | 1.05:1 | exempt |
-| `--surface-card`    | `--surface-base`     | #ffffff on #eef5fb | 1.10:1 | #0b1728 on #050b16 | 1.09:1 | exempt |
+| Foreground           | Background           | Light values       | Light  | Dark values        | Dark   | Result |
+| -------------------- | -------------------- | ------------------ | ------ | ------------------ | ------ | ------ |
+| `--border-hairline`  | `--surface-base`     | #dce8f2 on #eef5fb | 1.13:1 | #13243a on #050b16 | 1.25:1 | exempt |
+| `--border-hairline`  | `--surface-card`     | #dce8f2 on #ffffff | 1.24:1 | #13243a on #0b1728 | 1.14:1 | exempt |
+| `--border-hairline`  | `--surface-elevated` | #dce8f2 on #f8fbff | 1.19:1 | #13243a on #13243a | 1.00:1 | exempt |
+| `--border-emphasis`  | `--surface-base`     | #c3d4e2 on #eef5fb | 1.37:1 | #34465a on #050b16 | 2.03:1 | exempt |
+| `--border-emphasis`  | `--surface-card`     | #c3d4e2 on #ffffff | 1.51:1 | #34465a on #0b1728 | 1.85:1 | exempt |
+| `--border-emphasis`  | `--surface-elevated` | #c3d4e2 on #f8fbff | 1.46:1 | #34465a on #13243a | 1.61:1 | exempt |
+| `--border-emphasis`  | `--surface-sunken`   | #c3d4e2 on #dce8f2 | 1.21:1 | #34465a on #07111f | 1.95:1 | exempt |
+| `--surface-sunken`   | `--surface-card`     | #dce8f2 on #ffffff | 1.24:1 | #07111f on #0b1728 | 1.05:1 | exempt |
+| `--accent-subtle-bg` | `--surface-base`     | #e5f4fd on #eef5fb | 1.02:1 | #062438 on #050b16 | 1.23:1 | exempt |
+| `--accent-subtle-bg` | `--surface-card`     | #e5f4fd on #ffffff | 1.12:1 | #062438 on #0b1728 | 1.12:1 | exempt |
+| `--accent-subtle-bg` | `--surface-elevated` | #e5f4fd on #f8fbff | 1.08:1 | #062438 on #13243a | 1.01:1 | exempt |
+| `--surface-card`     | `--surface-base`     | #ffffff on #eef5fb | 1.10:1 | #0b1728 on #050b16 | 1.09:1 | exempt |
 
 Where these render:
 
-- `--border-hairline` on `--surface-base` — Hairline between non-interactive regions: card edge, section rule, list divider. Exempt: WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1.
-- `--border-hairline` on `--surface-card` — Hairline between non-interactive regions: card edge, section rule, list divider. Exempt: WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1.
-- `--border-hairline` on `--surface-elevated` — Hairline between non-interactive regions: card edge, section rule, list divider. Exempt: WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1.
+- `--border-hairline` on `--surface-base` — Hairline between non-interactive regions: card edge, section rule, list divider. Exempt: WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1. On --surface-elevated in dark the two tokens resolve to the SAME ink step (1.00:1), which is deliberate — elevation in dark mode is read from surface tint, not from an edge — so any card, table or disclosure nested inside a dialog or drawer takes --border-emphasis instead (primitives.css, "nested elevation").
+- `--border-hairline` on `--surface-card` — Hairline between non-interactive regions: card edge, section rule, list divider. Exempt: WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1. On --surface-elevated in dark the two tokens resolve to the SAME ink step (1.00:1), which is deliberate — elevation in dark mode is read from surface tint, not from an edge — so any card, table or disclosure nested inside a dialog or drawer takes --border-emphasis instead (primitives.css, "nested elevation").
+- `--border-hairline` on `--surface-elevated` — Hairline between non-interactive regions: card edge, section rule, list divider. Exempt: WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1. On --surface-elevated in dark the two tokens resolve to the SAME ink step (1.00:1), which is deliberate — elevation in dark mode is read from surface tint, not from an edge — so any card, table or disclosure nested inside a dialog or drawer takes --border-emphasis instead (primitives.css, "nested elevation").
 - `--border-emphasis` on `--surface-base` — Deliberate rule: table header underline, footer rule, drawer edge. Exempt: A heavier hairline. Still decorative: no control is identified by it. A route-diagram stroke or any graphical object that carries meaning must use --border-interactive or --border-accent instead.
 - `--border-emphasis` on `--surface-card` — Deliberate rule: table header underline, footer rule, drawer edge. Exempt: A heavier hairline. Still decorative: no control is identified by it. A route-diagram stroke or any graphical object that carries meaning must use --border-interactive or --border-accent instead.
 - `--border-emphasis` on `--surface-elevated` — Deliberate rule: table header underline, footer rule, drawer edge. Exempt: A heavier hairline. Still decorative: no control is identified by it. A route-diagram stroke or any graphical object that carries meaning must use --border-interactive or --border-accent instead.
 - `--border-emphasis` on `--surface-sunken` — Deliberate rule: table header underline, footer rule, drawer edge. Exempt: A heavier hairline. Still decorative: no control is identified by it. A route-diagram stroke or any graphical object that carries meaning must use --border-interactive or --border-accent instead.
-- `--surface-sunken` on `--surface-card` — Skeleton block reserving the final dimensions of content that has not arrived. Exempt: A skeleton carries no information — its accessible name is a VisuallyHidden "Loading" string, and it is never the only route to the content.
+- `--surface-sunken` on `--surface-card` — The Skeleton block (--skeleton-bg) reserving the final dimensions of content that has not arrived. Nothing else. The ProgressBar track no longer uses this pair: its fill is transparent and its scale is carried by --progress-track-border, a measured 3:1 boundary. Exempt: A skeleton carries no information — its accessible name is a VisuallyHidden "Loading" string, and it is never the only route to the content. This reason reaches the skeleton and nothing else: a pair cannot be exempt in one component and load-bearing in another (ACCESSIBILITY.md B2). The Switch OFF track shares the fill but is identified by its --border-interactive boundary, measured above.
+- `--accent-subtle-bg` on `--surface-base` — Accent tint: the selected combobox row, the ghost button hover fill, the accent Badge fill. Exempt: Reinforcement, never the indicator. The selected combobox row is identified by aria-selected and by a 2px --border-accent bar (3.90:1 on this tint, 3.52:1 or better on every surface); the accent Badge by its --border-accent boundary; a hover fill identifies nothing, since the control is already identified by its label and boundary when the pointer is elsewhere. The ACTIVE combobox option deliberately does NOT use this tint — it inverts to --accent-bg, which is measured as a boundary above.
+- `--accent-subtle-bg` on `--surface-card` — Accent tint: the selected combobox row, the ghost button hover fill, the accent Badge fill. Exempt: Reinforcement, never the indicator. The selected combobox row is identified by aria-selected and by a 2px --border-accent bar (3.90:1 on this tint, 3.52:1 or better on every surface); the accent Badge by its --border-accent boundary; a hover fill identifies nothing, since the control is already identified by its label and boundary when the pointer is elsewhere. The ACTIVE combobox option deliberately does NOT use this tint — it inverts to --accent-bg, which is measured as a boundary above.
+- `--accent-subtle-bg` on `--surface-elevated` — Accent tint: the selected combobox row, the ghost button hover fill, the accent Badge fill. Exempt: Reinforcement, never the indicator. The selected combobox row is identified by aria-selected and by a 2px --border-accent bar (3.90:1 on this tint, 3.52:1 or better on every surface); the accent Badge by its --border-accent boundary; a hover fill identifies nothing, since the control is already identified by its label and boundary when the pointer is elsewhere. The ACTIVE combobox option deliberately does NOT use this tint — it inverts to --accent-bg, which is measured as a boundary above.
 - `--surface-card` on `--surface-base` — Card fill against the page. Exempt: Elevation, not identification. The card also carries --border-hairline, and nothing about the card is conveyed by the fill difference alone.
 
 ## Primitive ramp
@@ -316,7 +334,7 @@ The only literal colours in the system. A semantic token names a step here; noth
 
 ## Semantic layer
 
-33 semantic colour tokens and 31 component
+33 semantic colour tokens and 33 component
 tokens. Component tokens are aliases onto this layer and are therefore covered by the measurements
 above; no component token introduces a colour of its own.
 

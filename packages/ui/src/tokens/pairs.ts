@@ -162,14 +162,34 @@ export const contrastPairs: readonly ContrastPair[] = [
     'border-interactive',
     TEXT_SURFACES,
     'ui-boundary',
-    'Input, select, checkbox, radio, switch track and secondary button boundary. Also the Cached chip boundary and the minimum weight for a route-diagram stroke.',
+    'Input, select, checkbox, radio, switch track and secondary button boundary. Also --progress-track-border, the 1px outline that makes the UNFILLED part of a meter perceivable (without it a 40% and a 90% reading are two bars with nothing to be different from), the Cached chip boundary, and the minimum weight for a route-diagram stroke.',
   ),
   ...on(
     'border-accent',
     TEXT_SURFACES,
     'ui-boundary',
-    'Selected tab underline and accent-outlined control boundary.',
+    'Selected tab underline, accent-outlined control boundary, and the 2px inline-start bar marking the SELECTED combobox option against the listbox fill.',
   ),
+  {
+    foreground: 'border-accent',
+    background: 'accent-subtle-bg',
+    usage: 'ui-boundary',
+    where:
+      'The 2px inline-start bar marking the selected combobox option, measured against the tint of the row it sits on rather than against the listbox fill.',
+  },
+  ...on(
+    'accent-bg',
+    TEXT_SURFACES,
+    'ui-boundary',
+    'A filled accent component against the surface behind it: the primary Button, the checked Checkbox box, the checked Switch track, and the inverted ACTIVE combobox option — the aria-activedescendant target, whose only visual marker this is.',
+  ),
+  {
+    foreground: 'accent-bg',
+    background: 'accent-subtle-bg',
+    usage: 'ui-boundary',
+    where:
+      'The active combobox option against a SELECTED one immediately above or below it. The two states are different rows and must not read as one: the option Enter commits is inverted, the committed value is tinted.',
+  },
   ...STATUS_TONES.flatMap((tone): ContrastPair[] => {
     const border = `status-${tone}-border` as SemanticColorName
     const bg = `status-${tone}-bg` as SemanticColorName
@@ -221,7 +241,7 @@ export const contrastPairs: readonly ContrastPair[] = [
     usage: 'decorative',
     where: 'Hairline between non-interactive regions: card edge, section rule, list divider.',
     exempt:
-      'WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1.',
+      'WCAG 2.2 SC 1.4.11 applies to boundaries required to identify a component. These separate static regions that are already distinguished by their fill, and no information depends on seeing them. Interactive boundaries use --border-interactive, which is held to 3:1. On --surface-elevated in dark the two tokens resolve to the SAME ink step (1.00:1), which is deliberate — elevation in dark mode is read from surface tint, not from an edge — so any card, table or disclosure nested inside a dialog or drawer takes --border-emphasis instead (primitives.css, "nested elevation").',
   })),
   ...TEXT_SURFACES.map((background): ContrastPair => ({
     foreground: 'border-emphasis',
@@ -235,10 +255,26 @@ export const contrastPairs: readonly ContrastPair[] = [
     foreground: 'surface-sunken',
     background: 'surface-card',
     usage: 'decorative',
-    where: 'Skeleton block reserving the final dimensions of content that has not arrived.',
+    where:
+      'The Skeleton block (--skeleton-bg) reserving the final dimensions of content that has not arrived. Nothing else. The ProgressBar track no longer uses this pair: its fill is transparent and its scale is carried by --progress-track-border, a measured 3:1 boundary.',
     exempt:
-      'A skeleton carries no information — its accessible name is a VisuallyHidden "Loading" string, and it is never the only route to the content.',
+      'A skeleton carries no information — its accessible name is a VisuallyHidden "Loading" string, and it is never the only route to the content. This reason reaches the skeleton and nothing else: a pair cannot be exempt in one component and load-bearing in another (ACCESSIBILITY.md B2). The Switch OFF track shares the fill but is identified by its --border-interactive boundary, measured above.',
   },
+  ...(
+    [
+      'surface-base',
+      'surface-card',
+      'surface-elevated',
+    ] as const satisfies readonly SemanticColorName[]
+  ).map((background): ContrastPair => ({
+    foreground: 'accent-subtle-bg',
+    background,
+    usage: 'decorative',
+    where:
+      'Accent tint: the selected combobox row, the ghost button hover fill, the accent Badge fill.',
+    exempt:
+      'Reinforcement, never the indicator. The selected combobox row is identified by aria-selected and by a 2px --border-accent bar (3.90:1 on this tint, 3.52:1 or better on every surface); the accent Badge by its --border-accent boundary; a hover fill identifies nothing, since the control is already identified by its label and boundary when the pointer is elsewhere. The ACTIVE combobox option deliberately does NOT use this tint — it inverts to --accent-bg, which is measured as a boundary above.',
+  })),
   {
     foreground: 'surface-card',
     background: 'surface-base',

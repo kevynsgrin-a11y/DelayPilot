@@ -331,7 +331,7 @@ if you decline the changed itinerary."
 ink/navy surfaces, cloud-white content, electric sky-blue accent, warm amber watch states,
 restrained red critical states, clear green on-track states, fine route-line and radar-arc motifs,
 tabular numerals, generous spacing, strong hierarchy, soft-but-not-toy radii, thin crisp borders,
-motion only for state change.
+motion only for state change (with the single public-route allowance under **Motion** below).
 
 **Seed tokens** (adjust only to satisfy measured contrast; never ship an unmeasured pair):
 
@@ -347,6 +347,24 @@ motion only for state change.
 self-hosted build, with robust system fallbacks and tabular numerals for times, flight numbers, and
 countdowns. **Logo:** original SVG combining a directional route line, a subtle radar arc, and a
 forward-motion cue — never a copied wing, airport glyph, or clip-art plane.
+
+**Motion:** on state change only — a status transition, a disclosure opening, a dialog entering,
+a toast arriving, a value updating after a refresh — and every motion collapses under
+`prefers-reduced-motion: reduce` without removing the state change itself. One narrow,
+owner-authorized exception exists, recorded in `docs/decisions/0003-marketing-motion-allowance.md`
+(ADR 0003) and binding on every charter: on the pre-rendered public routes of §18.1 **only**, and
+never inside a data-bearing component (trip cockpit, segment card, connection cockpit, rights card,
+action checklist, evidence packet, lookup result states, provenance chips, status pills), the site
+may use (a) pure-CSS scroll-driven entrance reveals that fire once per element and animate only
+`opacity`/`transform`, (b) at most two ambient decorative motifs per route, drawn as original
+SVG/CSS art, `aria-hidden`, carrying no text or data, cycling in ≤ 12 s and paused off-screen,
+(c) Astro View Transitions with a cross-fade of ≤ 180 ms, and (d) a scroll-scrubbed demonstration
+chronology whose base DOM is a complete, readable, ordered list. Still forbidden everywhere:
+auto-advancing carousels, attention pulses on `watch`/`critical` states, motion on data poll or
+re-render, JavaScript scroll handlers for decoration, animated layout properties, and any motion a
+user must wait through before content is readable. Under reduced motion the whole allowance renders
+as a single static frame. §18.2 private routes and error, maintenance, and status pages get no
+allowance.
 
 **Accessibility floor:** WCAG 2.2 AA. Full keyboard operation, visible focus, semantic landmarks,
 labelled forms, accessible error summaries, `aria-live` only for meaningful changes, reduced motion,

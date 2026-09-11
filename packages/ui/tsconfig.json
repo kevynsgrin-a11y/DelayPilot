@@ -1,8 +1,16 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
-    "types": []
+    "rootDir": ".",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+
+    // The token generator runs on Node's native type stripping (`node src/tokens/generate.ts`),
+    // which resolves specifiers literally. Relative imports therefore carry their real `.ts` /
+    // `.tsx` extension, which TypeScript only permits alongside `noEmit` — already set in
+    // tsconfig.base.json.
+    "allowImportingTsExtensions": true
   },
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts", "test/**/*.tsx"]
 }

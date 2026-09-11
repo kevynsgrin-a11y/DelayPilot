@@ -1,0 +1,109 @@
+/**
+ * Combobox — the ARIA shell only.
+ *
+ * This primitive owns the roles, the ids and the keyboard contract of a combobox. It owns no
+ * filtering, no fetching, no airline or airport list, and no notion of what an option means: the
+ * caller supplies options and decides what "matching" is. A combobox that knew what a flight was
+ * would have crossed into frontend-ui-engineer's scope (`docs/agents/ROSTER.md §3`).
+ *
+ * WAI-ARIA 1.2 combobox pattern: `role="combobox"` on the input, `aria-expanded`,
+ * `aria-controls` pointing at a `role="listbox"`, and `aria-activedescendant` naming the active
+ * option. Focus stays on the input throughout, which is what makes it usable one-handed.
+ */
+
+import type { InputHTMLAttributes, JSX, ReactNode } from 'react'
+import { cx } from './class-names.ts'
+
+export interface ComboboxProps extends Omit<
+  InputHTMLAttributes<HTMLInputElement>,
+  'className' | 'children' | 'role' | 'type' | 'aria-expanded' | 'aria-controls'
+> {
+  /** Id of the listbox element rendered in `children`. */
+  readonly listboxId: string
+  readonly expanded: boolean
+  /** Id of the visually highlighted option, or undefined when none is active. */
+  readonly activeOptionId?: string
+  /** The listbox. Rendered inside the shell so the popup is adjacent to the input in the DOM. */
+  readonly children: ReactNode
+  readonly className?: string
+}
+
+export function Combobox({
+  listboxId,
+  expanded,
+  activeOptionId,
+  children,
+  className,
+  ...rest
+}: ComboboxProps): JSX.Element {
+  return (
+    <div className={cx('dp-combobox', className)}>
+      <input
+        type="text"
+        role="combobox"
+        className="dp-combobox__input"
+        autoComplete="off"
+        aria-expanded={expanded}
+        aria-controls={listboxId}
+        aria-autocomplete="list"
+        {...(activeOptionId === undefined ? {} : { 'aria-activedescendant': activeOptionId })}
+        {...rest}
+      />
+      {children}
+    </div>
+  )
+}
+
+export interface ComboboxListboxProps {
+  readonly id: string
+  readonly children: ReactNode
+  /** Accessible name for the popup, e.g. the field's own label. */
+  readonly 'aria-label': string
+  readonly hidden?: boolean
+}
+
+export function ComboboxListbox({
+  id,
+  children,
+  hidden = false,
+  ...rest
+}: ComboboxListboxProps): JSX.Element {
+  return (
+    <ul id={id} role="listbox" className="dp-combobox__listbox" hidden={hidden} {...rest}>
+      {children}
+    </ul>
+  )
+}
+
+export interface ComboboxOptionProps {
+  readonly id: string
+  readonly selected: boolean
+  /** True when this option is the `aria-activedescendant` target. */
+  readonly active: boolean
+  readonly children: ReactNode
+  readonly onSelect: () => void
+}
+
+export function ComboboxOption({
+  id,
+  selected,
+  active,
+  children,
+  onSelect,
+}: ComboboxOptionProps): JSX.Element {
+  return (
+    <li
+      id={id}
+      role="option"
+      aria-selected={selected}
+      className={cx('dp-combobox__option', active ? 'is-active' : undefined)}
+      onMouseDown={(event) => {
+        // Pointer selection must not blur the input first, or the listbox closes before the click.
+        event.preventDefault()
+        onSelect()
+      }}
+    >
+      {children}
+    </li>
+  )
+}

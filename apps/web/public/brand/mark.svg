@@ -1,0 +1,88 @@
+<!--
+  DelayPilot mark — the single hand-authored geometry. Owner: visual-asset-director.
+
+  Every other brand file in this repository is derived from this one by
+  scripts/assets/build-assets.mjs: the monochrome variant, the logotype pair, the favicon
+  reduction, the ICO, every PWA and Apple icon, the Open Graph card and the legibility evidence.
+  Nothing downstream is redrawn by hand, because two hand-drawn versions of a mark is how a brand
+  starts looking cheap.
+
+  (CSS custom properties are named below without their leading double hyphen, because an XML
+  comment may not contain one. `foreground` means the token written with two leading hyphens in
+  apps/web/src/styles/tokens.css, and so on.)
+
+  GRID
+  24 x 24 with a 2-unit outer margin, so the live area is 2..22 on both axes. Every coordinate is
+  in those units at 2-decimal precision. The rendered content bounding box, strokes included, is
+  x 2.70..21.29, y 3.55..20.50 — centre (12.00, 12.03) against a canvas centre of (12, 12).
+
+  THREE ELEMENTS, NO MORE (DIRECTIVE.md §7: "a directional route line, a subtle radar arc, and a
+  forward-motion cue — never a copied wing, airport glyph, or clip-art plane"):
+
+    1. Radar arc. A partial range ring concentric with the route origin: centre (8.9, 14.3),
+       radius 5.2, spanning 75° to 215° measured in SVG space (+x axis, y increasing downward).
+       It sits behind the origin, on the opposite side from the direction of travel, so it never
+       crosses the route line — the clear gap between the origin cap and the ring is 2.90 units
+       (5.20 radius, less 1.00 arc half-stroke, less 1.30 route half-stroke). Stroke 2.0: the
+       thinnest element, and thinner than the route line, as the charter requires. "Subtle" is
+       achieved by weight, never by opacity, so the contrast of every stroke stays measurable.
+
+    2. Route line. A cubic from the origin (8.9, 14.3) to (15.7, 7.7), bowed 0.5 units above its
+       9.48-unit chord, with controls at (10.7, 11.62) and (12.97, 9.42). The entry tangent rises
+       at 55° and the exit tangent at 33°, so the line reads as a climb settling into cruise and
+       the direction of travel is unambiguous without an arrowhead. Stroke 2.6: the heaviest
+       element, because it is the one that must survive a favicon.
+
+    3. Forward-motion cue. A detached advance dot at (19.59, 5.25), r 1.7, sitting on the route's
+       exit tangent 4.6 units ahead of the stroke end. The 1.60-unit gap (4.60, less the 1.70
+       radius, less the 1.30 half-stroke) is the motion: the position has moved on from the trail
+       it left. No chevron, no arrowhead, no aircraft.
+
+  STROKE FLOOR
+  The thinnest stroke is 2.0 units = 1.33 device px at 16 px, the documented floor. The route line
+  is 2.6 units = 1.73 px and the advance dot is 3.4 units across = 2.27 px, so the two elements
+  carrying the brand survive at favicon size. The radar arc does not, which is why
+  apps/web/public/icons/favicon.svg is this file with the arc dropped and the remaining two
+  elements enlarged to fill the freed space — a legible reduction from one grid, not a second mark.
+
+  COLOUR
+  Two authored values, both read from apps/web/src/styles/tokens.css and both re-asserted against
+  it by scripts/assets/verify-assets.mjs, so a token change cannot silently re-colour the mark:
+    - Radar arc and route line: `currentColor`, so the mark inherits `foreground` and is measured
+      wherever the page text is measured (17.21:1 light, 15.09:1 dark).
+    - Advance dot: the `brand-mark-accent` custom property with a literal fallback of #087fbd, the
+      `color-sky-600` primitive. That fallback is the only value in the sky ramp clearing the 3:1
+      non-text floor on every surface this mark appears on, in both themes: 4.39:1 on light
+      `surface` #ffffff, 4.23:1 on light `surface-raised` #f8fbff, 3.99:1 on light `background`
+      #eef5fb, 4.49:1 on dark `background` #050b16, 4.10:1 on dark `surface` #0b1728, 3.56:1 on
+      dark `surface-raised` #13243a, and 4.31:1 on the #07111f icon plate. It is the fallback
+      precisely because it is what renders with NO CSS context at all: an img element, an email
+      client, a print stylesheet, a PDF.
+      Where a theme context does exist, set `brand-mark-accent` per theme and the figures improve:
+      #31c5ff (`color-sky-400`, the dark accent) gives 9.91 / 9.05 / 7.87:1 on the three dark
+      surfaces, and #076ca1 (`color-sky-700`, the light accent) gives 5.72 / 5.52 / 5.20:1 on the
+      three light ones. Never the reverse: #31c5ff is 1.81:1 on light `background`, and #076ca1 is
+      2.74:1 on dark `surface-raised`. Both fail.
+      The raster derivations inherit no CSS, so build-assets.mjs substitutes both values explicitly
+      and asserts that the substitution happened.
+
+  This file carries no editor metadata, no embedded raster, no external font reference and no
+  third-party geometry. No airline, airport, regulator or data-provider mark, wordmark, livery,
+  seal, roundel or trade dress is referenced, traced or abstracted here (AGENTS.md §1.4).
+-->
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 24 24"
+  width="24"
+  height="24"
+  fill="none"
+  role="img"
+  aria-labelledby="dp-mark-title"
+>
+  <title id="dp-mark-title">DelayPilot</title>
+  <g stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10.25 19.32A5.2 5.2 0 0 1 4.64 11.32" stroke-width="2" />
+    <path d="M8.9 14.3C10.7 11.62 12.97 9.42 15.7 7.7" stroke-width="2.6" />
+  </g>
+  <circle cx="19.59" cy="5.25" r="1.7" fill="var(--brand-mark-accent, #087fbd)" />
+</svg>

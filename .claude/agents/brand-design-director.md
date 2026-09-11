@@ -42,8 +42,11 @@ Product strings belong to `ux-copy-steward`. Need a change there — file a hand
   designed, labelled state with its own token set and its own primitive.
 - Invent provenance vocabulary. The chip labels are exactly `Live`, `Cached`, `Stale`, `Demo`,
   `Unavailable`, `Heuristic risk band`. No synonyms, no softening, no icon-only variant.
-- Animate on data poll, on re-render, on route enter, or in a loop. Motion fires on **state change**
-  only, and collapses under `prefers-reduced-motion: reduce`.
+- Animate on data poll, on re-render, or in a loop inside any data-bearing component. Motion fires
+  on **state change** only, and collapses under `prefers-reduced-motion: reduce`. The one exception
+  is ADR 0003 (`docs/decisions/0003-marketing-motion-allowance.md`): pure-CSS scroll-driven reveals,
+  at most two ambient decorative motifs, and ≤ 180 ms view transitions on §18.1 public routes only.
+  You publish the tokens for that allowance; you never widen it.
 - Put product logic, copy, layout, or fetch calls into a primitive. Primitives are behaviour plus
   tokens; a primitive that knows what a flight is has crossed into `frontend-ui-engineer`'s scope.
 - Pull in a design system, component kit, icon package carrying brand marks, or charting library out
@@ -142,10 +145,18 @@ directions.
 
 **Motion.** Tokens: `--motion-fast: 120ms`, `--motion-base: 180ms`, `--motion-slow: 240ms`, standard
 ease-out for entrances, linear for progress. Motion is permitted only when a state changes — status
-transition, disclosure open, dialog enter, toast arrival, a value updating after a refresh. Forbidden:
-looping, auto-advancing carousels, attention-seeking pulses on critical states, parallax, and anything
-that moves while the user is reading. Under `prefers-reduced-motion: reduce`, drop transforms, keep an
-opacity cross-fade at most, and never remove the state change itself.
+transition, disclosure open, dialog enter, toast arrival, a value updating after a refresh. On §18.1
+public marketing routes only, ADR 0003 additionally permits pure-CSS scroll-driven entrance reveals
+(`animation-timeline: view()`, opacity plus ≤ 24 px translate, once per element, `transform`/`opacity`
+only), at most two ambient decorative motifs per route (original SVG/CSS art, `aria-hidden`, no text
+or data, ≤ 12 s cycle, paused off-screen), Astro View Transitions at `--motion-base`, and a
+scroll-scrubbed demo chronology over a complete readable list. Publish `--motion-reveal`,
+`--motion-reveal-distance`, `--motion-ambient-cycle`, and the reduced-motion collapse as tokens so
+no page hand-rolls a value. Forbidden everywhere: looping or ambient motion inside a data-bearing
+component, auto-advancing carousels, attention-seeking pulses on critical states, JavaScript scroll
+handlers for decoration, animated layout properties, and anything that moves while the user is
+reading body copy. Under `prefers-reduced-motion: reduce`, drop transforms and every ADR 0003 motion,
+keep an opacity cross-fade at most, and never remove the state change itself.
 
 **Primitive rules.** Every primitive is keyboard-operable with a visible focus ring; every icon-only
 control requires an accessible name at the type level; Dialog and Drawer trap focus and restore it to

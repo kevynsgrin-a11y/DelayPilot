@@ -68,10 +68,16 @@ Do not report a command as passing unless you executed it and it exited zero.
 
 ## Repository state
 
-Greenfield as of 2026-07-27. Phase 0 (audit, plan, agent system) is complete; Phase 1 (foundation)
-is next. `docs/BUILD_PLAN.md §9` holds the exact next command.
+Phase 0 (audit, plan, agent system) and Phase 1 (foundation) are complete and merged to `main`.
+Phase 2 (contracts and domain) is the next backend phase. A visual overhaul that pulls Phases 9→11
+forward is in progress — their paths are disjoint from backend work (`docs/BUILD_PLAN.md §5`) and
+the sequence, decisions, and gate verdicts are in `docs/BUILD_PLAN.md §10`. `docs/BUILD_PLAN.md §9`
+holds the exact next command.
 
 ## Git
 
-Development branch: `claude/inkling-multimodal-subagents-stn4l5`. Scoped commits, never force-push a
-shared branch, never commit a secret.
+Integration branch: `main` (decision D1, `docs/BUILD_PLAN.md §10`). Every session branches from
+`origin/main` and opens a draft pull request against `main`; the former development branch
+`claude/inkling-multimodal-subagents-stn4l5` is behind `main` and is retired — never base work on
+it. Merging to `main` is a production deploy, so nothing merges without the owner's review. Scoped
+commits, never force-push a shared branch, never commit a secret.

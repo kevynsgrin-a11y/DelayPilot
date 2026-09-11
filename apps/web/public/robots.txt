@@ -6,10 +6,18 @@
 # when they ship in Phases 7-10. A Disallow line is a request, not an access control, so nothing
 # private depends on it.
 #
-# No Sitemap: line yet. The sitemap is generated in Phase 11 (DIRECTIVE.md section 19,
-# seo-engineer). Pointing crawlers at a sitemap URL that returns 404 would be a dead reference
-# (AGENTS.md section 1.6) and Search Console reports it as a fetch error, so the line arrives with
-# the file it references rather than ahead of it.
+# The Sitemap: line below now references a file that exists: sitemap.xml sits in this same
+# directory (apps/web/public/), is copied verbatim into the build output, and is served at the
+# site root. It lists exactly the three routes apps/web/src/pages builds today - /, /privacy/ and
+# /terms/ - with the trailing slashes apps/web/astro.config.mjs enforces. The line arrived with the
+# file it references rather than ahead of it, because pointing crawlers at a sitemap URL that
+# returns 404 would be a dead reference (AGENTS.md section 1.6) that Search Console reports as a
+# fetch error.
+#
+# Phase 11 (DIRECTIVE.md section 19, seo-engineer) replaces both this file and that hand-maintained
+# sitemap with a generated sitemap index and per-page-type children gated on editorial status and
+# the content-quality gate. Until then, any new public route must be added to sitemap.xml by hand
+# in the same change that creates it.
 #
 # Owner note: apps/web/public/robots.txt is seo-engineer's in docs/agents/ROSTER.md section 3.
 # This is a pre-Phase-11 baseline added under direct owner instruction after an external audit
@@ -21,3 +29,5 @@ Disallow: /app/
 Disallow: /auth/
 Disallow: /checkout/
 Disallow: /admin/
+
+Sitemap: https://delaypilot.app/sitemap.xml

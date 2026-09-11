@@ -1,8 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  DelayPilot sitemap - pre-Phase-11 baseline.
+
+  Contains exactly the routes that apps/web/src/pages builds today: index.astro, privacy.astro,
+  terms.astro. Nothing else may be listed here. A URL entry for a route that does not exist is a
+  dead reference (AGENTS.md section 1.6) and Search Console reports it as a fetch error.
+
+  Trailing slashes are mandatory: apps/web/astro.config.mjs sets trailingSlash: 'always' with
+  build.format: 'directory', so /privacy resolves only as /privacy/.
+
+  No date, frequency, or ranking hints are emitted. These pages carry no reviewedAt date yet, and
+  stamping the build time would assert a content-change date that nothing established
+  (AGENTS.md section 1.1). Do not add a last-modified element until real content dates exist.
+
+  Phase 11 (DIRECTIVE.md section 19, seo-engineer) replaces this hand-maintained file with a
+  generated sitemap index plus per-page-type children gated on editorial status and the
+  content-quality gate.
+-->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://delaypilot.app</loc></url>
-  <url><loc>https://delaypilot.app/connection</loc></url>
-  <url><loc>https://delaypilot.app/lookup</loc></url>
-  <url><loc>https://delaypilot.app/rights</loc></url>
-  <url><loc>https://delaypilot.app/trip</loc></url>
+  <url><loc>https://delaypilot.app/</loc></url>
+  <url><loc>https://delaypilot.app/privacy/</loc></url>
+  <url><loc>https://delaypilot.app/terms/</loc></url>
 </urlset>

@@ -20,6 +20,7 @@
  *   mark integrity    exactly three elements, stroke floor, margin, no fabricated text
  *   svg references    transform arguments comma-separated, aria-labelledby ids resolving
  *   served tree       apps/web/public/{brand,icons,og} hold artwork only — no docs get served
+ *   contrast method   every ratio printed anywhere is truncated, current, and one measurement
  *   licences          every record complete, every path resolving, every licence text present
  *
  * WHY IT IS A SCRIPT AND A SPEC
@@ -38,7 +39,8 @@ import { fileURLToPath } from 'node:url'
 import sharp from 'sharp'
 
 import { ASSETS } from './asset-manifest.mjs'
-import { COLOR } from './brand-colors.mjs'
+import { CONTRAST_BLOCK_END, CONTRAST_BLOCK_START, contrastSection } from './build-assets.mjs'
+import { COLOR, permittedRatioLiterals } from './brand-colors.mjs'
 import { ACCENT_EXPRESSION, ACCENT_FALLBACK, readMark } from './mark-geometry.mjs'
 
 const REPO = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
@@ -534,6 +536,51 @@ export async function runChecks() {
       `${directory}/: ships artwork only, no documentation or other non-image files`,
       unexpected.length === 0,
       `${unexpected.join(', ')} would be served from the site root. Move documentation to scripts/assets/.`,
+    )
+  }
+
+  /* ----------------------------------------------------------------------------------------- */
+  /* 3c. Contrast method.                                                                       */
+  /*                                                                                            */
+  /* accessibility-lead's finding F21 (docs/ACCESSIBILITY.md §2): the asset evidence ROUNDED     */
+  /* ratios where the token layer TRUNCATES by policy, so the same pair printed 4.49 here and    */
+  /* 4.48 in CONTRAST.md. Nothing crossed a threshold that day, which is exactly why it needed   */
+  /* a test rather than a correction: the next rounded figure could be a 2.995 printing as 3.00  */
+  /* beside a 3:1 floor. Two checks close it — the generated table must be current, and no       */
+  /* hand-written ratio anywhere may be a value the measurement does not produce.                */
+  /* ----------------------------------------------------------------------------------------- */
+
+  const evidenceReadme = 'design/evidence/s2-mark/README.md'
+  if (existsSync(abs(evidenceReadme))) {
+    const source = readFileSync(abs(evidenceReadme), 'utf8')
+    const start = source.indexOf(CONTRAST_BLOCK_START)
+    const end = source.indexOf(CONTRAST_BLOCK_END)
+    const current =
+      start !== -1 && end !== -1 ? source.slice(start, end + CONTRAST_BLOCK_END.length) : null
+    check(
+      results,
+      `${evidenceReadme}: generated contrast table is current`,
+      current === contrastSection(),
+      current === null
+        ? 'the generated:contrast markers are missing'
+        : 'the table no longer matches a fresh measurement. Re-run `node scripts/assets/build-assets.mjs --evidence`.',
+    )
+  } else {
+    check(results, `${evidenceReadme}: present`, false)
+  }
+
+  const permitted = permittedRatioLiterals()
+  for (const file of ['apps/web/public/brand/mark.svg', evidenceReadme]) {
+    if (!existsSync(abs(file))) continue
+    const stale = [...readFileSync(abs(file), 'utf8').matchAll(/(\d+\.\d\d):1/g)]
+      .map((match) => match[1])
+      .filter((ratio) => !permitted.has(ratio))
+    check(
+      results,
+      `${file}: every contrast ratio is truncated and current`,
+      stale.length === 0,
+      `${[...new Set(stale)].join(', ')} — not a value the measurement produces. Ratios are ` +
+        'truncated, never rounded (docs/ACCESSIBILITY.md §2, F21).',
     )
   }
 

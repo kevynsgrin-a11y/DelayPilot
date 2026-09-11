@@ -47,22 +47,26 @@
 
   COLOUR
   Two authored values, both read from apps/web/src/styles/tokens.css and both re-asserted against
-  it by scripts/assets/verify-assets.mjs, so a token change cannot silently re-colour the mark:
+  it by scripts/assets/verify-assets.mjs, so a token change cannot silently re-colour the mark.
+  Every ratio below is TRUNCATED, never rounded, matching packages/ui/src/tokens/contrast.ts: a
+  2.995 must never print as 3.00 beside a 3:1 floor. The full generated matrix, and the script
+  that computes it, are at design/evidence/s2-mark/README.md and scripts/assets/brand-colors.mjs;
+  verify-assets.mjs fails if any figure written here is not one that measurement produces.
     - Radar arc and route line: `currentColor`, so the mark inherits `foreground` and is measured
-      wherever the page text is measured (17.21:1 light, 15.09:1 dark).
+      wherever the page text is measured (17.21:1 light, 15.08:1 dark).
     - Advance dot: the `brand-mark-accent` custom property with a literal fallback of #087fbd, the
       `color-sky-600` primitive. That fallback is the only value in the sky ramp clearing the 3:1
       non-text floor on every surface this mark appears on, in both themes: 4.39:1 on light
       `surface` #ffffff, 4.23:1 on light `surface-raised` #f8fbff, 3.99:1 on light `background`
-      #eef5fb, 4.49:1 on dark `background` #050b16, 4.10:1 on dark `surface` #0b1728, 3.56:1 on
+      #eef5fb, 4.48:1 on dark `background` #050b16, 4.09:1 on dark `surface` #0b1728, 3.56:1 on
       dark `surface-raised` #13243a, and 4.31:1 on the #07111f icon plate. It is the fallback
       precisely because it is what renders with NO CSS context at all: an img element, an email
       client, a print stylesheet, a PDF.
       Where a theme context does exist, set `brand-mark-accent` per theme and the figures improve:
-      #31c5ff (`color-sky-400`, the dark accent) gives 9.91 / 9.05 / 7.87:1 on the three dark
-      surfaces, and #076ca1 (`color-sky-700`, the light accent) gives 5.72 / 5.52 / 5.20:1 on the
-      three light ones. Never the reverse: #31c5ff is 1.81:1 on light `background`, and #076ca1 is
-      2.74:1 on dark `surface-raised`. Both fail.
+      #31c5ff (`color-sky-400`, the dark accent) gives 9.90 / 9.04 / 7.87:1 on the three dark
+      surfaces, and #076ca1 (`color-sky-700`, the light accent) gives 5.72 / 5.51 / 5.20:1 on the
+      three light ones. Never the reverse: #31c5ff is 1.80:1 on light `background`, and #076ca1 is
+      2.73:1 on dark `surface-raised`. Both fail.
       The raster derivations inherit no CSS, so build-assets.mjs substitutes both values explicitly
       and asserts that the substitution happened.
 

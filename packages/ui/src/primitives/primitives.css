@@ -380,8 +380,10 @@
   border-color: var(--chip-stale-border);
 }
 
-/* Demo is built from none of the status hues: a 2px dashed boundary over a diagonal hatch, and a
-   square hatched-swatch glyph. It must be impossible to mistake for Live at a glance. */
+/* Demo is built from none of the status hues. The separation from Live is carried by the word, the
+   2px DASHED boundary (4.73:1 light / 3.79:1 dark on a card), the square corners and the square
+   hatched-swatch glyph. The diagonal hatch is texture, not signal: it measures 1.24:1 / 1.14:1 on
+   the chip fill and nothing may depend on seeing it (ACCESSIBILITY.md F11). */
 .dp-chip--demo {
   color: var(--chip-demo-fg);
   background-color: var(--chip-demo-bg);
@@ -516,19 +518,37 @@
   box-shadow: var(--shadow-elevated);
 }
 
+/* The bar is declared transparent on every option so that becoming active or selected changes a
+   colour and never a box: an option that grew 2px on arrow-down would shuffle the list under the
+   pointer. */
 .dp-combobox__option {
   min-block-size: var(--target-min);
   display: flex;
   align-items: center;
   padding: var(--space-8) var(--space-12);
+  border-inline-start: var(--border-width-emphasis) solid transparent;
   border-radius: var(--radius-control);
   cursor: pointer;
 }
 
-.dp-combobox__option.is-active,
+/* SELECTED — the value currently committed. The tint is reinforcement only; the indicator is the
+   2px --border-accent bar, 3.90:1 against this tint and 4.39:1 / 9.04:1 against the listbox fill. */
 .dp-combobox__option[aria-selected='true'] {
   background-color: var(--accent-subtle-bg);
-  color: var(--text-primary);
+  border-inline-start-color: var(--border-accent);
+}
+
+/* ACTIVE — the option Enter commits. Declared after the selected rule, at equal specificity, so it
+   wins when an option is both.
+
+   aria-activedescendant keeps DOM focus on the input, so this is the ONLY visual statement of where
+   Enter lands, and it used to be a 1.12:1 tint — no signal at all (ACCESSIBILITY.md B1). It is now
+   a full inversion: --accent-bg against the listbox fill and against an adjacent inactive row is
+   5.72:1 light / 9.04:1 dark, and the label on it is 5.72:1 / 9.90:1. */
+.dp-combobox__option.is-active {
+  background-color: var(--accent-bg);
+  color: var(--text-on-accent);
+  border-inline-start-color: var(--text-on-accent);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -707,11 +727,16 @@
 
 /* The shared focus layer replaces box-shadow, which would drop the elevation the moment focus
    landed on the panel itself. The ring is drawn inside the edge instead, so a full-width drawer
-   cannot push it off-screen. */
+   cannot push it off-screen.
+
+   The inset is 4px, not 2px: at 2px the ring's outer neighbour was the panel's own
+   --border-emphasis, which measures 2.89:1 in light — the only value in the focus system that fell
+   below 3:1 (ACCESSIBILITY.md F12). At 4px both neighbours are --surface-elevated, 4.23:1 light and
+   7.87:1 dark. */
 .dp-dialog:focus-visible,
 .dp-drawer:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: calc(-1 * var(--focus-ring-offset));
+  outline-offset: calc(-1 * var(--space-4));
   box-shadow: var(--shadow-overlay);
 }
 
@@ -792,6 +817,20 @@
   box-shadow: var(--shadow-elevated);
 }
 
+/* SC 1.4.13 "hoverable". The 8px visual offset set above used to belong to neither the trigger nor
+   the bubble: a pointer travelling from one to the other crossed dead space, pointerleave fired on
+   the wrapper, and the bubble went before the pointer arrived, so the content could not be
+   reached with a mouse at all (ACCESSIBILITY.md B5). The ::before bridge fills exactly that gap and
+   hit-tests as its originating element, so trigger and bubble are one continuous hover target while
+   the bubble still sits 8px clear of the control. */
+.dp-tooltip__bubble::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  block-size: var(--space-8);
+}
+
 /* --------------------------------------------------------------------------------------------- */
 /* Tabs                                                                                           */
 /* --------------------------------------------------------------------------------------------- */
@@ -803,7 +842,10 @@
 }
 
 .dp-tabs__tab {
+  /* Both axes: a one-character tab label would otherwise draw a ~30px target, above SC 2.5.8's
+     24px but below the 44px DelayPilot floor (DIRECTIVE.md §18.7). */
   min-block-size: var(--target-min);
+  min-inline-size: var(--target-min);
   padding-inline: var(--space-12);
   border: 0;
   border-block-end: var(--border-width-emphasis) solid transparent;
@@ -926,9 +968,12 @@
 /* --------------------------------------------------------------------------------------------- */
 /* Skeleton — reserves the final dimensions. No shimmer: loops are forbidden here.                 */
 /* --------------------------------------------------------------------------------------------- */
+/* --skeleton-bg, not --surface-sunken directly: this is the one fill in the system that genuinely
+   identifies nothing, and it needs a name of its own so its exemption in pairs.ts cannot be read as
+   covering a component that does carry information (ACCESSIBILITY.md B2). */
 .dp-skeleton {
   display: inline-block;
-  background-color: var(--surface-sunken);
+  background-color: var(--skeleton-bg);
 }
 
 .dp-skeleton--control {
@@ -951,15 +996,58 @@
 /* because progress that eases is progress that is lying about its rate.                           */
 /* --------------------------------------------------------------------------------------------- */
 .dp-progress {
+  display: grid;
+  gap: var(--space-4);
   inline-size: 100%;
 }
 
+/* The reading, as words, in the page rather than in an attribute. `aria-valuetext` is exposed to
+   assistive technology and to nothing else, so before this existed a sighted reader — in glare, at
+   a gate, colour-vision deficient or not — got a coloured bar of indeterminate extent and no number
+   (ACCESSIBILITY.md B3). `role="progressbar"` has presentational children in WAI-ARIA 1.2, so this
+   text is shown to the eye without being announced a second time. */
+.dp-progress__readout {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4) var(--space-12);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-ui);
+  color: var(--text-primary);
+}
+
+/* Tabular figures: a slack meter counting down must not reflow its own label. */
+.dp-progress__value {
+  font-variant-numeric: var(--font-variant-tabular);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* The band as a word beside its glyph. The fill hue is the third signal, never the first. */
+.dp-progress__band {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dp-progress__band-icon {
+  font-size: var(--icon-size-16);
+}
+
+/* The track is an OUTLINE, not a fill. The unfilled part of a meter is what the filled part is read
+   against, and a tinted track measured 1.04-1.24:1 against every surface a meter sits on — so a
+   40% reading and a 90% reading were two bars with nothing to be different from (ACCESSIBILITY.md
+   B2). --progress-track-border is --border-interactive: 4.73 / 4.56 / 4.30 / 3.80 light and
+   3.79 / 3.30 / 4.15 / 3.99 dark across card, elevated, base and sunken. */
 .dp-progress__track {
   display: block;
   inline-size: 100%;
   block-size: var(--space-8);
+  border: var(--border-width-hairline) solid var(--progress-track-border);
   border-radius: var(--radius-pill);
-  background-color: var(--surface-sunken);
+  background-color: transparent;
   overflow: hidden;
 }
 
@@ -980,16 +1068,32 @@
   background-color: var(--status-safe-fg);
 }
 
+.dp-progress--safe .dp-progress__band {
+  color: var(--status-safe-fg);
+}
+
 .dp-progress--watch .dp-progress__fill {
   background-color: var(--status-watch-fg);
+}
+
+.dp-progress--watch .dp-progress__band {
+  color: var(--status-watch-fg);
 }
 
 .dp-progress--critical .dp-progress__fill {
   background-color: var(--status-critical-fg);
 }
 
+.dp-progress--critical .dp-progress__band {
+  color: var(--status-critical-fg);
+}
+
 .dp-progress--unknown .dp-progress__fill {
   background-color: var(--status-unknown-fg);
+}
+
+.dp-progress--unknown .dp-progress__band {
+  color: var(--status-unknown-fg);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1065,9 +1169,12 @@
   border-color: var(--severity-resolved-border);
 }
 
+/* Elevation only. This rule used to re-declare `background-color: var(--surface-elevated)` after the
+   severity modifiers at equal specificity, so a Toast never actually rendered its severity fill and
+   the registry described a pair the component did not produce (ACCESSIBILITY.md F7). The fill above
+   is opaque in both themes, so the toast still reads as a floating layer. */
 .dp-toast {
   box-shadow: var(--shadow-elevated);
-  background-color: var(--surface-elevated);
 }
 
 /* --------------------------------------------------------------------------------------------- */
@@ -1094,4 +1201,18 @@
   flex: 1 1 auto;
   min-block-size: 0;
   overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Nested elevation                                                                                */
+/*                                                                                                 */
+/* In dark mode --border-hairline and --surface-elevated are the same ink step (1.00:1). That is    */
+/* deliberate on the page, where elevation is read from surface tint — but inside a floating layer  */
+/* it means a card, table or disclosure has no edge at all (ACCESSIBILITY.md F10). Nested, they     */
+/* take the heavier rule: --border-emphasis is 1.46:1 light / 1.61:1 dark on --surface-elevated,    */
+/* enough to see and still decorative, since each of these is identified by its text, its summary   */
+/* control or its caption rather than by its edge.                                                 */
+/* --------------------------------------------------------------------------------------------- */
+:where(.dp-dialog, .dp-drawer) :is(.dp-card, .dp-table, .dp-disclosure) {
+  border-color: var(--border-emphasis);
 }

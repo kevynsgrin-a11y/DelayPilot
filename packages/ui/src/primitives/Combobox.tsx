@@ -1,14 +1,36 @@
 /**
  * Combobox — the ARIA shell only.
  *
- * This primitive owns the roles, the ids and the keyboard contract of a combobox. It owns no
- * filtering, no fetching, no airline or airport list, and no notion of what an option means: the
- * caller supplies options and decides what "matching" is. A combobox that knew what a flight was
- * would have crossed into frontend-ui-engineer's scope (`docs/agents/ROSTER.md §3`).
+ * This primitive owns the ROLES and the IDS of a combobox. It owns no filtering, no fetching, no
+ * airline or airport list, and no notion of what an option means: the caller supplies options and
+ * decides what "matching" is. A combobox that knew what a flight was would have crossed into
+ * frontend-ui-engineer's scope (`docs/agents/ROSTER.md §3`).
  *
  * WAI-ARIA 1.2 combobox pattern: `role="combobox"` on the input, `aria-expanded`,
  * `aria-controls` pointing at a `role="listbox"`, and `aria-activedescendant` naming the active
  * option. Focus stays on the input throughout, which is what makes it usable one-handed.
+ *
+ * ---------------------------------------------------------------------------------------------
+ * IT DOES NOT OWN THE KEYBOARD. There is no key handling in this file, deliberately: what Enter
+ * commits, what Escape reverts and what "next option" means are the caller's model, not a token
+ * decision (`docs/ACCESSIBILITY.md` F16 corrected an earlier docblock that claimed otherwise).
+ *
+ * THE CONTRACT THE CALLER MUST IMPLEMENT on the input's `onKeyDown`, published here so that
+ * frontend-ui-engineer and accessibility-lead test the same thing in Phase 10:
+ *
+ *   ArrowDown   open the listbox if closed; otherwise move `activeOptionId` to the next option.
+ *   ArrowUp     open the listbox if closed; otherwise move `activeOptionId` to the previous one.
+ *   Home / End  first / last option, when the listbox is open.
+ *   Enter       commit the active option and close. Only when one is active — Enter with nothing
+ *               active must submit the form, or the field becomes a trap for a fast typist.
+ *   Escape      close the listbox and clear `activeOptionId`; a second Escape clears the input.
+ *               Never move focus.
+ *   Tab         leave the field. Do not trap it, and do not swallow the keystroke.
+ *
+ * Wrapping at the ends is optional; never wrapping and never trapping are not. `activeOptionId`
+ * must always name an option that is currently rendered, or `aria-activedescendant` points at
+ * nothing and the ACTIVE styling below marks a row that does not exist.
+ * ---------------------------------------------------------------------------------------------
  */
 
 import type { InputHTMLAttributes, JSX, ReactNode } from 'react'

@@ -342,6 +342,9 @@ describe('typography, motion and the compatibility surface', () => {
       expect(overridden || composed || easing, `--${name} survives reduced motion`).toBe(true)
     }
     expect(reduced).toContain('animation-iteration-count: 1 !important;')
+    // ACCESSIBILITY.md F18: a delay that survives makes a reduced-motion user wait for content.
+    expect(reduced).toContain('animation-delay: 0ms !important;')
+    expect(reduced).toContain('transition-delay: 0ms !important;')
   })
 
   it('contains no keyframe animation anywhere', () => {
@@ -350,11 +353,22 @@ describe('typography, motion and the compatibility surface', () => {
     expect(primitiveRules).not.toMatch(/animation(-name)?:\s*(?!none)/)
   })
 
-  it('never transitions a layout property', () => {
+  /**
+   * ACCESSIBILITY.md F19 widened this. The earlier version matched a named-property list only, so
+   * `transition: all`, `transition-property: width` and a property reached through a custom
+   * property would all have passed. `all` is the important one: it silently includes every layout
+   * property a future rule adds.
+   */
+  it('never transitions a layout property, and never `all`', () => {
     const forbidden =
-      /transition:[^;]*\b(width|height|inline-size|block-size|padding|margin|inset|top|left|right|bottom)\b/
+      /transition(-property)?:[^;]*\b(all|width|height|inline-size|block-size|padding|margin|inset|top|left|right|bottom)\b/
     expect(primitiveRules).not.toMatch(forbidden)
     expect(generatedRules).not.toMatch(forbidden)
+    // A transition whose property list is itself a custom property cannot be read here, so it is
+    // refused outright rather than trusted.
+    const indirect = /transition(-property)?:\s*var\(/
+    expect(primitiveRules).not.toMatch(indirect)
+    expect(generatedRules).not.toMatch(indirect)
   })
 
   it('keeps every class the pre-Phase-10 pages depend on', () => {
@@ -409,5 +423,74 @@ describe('typography, motion and the compatibility surface', () => {
     expect(generatedCss).toContain('--target-min: 2.75rem;')
     expect(primitivesCss).toContain('@media (min-width: 1024px)')
     expect(primitivesCss).toContain('@media (min-width: 768px)')
+  })
+})
+/**
+ * The rules `docs/ACCESSIBILITY.md` B1, B2, B5, F7, F10 and F12 turn on.
+ *
+ * These are CSS facts, not markup facts, so they cannot be asserted from a render. Each one is a
+ * declaration whose absence reintroduces a specific defect: an unmarked active option, a meter with
+ * no scale, a tooltip that cannot be reached with a pointer, a Toast with no severity fill, an
+ * edgeless card inside a dialog, and a focus ring drawn against a 2.89:1 neighbour.
+ */
+describe('primitive rules the Phase 9 review depends on', () => {
+  const ruleBody = (selector: string): string => {
+    const at = primitiveRules.indexOf(`${selector} {`)
+    expect(at, `no rule for ${selector}`).toBeGreaterThan(-1)
+    const end = primitiveRules.indexOf('}', at)
+    return primitiveRules.slice(at, end)
+  }
+
+  it('B1 — the active combobox option inverts, and the selected one carries a bar', () => {
+    const active = ruleBody('.dp-combobox__option.is-active')
+    expect(active).toContain('background-color: var(--accent-bg);')
+    expect(active).toContain('color: var(--text-on-accent);')
+
+    const selected = ruleBody(".dp-combobox__option[aria-selected='true']")
+    expect(selected).toContain('border-inline-start-color: var(--border-accent);')
+
+    // The bar is reserved on every option, so becoming active changes a colour and not a box.
+    expect(ruleBody('.dp-combobox__option')).toContain(
+      'border-inline-start: var(--border-width-emphasis) solid transparent;',
+    )
+    // Whichever rule is declared last wins at equal specificity; active must be it.
+    expect(primitiveRules.indexOf('.dp-combobox__option.is-active {')).toBeGreaterThan(
+      primitiveRules.indexOf(".dp-combobox__option[aria-selected='true'] {"),
+    )
+  })
+
+  it('B2 — the ProgressBar track is an outline, not an invisible fill', () => {
+    const track = ruleBody('.dp-progress__track')
+    expect(track).toContain('var(--progress-track-border)')
+    expect(track).toContain('background-color: transparent;')
+    expect(track).not.toContain('var(--surface-sunken)')
+  })
+
+  it('B5 — the tooltip bubble bridges its own offset', () => {
+    expect(ruleBody('.dp-tooltip__bubble')).toContain(
+      'inset-block-end: calc(100% + var(--space-8));',
+    )
+    const bridge = ruleBody('.dp-tooltip__bubble::before')
+    expect(bridge).toContain('inset-block-start: 100%;')
+    // The bridge is exactly as tall as the offset it covers, or a dead strip survives.
+    expect(bridge).toContain('block-size: var(--space-8);')
+    expect(bridge).toContain('inset-inline: 0;')
+  })
+
+  it('F7 — nothing re-declares a Toast background after the severity modifiers', () => {
+    const lastModifier = primitiveRules.lastIndexOf('.dp-toast--')
+    expect(lastModifier).toBeGreaterThan(-1)
+    expect(primitiveRules.slice(lastModifier)).not.toMatch(/\.dp-toast \{[^}]*background-color/)
+  })
+
+  it('F10 — a card nested in a floating layer takes the heavier rule', () => {
+    expect(primitiveRules).toContain(
+      ':where(.dp-dialog, .dp-drawer) :is(.dp-card, .dp-table, .dp-disclosure) {',
+    )
+  })
+
+  it('F12 — the dialog focus ring is inset clear of the panel border', () => {
+    expect(primitiveRules).toContain('outline-offset: calc(-1 * var(--space-4));')
+    expect(primitiveRules).not.toContain('outline-offset: calc(-1 * var(--focus-ring-offset));')
   })
 })

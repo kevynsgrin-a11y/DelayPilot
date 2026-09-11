@@ -5,7 +5,7 @@
  * colour, no primitive ramp step. The layering rule is mechanical: `test/tokens.test.ts` fails if a
  * component token names anything that is not in semanticColors.
  *
- * Two families live here because they are vocabularies the product fixes, not palettes:
+ * Three families live here. Two are vocabularies the product fixes, not palettes:
  *
  *  - **Provenance chips** — the six `AGENTS.md §1.2` variants. `Live` is safe-toned with a filled
  *    dot; `Cached` is neutral (sunken surface, interactive boundary) so it cannot be read as a
@@ -17,6 +17,13 @@
  *  - **Severity** — `DIRECTIVE.md §16` maps `info`/`watch`/`urgent`/`resolved` onto the same four
  *    status tones. `info` takes the unknown tones because they are neutral slate, which is the
  *    right weight for a routine schedule or gate detail; it never introduces a fifth colour.
+ *
+ * The third family exists for a different reason. `--skeleton-bg` and `--progress-track-border`
+ * name two surfaces that used to share one registry entry, which let a single measured pair be
+ * declared decorative for the skeleton (true: a placeholder identifies nothing) while silently
+ * carrying the scale of a meter (false: the unfilled part of a meter is what a reading is read
+ * against). `docs/ACCESSIBILITY.md` B2 rejected that. Separate names mean the exemption in
+ * `pairs.ts` reaches exactly one component, and the meter states its own 3:1 boundary.
  */
 
 import { type SemanticColorName, semanticColors } from './semantic.ts'
@@ -69,7 +76,7 @@ export const componentColors = component({
   },
   'chip-demo-hatch': {
     ref: 'border-hairline',
-    note: 'Demo diagonal hatch. Chosen so both text tones still clear 4.5:1 where a stripe falls under a glyph.',
+    note: 'Demo diagonal hatch: texture, not signal. It measures 1.24:1 light / 1.14:1 dark on the chip fill, so what actually separates Demo from Live is the 2px DASHED --chip-demo-border (4.73:1 / 3.79:1), the square hatched-swatch glyph, the square corners and the word itself. Chosen so both text tones still clear 4.5:1 where a stripe falls under a glyph.',
   },
 
   'chip-unavailable-fg': {
@@ -108,6 +115,16 @@ export const componentColors = component({
   'severity-resolved-fg': { ref: 'status-safe-fg', note: 'resolved → safe.' },
   'severity-resolved-bg': { ref: 'status-safe-bg', note: 'resolved fill.' },
   'severity-resolved-border': { ref: 'status-safe-border', note: 'resolved boundary.' },
+
+  // --- Two surfaces that must not share one registry entry (ACCESSIBILITY.md B2). ---
+  'skeleton-bg': {
+    ref: 'surface-sunken',
+    note: 'Skeleton block. The one genuinely decorative fill in the system: it reserves space, identifies nothing, and its accessible name is a VisuallyHidden string.',
+  },
+  'progress-track-border': {
+    ref: 'border-interactive',
+    note: 'The 1px outline of a ProgressBar track. The track fill is transparent; this boundary is what makes the unfilled part of the meter perceivable, and it is held to 3:1 on every surface in both themes.',
+  },
 })
 
 export type ComponentColorName = keyof typeof componentColors

@@ -644,7 +644,10 @@ const LEGACY = `/* -------------------------------------------------------------
   font-size: var(--font-size-12);
   font-weight: var(--font-weight-semibold);
   line-height: var(--line-height-ui);
-  white-space: nowrap;
+  /* Wraps, never truncates: the moment a freshness string lands in one of these, nowrap would
+     overflow at 320 CSS px and SC 1.4.10 Reflow would fail. Matches .dp-chip. */
+  overflow-wrap: anywhere;
+  white-space: normal;
 }
 
 .chip--unavailable {
@@ -735,7 +738,8 @@ function reducedMotionBlock(): string {
     '/*     Every duration collapses, the reveal travel goes to zero and the ambient cycle stops.     */',
     '/*     ADR 0003 rule 4: reveals become instant, ambient motifs render a single static frame,     */',
     '/*     view transitions are off — and the state change itself is never removed, because the      */',
-    '/*     final state is applied either way.                                                        */',
+    '/*     final state is applied either way. Delays are zeroed too: a reveal that still waited    */',
+    '/*     before showing its content would make a reduced-motion user wait for nothing.           */',
     '/* ------------------------------------------------------------------------------------------- */',
     '@media (prefers-reduced-motion: reduce) {',
     `${INDENT}:root {`,
@@ -747,7 +751,9 @@ function reducedMotionBlock(): string {
     `${INDENT}*::after {`,
     `${INDENT}${INDENT}animation-duration: 1ms !important;`,
     `${INDENT}${INDENT}animation-iteration-count: 1 !important;`,
+    `${INDENT}${INDENT}animation-delay: 0ms !important;`,
     `${INDENT}${INDENT}transition-duration: 1ms !important;`,
+    `${INDENT}${INDENT}transition-delay: 0ms !important;`,
     `${INDENT}${INDENT}scroll-behavior: auto !important;`,
     `${INDENT}${INDENT}view-transition-name: none !important;`,
     `${INDENT}}`,

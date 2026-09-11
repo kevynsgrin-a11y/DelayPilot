@@ -11,9 +11,14 @@
  * unlabelled slot is an ad confusable with product content.
  *
  * It is dropped from print: an evidence packet is a record, not an inventory surface.
+ *
+ * It is NOT a landmark. `<aside>` with an accessible name is a `complementary` landmark whatever it
+ * is nested in, so two slots on one page produced two identically named landmarks in the list a
+ * screen-reader user navigates by (`docs/ACCESSIBILITY.md` F13). `role="group"` names the container
+ * from its own visible label without adding anything to that list.
  */
 
-import type { JSX, ReactNode } from 'react'
+import { useId, type JSX, type ReactNode } from 'react'
 import { cx } from './class-names.ts'
 
 export interface AdSlotProps {
@@ -28,14 +33,19 @@ export interface AdSlotProps {
 }
 
 export function AdSlot({ label, width, height, children, className }: AdSlotProps): JSX.Element {
+  const labelId = useId()
+
   return (
-    <aside
+    <div
       className={cx('dp-ad-slot', 'dp-no-print', className)}
-      aria-label={label}
+      role="group"
+      aria-labelledby={labelId}
       style={{ inlineSize: width, blockSize: height }}
     >
-      <span className="dp-ad-slot__label">{label}</span>
+      <span className="dp-ad-slot__label" id={labelId}>
+        {label}
+      </span>
       <div className="dp-ad-slot__frame">{children}</div>
-    </aside>
+    </div>
   )
 }

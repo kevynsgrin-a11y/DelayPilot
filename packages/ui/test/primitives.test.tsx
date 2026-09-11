@@ -43,7 +43,7 @@ import { StatusPill } from '../src/primitives/StatusPill.tsx'
 import { Switch } from '../src/primitives/Switch.tsx'
 import { Tabs } from '../src/primitives/Tabs.tsx'
 import { Toast } from '../src/primitives/Toast.tsx'
-import { Tooltip } from '../src/primitives/Tooltip.tsx'
+import { bindTooltipDismiss, Tooltip } from '../src/primitives/Tooltip.tsx'
 import { VisuallyHidden } from '../src/primitives/VisuallyHidden.tsx'
 import {
   interimProvenanceKinds,
@@ -81,16 +81,23 @@ describe('Link', () => {
     expect(html(<Link href="/methodology/">Methodology</Link>)).toContain('href="/methodology/"')
   })
 
-  it('adds rel and target only when external, and never adds sponsored', () => {
+  // ACCESSIBILITY.md F17: the prop that opens a new tab is the prop that announces it, so a link
+  // cannot be built that opens one silently.
+  it('adds rel, target and an announcement together, and never adds sponsored', () => {
     const external = html(
-      <Link href="https://example.org/rule" external>
+      <Link href="https://example.org/rule" newTab="opens in a new tab">
         Official source
       </Link>,
     )
     expect(external).toContain('rel="noopener noreferrer"')
     expect(external).toContain('target="_blank"')
+    expect(external).toContain('dp-visually-hidden')
+    expect(external).toContain('opens in a new tab')
     expect(external).not.toContain('sponsored')
-    expect(html(<Link href="/terms/">Terms</Link>)).not.toContain('target=')
+
+    const internal = html(<Link href="/terms/">Terms</Link>)
+    expect(internal).not.toContain('target=')
+    expect(internal).not.toContain('dp-visually-hidden')
   })
 })
 
@@ -266,6 +273,27 @@ describe('Field, Input, Select, Combobox', () => {
     expect(markup).toContain('role="option"')
     expect(markup).toContain('aria-selected="true"')
   })
+
+  // ACCESSIBILITY.md B1. aria-activedescendant keeps DOM focus on the input, so the active option's
+  // styling is the only statement of where Enter lands. The class has to reach the option element
+  // for primitives.css to have anything to style; the measured ratio of that styling is asserted in
+  // tokens.test.ts and in the contrast suite.
+  it('marks the active option with its own class, distinct from the selected one', () => {
+    const active = html(
+      <ComboboxOption id="a" selected={false} active onSelect={() => undefined}>
+        LHR
+      </ComboboxOption>,
+    )
+    const selected = html(
+      <ComboboxOption id="a" selected active={false} onSelect={() => undefined}>
+        LHR
+      </ComboboxOption>,
+    )
+    expect(active).toContain('dp-combobox__option is-active')
+    expect(active).toContain('aria-selected="false"')
+    expect(selected).not.toContain('is-active')
+    expect(selected).toContain('aria-selected="true"')
+  })
 })
 
 describe('Checkbox, Radio, Switch', () => {
@@ -276,6 +304,23 @@ describe('Checkbox, Radio, Switch', () => {
 
   it('marks a mixed checkbox as mixed', () => {
     expect(html(<Checkbox indeterminate>Some</Checkbox>)).toContain('aria-checked="mixed"')
+  })
+
+  // ACCESSIBILITY.md F8: the state word is visible text, never part of the accessible name.
+  it('names the switch from its label, leaving the state to aria-checked', () => {
+    const markup = html(
+      <Switch checked onCheckedChange={() => undefined} label="Monitoring" stateLabel="On" />,
+    )
+    const labelledBy = /aria-labelledby="([^"]+)"/.exec(markup)?.[1]
+    expect(labelledBy).toBeDefined()
+    expect(markup).toContain(`id="${String(labelledBy)}"`)
+    expect(markup).toContain(
+      `<span class="dp-switch__label" id="${String(labelledBy)}">Monitoring</span>`,
+    )
+    // The state word is outside the name, and it is still on the page as text.
+    expect(markup).toContain('dp-switch__state')
+    expect(markup).toContain('>On<')
+    expect(markup).not.toContain('aria-label=')
   })
 
   it('renders a switch with its state as words as well as a position', () => {
@@ -321,6 +366,28 @@ describe('Dialog and Drawer', () => {
     expect(markup).toContain('dp-drawer--end')
     expect(markup).toContain('aria-modal="true"')
   })
+
+  // ACCESSIBILITY.md F14: a hard-coded h2 opened from under an h3 breaks the page heading order.
+  it('takes a heading level, defaulting to h2', () => {
+    const fallback = html(
+      <Dialog open onClose={() => undefined} title="Delete trip" closeLabel="Close">
+        body
+      </Dialog>,
+    )
+    const nested = html(
+      <Dialog
+        open
+        onClose={() => undefined}
+        title="Delete trip"
+        closeLabel="Close"
+        headingLevel={3}
+      >
+        body
+      </Dialog>,
+    )
+    expect(fallback).toContain('<h2 class="dp-dialog__title"')
+    expect(nested).toContain('<h3 class="dp-dialog__title"')
+  })
 })
 
 describe('Tooltip, Tabs, Disclosure', () => {
@@ -332,6 +399,59 @@ describe('Tooltip, Tabs, Disclosure', () => {
     expect(markup).toContain('hidden')
     const describedBy = /aria-describedby="([^"]+)"/.exec(markup)?.[1]
     expect(markup).toContain(`id="${String(describedBy)}"`)
+  })
+
+  /**
+   * ACCESSIBILITY.md B5, SC 1.4.13 "dismissible". The listener that Tooltip installs on `document`
+   * while it is open, exercised against a stand-in target: a wrapper-scoped handler only ever sees
+   * keydowns whose target is inside the wrapper, which is never the case for a tooltip opened by
+   * hover. There is no DOM environment at this runner, so the binder is exported and tested
+   * directly rather than asserted to exist by reading the source.
+   */
+  it('dismisses on Escape from anywhere, stops the key, and unbinds on close', () => {
+    const bound: ((event: { key: string; stopPropagation: () => void }) => void)[] = []
+    const target = {
+      addEventListener(
+        _type: 'keydown',
+        listener: (event: { key: string; stopPropagation: () => void }) => void,
+        capture: boolean,
+      ): void {
+        expect(capture).toBe(true)
+        bound.push(listener)
+      },
+      removeEventListener(
+        _type: 'keydown',
+        listener: (event: { key: string; stopPropagation: () => void }) => void,
+      ): void {
+        const at = bound.indexOf(listener)
+        if (at >= 0) bound.splice(at, 1)
+      },
+    }
+
+    let dismissed = 0
+    let stopped = 0
+    const key = (name: string): { key: string; stopPropagation: () => void } => ({
+      key: name,
+      stopPropagation: () => {
+        stopped += 1
+      },
+    })
+
+    const unbind = bindTooltipDismiss(target, () => {
+      dismissed += 1
+    })
+    expect(bound).toHaveLength(1)
+
+    bound[0]?.(key('a'))
+    expect(dismissed).toBe(0)
+
+    bound[0]?.(key('Escape'))
+    expect(dismissed).toBe(1)
+    // The innermost layer owns Escape: a Dialog behind the tooltip must not close too.
+    expect(stopped).toBe(1)
+
+    unbind()
+    expect(bound).toHaveLength(0)
   })
 
   it('renders a roving-tabindex tablist with one visible panel', () => {
@@ -388,14 +508,44 @@ describe('DataTable', () => {
   it('gives numeric columns tabular figures', () => {
     expect(markup).toContain('dp-table__cell--numeric tnum')
   })
+
+  // ACCESSIBILITY.md B6, SC 2.1.1. The shell scrolls horizontally; Safari does not make a scroll
+  // container focusable on its own, so columns past the fold were pointer-only.
+  it('exposes the scroll container as a focusable region named by the caption', () => {
+    expect(markup).toContain('role="region"')
+    expect(markup).toContain('tabindex="0"')
+    const labelledBy = /aria-labelledby="([^"]+)"/.exec(markup)?.[1]
+    expect(labelledBy).toBeDefined()
+    expect(markup).toContain(
+      `<caption class="dp-table__caption" id="${String(labelledBy)}">Status chronology</caption>`,
+    )
+  })
 })
 
 describe('Skeleton, ProgressBar, AdSlot', () => {
-  it('reserves the final dimensions and announces what is loading', () => {
+  it('reserves the final dimensions and names what is loading', () => {
     const markup = html(<Skeleton width="12rem" height="1.5rem" label="Loading flight status" />)
     expect(markup).toContain('inline-size:12rem')
     expect(markup).toContain('block-size:1.5rem')
     expect(markup).toContain('Loading flight status')
+  })
+
+  /**
+   * ACCESSIBILITY.md B4, DIRECTIVE.md §7 "aria-live only for meaningful changes". A cockpit renders
+   * a grid of these; a live role on each one is a queue of polite announcements every time a panel
+   * reloads, including on a poll that returned identical data. The loading REGION carries
+   * `aria-busy`; the placeholder carries nothing.
+   */
+  it('is not a live region by default', () => {
+    const markup = html(<Skeleton width="12rem" height="1.5rem" label="Loading flight status" />)
+    expect(markup).not.toContain('role="status"')
+    expect(markup).not.toContain('aria-live')
+    expect(markup).not.toContain('role="alert"')
+  })
+
+  it('can be made a live region explicitly, once per view', () => {
+    const markup = html(<Skeleton width="12rem" height="1.5rem" label="Loading" live />)
+    expect(markup).toContain('role="status"')
   })
 
   it('is a linear meter with a text value, never a gauge', () => {
@@ -404,6 +554,7 @@ describe('Skeleton, ProgressBar, AdSlot', () => {
         value={18}
         max={45}
         band="watch"
+        bandLabel="Watch"
         label="Connection slack"
         valueText="18 of 45 minutes"
       />,
@@ -416,15 +567,48 @@ describe('Skeleton, ProgressBar, AdSlot', () => {
     expect(markup).not.toMatch(/gauge|speedometer|dial|needle/i)
   })
 
-  it('clamps out-of-range readings instead of overflowing the track', () => {
-    expect(html(<ProgressBar value={120} label="x" valueText="full" />)).toContain(
-      'aria-valuenow="100"',
+  /**
+   * ACCESSIBILITY.md B3, SC 1.4.1. `aria-valuetext` is exposed to assistive technology and to
+   * nothing else, so the reading has to exist as a text node too — and the band has to be a word,
+   * not a hue. Stripping every ARIA attribute from the markup is the assertion: whatever survives
+   * is what a sighted reader actually gets.
+   */
+  it('renders the reading and the band as visible text, not only in ARIA', () => {
+    const markup = html(
+      <ProgressBar
+        value={18}
+        max={45}
+        band="watch"
+        bandLabel="Watch"
+        label="Connection slack"
+        valueText="18 of 45 minutes"
+      />,
     )
+    const visible = markup.replace(/\s+aria-[a-z]+="[^"]*"/g, '')
+    expect(visible).toContain('18 of 45 minutes')
+    expect(visible).toContain('Watch')
+    expect(markup).toContain('>18 of 45 minutes<')
+    expect(markup).toContain('dp-progress__band')
   })
 
-  it('reserves and labels an ad slot, and drops it from print', () => {
+  it('clamps out-of-range readings instead of overflowing the track', () => {
+    expect(
+      html(<ProgressBar value={120} label="x" valueText="full" bandLabel="Unknown" />),
+    ).toContain('aria-valuenow="100"')
+  })
+
+  /**
+   * ACCESSIBILITY.md F13: `<aside>` with a name is a `complementary` landmark however deeply it is
+   * nested, so two slots on a page produced two identically named landmarks.
+   */
+  it('reserves and labels an ad slot without adding a landmark, and drops it from print', () => {
     const markup = html(<AdSlot label="Advertisement" width="300px" height="250px" />)
-    expect(markup).toContain('aria-label="Advertisement"')
+    expect(markup).not.toContain('<aside')
+    expect(markup).toContain('role="group"')
+    const labelledBy = /aria-labelledby="([^"]+)"/.exec(markup)?.[1]
+    expect(markup).toContain(
+      `<span class="dp-ad-slot__label" id="${String(labelledBy)}">Advertisement</span>`,
+    )
     expect(markup).toContain('inline-size:300px')
     expect(markup).toContain('block-size:250px')
     expect(markup).toContain('dp-no-print')

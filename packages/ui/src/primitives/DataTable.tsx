@@ -6,9 +6,16 @@
  *
  * Columns declare `numeric` rather than the primitive guessing: whether a value is a quantity is a
  * fact about the datum, and a primitive that inspected the data would be deciding it.
+ *
+ * The shell scrolls horizontally, so it is a FOCUSABLE REGION named by the caption. Firefox and
+ * Chrome make a scroll container keyboard focusable on their own; Safari does not, and a receipts
+ * table or a status chronology whose columns cannot be reached without a pointer is an SC 2.1.1
+ * failure on the browser half of the screen-reader pass (`docs/ACCESSIBILITY.md` B6). It is applied
+ * unconditionally — the W3C tables tutorial's recommendation — rather than behind a measurement
+ * that has not happened yet at first paint.
  */
 
-import type { JSX, ReactNode } from 'react'
+import { useId, type JSX, type ReactNode } from 'react'
 import { cx } from './class-names.ts'
 
 export interface DataTableColumn<Row> {
@@ -37,10 +44,19 @@ export function DataTable<Row>({
   caption,
   className,
 }: DataTableProps<Row>): JSX.Element {
+  const captionId = useId()
+
   return (
-    <div className={cx('dp-table', className)}>
+    <div
+      className={cx('dp-table', className)}
+      role="region"
+      aria-labelledby={captionId}
+      tabIndex={0}
+    >
       <table className="dp-table__table">
-        <caption className="dp-table__caption">{caption}</caption>
+        <caption className="dp-table__caption" id={captionId}>
+          {caption}
+        </caption>
         <thead>
           <tr>
             {columns.map((column) => (

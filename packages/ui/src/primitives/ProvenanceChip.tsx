@@ -7,10 +7,14 @@
  * taken from `provenanceLabels`, which transcribes the constitution's table. A seventh variant is
  * a defect, not a feature.
  *
- * `Demo` is built from none of the status hues — a 2px dashed boundary over a hatched fill and a
- * hatched-swatch glyph — because a Demo chip mistaken for `Live` is the most expensive confusion
- * this system can produce. Its caller must still ship the "Demo data — not a live flight." string
- * alongside (`AGENTS.md §1.2`); that sentence is copy, and copy is ux-copy-steward's.
+ * `Demo` is built from none of the status hues, because a Demo chip mistaken for `Live` is the most
+ * expensive confusion this system can produce. What carries that separation, in order of how much
+ * of the work each does: the word itself, a 2px DASHED boundary in --chip-demo-border (4.73:1 light
+ * / 3.79:1 dark on a card, against Live's 1px solid), square corners where Live is a pill, and a
+ * square hatched-swatch glyph where Live is a filled dot. The diagonal hatch on the fill is texture
+ * only — it measures 1.24:1 / 1.14:1 and must not be counted as a signal (`docs/ACCESSIBILITY.md`
+ * F11). Its caller must still ship the "Demo data — not a live flight." string alongside
+ * (`AGENTS.md §1.2`); that sentence is copy, and copy is ux-copy-steward's.
  *
  * `freshness` is laid out to WRAP, never to truncate: "Updated 6 minutes ago from [source]" has to
  * survive at 375px, and an ellipsis in the middle of a timestamp is a dropped datum.

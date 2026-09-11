@@ -13,6 +13,9 @@
  * Usage:
  *   node scripts/assets/compress-images.mjs <sourceDir> <outDir>
  *   node scripts/assets/compress-images.mjs --check <outDir>   # budget check only, no writes
+ *
+ * `--check` on a directory that does not exist reports zero images and exits 0: shipping no raster
+ * derivatives is a valid, and currently the intended, state (see `checkBudgets`).
  */
 
 import { readdir, mkdir, stat, writeFile } from 'node:fs/promises'
@@ -85,8 +88,28 @@ async function compress(sourceDir, outDir) {
   return rows
 }
 
+/**
+ * An absent output directory is a legitimate, expected result, not an error.
+ *
+ * DelayPilot ships no raster photography: the brand surfaces are original SVG route-line and
+ * radar-arc geometry (DIRECTIVE.md §7), and the homepage LCP element is the headline and lookup
+ * form, not a hero photograph (§22). When no licensed content raster exists, `apps/web/public/images`
+ * simply does not exist, and a budget check over zero files must report zero files and pass. Throwing
+ * ENOENT here would fail CI for the *correct* state of the repository and create pressure to ship
+ * an image to make the build green — exactly backwards.
+ *
+ * `missingDir` is reported separately from `checked: 0` so the operator can tell "no directory" from
+ * "directory present but empty"; both pass.
+ */
 async function checkBudgets(outDir) {
-  const entries = await readdir(outDir, { withFileTypes: true })
+  let entries
+  try {
+    entries = await readdir(outDir, { withFileTypes: true })
+  } catch (error) {
+    if (error && error.code === 'ENOENT') return { checked: 0, failures: [], missingDir: true }
+    throw error
+  }
+
   const failures = []
   let checked = 0
 
@@ -103,7 +126,7 @@ async function checkBudgets(outDir) {
     }
   }
 
-  return { checked, failures }
+  return { checked, failures, missingDir: false }
 }
 
 const args = process.argv.slice(2)
@@ -114,7 +137,13 @@ if (args[0] === '--check') {
     console.error('Usage: compress-images.mjs --check <outDir>')
     process.exit(1)
   }
-  const { checked, failures } = await checkBudgets(outDir)
+  const { checked, failures, missingDir } = await checkBudgets(outDir)
+  if (missingDir) {
+    console.log(
+      `Checked 0 emitted image(s) in ${outDir} (directory absent — no raster derivatives are shipped)`,
+    )
+    process.exit(0)
+  }
   console.log(`Checked ${checked} emitted image(s) in ${outDir}`)
   for (const failure of failures) console.error(`ERROR ${failure}`)
   console.log(`\n${failures.length} budget failure(s)`)

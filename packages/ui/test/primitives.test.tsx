@@ -40,7 +40,7 @@ import { Disclosure } from '../src/primitives/Disclosure.tsx'
 import { Drawer } from '../src/primitives/Drawer.tsx'
 import { Field } from '../src/primitives/Field.tsx'
 import { Grid, GridArea } from '../src/primitives/Grid.tsx'
-import { Icon, iconNames } from '../src/primitives/Icon.tsx'
+import { Icon, iconNames, type IconName } from '../src/primitives/Icon.tsx'
 import { Input } from '../src/primitives/Input.tsx'
 import { Link } from '../src/primitives/Link.tsx'
 import { ProgressBar } from '../src/primitives/ProgressBar.tsx'
@@ -61,6 +61,8 @@ import {
   interimSeverities,
   interimStatusTones,
   provenanceLabels,
+  severityToStatusTone,
+  type InterimSeverity,
 } from '../src/tokens/interim-contracts.ts'
 
 const html = (element: ReactElement): string => renderToStaticMarkup(element)
@@ -806,6 +808,138 @@ describe('Callout and Toast', () => {
     expect(info).toContain('role="status"')
     expect(urgent).toContain('aria-label="Dismiss"')
   })
+
+  /**
+   * F34. Both maps sent severity `info` to the `status-unknown` glyph, so an informational notice
+   * wore the mark whose meaning in this product is the specific one of "insufficient fresh
+   * information" (`AGENTS.md §1.1`) — and `Callout`'s docblock claim of a shape per severity was
+   * false at four severities and three shapes. `severityToStatusTone` still sends `info` to the
+   * neutral tone, because four tones and never a fifth is right; but once two severities share a
+   * colour the glyph is the only channel left, so it is the glyph that has to differ.
+   *
+   * Identified by NAME, not by geometry: the Icon suite above proves no two glyphs render the same
+   * markup, so an exact match against a reference render names the glyph a primitive drew.
+   */
+  const glyphNameIn = (markup: string, className: string): string => {
+    const svg = /<svg[\s\S]*?<\/svg>/.exec(markup)?.[0] ?? '(no glyph rendered)'
+    const name = iconNames.find(
+      (candidate) => html(<Icon name={candidate} decorative className={className} />) === svg,
+    )
+    return name ?? '(unrecognised glyph)'
+  }
+
+  const glyphPerSeverity = (
+    render: (severity: InterimSeverity) => string,
+    className: string,
+  ): Record<string, string> =>
+    Object.fromEntries(
+      interimSeverities.map((severity) => [severity, glyphNameIn(render(severity), className)]),
+    )
+
+  it('draws a different shape for each of the four severities, and never the unknown mark', () => {
+    const expected: Record<string, IconName> = {
+      info: 'info',
+      watch: 'status-watch',
+      urgent: 'status-critical',
+      resolved: 'status-safe',
+    }
+
+    const callout = glyphPerSeverity(
+      (severity) => html(<Callout severity={severity} title={`Title ${severity}`} />),
+      'dp-callout__icon',
+    )
+    const toast = glyphPerSeverity(
+      (severity) =>
+        html(
+          <Toast
+            severity={severity}
+            title={`Title ${severity}`}
+            dismissLabel="Dismiss"
+            onDismiss={() => undefined}
+          />,
+        ),
+      'dp-toast__icon',
+    )
+
+    expect(callout).toEqual(expected)
+    expect(toast).toEqual(expected)
+    // Four severities, four shapes: the claim the docblock makes, asserted rather than trusted.
+    expect(new Set(Object.values(callout)).size).toBe(interimSeverities.length)
+    expect(new Set(Object.values(toast)).size).toBe(interimSeverities.length)
+    // The neutral TONE is deliberate and stays; only the shape had to move off the status mark.
+    expect(severityToStatusTone.info).toBe('unknown')
+  })
+
+  /**
+   * F25 (SC 1.3.1). Two of the fifteen `§18.5` cockpit sections are Callouts — the unavailable
+   * weather panel and the upgrade prompt — so with a `<p>` title a heading-list jump skipped
+   * exactly the two panels that say a thing is unavailable. The level is optional and the default
+   * is unchanged, because a heading that opens no section is as wrong as a section with none.
+   */
+  it('renders the title as a <p> when no heading level is asked for', () => {
+    const markup = html(
+      <Callout severity="info" title="Weather and airspace">
+        body
+      </Callout>,
+    )
+    expect(markup).toContain('<p class="dp-callout__title">Weather and airspace</p>')
+    expect(markup).not.toMatch(/<h[1-6][\s>]/)
+  })
+
+  it.each([2, 3, 4] as const)('renders the title as an h%s when the section needs one', (level) => {
+    const markup = html(
+      <Callout severity="info" title="Weather and airspace" headingLevel={level}>
+        body
+      </Callout>,
+    )
+    const tag = `h${String(level)}`
+    expect(markup).toContain(`<${tag} class="dp-callout__title">Weather and airspace</${tag}>`)
+    expect(markup).not.toContain('<p class="dp-callout__title">')
+    // The rest of the callout is untouched: same icon, same tone, same body.
+    expect(glyphNameIn(markup, 'dp-callout__icon')).toBe('info')
+    expect(markup).toContain('data-status-tone="unknown"')
+    expect(markup).toContain('<div class="dp-callout__body">body</div>')
+  })
+
+  /**
+   * An `aria-labelledby` pointing at the title has to survive the element changing under it —
+   * that reference is how an error summary announces itself by name on arrival.
+   */
+  it.each([undefined, 2, 3, 4] as const)(
+    'keeps an aria-labelledby reference to the title resolvable at level %s',
+    (level) => {
+      const markup = html(
+        <div role="group" aria-labelledby="errors-title">
+          <Callout
+            severity="urgent"
+            title="Check these fields"
+            titleId="errors-title"
+            headingLevel={level}
+          >
+            <ul />
+          </Callout>
+        </div>,
+      )
+
+      const declared = new Set(
+        [...markup.matchAll(/\sid="([^"]*)"/g)].map((match) => match[1] ?? ''),
+      )
+      const referenced = [...markup.matchAll(/aria-labelledby="([^"]*)"/g)].flatMap((match) =>
+        (match[1] ?? '').split(' '),
+      )
+
+      expect(referenced).toEqual(['errors-title'])
+      for (const reference of referenced) {
+        expect(declared, `aria-labelledby="${reference}" resolves`).toContain(reference)
+      }
+      const tag = level === undefined ? 'p' : `h${String(level)}`
+      expect(markup).toMatch(
+        new RegExp(
+          `<${tag} class="dp-callout__title" id="errors-title">Check these fields</${tag}>`,
+        ),
+      )
+    },
+  )
 })
 
 /**
@@ -1048,6 +1182,16 @@ describe('no primitive emits an inline style (CSP style-src self)', () => {
       >
         body
       </Callout>,
+      ...([2, 3, 4] as const).map((headingLevel) => (
+        <Callout
+          severity={severity}
+          title={`Title ${severity}`}
+          headingLevel={headingLevel}
+          titleId={`callout-${severity}-${String(headingLevel)}`}
+        >
+          body
+        </Callout>
+      )),
     ]),
     Toast: interimSeverities.map((severity) => (
       <Toast

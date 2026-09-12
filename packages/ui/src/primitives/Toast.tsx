@@ -7,6 +7,12 @@
  *
  * It does not auto-dismiss on a timer. A traveler reading one-handed at a gate must not lose a
  * message because they were slow, and a disappearing message cannot be re-read.
+ *
+ * Each of the four severities draws its own glyph, so the severity survives greyscale. `info` draws
+ * the NEUTRAL `info` glyph, not `status-unknown`, whose meaning here is the specific one of
+ * insufficient fresh information (`AGENTS.md §1.1`, `docs/ACCESSIBILITY.md §15.11`, F34). The tone
+ * stays neutral — four tones, never a fifth colour — so the shape is what separates a note from a
+ * gap in the data.
  */
 
 import type { JSX, ReactNode } from 'react'
@@ -15,7 +21,7 @@ import { Icon, type IconName } from './Icon.tsx'
 import type { InterimSeverity } from '../tokens/interim-contracts.ts'
 
 const SEVERITY_ICON: Readonly<Record<InterimSeverity, IconName>> = {
-  info: 'status-unknown',
+  info: 'info',
   watch: 'status-watch',
   urgent: 'status-critical',
   resolved: 'status-safe',

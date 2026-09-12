@@ -1268,9 +1268,19 @@
   flex: 1 1 auto;
 }
 
+/* Callout's `headingLevel` changes the document outline, not the visual hierarchy: a title asked to
+   be an <h3> so a heading-list jump can reach it (ACCESSIBILITY.md F25) must still render exactly
+   as the <p> it replaces. The reset in tokens.css sizes h1-h4 and gives them heading line-height,
+   tight tracking and balanced wrapping, so all four are restated here at the body values the <p>
+   already had. A class beats an element selector, so the level costs nothing visually and the
+   measured pair (text-primary on the severity fill) keeps its `text` usage class at 4.5:1. */
 .dp-callout__title,
 .dp-toast__title {
   margin: 0;
+  font-size: inherit;
+  line-height: var(--line-height-body);
+  letter-spacing: normal;
+  text-wrap: pretty;
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }

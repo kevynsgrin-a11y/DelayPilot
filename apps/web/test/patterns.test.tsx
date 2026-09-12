@@ -321,8 +321,12 @@ describe('RightsCard — §17 rights states', () => {
         idPrefix="t-us"
       />,
     )
-    const answerIndex = markup.indexOf(demoRightsUnitedStates.whatMayApply)
-    const reasoningIndex = markup.indexOf(cockpit.rights.reasoningToggle)
+    // Through `text`, not the raw markup: the assessment's answer carries an ASCII apostrophe
+    // (`docs/VOICE.md §11`) and `react-dom/server` escapes it to `&#x27;`, so a raw substring
+    // search would fail on the escape rather than on the order this test is about.
+    const rendered = text(markup)
+    const answerIndex = rendered.indexOf(demoRightsUnitedStates.whatMayApply)
+    const reasoningIndex = rendered.indexOf(cockpit.rights.reasoningToggle)
     expect(answerIndex).toBeGreaterThan(-1)
     expect(answerIndex).toBeLessThan(reasoningIndex)
   })
@@ -605,5 +609,185 @@ describe('AdSlotShell', () => {
     expect(markup).toContain('data-ad-placement="free_trip_after_action_checklist"')
     expect(markup).toContain('data-size="300x250"')
     expect(text(markup)).toContain('Advertisement')
+  })
+})
+
+/* ------------------------------------------------------------------------------------------- */
+/* The slots and attributes the Phase 10 reviews found wrong.                                   */
+/* ------------------------------------------------------------------------------------------- */
+
+describe('the Demo label never travels alone (AGENTS.md §1.2, trust sweep F4)', () => {
+  it("renders the §28 sentence beside a demo segment card's chip", () => {
+    const markup = html(<SegmentCard segment={demoSegmentInbound} copy={segmentCardCopy} />)
+    expect(markup).toContain('data-provenance="demo"')
+    expect(text(markup)).toContain(results.demo)
+  })
+
+  it('does not render it on a segment that is not demo data', () => {
+    const markup = html(<SegmentCard segment={demoSegmentStale} copy={segmentCardCopy} />)
+    expect(markup).toContain('data-provenance="stale"')
+    expect(text(markup)).not.toContain(results.demo)
+  })
+
+  it("renders it beside the action checklist's own chip when a provenance is passed", () => {
+    const markup = html(
+      <ActionChecklist
+        items={demoActions}
+        copy={actionChecklistCopy}
+        idPrefix="t-demo-actions"
+        provenance={{
+          kind: 'demo',
+          freshness: 'Updated 4 minutes ago from Demonstration fixture.',
+        }}
+      />,
+    )
+    expect(markup).toContain('data-provenance="demo"')
+    expect(text(markup)).toContain(results.demo)
+  })
+
+  it('renders no chip at all when the checklist has no provenance to state', () => {
+    const markup = html(
+      <ActionChecklist items={demoActions} copy={actionChecklistCopy} idPrefix="t-plain-actions" />,
+    )
+    expect(markup).not.toContain('data-provenance')
+  })
+})
+
+describe('the conflicting-providers state says what to do next (copy review F-6)', () => {
+  it('renders the conflict body under the conflict heading', () => {
+    const rendered = text(
+      html(<SegmentCard segment={demoSegmentConflicting} copy={segmentCardCopy} />),
+    )
+    expect(rendered).toContain(cockpit.segment.conflictHeading)
+    expect(rendered).toContain(cockpit.segment.conflictBody)
+    expect(rendered.indexOf(cockpit.segment.conflictHeading)).toBeLessThan(
+      rendered.indexOf(cockpit.segment.conflictBody),
+    )
+  })
+
+  it('renders neither on a segment where the sources agree', () => {
+    const rendered = text(html(<SegmentCard segment={demoSegmentInbound} copy={segmentCardCopy} />))
+    expect(rendered).not.toContain(cockpit.segment.conflictBody)
+  })
+})
+
+describe('the status pill carries a value, not its own field name (F29)', () => {
+  it('does not put the word "Status" inside the pill', () => {
+    const markup = html(<SegmentCard segment={demoSegmentCanceled} copy={segmentCardCopy} />)
+    const pill = /<span class="dp-pill[\s\S]*?<\/span>\s*<\/(?:span|p|div)>/.exec(markup)?.[0] ?? ''
+    expect(text(markup)).toContain(cockpit.segment.statusLabels.canceled)
+    expect(pill).not.toContain(cockpit.segment.status)
+  })
+})
+
+describe('the Slack row spells its sign (docs/VOICE.md §9.4)', () => {
+  it('renders negative slack as words, with no leading hyphen anywhere in the markup', () => {
+    const markup = html(
+      <ConnectionCockpit
+        assessment={demoConnectionSelfTransfer}
+        copy={connectionProps(demoConnectionSelfTransfer)}
+      />,
+    )
+    expect(text(markup)).toContain('18 minutes short')
+    expect(markup).not.toMatch(/-\d+\s*minute/)
+  })
+
+  it('renders positive slack as a quantity on the protected transfer', () => {
+    const markup = html(
+      <ConnectionCockpit
+        assessment={demoConnectionProtected}
+        copy={connectionProps(demoConnectionProtected)}
+      />,
+    )
+    expect(text(markup)).toContain('7 minutes of slack')
+  })
+
+  it('names the missing fact rather than rendering a blank when slack is unknown', () => {
+    const markup = html(
+      <ConnectionCockpit
+        assessment={demoConnectionInsufficient}
+        copy={connectionProps(demoConnectionInsufficient)}
+      />,
+    )
+    expect(markup).toContain('data-state="unknown"')
+    expect(markup).not.toMatch(/-\d+\s*minute/)
+  })
+})
+
+describe('a rights context source is rendered apart, and never as a link (trust sweep F3)', () => {
+  const markup = html(
+    <RightsCard
+      assessment={demoRightsEuropeanUnion}
+      copy={rightsCopy({ demo: true })}
+      idPrefix="t-eu-context"
+    />,
+  )
+
+  it('renders the context block after the sources list', () => {
+    const rendered = text(markup)
+    expect(rendered).toContain(cockpit.rights.officialSources)
+    expect(rendered).toContain(rightsCopy({ demo: true }).contextHeading)
+    expect(rendered.indexOf(cockpit.rights.officialSources)).toBeLessThan(
+      rendered.lastIndexOf(rightsCopy({ demo: true }).contextHeading),
+    )
+  })
+
+  it('labels the record as context rather than as an authority', () => {
+    expect(text(markup)).toContain(rightsCopy({ demo: true }).contextNote)
+  })
+
+  it('renders no anchor for it', () => {
+    const context = markup.slice(markup.indexOf('dpp-rights__context'))
+    expect(context).not.toContain('<a ')
+  })
+
+  it('renders nothing at all when an assessment has no context sources', () => {
+    const plain = html(
+      <RightsCard
+        assessment={demoRightsUnitedStates}
+        copy={rightsCopy({ demo: true })}
+        idPrefix="t-us-context"
+      />,
+    )
+    expect(plain).not.toContain('dpp-rights__context')
+  })
+})
+
+describe('a §18.5 section that is a Callout opens a heading (F25)', () => {
+  it('renders the title as a heading at the level the caller passes', () => {
+    const markup = html(
+      <StateBlock
+        kind="provider_unavailable"
+        severity="info"
+        title="Weather and airspace"
+        headingLevel={3}
+      >
+        <p>No feed is connected.</p>
+      </StateBlock>,
+    )
+    expect(markup).toContain('<h3 class="dp-callout__title">Weather and airspace</h3>')
+  })
+
+  it('keeps the <p> when no level is passed, so a notice opens no section', () => {
+    const markup = html(
+      <StateBlock kind="offline" severity="watch" title="You are offline">
+        <p>The last saved snapshot is shown.</p>
+      </StateBlock>,
+    )
+    expect(markup).toContain('<p class="dp-callout__title">You are offline</p>')
+  })
+})
+
+describe('an illustrated loading state is not a loading state (F28)', () => {
+  it('drops aria-busy while keeping the skeleton and the message', () => {
+    const markup = html(<LoadingBlock label="Track a flight" message="Searching." illustration />)
+    expect(markup).not.toContain('aria-busy')
+    expect(markup).toContain('aria-label="Track a flight"')
+    expect(text(markup)).toContain('Searching.')
+  })
+
+  it('keeps aria-busy when the region really is loading', () => {
+    const markup = html(<LoadingBlock label="Track a flight" message="Searching." />)
+    expect(markup).toContain('aria-busy="true"')
   })
 })

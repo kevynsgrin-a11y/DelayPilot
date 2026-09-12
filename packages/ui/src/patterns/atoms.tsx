@@ -164,9 +164,18 @@ export interface DisclaimerProps {
  * A `§26` disclaimer, rendered BESIDE the result it qualifies rather than only in the footer.
  *
  * It is a `<p>` inside a labelled `role="note"`, so a screen-reader user hears what the sentence
- * qualifies ("Connection disclaimer") before hearing the sentence. There is no icon: the primitive
- * icon set has no neutral informational glyph, and borrowing `status-unknown` would put a status
- * silhouette on a sentence that is not a status (handoff filed to `brand-design-director`).
+ * qualifies ("Connection disclaimer") before hearing the sentence.
+ *
+ * THERE IS NO ICON, AND THAT IS NOW A CHOICE RATHER THAN A GAP. The handoff this comment used to
+ * record has landed: a neutral `info` glyph exists (`primitives/Icon.tsx`) and `Callout` and `Toast`
+ * draw it for `info` severity (`docs/ACCESSIBILITY.md §15.11`, F34). `Disclaimer` still takes none.
+ *
+ * Two reasons, in order. A `§26` disclaimer is not a notice a reader can act on or dismiss — it is
+ * a permanent qualification on the result beside it — and drawing it with the same mark as a
+ * `Callout` would put the two in one visual class when only one of them ever says something new.
+ * And these sentences already sit inside a named `role="note"` with a left rule; an icon adds a
+ * second silhouette to a block whose whole job is to be quiet enough to live under every result on
+ * the page without competing with it. If that judgement changes, the glyph is there.
  */
 export function Disclaimer({ children, label }: DisclaimerProps): JSX.Element {
   return (

@@ -50,8 +50,20 @@ const page = pages.dataSources
 
   <Section heading={page.sections.verification.heading} reveal>
     <p class="dpx-section__intro">{page.sections.verification.body}</p>
-    <p class="dpx-lookup__note">
-      {pages.article.sourcesHeading}: {registryVersion}
-    </p>
+    {
+      /*
+       * "Sources: 2026-09-12.2" told a reader nothing on the one page whose whole subject is
+       * provenance, and the token looks enough like a date that the flattering guess — "checked on
+       * that day" — is the one they would make (copy review F-12). Every record in this build has a
+       * null verification date, so the distinction is load-bearing.
+       */
+    }
+    <dl class="dpx-definitions">
+      <div class="dpx-definition">
+        <dt class="dpx-definition__term">{pages.dataSources.registryVersionLabel}</dt>
+        <dd class="dpx-definition__body">{registryVersion}</dd>
+      </div>
+    </dl>
+    <p class="dpx-lookup__note">{pages.dataSources.registryVersionNote}</p>
   </Section>
 </BaseLayout>

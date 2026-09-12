@@ -20,7 +20,10 @@
  *     the repository, not in every HTML response.
  *   · `decorative` strips `role="img"`, `aria-labelledby` and the `<title>` element and adds
  *     `aria-hidden="true" focusable="false"`, for the case where a named graphic is being reused as
- *     texture. The motif files are already authored decorative and need nothing.
+ *     texture. The motif files are already authored decorative, so the two attributes it adds are
+ *     first stripped from the root tag — otherwise each is emitted twice (`docs/ACCESSIBILITY.md`
+ *     F38). The source files stay `visual-asset-director`'s: they are correct as authored, and an
+ *     inliner that cannot be pointed at an already-correct file is the defect.
  *
  * IDS ARE NOT REWRITTEN. Every id in these files (`#sweep`, `#route-1`, `#routes`, `#grid-tile`) is
  * a CSS or SVG reference hook named in `scripts/assets/MOTIFS.md`, and renaming them would break
@@ -59,6 +62,21 @@ if (decorative) {
     .replace(/<title[^>]*>[\s\S]*?<\/title>/g, '')
     .replace(/\srole="img"/g, '')
     .replace(/\saria-labelledby="[^"]*"/g, '')
+    /*
+     * Strip what is about to be added, on the ROOT element only.
+     *
+     * `docs/ACCESSIBILITY.md` F38: the motif sources are already authored decorative, so the globe
+     * emitted `<svg aria-hidden="true" focusable="false" ... aria-hidden="true"
+     * focusable="false">` — both attributes twice. A parser keeps the first and drops the rest, so
+     * nothing renders wrong today; a duplicate attribute is a parse error, and a validator that
+     * starts reporting one is a validator whose output stops being worth reading.
+     *
+     * The replace is scoped to the opening `<svg …>` tag rather than the whole document, so a
+     * nested `<use aria-hidden="true">` inside an inlined file keeps its own attributes.
+     */
+    .replace(/^<svg\b[^>]*>/, (open) =>
+      open.replace(/\saria-hidden="[^"]*"/g, '').replace(/\sfocusable="[^"]*"/g, ''),
+    )
     .replace(/<svg\b/, '<svg aria-hidden="true" focusable="false"')
 }
 ---

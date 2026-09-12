@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest'
 import {
+  contextSource,
   demoActions,
   demoAirports,
   demoAlerts,
@@ -25,7 +26,9 @@ import {
   demoSegmentPartial,
   demoSegmentStale,
   demoSourceRows,
+  sourceLink,
 } from '../src/demo/itinerary.ts'
+import { resolveSource } from '../src/components/source-registry.ts'
 import { orderActionItems } from '../../../packages/ui/src/patterns/action-order.ts'
 import type { Segment } from '../../../packages/ui/src/patterns/types.ts'
 
@@ -303,5 +306,98 @@ describe('the evidence schedule', () => {
 
   it('says the onward leg lands on a later local date', () => {
     expect(demoEvidenceSchedule[1]).toContain('Sun 15 Mar')
+  })
+})
+
+/**
+ * Trust sweep F3. The fixture listed the Council of the EU's press release under "Official sources"
+ * beside a regulator record. The registry ALREADY recorded it as `evidenceClass: "secondary"` with
+ * `citableForRuleValues: false` — the fact was in the data and nothing read it.
+ *
+ * `docs/EDITORIAL_POLICY.md`: the evidence class decides what a record can carry.
+ */
+describe('the evidence class decides which list a source lands in', () => {
+  it('lists only primary, rule-citable records as official sources', () => {
+    for (const assessment of [demoRightsUnitedStates, demoRightsEuropeanUnion]) {
+      for (const source of assessment.sources) {
+        const record = resolveSource(source.id)
+        expect(record.missing).toBe(false)
+        expect(record.evidenceClass).toBe('primary')
+        expect(record.citableForRuleValues).toBe(true)
+      }
+    }
+  })
+
+  it('lists only secondary records as context, and never as a link', () => {
+    for (const source of demoRightsEuropeanUnion.contextSources ?? []) {
+      expect(resolveSource(source.id).evidenceClass).toBe('secondary')
+      expect(source.evidenceClass).toBe('secondary')
+      expect(Object.hasOwn(source, 'href')).toBe(false)
+    }
+  })
+
+  it('moved the Council press release out of the EU sources list', () => {
+    expect(demoRightsEuropeanUnion.sources.map((source) => source.id)).not.toContain(
+      'eu-council-2026-07-13',
+    )
+    expect(demoRightsEuropeanUnion.contextSources?.map((source) => source.id)).toContain(
+      'eu-council-2026-07-13',
+    )
+  })
+
+  it('refuses a secondary id passed as an official source — at build time, not at review', () => {
+    expect(() => sourceLink('eu-council-2026-07-13', 'Council press release')).toThrow(
+      /cannot be listed as an official source/,
+    )
+  })
+
+  it('refuses a primary id passed as a context source', () => {
+    expect(() => contextSource('dot-refunds', 'DOT refunds')).toThrow(/belongs in sources/)
+  })
+
+  it('refuses an id the registry does not know at all', () => {
+    expect(() => sourceLink('not-a-registry-id', 'Nothing')).toThrow(/no registry record/)
+  })
+
+  it('holds every action item to the same rule', () => {
+    for (const item of demoActions) {
+      for (const source of item.sources) {
+        expect(resolveSource(source.id).evidenceClass).toBe('primary')
+      }
+    }
+  })
+})
+
+/**
+ * Trust sweep F2. The registry records the reform's only source as non-citable for rule values, and
+ * no Official Journal record exists in it at all. A stated interval is a rule value.
+ */
+describe('the EU reform states no interval it cannot source', () => {
+  it('does not name a period between publication and entry into force', () => {
+    const detail = demoRightsEuropeanUnion.futureRule?.detail ?? ''
+    expect(detail).not.toMatch(/twelve months|12 months|twenty days|20 days/i)
+    expect(detail).toContain('has not been verified here')
+  })
+})
+
+/**
+ * `docs/ACCESSIBILITY.md` F30. A `<dt>`/`<dd>` pair asserts the value is the thing the label names,
+ * and this list paired "Status" with the demonstration caption on every segment while the cancelled
+ * segment paired the same label with a real status sentence.
+ */
+describe('the operational detail list says what its labels name', () => {
+  it('does not pair a field label with the demonstration caption', () => {
+    for (const segment of SEGMENTS) {
+      for (const row of segment.operationalDetail) {
+        const value = row.value.known ? row.value.value : row.value.reason
+        expect(value).not.toContain('is invented')
+      }
+    }
+  })
+})
+
+describe('typography', () => {
+  it('writes apostrophes as ASCII, per docs/VOICE.md §11', () => {
+    expect(ALL_TEXT).not.toMatch(/[\u2018\u2019\u201c\u201d]/)
   })
 })

@@ -21,7 +21,14 @@
  * F24 (`docs/ACCESSIBILITY.md`): `valueText` and `bandLabel` must never be the same string, because
  * `ProgressBar` joins them into one `aria-valuetext` and "Unknown, Unknown" is a poor rendering of
  * the one state a traveler most needs to trust. The reading always comes from
- * `requiredOfAvailableText` or `delayValueText` and the band always from `bandLabel`.
+ * `requiredOfAvailableText` or `delayValueText` and the band always from `bandLabel`. The S3 review
+ * extended the rule to the meter's NAME: a reading may equal neither its band label nor its
+ * accessible name (`docs/VOICE.md §9.1`), which is why a band meter's three slots take three
+ * different registers — the surface, the quantity, the value.
+ *
+ * NO WORD IS WRITTEN IN THIS FILE. Every string below is an export of `lib/copy/**`, composed at
+ * most by concatenating two of them. If a slot has no string, it is a handoff to `ux-copy-steward`
+ * named by state, not a literal typed here (`docs/VOICE.md §12`).
  */
 
 import type {
@@ -42,12 +49,20 @@ import type {
 import {
   bandLabel,
   delayValueText,
+  minutesText,
   requiredOfAvailableText,
+  slackMinutesText,
   type Band as CopyBand,
 } from '../lib/copy/bands.ts'
-import { cockpit } from '../lib/copy/cockpit.ts'
+import {
+  cockpit,
+  connectionComponentsCaption,
+  connectionHeading,
+  type ConnectionTopologyKey,
+} from '../lib/copy/cockpit.ts'
 import { disclaimers } from '../lib/copy/disclaimers.ts'
 import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 import { results } from '../lib/copy/results.ts'
 
 /** The two band vocabularies are the same five words; this assignment keeps them that way. */
@@ -74,10 +89,6 @@ const statusWord = (status: SegmentStatus): string => cockpit.segment.statusLabe
 const confidenceWord = (confidence: Confidence): string =>
   cockpit.segment.confidenceLabels[confidence]
 
-/** Minutes as a phrase, never a bare figure. `1 minute` / `47 minutes` / `-18 minutes`. */
-const minutesWord = (value: number): string =>
-  `${String(value)} ${value === 1 || value === -1 ? 'minute' : 'minutes'}`
-
 export const segmentCardCopy: SegmentCardCopy = {
   scheduledLabel: cockpit.segment.scheduled,
   currentLabel: cockpit.segment.estimated,
@@ -95,6 +106,14 @@ export const segmentCardCopy: SegmentCardCopy = {
   nextDayLabel: cockpit.segment.nextDay,
   conflictHeading: cockpit.segment.conflictHeading,
   conflictNewestLabel: cockpit.segment.conflictNewest,
+  conflictBody: cockpit.segment.conflictBody,
+  /*
+   * The `§28` sentence is passed unconditionally: `SegmentCard` gates the render on
+   * `segment.provenance.kind === 'demo'`, exactly as five other patterns do, so the constant is
+   * inert on a live segment and present the moment a fixture one renders. A card that needed its
+   * caller to remember the caption is a card that will one day ship without it (trust sweep F4).
+   */
+  demoCaption: cockpit.demoCaption,
   statusText: statusWord,
   confidenceText: confidenceWord,
   /** The reading, never a bare number: "Delayed 47 minutes", "No delay reported". */
@@ -117,6 +136,21 @@ const topologyNote: Readonly<Record<ConnectionTopology, string>> = {
 }
 
 /**
+ * The pattern's four topologies onto the copy module's three.
+ *
+ * The SAME collapse `topologyLabel` and `topologyNote` above already make, for the same reason: a
+ * mixed ticket is a separate-ticket transfer as far as a traveler's exposure goes. It is written
+ * once more here rather than derived, because a name a reader hears from a landmark list must be
+ * chosen deliberately, not fall out of a lookup.
+ */
+const topologyKey: Readonly<Record<ConnectionTopology, ConnectionTopologyKey>> = {
+  protected: 'protected',
+  self_transfer: 'selfTransfer',
+  mixed_ticket: 'selfTransfer',
+  unknown: 'unknown',
+}
+
+/**
  * `meterValueText` is per-assessment, not per-page: it names WHICH quantity is missing when one is
  * (F24), so it cannot be a constant. The two minute figures are therefore arguments — and the ORDER
  * they are passed in is the whole correctness question on this surface.
@@ -125,21 +159,37 @@ const topologyNote: Readonly<Record<ConnectionTopology, string>> = {
  * much of the window the transfer eats, so a nearly-full bar means nearly no room. The words beside
  * it must name that same ratio in that same order, which is what `requiredOfAvailableText(required,
  * available)` renders — "44 of 51 minutes" for the demonstration itinerary's 44-minute transfer
- * inside a 51-minute window. The other reading, `slackValueText(available, required)`, says "51 of
- * 44 minutes" beside a bar filled to 86 %, which a tired reader can only take as its inverse. This
- * wrapper used to swap arguments to correct that; `ux-copy-steward` took the handoff and the copy
- * module now owns the reading, so there is nothing left here to invert.
+ * inside a 51-minute window. Read the other way round it says "51 of 44 minutes" beside a bar
+ * filled to seven-eighths, which a tired reader can only take as its inverse. Nothing is swapped
+ * here: the copy module owns the reading and this passes its arguments through in order
+ * (`docs/VOICE.md §9.3`).
  *
- * `apps/web/test/pattern-copy.test.ts` asserts all four branches THROUGH this function, so an
- * inverted argument at this one call site fails there rather than at a gate.
+ * THE THREE MINUTE READINGS ARE THE COPY MODULE'S, NOT THIS FILE'S. `minutesText` is the duration
+ * phrase and `slackMinutesText` is the Slack row's — an adapter may compose copy exports, it may
+ * not author them (`docs/VOICE.md §12`). This file carried its own `minutesWord`, which put two
+ * rendered words ("minute", "minutes") outside the copy owner's hands and rendered negative slack
+ * as "-18 minutes"; both are gone.
+ *
+ * `apps/web/test/pattern-copy.test.ts` asserts every branch of both readings THROUGH this function,
+ * so a swapped argument or a re-introduced local helper fails there rather than at a gate.
+ *
+ * `demo` adds the `§28` caption; every other panel-level string here is a constant.
  */
 export function connectionCopy(options: {
   readonly demo: boolean
   readonly availableMinutes: number | null
   readonly requiredMinutes: number | null
+  /**
+   * The reservation structure, when more than one cockpit shares a page, or `null` when one does
+   * not — `/connection-risk/` renders three and a landmark list offered six entries under two
+   * names (`docs/ACCESSIBILITY.md` F26). The copy module decides the wording; this decides only
+   * that the question is asked once, here, rather than at each of the four call sites.
+   */
+  readonly topology?: ConnectionTopology | null
 }): ConnectionCockpitCopy {
+  const key = options.topology == null ? null : topologyKey[options.topology]
   return {
-    heading: cockpit.headings.connection,
+    heading: connectionHeading(key),
     topologyLabel,
     topologyNote,
     selfTransferExplanation: results.selfTransfer,
@@ -150,7 +200,7 @@ export function connectionCopy(options: {
     requiredLabel: cockpit.connection.requiredMinutes,
     slackLabel: cockpit.connection.slack,
     componentsHeading: cockpit.connection.componentsHeading,
-    componentCaption: cockpit.connection.componentsCaption,
+    componentCaption: connectionComponentsCaption(key),
     componentColumnStep: cockpit.connection.columnStep,
     componentColumnMinutes: cockpit.connection.columnMinutes,
     componentColumnDerivation: cockpit.connection.columnDerivation,
@@ -165,7 +215,8 @@ export function connectionCopy(options: {
     meterLabel: cockpit.connection.meterLabel,
     meterValueText: requiredOfAvailableText(options.requiredMinutes, options.availableMinutes),
     heuristicNote: cockpit.assessment.heuristicNote,
-    minutesText: minutesWord,
+    minutesText,
+    slackText: slackMinutesText,
     zoneLabel: cockpit.segment.zone,
     estimatedLabel: cockpit.segment.estimated,
     disclaimer: disclaimers.connection,
@@ -184,6 +235,13 @@ export function rightsCopy(options: { readonly demo: boolean }): RightsCardCopy 
     entitlementsLabel: cockpit.rights.entitlementsHeading,
     evidenceLabel: cockpit.rights.evidence,
     sourcesLabel: cockpit.rights.officialSources,
+    /*
+     * The same three exports `ArticleLayout.astro` renders its context block from. One wording for
+     * one idea, on both surfaces: a record that reports on a rule is not the rule.
+     */
+    contextHeading: pages.article.contextHeading,
+    contextIntro: pages.article.contextIntro,
+    contextNote: pages.article.contextNote,
     futureRuleLabel: cockpit.rights.currentVsFuture,
     voluntaryLabel: cockpit.voluntaryCommitments.label,
     reasoningSummary: cockpit.rights.reasoningToggle,
@@ -209,6 +267,8 @@ export const actionChecklistCopy: ActionChecklistCopy = {
   sourceUnavailableLabel: cockpit.rights.sourceUnavailable,
   zoneLabel: cockpit.segment.zone,
   emptyLabel: cockpit.actions.empty,
+  /* Inert unless the caller also passes a `demo` provenance; see `segmentCardCopy` above. */
+  demoCaption: cockpit.demoCaption,
 }
 
 export function alertTimelineCopy(options: { readonly demo: boolean }): AlertTimelineCopy {

@@ -42,6 +42,7 @@ import '../styles/tokens.css'
 import '@delaypilot/ui/primitives.css'
 import './app.css'
 
+import { home } from '../lib/copy/home.ts'
 import { nav } from '../lib/copy/nav.ts'
 import SiteFooter from '../components/SiteFooter.astro'
 import SiteHeader from '../components/SiteHeader.astro'
@@ -82,8 +83,15 @@ const {
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
 const ogImage = Astro.site ? new URL('/og/default-1200x630.png', Astro.site).href : undefined
 
-/** `docs/ACCESSIBILITY.md` F22: both strings baked into the card artwork, as text. */
-const ogImageAlt = 'DelayPilot — Stay ahead of flight disruptions.'
+/**
+ * `docs/ACCESSIBILITY.md` F22: both strings baked into the card artwork, as text.
+ *
+ * COMPOSED FROM THE TWO EXPORTS, NOT RETYPED. It was a literal here that happened to equal
+ * `${nav.brand} — ${home.promise}` byte for byte, which is a rendered string living outside
+ * `lib/copy/**` and one edit away from contradicting the artwork it describes (copy review F-8).
+ * The joiner is the same unspaced em dash `DIRECTIVE.md §7` writes the support line with.
+ */
+const ogImageAlt = `${nav.brand} — ${home.promise}`
 
 const reviewedDate =
   reviewedAt === undefined
@@ -158,7 +166,17 @@ const reviewedDate =
 
     <SiteHeader current={current} />
 
-    <main class="dpx-main" id="main">
+    {
+      /*
+       * `tabindex="-1"` so the skip link's target takes focus itself.
+       *
+       * In Chromium the link already worked fully without it — measured at 375 and 1440: the hash
+       * is set, the page scrolls, and the next Tab lands on the first control inside `main`. That
+       * is a browser behaviour verifiable in exactly one browser; the attribute removes the
+       * dependence on it (`docs/ACCESSIBILITY.md` F33, SC 2.4.1).
+       */
+    }
+    <main class="dpx-main" id="main" tabindex="-1">
       <slot name="page-header" />
       {
         reviewedDate !== undefined && (

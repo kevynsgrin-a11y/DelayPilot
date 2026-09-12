@@ -20,6 +20,10 @@
  * 4. **Voluntary commitments are separate.** US airline dashboard commitments are voluntary and
  *    distinct from statutory refund rights, so they get their own labelled module and make no
  *    claim (`DIRECTIVE.md §3.5`).
+ * 5. **A secondary record never sits in the sources list.** `contextSources` is its own labelled
+ *    block, after the sources, rendered as text — `RightsContextSource` has no `href` at any value,
+ *    so a press release cannot be styled like a regulator (`DIRECTIVE.md §3.5`, trust sweep F3).
+ *    `ArticleLayout.astro` renders the same block from the same three copy exports.
  *
  * The §26 rights disclaimer sits inside the card, beside the result it qualifies — not only in the
  * page footer.
@@ -43,6 +47,14 @@ export interface RightsCardCopy {
   readonly entitlementsLabel: string
   readonly evidenceLabel: string
   readonly sourcesLabel: string
+  /**
+   * The three strings for the context block (`pages.article.contextHeading` / `contextIntro` /
+   * `contextNote`). `ArticleLayout.astro` renders the same block from the same three exports; the
+   * two surfaces must read identically, so they take the same copy rather than two wordings of it.
+   */
+  readonly contextHeading: string
+  readonly contextIntro: string
+  readonly contextNote: string
   readonly futureRuleLabel: string
   readonly voluntaryLabel: string
   readonly reasoningSummary: string
@@ -194,6 +206,26 @@ export function RightsCard({
           ))}
         </ul>
       </section>
+
+      {/*
+        A record that reports ON a rule, in its own block after the sources — never inside them,
+        never a link, never counted (trust sweep F3). `RightsContextSource` has no `href` at any
+        value, so this cannot become a link by editing markup; it would have to change a type.
+       */}
+      {assessment.contextSources === undefined || assessment.contextSources.length === 0 ? null : (
+        <section className="dpp-rights__context">
+          <h4 className="dpp-rights__subheading">{copy.contextHeading}</h4>
+          <p className="dpp-rights__line-detail">{copy.contextIntro}</p>
+          <ul className="dpp-list">
+            {assessment.contextSources.map((source) => (
+              <li key={source.id}>
+                {source.label}
+                <span className="dpp-rights__source-note"> — {copy.contextNote}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <p className="dpp-rights__result-note">{copy.resultNote}</p>
 

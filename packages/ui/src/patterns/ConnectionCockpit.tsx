@@ -22,6 +22,10 @@
  * Every one of the seven `T` terms is listed even when it contributes nothing, because "we did not
  * count immigration" and "immigration does not apply here" are different statements and only one of
  * them is true.
+ *
+ * TWO READINGS, NOT ONE. `minutesText` renders the durations — components, window, required time.
+ * The Slack row takes `slackText`, because slack is signed and a sign is a word here, never a
+ * hyphen-minus (`docs/VOICE.md §9.4`).
  */
 
 import type { JSX, ReactNode } from 'react'
@@ -68,7 +72,23 @@ export interface ConnectionCockpitCopy {
   readonly meterLabel: string
   readonly meterValueText: string
   readonly heuristicNote: string
+  /** A duration as a phrase — the component rows, the available window, the required time. */
   readonly minutesText: (minutes: number) => string
+  /**
+   * The Slack row's reading, and ONLY that row's.
+   *
+   * Slack is the one signed quantity on this surface and the most consequential value on it:
+   * negative slack means the transfer does not work as scheduled. Through the shared duration
+   * helper it rendered "-18 minutes", which put the whole meaning of the row on a single
+   * hyphen-minus that assistive technology may drop or read inconsistently — lose the glyph and
+   * "18 minutes" says the opposite of the truth, to the reader least able to check it
+   * (`docs/VOICE.md §9.4`). So the sign is carried by a word: "18 minutes short".
+   *
+   * Typed `number | null` so `slackMinutesText` is assignable without a wrapper. The `null` branch
+   * is not reached from here — an unknown slack renders through `MaybeValue`, which carries the
+   * reason sentence and the `data-state="unknown"` marker a blank could never have.
+   */
+  readonly slackText: (minutes: number | null) => string
   readonly zoneLabel: string
   readonly estimatedLabel: string
   /** `DIRECTIVE.md §26` connection disclaimer, verbatim. */
@@ -214,10 +234,11 @@ export function ConnectionCockpit({
           />
         </DefinitionRow>
         <DefinitionRow label={copy.slackLabel}>
+          {/* `slackText`, never `minutesText`: no reading on this surface rests on a hyphen. */}
           <MaybeValue
             className="tnum"
             value={assessment.slackMinutes}
-            render={(minutes) => copy.minutesText(minutes)}
+            render={(minutes) => copy.slackText(minutes)}
           />
         </DefinitionRow>
       </dl>

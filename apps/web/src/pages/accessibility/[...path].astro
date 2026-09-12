@@ -103,8 +103,24 @@ const feedback = accessibilityFeedback(contactEmail ?? null)
     <p class="dpx-section__intro">{page.method}</p>
   </Section>
 
+  {
+    /*
+     * THE SENTENCE COMES FIRST, BECAUSE IT POINTS DOWNWARDS (`docs/ACCESSIBILITY.md` F37, §13.5).
+     *
+     * `feedbackNoJavaScript` says "This page and the address below work without JavaScript"; it was
+     * rendered AFTER the address, so "below" pointed at the footer. On a page about barriers, a
+     * direction that is wrong is the barrier.
+     *
+     * AND THE RESPONSE TIME REACHES THE PAGE ON BOTH BRANCHES. §13.5 requires the statement to say
+     * how long a reply takes. `accessibilityFeedback` composed it into `body`, and `body` renders
+     * only when no address is configured — so on the branch that actually ships, the one sentence
+     * §13.5 asks for reached nobody. It is now its own line, from `feedback.responseTime`, under
+     * both branches.
+     */
+  }
   <Section heading={page.feedbackHeading}>
     <p class="dpx-section__intro">{page.feedbackIntro}</p>
+    <p class="dpx-lookup__note">{page.feedbackNoJavaScript}</p>
     <p class="dpx-section__intro">
       {
         feedback.address === null ? (
@@ -114,6 +130,6 @@ const feedback = accessibilityFeedback(contactEmail ?? null)
         )
       }
     </p>
-    <p class="dpx-lookup__note">{page.feedbackNoJavaScript}</p>
+    <p class="dpx-lookup__note">{feedback.responseTime}</p>
   </Section>
 </BaseLayout>

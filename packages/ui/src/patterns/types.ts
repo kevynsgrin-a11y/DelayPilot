@@ -281,6 +281,34 @@ export interface RightsSourceLink {
   /** Authority name from the registry; the id itself when the registry file is absent. */
   readonly label: string
   readonly href?: string
+  /**
+   * Fixed literal. Every record in an "Official sources" list is a PRIMARY one, so the only value
+   * this may take is `primary` and omitting it means the same thing.
+   *
+   * It exists to make `RightsContextSource` unassignable here (trust sweep F3). A press release is
+   * structurally `{ id, label }` and was therefore accepted by this type, which is how the Council
+   * of the EU's press release came to sit beside a regulator record under one heading. The registry
+   * already knows the difference (`evidenceClass`, `citableForRuleValues`); this carries it into
+   * the type so a reviewer does not have to be the one who notices.
+   */
+  readonly evidenceClass?: 'primary'
+}
+
+/**
+ * A registry record that reports ON a rule without being it — a press release, a news summary.
+ *
+ * Two differences from `RightsSourceLink`, both deliberate:
+ *
+ * 1. **No `href`, at any value.** `apps/web/src/components/source-registry.ts` renders a context
+ *    address as text and its `ResolvedContextSource` type has no `href` either. A news summary
+ *    styled like a regulator link is the overclaim in `DIRECTIVE.md §3.5` wearing a hyperlink.
+ * 2. **A required `evidenceClass: 'secondary'`.** That literal is what stops one of these being
+ *    passed as a `RightsSourceLink`, and a `RightsSourceLink` being passed as one of these.
+ */
+export interface RightsContextSource {
+  readonly id: string
+  readonly label: string
+  readonly evidenceClass: 'secondary'
 }
 
 export interface RightsAssessment {
@@ -295,7 +323,13 @@ export interface RightsAssessment {
   readonly whatWeStillNeed: readonly string[]
   readonly lines: readonly RightsLine[]
   readonly evidenceChecklist: readonly string[]
+  /** Official sources: primary records only. The type above is what keeps it that way. */
   readonly sources: readonly RightsSourceLink[]
+  /**
+   * Records that report on the rule without being it. Rendered in their OWN labelled block after
+   * the sources list, never linked and never counted among them (trust sweep F3).
+   */
+  readonly contextSources?: readonly RightsContextSource[]
   /**
    * The current-vs-future rule module. An `adopted_not_effective` rule set renders HERE as future,
    * never as applicable (`DIRECTIVE.md §3.5`).

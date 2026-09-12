@@ -38,6 +38,13 @@
  *   'unsafe-inline' in the served policy       the widening this script exists to make visible
  *   a page with no web app manifest link       every page is BaseLayout's, and BaseLayout links it
  *   unreferenced JavaScript chunk              `dist` must not misstate what the site loads
+ *   an ad slot in a forbidden POSITION         DIRECTIVE.md §20 — above the search, in a form,
+ *                                              between a warning and its action, in or beside a
+ *                                              rights card or an action checklist
+ *   a bare `Demo` chip                         AGENTS.md §1.2, DIRECTIVE.md §28 — the label never
+ *                                              travels without "Demo data — not a live flight."
+ *   a drifted §26/§27 sentence                 fixed text is transcribed, never auto-corrected
+ *   two runs of text joined with no space      Astro's JSX whitespace rule, in shipped prose
  *
  * WHAT IT DELIBERATELY ALLOWS. The one `%` in the built output is the `width` PRESENTATION
  * ATTRIBUTE on `ProgressBar`'s SVG fill rect — geometry, not text, not in the accessible name, and
@@ -49,11 +56,46 @@
 import { readFile, readdir } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+
+/*
+ * THE FIXED SENTENCES ARE IMPORTED FROM THE COPY MODULE, NEVER RETYPED HERE.
+ *
+ * A checker that carries its own copy of the text it is checking is a checker that will one day
+ * pass a page that drifted from the copy module and fail one that did not. Node 22.18 and later
+ * strip TypeScript types on import with no flag and no build step (the repository's own
+ * `pnpm lint:copy` already loads a `.ts` entry point this way), so this reads the same exports the
+ * components render.
+ */
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const DIST = resolve(ROOT, 'dist')
 const HEADERS_FILE = resolve(ROOT, 'public/_headers')
+const COPY = resolve(ROOT, 'src/lib/copy')
+
+const { disclaimers } = await import(pathToFileURL(resolve(COPY, 'disclaimers.ts')).href)
+const { results } = await import(pathToFileURL(resolve(COPY, 'results.ts')).href)
+const { provenanceMeanings } = await import(pathToFileURL(resolve(COPY, 'provenance.ts')).href)
+
+/**
+ * The `§26` sentences plus `§27` Demo, as the copy module holds them.
+ *
+ * `disclaimers.labels` is the one member of that object that is not a sentence — it is the
+ * accessible name of each `role="note"` — so it is filtered out rather than listed by hand: a
+ * hand-written key list here would be a second place to update.
+ */
+const FIXED_SENTENCES = [
+  ...Object.entries(disclaimers)
+    .filter(([, value]) => typeof value === 'string')
+    .map(([key, value]) => ({ key: `disclaimers.${key}`, text: value })),
+  { key: 'results.demo', text: results.demo },
+]
+
+/** `DIRECTIVE.md §27` Demo, verbatim. Required beside every `Demo` chip (`AGENTS.md §1.2`). */
+const DEMO_SENTENCE = results.demo
+
+/** What a LEGEND chip carries instead, since it labels the vocabulary rather than a datum. */
+const DEMO_MEANING = provenanceMeanings.demo
 
 const findings = []
 const fail = (file, message) => findings.push(`${file}: ${message}`)
@@ -426,11 +468,422 @@ function checkText(file, html, routes) {
   }
 }
 
+/**
+ * `AGENTS.md §4` / `DIRECTIVE.md §20`, the POSITIONAL half.
+ *
+ * The route-prefix check above covers "on a forbidden surface". §20's first five forbidden clauses
+ * are not about which page a slot is on — they are about WHERE ON THE PAGE it is, and every one of
+ * them was unchecked (trust sweep F6):
+ *
+ *   above the primary search · inside a form · between a warning and its action ·
+ *   inside a rights card · adjacent to a rights card or an action checklist
+ *
+ * Each is expressed here as a position in the emitted document, because that is the only place the
+ * rule is actually true or false. A slot that satisfies every prefix rule and sits two hundred
+ * bytes above the lookup form is the defect §20 is written about.
+ *
+ * The scan is by byte offset rather than by parsing, which is exactly as much precision as the
+ * question needs: "does this ad open before that form opens" is an ordering question, and the
+ * enclosure questions are answered by matching each container's open and close tags around the
+ * slot's offset. `--self-test` feeds a synthetic violation for each clause and asserts it fires.
+ */
+
+/** Every offset at which an ad slot begins. */
+const adOffsets = (html) =>
+  [...html.matchAll(/<[a-zA-Z][^>]*(?:data-ad-placement|class="[^"]*\bdp-ad-slot\b)[^>]*>/g)].map(
+    (match) => match.index,
+  )
+
+/**
+ * Offsets of the region each `openPattern` element spans, found by tag-depth counting.
+ *
+ * Written out rather than regex-matched to a closing tag because these containers nest: a
+ * `.dpp-rights` section contains sections of its own, and `indexOf('</section>')` would close at
+ * the first inner one and declare everything after it "outside the rights card".
+ */
+function spansOf(html, openPattern, tagName) {
+  const spans = []
+  const open = new RegExp(openPattern, 'g')
+  const boundary = new RegExp(`<${tagName}\\b[^>]*>|</${tagName}>`, 'g')
+
+  for (const match of html.matchAll(open)) {
+    const start = match.index
+    boundary.lastIndex = start
+    let depth = 0
+    for (let step = boundary.exec(html); step !== null; step = boundary.exec(html)) {
+      depth += step[0].startsWith('</') ? -1 : 1
+      if (depth === 0) {
+        spans.push([start, step.index + step[0].length])
+        break
+      }
+    }
+  }
+  return spans
+}
+
+const within = (offset, spans) => spans.some(([start, end]) => offset >= start && offset < end)
+
+export function findAdPositionViolations(html) {
+  const offsets = adOffsets(html)
+  if (offsets.length === 0) return []
+
+  const out = []
+
+  /*
+   * The lookup form's stable hook is `data-dp-lookup` on the `<form>` (LookupForm.astro). The
+   * PRIMARY search is the first one on the page; "above" is document order, which is what a reader
+   * meets first on every viewport and what §20 means by it.
+   */
+  const lookup = html.search(/<form\b[^>]*\bdata-dp-lookup\b/)
+  const forms = spansOf(html, '<form\\b[^>]*>', 'form')
+  const rights = spansOf(html, '<[a-z]+\\b[^>]*class="[^"]*\\bdpp-rights\\b[^"]*"[^>]*>', 'section')
+  const actions = spansOf(
+    html,
+    '<[a-z]+\\b[^>]*class="[^"]*\\bdpp-actions\\b[^"]*"[^>]*>',
+    'section',
+  )
+
+  /*
+   * A "warning and its action": a `StateBlock` whose callout carries an action row. §20 forbids a
+   * slot BETWEEN them, and the block itself is the only place an element can be between the two, so
+   * the block is the forbidden region.
+   *
+   * Severity is deliberately NOT checked. §20 says "warning", and an `info` state block that offers
+   * a real control — "no provider is connected, here is the demonstration" — is a step a reader was
+   * about to take, which is the thing the clause protects. Reading it strictly costs nothing: no
+   * permitted placement is inside a state block at any severity.
+   */
+  const warnings = spansOf(
+    html,
+    '<div\\b[^>]*class="dpp-state[^"]*"[^>]*>(?=[\\s\\S]{0,4000}?dp-callout__action)',
+    'div',
+  )
+
+  for (const offset of offsets) {
+    if (lookup !== -1 && offset < lookup) {
+      out.push(
+        'an ad slot appears BEFORE the primary lookup form in document order — DIRECTIVE.md §20 ' +
+          'forbids an ad above the primary search, on every viewport.',
+      )
+    }
+    if (within(offset, forms)) {
+      out.push('an ad slot is inside a <form> — DIRECTIVE.md §20 forbids an ad inside a form.')
+    }
+    if (within(offset, rights)) {
+      out.push(
+        'an ad slot is inside a rights card (.dpp-rights) — AGENTS.md §4 forbids it outright.',
+      )
+    }
+    if (within(offset, actions)) {
+      out.push('an ad slot is inside an action checklist (.dpp-actions) — AGENTS.md §4.')
+    }
+    if (within(offset, warnings)) {
+      out.push(
+        'an ad slot sits between a warning and its action — DIRECTIVE.md §20 forbids it, and this ' +
+          'is the placement that costs a traveler the step they were about to take.',
+      )
+    }
+    if (adjacentTo(html, offset, rights)) {
+      out.push('an ad slot is adjacent to a rights card — AGENTS.md §4 forbids "inside or beside".')
+    }
+    if (adjacentTo(html, offset, actions)) {
+      out.push(
+        'an ad slot is adjacent to an action checklist — §20 permits one only AFTER the complete ' +
+          'checklist and with strong separation, which an immediate sibling is not.',
+      )
+    }
+  }
+
+  return [...new Set(out)]
+}
+
+/**
+ * Adjacent = nothing but whitespace and comments between the slot and the container, either side.
+ *
+ * §20 says "inside or adjacent to", and a slot separated from a rights card by one blank line is
+ * the thing a reader cannot tell apart from part of it.
+ */
+function adjacentTo(html, offset, spans) {
+  const isBlank = (text) => text.replace(/<!--[\s\S]*?-->/g, '').trim() === ''
+  return spans.some(([start, end]) => {
+    if (offset >= start && offset < end) return false
+    if (offset >= end) return isBlank(html.slice(end, offset))
+    const slotEnd = html.indexOf('>', offset)
+    return slotEnd !== -1 && slotEnd < start && isBlank(html.slice(slotEnd + 1, start))
+  })
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* The `Demo` label never travels alone.                                                          */
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * `AGENTS.md §1.2`: the `Demo` label "Must be accompanied by 'Demo data — not a live flight.'"
+ * `DIRECTIVE.md §28`: "Every demo panel says 'Demo data — not a live flight.'"
+ *
+ * Neither admits an exception, and the trust sweep measured what the missing half costs: on a phone
+ * the demonstration banner scrolls off, and what is left beside a fixture value is a bare one-word
+ * chip — on the surface where a reader is most likely to mistake a demonstration for their own
+ * flight (F4; `docs/VOICE.md §2` now records the resolved rule).
+ *
+ * GRANULARITY IS THE PANEL. One caption per panel, beside that panel's chip, covers every chip
+ * inside it: the alert timeline's five rows and the source-freshness rows share their panel's
+ * caption. What fails is a chip whose nearest enclosing `article` or `section` carries no sentence.
+ *
+ * The sentence comes from `results.demo`, never from a literal here.
+ */
+function checkDemoCaptions(file, html) {
+  const chip = /<([a-z]+)\b[^>]*\bdata-provenance="demo"[^>]*>/g
+  const legends = spansOf(html, '<ul\\b[^>]*\\bdata-provenance-legend\\b[^>]*>', 'ul')
+
+  for (const match of html.matchAll(chip)) {
+    /*
+     * A LEGEND chip is exempt, and the exemption is verified rather than assumed. `docs/VOICE.md
+     * §2`: "A provenance legend is not a panel. A chip in a legend labels the vocabulary rather
+     * than a datum, and is accompanied by `provenanceMeanings.demo`." So the sentence it must carry
+     * is that one, and this checks for it.
+     */
+    if (within(match.index, legends)) {
+      const item = nearestListItem(html, match.index)
+      if (item === undefined || !item.includes(DEMO_MEANING)) {
+        fail(
+          file,
+          'a Demo chip in a provenance legend is not accompanied by provenanceMeanings.demo. A ' +
+            'legend entry is exempt from the §28 sentence only because it carries its own ' +
+            'explanation; without one it is a bare label (docs/VOICE.md §2).',
+        )
+      }
+      continue
+    }
+
+    /*
+     * The tightest possible adjacency: `ProvenanceChip` renders `freshness` INSIDE the chip, so a
+     * chip whose own element carries the sentence has already satisfied "accompanied by". The
+     * homepage's page-level chip is built that way deliberately.
+     */
+    const self = html.slice(match.index, closingIndex(html, match.index, match[1]) ?? match.index)
+    if (self.includes(DEMO_SENTENCE)) continue
+
+    const panel = nearestPanel(html, match.index)
+    if (panel === undefined) {
+      fail(
+        file,
+        'a Demo provenance chip sits in no <article> or <section> at all, so nothing bounds the ' +
+          `panel it labels. AGENTS.md §1.2 requires "${DEMO_SENTENCE}" beside it.`,
+      )
+      continue
+    }
+    if (!panel.includes(DEMO_SENTENCE)) {
+      fail(
+        file,
+        `a Demo provenance chip whose nearest <article>/<section> does not contain "${DEMO_SENTENCE}". ` +
+          'AGENTS.md §1.2 and DIRECTIVE.md §28 require the sentence beside the label, not only in ' +
+          'a banner above it — on a phone the banner scrolls off and the chip does not.',
+      )
+    }
+  }
+}
+
+/** The innermost `<li>` containing `offset`, as raw markup. The unit of a legend. */
+function nearestListItem(html, offset) {
+  let innermost
+  for (const match of html.matchAll(/<li\b[^>]*>/g)) {
+    if (match.index > offset) break
+    const end = closingIndex(html, match.index, 'li')
+    if (end === undefined || end <= offset) continue
+    if (innermost === undefined || match.index > innermost[0]) innermost = [match.index, end]
+  }
+  return innermost === undefined ? undefined : html.slice(innermost[0], innermost[1])
+}
+
+/**
+ * The innermost `<article>` or `<section>` containing `offset`, as raw markup.
+ *
+ * Found by scanning every opening tag before the offset and keeping the closest one whose matching
+ * close is after it. Depth counting matters: these elements nest four deep in a cockpit panel, and
+ * the nearest ANCESTOR is the panel the chip belongs to, not the outermost section on the page.
+ */
+function nearestPanel(html, offset) {
+  let innermost
+  const open = /<(article|section)\b[^>]*>/g
+
+  for (const match of html.matchAll(open)) {
+    if (match.index > offset) break
+    const end = closingIndex(html, match.index, match[1])
+    if (end === undefined || end <= offset) continue
+    if (innermost === undefined || match.index > innermost[0]) innermost = [match.index, end]
+  }
+
+  return innermost === undefined ? undefined : html.slice(innermost[0], innermost[1])
+}
+
+/** The index just past the tag that closes the element opening at `start`. */
+function closingIndex(html, start, tagName) {
+  const boundary = new RegExp(`<${tagName}\\b[^>]*>|</${tagName}>`, 'g')
+  boundary.lastIndex = start
+  let depth = 0
+  for (let step = boundary.exec(html); step !== null; step = boundary.exec(html)) {
+    depth += step[0].startsWith('</') ? -1 : 1
+    if (depth === 0) return step.index + step[0].length
+  }
+  return undefined
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Fixed text stays byte-exact from the copy module to the pixel.                                 */
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * `DIRECTIVE.md §26`, `§27` and `§3.4` are FIXED TEXT: `copy.test.ts` re-reads the directive and
+ * fails on a single changed character. That guarantee stopped at the module boundary.
+ *
+ * Astro's Markdown pipeline enables smartypants by default, and it rewrote the rights disclaimer's
+ * ASCII apostrophe ("the airline or regulator's determination") to U+2019 in every Markdown body at
+ * build time. Two served routes had already drifted and all twenty content entries would have
+ * followed (copy review F-3, trust sweep F1). `markdown.smartypants: false` in `astro.config.mjs`
+ * is the fix; this is the guard, so a future remark plugin, a paste from a word processor or an
+ * editor's autocorrect cannot re-introduce it unnoticed.
+ *
+ * THE TEST IS ON THE OPENING WORDS, not on the whole sentence: a page that carries the first six
+ * words of a fixed sentence is a page trying to say it, so anything short of the exact text is a
+ * drift rather than an unrelated coincidence.
+ */
+function checkFixedSentences(file, html) {
+  const text = decodeEntities(visibleText(html)).replace(/\s+/g, ' ')
+
+  for (const { key, text: sentence } of FIXED_SENTENCES) {
+    const opening = sentence.split(' ').slice(0, 6).join(' ')
+    if (!text.includes(opening) || text.includes(sentence)) continue
+
+    const drifted = driftedCharacters(text, sentence)
+    fail(
+      file,
+      `${key} is rendered with altered characters. Expected, byte for byte:\n      "${sentence}"\n` +
+        `    Found${drifted === undefined ? '' : ` (differs at: ${drifted})`}:\n      ` +
+        `"${excerptAround(text, opening, sentence.length)}"\n` +
+        '    DIRECTIVE.md §26/§27 text is transcribed, never retyped or auto-corrected.',
+    )
+  }
+}
+
+/** The characters that differ, as `expected→found` pairs, for the first mismatching run. */
+function driftedCharacters(text, sentence) {
+  const opening = sentence.split(' ').slice(0, 6).join(' ')
+  const start = text.indexOf(opening)
+  if (start === -1) return undefined
+  const found = text.slice(start, start + sentence.length)
+  for (let i = 0; i < sentence.length; i += 1) {
+    if (found[i] !== sentence[i]) {
+      return `U+${sentence.codePointAt(i).toString(16).toUpperCase().padStart(4, '0')} expected, U+${(
+        found.codePointAt(i) ?? 0
+      )
+        .toString(16)
+        .toUpperCase()
+        .padStart(4, '0')} found, at offset ${i}`
+    }
+  }
+  return undefined
+}
+
+const excerptAround = (text, opening, length) => {
+  const start = text.indexOf(opening)
+  return start === -1 ? '' : text.slice(start, start + length)
+}
+
+/** The five named entities Astro emits, plus numeric ones. Enough to compare prose. */
+function decodeEntities(text) {
+  return text
+    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCodePoint(Number.parseInt(code, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* Two words that must not run together.                                                          */
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * Astro's JSX whitespace rule drops the whitespace between a line-ending node and a node that
+ * starts the next line, so markup that reads correctly in the editor ships with the words joined:
+ *
+ *     <strong>{lookup.noBookingCode.line}</strong>
+ *     {lookup.noBookingCode.why}
+ *
+ * rendered as "No booking code required.A flight number and a date are enough" — `DIRECTIVE.md §7`'s
+ * trust line, on the homepage, run together. The fix is an explicit `{' '}`; this is the guard,
+ * because the defect is invisible in the source and looks like a typo in the output.
+ *
+ * IT ONLY FIRES ON INLINE ELEMENTS. A `display: block` element supplies its own separation, so a
+ * letter against `<p` or `<div` is not a join. The exclusion list is explicit and small, and each
+ * entry names the rule that makes it block — a class added to it without that reason is how a
+ * guard stops guarding.
+ */
+const INLINE_JOIN_TAGS = 'a|strong|em|code|abbr|time|span'
+
+/**
+ * Classes proven `display: block` (or the equivalent) in an owned stylesheet, so the two runs of
+ * text they separate are on different lines whatever the markup says.
+ *
+ *   .dpx-lookup__example        `display: block` — the example line under a field label
+ *   .dpx-article__answer-label  `display: block` — the "Short answer" label above its paragraph
+ *   .dpp-rights__source-note    a trailing note that follows an em dash, which is its own separator
+ *   .dpp-time__*                the ZonedTimeView parts are a grid of block cells
+ *   .dp-visually-hidden         not painted at all; it carries its own leading space where needed
+ */
+/** The opening tag matching the `</tagName>` that ends at `offset`, by backwards depth counting. */
+function openingTagFor(html, offset, tagName) {
+  const boundary = new RegExp(`<${tagName}\\b[^>]*>|</${tagName}>`, 'g')
+  const stack = []
+  for (const step of html.matchAll(boundary)) {
+    // `>=`, not `>`: the closing tag AT the offset is the one we are looking up, so it must not
+    // pop its own opening tag off the stack before we read it.
+    if (step.index >= offset) break
+    if (step[0].startsWith('</')) stack.pop()
+    else stack.push(step[0])
+  }
+  return stack.at(-1)
+}
+
+const BLOCK_CLASSES = [
+  'dpx-lookup__example',
+  'dpx-article__answer-label',
+  'dpp-rights__source-note',
+  'dpp-time__',
+  'dp-visually-hidden',
+]
+
+function checkInlineJoins(file, html) {
+  const opening = new RegExp(`([A-Za-z.,;:])<(?:${INLINE_JOIN_TAGS})\\b[^>]*>`, 'g')
+  const closing = new RegExp(`</(${INLINE_JOIN_TAGS})>([A-Za-z(])`, 'g')
+
+  for (const match of [...html.matchAll(opening), ...html.matchAll(closing)]) {
+    // On a closing tag the class is on the OPENING one, so find that before deciding.
+    const isClose = match[0].startsWith('</')
+    const tag = isClose
+      ? (openingTagFor(html, match.index, match[1]) ?? match[0])
+      : (/<[a-z]+\b[^>]*>/.exec(match[0])?.[0] ?? match[0])
+    if (BLOCK_CLASSES.some((name) => tag.includes(name))) continue
+    fail(
+      file,
+      `two runs of text are joined with no space: ${JSON.stringify(
+        html.slice(Math.max(0, match.index - 40), match.index + match[0].length + 40),
+      )}. Astro drops the whitespace between a line-ending node and the next line's node; add an ` +
+        "explicit {' '} between them.",
+    )
+  }
+}
+
 function checkAdPlacement(file, route, html) {
   if (!html.includes('dp-ad-slot') && !html.includes('data-ad-placement')) return
   if (AD_FORBIDDEN_PREFIXES.some((prefix) => route.startsWith(prefix))) {
     fail(file, `an ad slot is present on ${route} — AGENTS.md §4 forbids it on this surface.`)
   }
+  for (const violation of findAdPositionViolations(html)) fail(file, violation)
 }
 
 /**
@@ -455,6 +908,185 @@ function checkOrphanScripts(scripts, referrers) {
       )
     }
   }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* --self-test: prove each positional and textual check actually fires.                           */
+/* --------------------------------------------------------------------------------------------- */
+
+/**
+ * A check that never fires is indistinguishable from a build with no defects, and the four checks
+ * added in this pass are all of the "absence is the pass" kind: nothing in `dist` exercises the ad
+ * positions at all today, because no ad ships. So each clause is fed a synthetic violation here and
+ * asserted to produce a finding, and the two that are easiest to over-fire are fed a legitimate
+ * document and asserted to stay quiet.
+ *
+ * It runs from `apps/web`'s `build` script, before the real pass. `node scripts/verify-dist.mjs
+ * --self-test` prints one line per case.
+ */
+const LOOKUP_FORM = '<form data-dp-lookup><input name="flight"></form>'
+const AD = '<div data-ad-placement="free_trip_after_action_checklist"></div>'
+const RIGHTS = '<section class="dp-card dpp-rights"><h3>Passenger rights</h3></section>'
+const ACTIONS = '<section class="dp-card dpp-actions"><h3>Action checklist</h3></section>'
+const WARNING =
+  '<div class="dpp-state" data-state="provider_unavailable"><div class="dp-callout">' +
+  '<p class="dp-callout__title">Provider unavailable</p>REPLACE' +
+  '<div class="dp-callout__action"><a href="/">Retry</a></div></div></div>'
+
+const SELF_TESTS = [
+  {
+    name: 'ad above the primary search',
+    run: () => findAdPositionViolations(`${AD}${LOOKUP_FORM}`),
+    expect: /BEFORE the primary lookup form/,
+  },
+  {
+    name: 'ad inside a form',
+    run: () => findAdPositionViolations(`<form data-dp-lookup>${AD}</form>`),
+    expect: /inside a <form>/,
+  },
+  {
+    name: 'ad inside a rights card',
+    run: () =>
+      findAdPositionViolations(
+        `${LOOKUP_FORM}<section class="dp-card dpp-rights"><section>x</section>${AD}</section>`,
+      ),
+    expect: /inside a rights card/,
+  },
+  {
+    name: 'ad inside an action checklist',
+    run: () =>
+      findAdPositionViolations(
+        `${LOOKUP_FORM}<section class="dp-card dpp-actions">${AD}</section>`,
+      ),
+    expect: /inside an action checklist/,
+  },
+  {
+    name: 'ad between a warning and its action',
+    run: () => findAdPositionViolations(`${LOOKUP_FORM}${WARNING.replace('REPLACE', AD)}`),
+    expect: /between a warning and its action/,
+  },
+  {
+    name: 'ad adjacent to a rights card',
+    run: () => findAdPositionViolations(`${LOOKUP_FORM}${RIGHTS}\n  ${AD}`),
+    expect: /adjacent to a rights card/,
+  },
+  {
+    name: 'ad adjacent to an action checklist',
+    run: () => findAdPositionViolations(`${LOOKUP_FORM}${ACTIONS}\n${AD}`),
+    expect: /adjacent to an action checklist/,
+  },
+  {
+    name: 'a permitted ad position produces no finding',
+    run: () =>
+      findAdPositionViolations(
+        `${LOOKUP_FORM}${ACTIONS}<section class="dpx-separator"><p>Advertisement</p></section>` +
+          `<section class="dpx-ad">${AD}</section>`,
+      ),
+    expect: null,
+  },
+  {
+    name: 'a bare Demo chip with no sentence in its panel',
+    run: () =>
+      collect((f) =>
+        checkDemoCaptions(
+          f,
+          '<section><h3>Overall status</h3><span data-provenance="demo">Demo</span></section>',
+        ),
+      ),
+    expect: /does not contain/,
+  },
+  {
+    name: 'a Demo chip whose panel carries the sentence',
+    run: () =>
+      collect((f) =>
+        checkDemoCaptions(
+          f,
+          `<section><span data-provenance="demo">Demo</span><p>${DEMO_SENTENCE}</p></section>`,
+        ),
+      ),
+    expect: null,
+  },
+  {
+    name: 'a legend Demo chip with no meaning beside it',
+    run: () =>
+      collect((f) =>
+        checkDemoCaptions(
+          f,
+          '<ul data-provenance-legend><li><span data-provenance="demo">Demo</span></li></ul>',
+        ),
+      ),
+    expect: /provenanceMeanings\.demo/,
+  },
+  {
+    name: 'a §26 sentence with a curly apostrophe',
+    run: () =>
+      collect((f) =>
+        checkFixedSentences(
+          f,
+          // The curly apostrophe is written as an escape, so this file itself stays ASCII and the
+          // repository-wide smart-quote sweep does not have to carve out an exception for its own
+          // guard (`docs/VOICE.md §11`).
+          `<p>${disclaimers.rights.replace("regulator's", 'regulator\u2019s')}</p>`,
+        ),
+      ),
+    expect: /altered characters/,
+  },
+  {
+    name: 'a §26 sentence transcribed exactly',
+    run: () => collect((f) => checkFixedSentences(f, `<p>${disclaimers.rights}</p>`)),
+    expect: null,
+  },
+  {
+    name: 'two runs of text joined with no space',
+    run: () =>
+      collect((f) =>
+        checkInlineJoins(f, '<p><strong>No booking code required.</strong>A flight number.</p>'),
+      ),
+    expect: /joined with no space/,
+  },
+  {
+    name: 'a block-level element between two runs of text',
+    run: () =>
+      collect((f) =>
+        checkInlineJoins(
+          f,
+          '<p><span class="dpx-article__answer-label">The short answer</span>DelayPilot reports.</p>',
+        ),
+      ),
+    expect: null,
+  },
+]
+
+/** Run `body` with a private findings list, and return what it reported. */
+function collect(body) {
+  const saved = findings.splice(0, findings.length)
+  body('self-test')
+  const produced = findings.splice(0, findings.length)
+  findings.push(...saved)
+  return produced
+}
+
+function selfTest() {
+  let failed = 0
+  for (const { name, run, expect } of SELF_TESTS) {
+    const produced = run()
+    const matched = expect === null ? produced.length === 0 : produced.some((f) => expect.test(f))
+    if (!matched) {
+      failed += 1
+      console.error(
+        `  x ${name}\n      expected ${expect === null ? 'no finding' : expect} but got ` +
+          `${produced.length === 0 ? 'nothing' : JSON.stringify(produced)}`,
+      )
+    } else {
+      console.log(`  . ${name}`)
+    }
+  }
+
+  if (failed > 0) {
+    console.error(`\nverify-dist --self-test: ${failed} check(s) did not behave as specified.\n`)
+    process.exit(1)
+  }
+  console.log(`verify-dist --self-test: ${SELF_TESTS.length} check(s) behave as specified.`)
 }
 
 async function main() {
@@ -492,6 +1124,9 @@ async function main() {
     checkManifestLink(label, source)
     checkText(label, source, routes)
     checkAdPlacement(label, route, source)
+    checkDemoCaptions(label, source)
+    checkFixedSentences(label, source)
+    checkInlineJoins(label, source)
   }
 
   for (const file of files.filter((entry) => entry.endsWith('.css'))) {
@@ -512,4 +1147,5 @@ async function main() {
   )
 }
 
-await main()
+if (process.argv.includes('--self-test')) selfTest()
+else await main()

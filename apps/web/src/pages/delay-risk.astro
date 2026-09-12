@@ -59,10 +59,24 @@ const TONE = {
       }
     </ul>
 
+    {
+      /*
+       * THE THREE SLOTS TAKE THREE REGISTERS (`docs/VOICE.md §9.1`, B9).
+       *
+       * `label` is the SURFACE this meter belongs to; `valueText` is the QUANTITY it reads; the
+       * band word is the VALUE. Announced: "Delay and cancellation assessment, Risk band, Watch".
+       *
+       * What was here announced "Connection slack against the required transfer time" on a page
+       * with no connection on it, and read a `§27` paragraph as its value — "Conditions are
+       * changing. Review the factors and keep alerts on., Watch", a full stop followed by a comma.
+       * A sighted reader sees an unnamed scale; a reader using a screen reader is told, with no way
+       * to check, that it measures the slack on a transfer. That asymmetry is why the role exists.
+       */
+    }
     <BandMeter
       band="watch"
-      label={cockpit.connection.meterLabel}
-      valueText={bandDescription('watch')}
+      label={cockpit.headings.assessment}
+      valueText={cockpit.assessment.bandLabel}
       bandLabel={bandLabel('watch')}
       stopLabels={bandStops}
       scaleLabel={cockpit.connection.bandScaleLabel}

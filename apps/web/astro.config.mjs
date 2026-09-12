@@ -1,6 +1,8 @@
 // @ts-check
 import { defineConfig } from 'astro/config'
 import react from '@astrojs/react'
+import { asciiPunctuation } from './src/lib/markdown/ascii-punctuation.mjs'
+import { proseTables } from './src/lib/markdown/prose-tables.mjs'
 
 /**
  * DelayPilot public site.
@@ -46,8 +48,27 @@ export default defineConfig({
    * React renders `packages/ui` primitives and `packages/ui/src/patterns` on the server. No
    * `client:*` directive is used (see above), so `@astrojs/react` contributes no client runtime
    * and no inline bootstrap to any page.
+   *
+   * TWO MARKDOWN CORRECTIONS SIT BESIDE IT, BOTH AS INTEGRATIONS.
+   *
+   * Astro 7's default Markdown processor is Sätteri, and its extension points are the processor's
+   * own `options` bag rather than `markdown.rehypePlugins` (which now throws unless
+   * `@astrojs/markdown-remark` is installed) or `markdown.smartypants` (deprecated, and it warns on
+   * every build and every `astro check`). Both files below mutate `config.markdown.processor.options`
+   * in `astro:config:setup`, which is what the processor's own source says that bag is for, and both
+   * FAIL CLOSED if that shape ever changes.
+   *
+   * · `asciiPunctuation` — `DIRECTIVE.md §26` fixed text keeps its ASCII apostrophes through a
+   *   Markdown body (copy review F-3, trust sweep F1). Smart punctuation was rewriting the rights
+   *   disclaimer's "regulator's" to U+2019 on two served routes and would have reached all twenty
+   *   content entries as they published.
+   * · `proseTables` — every Markdown table gets the scroll container, the `scope` attributes and
+   *   the row-header column a `DataTable` has (`docs/ACCESSIBILITY.md` F31).
+   *
+   * The reasoning for each, and what each deliberately does not do, is in its own docblock.
+   * `apps/web/scripts/verify-dist.mjs` holds both results at the pixel.
    */
-  integrations: [react()],
+  integrations: [react(), asciiPunctuation(), proseTables()],
 
   build: {
     format: 'directory',

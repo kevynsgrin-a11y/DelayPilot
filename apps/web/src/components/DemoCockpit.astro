@@ -30,12 +30,19 @@
  * MOTION. None. ADR 0003 rule 1 excludes every data-bearing component from the marketing allowance,
  * and this is nothing but data-bearing components. The section is not wrapped in a reveal.
  *
- * THE ASSESSMENT METER'S READING IS ITS OWN LABEL, not the `§27` sentence. `ProgressBar` joins the
- * reading and the band into one `aria-valuetext`, and a full sentence followed by a comma and a
- * word announces badly ("A material disruption is confirmed. Start with the action checklist
- * below., Disrupted"). "Risk band, Disrupted" is the whole reading, and it differs from the band
- * word, which is what finding F24 requires. The `§27` sentence is rendered by the overall-status
- * panel above, where it belongs.
+ * FIFTEEN SECTIONS, FIFTEEN HEADINGS. Two of them are `StateBlock`s — "Weather and airspace" and
+ * the upgrade prompt — and both pass `headingLevel={3}`, so a heading-list jump reaches all fifteen
+ * rather than skipping exactly the two panels that report something is unavailable
+ * (`docs/ACCESSIBILITY.md` F25). The copy layer already declares both as headings.
+ *
+ * THE ASSESSMENT METER'S THREE SLOTS TAKE THREE REGISTERS (`docs/VOICE.md §9.1`). The NAME is the
+ * surface — "Delay and cancellation assessment". The READING is the quantity — "Risk band". The
+ * BAND is the value — "Disrupted". Announced: "Delay and cancellation assessment, Risk band,
+ * Disrupted", with nothing repeated. Passing `bandLabel` as both name and reading said the same
+ * phrase twice in one announcement, which is finding F24 one slot over (copy review F-4); passing
+ * the `§27` sentence as the reading is worse still, because `ProgressBar` joins reading and band
+ * into one `aria-valuetext` and a full stop followed by a comma announces badly. The `§27` sentence
+ * is rendered by the overall-status panel above, where it belongs.
  */
 import { Card, StatusPill } from '@delaypilot/ui'
 import {
@@ -49,6 +56,7 @@ import {
   orderActionItems,
   RightsCard,
   SegmentCard,
+  ProvenanceHeader,
   SourceFreshnessPanel,
   StateBlock,
   localDate,
@@ -75,6 +83,7 @@ import {
   demoRightsUnitedStates,
   demoSegmentCanceled,
   demoSegmentInbound,
+  demoProvenance,
   demoSourceRows,
   demoTrip,
 } from '../demo/itinerary.ts'
@@ -168,6 +177,7 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
   {/* 1. Title, date, travelers, monitoring state. */}
   <Card as="section" aria-label={cockpit.headings.trip}>
     <h3 class="dpx-cockpit__section-title">{demoTrip.title}</h3>
+    <ProvenanceHeader provenance={demoProvenance} demoCaption={cockpit.demoCaption} />
     <dl class="dpx-cockpit__trip">
       <div class="dpp-row">
         <dt class="dpp-row__label">{cockpit.trip.dateLabel}</dt>
@@ -189,6 +199,7 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
   {/* 2. Overall status. */}
   <Card as="section" aria-label={cockpit.headings.overallStatus}>
     <h3 class="dpx-cockpit__section-title">{cockpit.headings.overallStatus}</h3>
+    <ProvenanceHeader provenance={demoProvenance} demoCaption={cockpit.demoCaption} />
     <StatusPill status="critical" label={bandLabel('disrupted')} />
     <p class="dpp-rights__lede">{results.disrupted}</p>
   </Card>
@@ -196,6 +207,15 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
   {/* 3. Horizontal itinerary on desktop, vertical timeline on mobile — one ordered list. */}
   <section aria-label={cockpit.headings.timeline}>
     <h3 class="dpx-cockpit__section-title">{cockpit.headings.timeline}</h3>
+    {
+      /*
+       * The timeline states clock times, airport codes and a band word per leg — demo operational
+       * values, so it says so, exactly as the panels above and below it do. The trust sweep did not
+       * list this one; the rule does not turn on which panels a sweep happened to reach
+       * (`docs/VOICE.md §2`).
+       */
+    }
+    <ProvenanceHeader provenance={demoProvenance} demoCaption={cockpit.demoCaption} />
     <ItineraryTimeline stops={stops} legs={legs} copy={itineraryTimelineCopy} />
   </section>
 
@@ -206,12 +226,15 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
       <SegmentCard segment={demoSegmentInbound} copy={segmentCardCopy} headingLevel={4} />
       <SegmentCard segment={demoSegmentCanceled} copy={segmentCardCopy} headingLevel={4} />
     </div>
+    {/* What the cards' "Confidence" row describes — once per group, never inside each card. */}
+    <p class="dpx-lookup__note" role="note">{cockpit.segment.confidenceNote}</p>
     <Disclaimer label={disclaimers.labels.flightData}>{disclaimers.flightData}</Disclaimer>
   </section>
 
   {/* 5. Latest meaningful change. */}
   <Card as="section" aria-label={cockpit.headings.latestChange}>
     <h3 class="dpx-cockpit__section-title">{cockpit.headings.latestChange}</h3>
+    <ProvenanceHeader provenance={demoProvenance} demoCaption={cockpit.demoCaption} />
     <p class="dpp-actions__label">{latestChange?.title}</p>
     <p class="dpp-actions__detail">{latestChange?.detail}</p>
   </Card>
@@ -222,14 +245,24 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
     copy={{ ...actionChecklistCopy, heading: cockpit.headings.nextStep }}
     headingLevel={3}
     idPrefix="demo-next"
+    provenance={demoProvenance}
   />
 
   {/* 7. Delay and cancellation assessment. A band and its reasons — never a percentage. */}
   <Card as="section" aria-label={cockpit.headings.assessment}>
     <h3 class="dpx-cockpit__section-title">{cockpit.headings.assessment}</h3>
+    {
+      /*
+       * TWO CHIPS, TWO DIFFERENT STATEMENTS. `Heuristic risk band` (rendered by `BandMeter` below)
+       * says no calibrated model produced this band. `Demo` says the facts it was computed from are
+       * fixture values. Neither implies the other, and a panel that showed only the first invited a
+       * reader to take the inputs as real (`AGENTS.md §1.2`, trust sweep F4).
+       */
+    }
+    <ProvenanceHeader provenance={demoProvenance} demoCaption={cockpit.demoCaption} />
     <BandMeter
       band="disrupted"
-      label={cockpit.assessment.bandLabel}
+      label={cockpit.headings.assessment}
       valueText={cockpit.assessment.bandLabel}
       bandLabel={bandLabel('disrupted')}
       stopLabels={bandStops}
@@ -262,7 +295,12 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
      * which is for a surface that shows this state without that heading — is not repeated here.
      */
   }
-  <StateBlock kind="provider_unavailable" severity="info" title={cockpit.headings.conditions}>
+  <StateBlock
+    kind="provider_unavailable"
+    severity="info"
+    title={cockpit.headings.conditions}
+    headingLevel={3}
+  >
     <p>{states.conditionsNotConnected.body}</p>
     <p>{states.conditionsNotConnected.action}</p>
   </StateBlock>
@@ -281,20 +319,32 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
     copy={actionChecklistCopy}
     headingLevel={3}
     idPrefix="demo-actions"
+    provenance={demoProvenance}
   />
   <p class="dpp-actions__detail">{cockpit.actions.orderNote}</p>
   <p class="dpp-actions__detail">{cockpit.actions.neverOnYourBehalf}</p>
 
   {
     /*
-    §20 PERMITTED AD POSITION, LEFT DELIBERATELY EMPTY.
-    This point — after the COMPLETE action area and before the evidence organizer — is the only
-    place on a free trip result where an eligible ad may appear, and at most one. Nothing is placed
-    here in this wave: no consent platform, no slot id and no ad code exists, and `AGENTS.md §4`
-    requires consent before a slot loads. `monetization-partnerships-engineer` fills it through
-    `AdSlotShell` with `placement="free_trip_after_action_checklist"`.
-    It must never move above this line: an ad between a warning and its action, or beside the
-    rights card above, is forbidden outright.
+    §20 AD POSITION — RESERVED IN THE LAYOUT, INERT ON THIS SURFACE, EMPTY IN THIS WAVE.
+
+    THIS COMPONENT CANNOT CARRY AN AD AT ALL. It renders only on `/`, only in demo mode, and §20
+    disables ads in "local/test/screenshot/demo-review modes" — a demonstration is not a free trip
+    result (§28). The `free_trip_after_action_checklist` slot belongs on the real Phase 10 trip
+    cockpit, not here; this mark records WHERE in the §18.5 order it goes, not that it goes here.
+
+    Where it goes, when a trip cockpit exists: after the COMPLETE action area and before the
+    evidence organizer — the one position on a free trip result where an eligible ad may appear, at
+    most one, and §20 requires "strong separation" from the action checklist above it. Never above
+    this line: an ad between a warning and its action, or inside or adjacent to the rights card and
+    the action checklist above, is forbidden outright (`AGENTS.md §4`).
+
+    Nothing is placed in this wave on any surface: no consent platform, no slot id and no ad code
+    exists, and §4 requires consent before a slot loads. `monetization-partnerships-engineer` owns
+    the fill, through `AdSlotShell` with `placement="free_trip_after_action_checklist"`.
+    `apps/web/scripts/verify-dist.mjs` asserts the positional half of §20 on every built page, so a
+    slot that lands above the lookup, inside a form, or beside a rights card or action checklist
+    fails the build rather than a review.
   */
   }
 
@@ -335,7 +385,12 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
   />
 
   {/* 15. Upgrade prompt — after the value, and in the §17 billing-not-configured state. */}
-  <StateBlock kind="billing_not_configured" severity="info" title={cockpit.upgrade.heading}>
+  <StateBlock
+    kind="billing_not_configured"
+    severity="info"
+    title={cockpit.upgrade.heading}
+    headingLevel={3}
+  >
     <p>{states.billingNotConfigured.body}</p>
   </StateBlock>
 </div>

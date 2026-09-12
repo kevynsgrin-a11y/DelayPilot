@@ -43,11 +43,14 @@ import {
   type ConnectionAssessment,
   type EvidenceChronologyEntry,
   type RightsAssessment,
+  type RightsContextSource,
+  type RightsSourceLink,
   type Segment,
   type SourceFreshnessRow,
   type TransferComponent,
   type ZonedTime,
 } from '../../../../packages/ui/src/patterns/index.ts'
+import { resolveSource } from '../components/source-registry.ts'
 import { cockpit } from '../lib/copy/cockpit.ts'
 import { demo } from '../lib/copy/demo.ts'
 import { freshness, results } from '../lib/copy/results.ts'
@@ -107,7 +110,15 @@ const DEMO_STALE_AGE_MINUTES = 96
 const DEMO_SOURCE = 'Demonstration fixture'
 const DEMO_SECOND_SOURCE = 'Second demonstration fixture'
 
-const demoProvenance = {
+/**
+ * The `Demo` label every fixture-backed panel carries, with its freshness sentence.
+ *
+ * Exported because `DemoCockpit.astro` renders four panels of its own — the trip header, overall
+ * status, latest change and the assessment — that take no pattern component and therefore have no
+ * provenance of their own to pass. Each of them displays a demo operational value, so each carries
+ * this chip and `results.demo` beside it (`AGENTS.md §1.2`, `DIRECTIVE.md §28`, trust sweep F4).
+ */
+export const demoProvenance = {
   kind: 'demo',
   freshness: freshness(DEMO_AGE_MINUTES, DEMO_SOURCE),
 } as const
@@ -125,9 +136,20 @@ const staleProvenance = {
 const noGate = unknown(cockpit.unknown.gate)
 const noTerminal = unknown(cockpit.unknown.terminal)
 
+/**
+ * The expandable operational detail every segment carries.
+ *
+ * THE DEMONSTRATION CAPTION IS NOT A VALUE OF "Status" (`docs/ACCESSIBILITY.md` F30). This list used
+ * to pair `cockpit.segment.status` with `demo.note`, so the disclosure announced "Status: Every
+ * airline, flight number, and airport here is invented..." while the cancelled segment paired the
+ * same label with a real status sentence — one label meaning two things on one page. A `<dt>`/`<dd>`
+ * pair is a programmatic assertion that the value is the thing the label names.
+ *
+ * The demonstration is now stated where it belongs: `results.demo` beside each panel's `Demo` chip
+ * (`AGENTS.md §1.2`), and `demo.note` under the section banner.
+ */
 const operationalDetail = [
   { label: cockpit.rights.causeLabels.airlineStated, value: unknown(cockpit.unknown.cause) },
-  { label: cockpit.segment.status, value: known(demo.note) },
 ] as const
 
 /** DEMO 101 — the delayed inbound segment (`§28`). */
@@ -388,12 +410,12 @@ export const demoConnectionSelfTransfer: ConnectionAssessment = {
   band: 'at_risk',
   assumptions: [
     'The inbound flight arrives at the estimated gate-in time shown above.',
-    'The bag is reclaimed at the belt and rechecked at the second airline’s desk.',
+    "The bag is reclaimed at the belt and rechecked at the second airline's desk.",
     'No airline is responsible for the onward flight if the first one arrives late.',
   ],
   missingData: [
     unavailableReasons.gateNotPublished.fact,
-    'The second airline’s check-in cutoff for this flight is not known.',
+    "The second airline's check-in cutoff for this flight is not known.",
     unavailableReasons.causeNotVerified.fact,
   ],
 }
@@ -423,14 +445,55 @@ export const demoConnectionInsufficient: ConnectionAssessment = {
 
 const demoRuleSet = cockpit.rights.ruleSetDemo
 
-const sourceLink = (id: string, label: string) => ({ id, label })
+/**
+ * THE EVIDENCE CLASS COMES FROM THE REGISTRY, NOT FROM WHOEVER TYPED THE CALL.
+ *
+ * Trust sweep F3: this fixture listed the Council of the EU's press release under "Official sources"
+ * beside a regulator record. `data/rights/sources/registry.json` already recorded it as
+ * `evidenceClass: "secondary"` with `citableForRuleValues: false` — the fact was in the data and
+ * nothing read it. So these two helpers read it, and a mis-filed id fails the BUILD rather than
+ * shipping a press release dressed as a regulator (`DIRECTIVE.md §3.5`: a news summary never
+ * outranks the regulator; `docs/EDITORIAL_POLICY.md`: the evidence class decides what a record can
+ * carry).
+ *
+ * They throw rather than degrade because this is a build-time fixture, not a runtime path: there is
+ * no traveler in front of a thrown error here, and `AGENTS.md §1.5` says fail closed. Both are
+ * exported so `apps/web/test/demo-itinerary.test.ts` can assert the refusal in both directions.
+ */
+export function sourceLink(id: string, label: string): RightsSourceLink {
+  const record = resolveSource(id)
+  if (record.missing) {
+    throw new Error(`demo fixture: no registry record for source id "${id}".`)
+  }
+  if (record.evidenceClass !== 'primary' || !record.citableForRuleValues) {
+    throw new Error(
+      `demo fixture: "${id}" is evidenceClass "${record.evidenceClass}" and cannot be listed as an ` +
+        `official source. Pass it to contextSource() instead.`,
+    )
+  }
+  return { id, label }
+}
+
+/** The other half: a record that reports ON a rule. Never a link, never counted as a source. */
+export function contextSource(id: string, label: string): RightsContextSource {
+  const record = resolveSource(id)
+  if (record.missing) {
+    throw new Error(`demo fixture: no registry record for source id "${id}".`)
+  }
+  if (record.evidenceClass === 'primary') {
+    throw new Error(
+      `demo fixture: "${id}" is a primary record and belongs in sources, not contextSources.`,
+    )
+  }
+  return { id, label, evidenceClass: 'secondary' }
+}
 
 /** The US refund example (`§28`). Voluntary commitments are a separate, labelled module. */
 export const demoRightsUnitedStates: RightsAssessment = {
   jurisdiction: 'United States',
   ruleSet: demoRuleSet,
   whatMayApply:
-    'On the facts in this demonstration — an onward flight canceled by the airline, and a traveler who has not accepted a replacement — a refund of the unused portion may apply. Nothing else can be reached without the airline’s stated reason.',
+    "On the facts in this demonstration — an onward flight canceled by the airline, and a traveler who has not accepted a replacement — a refund of the unused portion may apply. Nothing else can be reached without the airline's stated reason.",
   whatWeStillNeed: [
     unavailableReasons.causeNotVerified.fact,
     unavailableReasons.noticeUnknown.fact,
@@ -505,7 +568,7 @@ export const demoRightsEuropeanUnion: RightsAssessment = {
       label: cockpit.rights.refund,
       status: 'may_apply',
       detail:
-        'A canceled flight normally puts the choice between a refund and a re-route in the traveler’s hands.',
+        "A canceled flight normally puts the choice between a refund and a re-route in the traveler's hands.",
     },
     {
       key: 'rebooking',
@@ -535,18 +598,24 @@ export const demoRightsEuropeanUnion: RightsAssessment = {
   ],
   evidenceChecklist: [
     'The message that announced the cancellation, with the date and time it arrived.',
-    'The airline’s stated reason, in writing.',
+    "The airline's stated reason, in writing.",
     'Receipts for anything you paid for while waiting.',
   ],
-  sources: [
-    sourceLink('eu-your-europe-air', 'European Commission — air passenger rights'),
-    sourceLink('eu-council-2026-07-13', 'Council of the European Union — press release'),
+  sources: [sourceLink('eu-your-europe-air', 'European Commission — air passenger rights')],
+  /*
+   * The Council press release reports on the reform; it is not the reform, and the registry records
+   * it as `evidenceClass: "secondary"`, `citableForRuleValues: false`. It is shown, because hiding
+   * a record we consulted would be its own kind of dishonesty — in its own labelled block, as text,
+   * never counted among the official sources (trust sweep F3).
+   */
+  contextSources: [
+    contextSource('eu-council-2026-07-13', 'Council of the European Union — press release'),
   ],
   futureRule: {
     label: 'The 2026 reform of the EU air passenger rights regulation',
     status: 'future_rule_not_active',
     detail:
-      'The reform has been adopted but is not in force: it applies twelve months and twenty days after publication in the Official Journal, and that date has not been verified here. Events before it are assessed under the rule currently in effect.',
+      'The reform has been adopted but is not in force: it enters into force on a date computed from its publication in the Official Journal, and that date has not been verified here. Events before it are assessed under the rule currently in effect.',
   },
   provenance: demoProvenance,
 }

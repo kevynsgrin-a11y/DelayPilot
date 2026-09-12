@@ -62,6 +62,19 @@ export interface SegmentCardCopy {
   readonly nextDayLabel: string
   readonly conflictHeading: string
   readonly conflictNewestLabel: string
+  /**
+   * "Both answers are shown because discarding one would hide a real disagreement..." — the "what
+   * it means / what to do next" half of the `DIRECTIVE.md §17` conflicting-providers state. Shown
+   * inside the conflict block, under its heading, and only there.
+   */
+  readonly conflictBody: string
+  /**
+   * "Demo data — not a live flight." Required beside a `Demo` chip (`AGENTS.md §1.2`,
+   * `DIRECTIVE.md §28`). Passing it on a non-demo segment is harmless: the render gates on
+   * `provenance.kind`, exactly as `ConnectionCockpit`, `RightsCard`, `EvidencePacket`,
+   * `SourceFreshnessPanel`, `AlertTimeline` and `ProvenanceHeader` already do.
+   */
+  readonly demoCaption?: string
   readonly statusText: (status: SegmentStatus) => string
   readonly confidenceText: (confidence: Confidence) => string
   readonly delayText: (minutes: number) => string
@@ -94,11 +107,14 @@ export function SegmentCard({
           <span className="dpp-segment__airline">{segment.airline}</span>{' '}
           <span className="dpp-segment__flight tnum">{segment.flightNumber}</span>
         </Heading>
-        <StatusPill
-          status={STATUS_TONE[segment.status]}
-          label={copy.statusText(segment.status)}
-          detail={copy.statusLabel}
-        />
+        {/*
+          No `detail`. `StatusPill`'s detail slot is documented as "a duration or a count", and
+          passing `copy.statusLabel` put the FIELD'S NAME where its value belongs, so every pill
+          announced "Delayed Status" (`docs/ACCESSIBILITY.md` F29). This segment has no duration to
+          put there — the delay is its own labelled row below — so the slot stays empty and the
+          `<dt>Status</dt>` row does the labelling.
+         */}
+        <StatusPill status={STATUS_TONE[segment.status]} label={copy.statusText(segment.status)} />
       </header>
 
       <p className="dpp-segment__route">
@@ -184,11 +200,15 @@ export function SegmentCard({
             ? {}
             : { freshness: segment.provenance.freshness })}
         />
+        {segment.provenance.kind === 'demo' && copy.demoCaption !== undefined ? (
+          <p className="dpp-provenance__demo">{copy.demoCaption}</p>
+        ) : null}
       </div>
 
       {segment.conflicting === undefined ? null : (
         <div className="dpp-segment__conflict">
           <p className="dpp-segment__conflict-heading">{copy.conflictHeading}</p>
+          <p className="dpp-segment__conflict-body">{copy.conflictBody}</p>
           <dl className="dpp-segment__facts">
             <DefinitionRow label={segment.source}>
               <span>{copy.statusText(segment.status)}</span>

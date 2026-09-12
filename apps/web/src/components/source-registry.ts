@@ -30,6 +30,13 @@ interface RegistryRecord {
   readonly canonicalUrl: string
   readonly lastVerifiedAt: string | null
   readonly status: string
+  /**
+   * `primary` for a regulator's own record, `secondary` for something that reports ON one — a
+   * press release, a news summary. `regulatory-source-steward` sets it per record.
+   */
+  readonly evidenceClass: string
+  /** False when a record may not back a rule value, amount, threshold or effective date. */
+  readonly citableForRuleValues: boolean
 }
 
 const records = new Map<string, RegistryRecord>()
@@ -47,6 +54,17 @@ export interface ResolvedSource {
   readonly href: string | undefined
   /** The verification date, or `null`, which the caller renders as "not yet verified". */
   readonly lastVerifiedAt: string | null
+  /**
+   * `primary` | `secondary` from the registry, or `'unknown'` when no record exists.
+   *
+   * Carried through so a caller can REFUSE rather than having to know: the demo fixture listed a
+   * press release under "Official sources" beside a regulator record, and the registry already
+   * recorded it as secondary (trust sweep F3). A fact that is in the data and not in the type is a
+   * fact a reviewer has to catch.
+   */
+  readonly evidenceClass: string
+  /** False when a record may not back a rule value, amount, threshold or effective date. */
+  readonly citableForRuleValues: boolean
   /** True when no registry record exists for this id at all. */
   readonly missing: boolean
 }
@@ -62,6 +80,9 @@ export function resolveSource(id: string): ResolvedSource {
       address: undefined,
       href: undefined,
       lastVerifiedAt: null,
+      // Not "primary by default": an id the registry does not know is an id nothing vouches for.
+      evidenceClass: 'unknown',
+      citableForRuleValues: false,
       missing: true,
     }
   }
@@ -74,6 +95,8 @@ export function resolveSource(id: string): ResolvedSource {
     address: record.canonicalUrl,
     href: reachable ? record.canonicalUrl : undefined,
     lastVerifiedAt: record.lastVerifiedAt,
+    evidenceClass: record.evidenceClass,
+    citableForRuleValues: record.citableForRuleValues,
     missing: false,
   }
 }
@@ -90,8 +113,9 @@ export const resolveSources = (ids: readonly string[]): readonly ResolvedSource[
 export type ResolvedContextSource = Omit<ResolvedSource, 'href'>
 
 export function resolveContextSource(id: string): ResolvedContextSource {
-  const { label, address, lastVerifiedAt, missing } = resolveSource(id)
-  return { id, label, address, lastVerifiedAt, missing }
+  const { label, address, lastVerifiedAt, evidenceClass, citableForRuleValues, missing } =
+    resolveSource(id)
+  return { id, label, address, lastVerifiedAt, evidenceClass, citableForRuleValues, missing }
 }
 
 export const resolveContextSources = (ids: readonly string[]): readonly ResolvedContextSource[] =>

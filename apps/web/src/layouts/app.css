@@ -615,6 +615,23 @@ html:has(.dpx-drawer[open]) {
   margin-block-start: var(--space-12);
 }
 
+/*
+ * The other half of F35. The availability note sits BELOW the two-column grid and spans the shell,
+ * so at a prose measure its last two lines ran to 647 px at 1024 and 823 px at 1440 — past the
+ * motif's left edge on both, even after the edge moved. The grid motif's box is the full height of
+ * the hero, so "below the columns" is not "clear of the motif".
+ *
+ * Capping the note to the left column's width (`50%` of the shell, less half the grid gap — the
+ * same arithmetic the motif's own left edge uses) puts it back inside the text column. It is also
+ * the better setting: a note read at the width of the headline above it, rather than at the width
+ * of the page.
+ */
+@media (min-width: 1024px) {
+  .dpx-hero__availability {
+    max-inline-size: calc(50% - var(--space-24));
+  }
+}
+
 .dpx-trust {
   display: flex;
   flex-wrap: wrap;
@@ -691,12 +708,26 @@ html:has(.dpx-drawer[open]) {
   opacity: 0.4;
 }
 
-/* Texture, not a feature. Drawn in the hairline border colour rather than the accent, at a third
-   of the opacity the other two carry: at accent strength it read as graph paper and competed with
-   the headline it sits behind. It never moves (scripts/assets/MOTIFS.md §3.3). */
+/*
+ * Texture, not a feature. Drawn in the hairline border colour rather than the accent, at a third of
+ * the opacity the other two carry: at accent strength it read as graph paper and competed with the
+ * headline it sits behind. It never moves (scripts/assets/MOTIFS.md §3.3).
+ *
+ * ITS LEFT EDGE IS THE RIGHT COLUMN'S LEFT EDGE (ADR 0003 rule 2b, F35). At `45%` it reached 6 px
+ * into the text column at 1024 and 16 px at 1440 — enough to paint behind the last run of "Track a
+ * flight, understand connection risk" and move that measured pair from 4.58:1 to 4.53:1 in light
+ * and 5.54:1 to 5.46:1 in dark. Both stayed above the floor, so nothing failed; rule 2b says "never
+ * behind body text in a way that changes a measured pair", and 0.05 is a change.
+ *
+ * `calc(50% + var(--space-24))` is not a nudge, it is the column boundary. `.dpx-shell` is centred,
+ * `.dpx-hero__grid` is two `minmax(0, 1fr)` columns with a `--space-48` gap, so the right column
+ * always begins at the viewport centre plus half that gap. Measured at 1024 / 1280 / 1440 / 1920:
+ * the motif's left edge lands on 536 / 664 / 744 / 984, which is the right column's left edge to
+ * the pixel at every one.
+ */
 .dpx-motif--grid {
   inset-block: 0;
-  inset-inline: 45% 0;
+  inset-inline: calc(50% + var(--space-24)) 0;
   block-size: 100%;
   color: var(--border-emphasis);
   opacity: 0.3;
@@ -1201,9 +1232,30 @@ html:has(.dpx-drawer[open]) {
 /* 13. Cockpit layout.                                                                            */
 /* --------------------------------------------------------------------------------------------- */
 
+/*
+ * SC 1.4.10 Reflow, blocker B8 (`docs/ACCESSIBILITY.md §15.4`).
+ *
+ * `.dpx-cockpit` is a grid, and a grid item's automatic minimum size is its CONTENT-based minimum,
+ * not zero. One child could not shrink: the connection card, min-content 341 px where 288 px was
+ * available at a 320 CSS px viewport — the width SC 1.4.10 names, which is what a reader gets at
+ * 400 % zoom on a 1280 px screen. The document scrolled sideways 37 px on `/` and 56 px on
+ * `/connection-risk/`, and what went off-screen was ordinary prose: the demonstration banner, the
+ * section titles, the rows carrying the travel date and the monitoring state. A reader at 400 %
+ * had to scroll right to finish a sentence and left to start the next one.
+ *
+ * `min-inline-size: 0` restores the zero minimum, which lets the scroll container INSIDE the card
+ * do the job it was built for (`.dp-table`, `overflow-x: auto`, keyboard reachable since Phase 9
+ * B6). The table scrolls in its own `role="region"` box; the page does not.
+ *
+ * It is set on the ITEMS, not the container, because that is where the automatic minimum applies.
+ */
 .dpx-cockpit {
   display: grid;
   gap: var(--space-24);
+}
+
+.dpx-cockpit > * {
+  min-inline-size: 0;
 }
 
 .dpx-cockpit__banner {
@@ -1388,6 +1440,31 @@ html:has(.dpx-drawer[open]) {
   gap: var(--space-16);
 }
 
+/* B8, the inner half. Same reason as `.dpx-cockpit > *` above: these are grids too, and their
+   items carry the content-based automatic minimum that propagated the table's 395 px min-content
+   width all the way out to the page. */
+.dpp-segment > *,
+.dpp-connection > *,
+.dpp-rights > *,
+.dpp-actions > *,
+.dpp-evidence > *,
+.dpp-alerts > *,
+.dpp-freshness > * {
+  min-inline-size: 0;
+}
+
+/*
+ * The plain wrapper between the connection card and its scroll container.
+ *
+ * Measured as the second place the overflow was introduced: `div.dpp-connection__components`,
+ * min-content 307 px inside 256 px. `.dp-table` is the scroll container and a scroll container's
+ * automatic minimum IS zero — but only when it is itself the grid item. Here it is a block inside
+ * this unstyled div, so the intrinsic width passed straight through.
+ */
+.dpp-connection__components {
+  min-inline-size: 0;
+}
+
 .dpp-segment__header,
 .dpp-connection__header,
 .dpp-evidence__header {
@@ -1462,6 +1539,14 @@ html:has(.dpx-drawer[open]) {
   margin: 0 0 var(--space-8);
   color: var(--status-watch-fg);
   font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-14);
+}
+
+/* "What it means, and what to do next" — the half of the §17 conflicting-providers state that a
+   list of two disagreeing snapshots does not supply on its own. */
+.dpp-segment__conflict-body {
+  margin: 0 0 var(--space-8);
+  color: var(--text-secondary);
   font-size: var(--font-size-14);
 }
 
@@ -1684,6 +1769,20 @@ html:has(.dpx-drawer[open]) {
   color: var(--text-secondary);
 }
 
+/* A record that reports ON a rule, set apart from the sources above it so the separation is visible
+   and not only structural (trust sweep F3). Never styled as a link, because it is never a link. */
+.dpp-rights__context {
+  padding-block-start: var(--space-8);
+  border-block-start: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+.dpp-actions__provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
 .dpp-actions__meta,
 .dpp-actions__consequence,
 .dpp-actions__sources {
@@ -1864,6 +1963,16 @@ html:has(.dpx-drawer[open]) {
 .prose code {
   font-family: var(--font-mono);
   font-size: 0.9em;
+}
+
+/*
+ * A Markdown table, wrapped by `src/lib/markdown/rehype-prose-tables.mjs` in the same `.dp-table`
+ * scroll container every `DataTable` uses (`docs/ACCESSIBILITY.md` F31). The wrapper carries the
+ * overflow, the border and the surface; the rules below still style the table itself, so a prose
+ * table keeps reading like prose and stops contributing page-level horizontal scroll at 320 px.
+ */
+.dpx-prose-table {
+  min-inline-size: 0;
 }
 
 .prose table {

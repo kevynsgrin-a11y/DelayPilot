@@ -13,7 +13,15 @@ import { ProvenanceChip } from '@delaypilot/ui'
 import { provenanceMeanings, provenanceOrder } from '../lib/copy/provenance.ts'
 ---
 
-<ul class="dpx-provenance-legend">
+{
+  /*
+   * `data-provenance-legend` is the stable hook `apps/web/scripts/verify-dist.mjs` uses to tell a
+   * LEGEND chip from a DATUM chip. A chip here labels the vocabulary rather than a value, so it is
+   * accompanied by `provenanceMeanings[kind]` instead of the `§28` sentence
+   * (`docs/VOICE.md §2`) — and the script asserts that substitution rather than assuming it.
+   */
+}
+<ul class="dpx-provenance-legend" data-provenance-legend>
   {
     provenanceOrder.map((kind) => (
       <li class="dpx-provenance-legend__item">

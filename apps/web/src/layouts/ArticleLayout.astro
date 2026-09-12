@@ -91,10 +91,12 @@ const reviewedDate = new Intl.DateTimeFormat('en-GB', {
       </div>
 
       <p class="dpx-article__meta">
-        <span>
-          {pages.article.reviewedLabel}
-          <time datetime={reviewedAt}>{reviewedDate}</time>
-        </span>
+        {
+          /* `{' '}`: Astro drops the newline here, so this shipped as "Reviewed12 September 2026". */
+        }
+        <span
+          >{pages.article.reviewedLabel}{' '}<time datetime={reviewedAt}>{reviewedDate}</time></span
+        >
         {status !== 'published' && <span>{pages.article.awaitingReview}</span>}
       </p>
     </div>

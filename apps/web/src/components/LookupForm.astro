@@ -60,8 +60,28 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3'
     data-message-flight={lookup.validation.flightNumberInvalid}
     data-message-date={lookup.validation.dateInvalid}
   >
-    <div class="dpx-errors" hidden tabindex="-1" data-dp-errors>
-      <Callout severity="urgent" title={lookup.validation.summaryHeading}>
+    {
+      /*
+       * Focus moves here on a failed submit, so what a screen reader says ON ARRIVAL has to be
+       * stated rather than left to a browser heuristic (`docs/ACCESSIBILITY.md` F32, SC 2.4.3 /
+       * 4.1.2). `role="group"` plus `aria-labelledby` pointing at the callout's own title gives it
+       * the name it already shows. Nothing else in the flow changes: the summary stays `hidden`
+       * until there is something in it, and the list is still built by the external module.
+       */
+    }
+    <div
+      class="dpx-errors"
+      hidden
+      tabindex="-1"
+      role="group"
+      aria-labelledby="lookup-errors-title"
+      data-dp-errors
+    >
+      <Callout
+        severity="urgent"
+        title={lookup.validation.summaryHeading}
+        titleId="lookup-errors-title"
+      >
         <ul class="dpx-errors__list" data-dp-errors-list></ul>
       </Callout>
     </div>
@@ -96,9 +116,16 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3'
     </div>
   </form>
 
+  {
+    /*
+     * `{' '}` because Astro drops the whitespace between a line-ending element and the text node
+     * that starts the next line, so this shipped as "No booking code required.A flight number..."
+     * — `DIRECTIVE.md §7`'s trust line, run together, on the homepage. `verify-dist.mjs` now fails
+     * the build on the shape rather than leaving it to a reader to notice.
+     */
+  }
   <p class="dpx-lookup__no-code">
-    <strong>{lookup.noBookingCode.line}</strong>
-    {lookup.noBookingCode.why}
+    <strong>{lookup.noBookingCode.line}</strong>{' '}{lookup.noBookingCode.why}
   </p>
 
   <div class="dpx-lookup__result" data-dp-result>

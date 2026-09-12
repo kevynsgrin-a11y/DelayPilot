@@ -14,6 +14,14 @@
  *
  * Every panel lists all seven `T` components with its derivation class, states its assumptions and
  * what is missing, and carries the `§26` connection disclaimer beside the figures.
+ *
+ * EACH COCKPIT IS NAMED BY ITS TOPOLOGY. Three panels named "Connection", each containing a table
+ * region named "Every component of the required transfer time", put six entries under two names in
+ * a landmark list and told a reader nothing about which example was which
+ * (`docs/ACCESSIBILITY.md` F26). `connectionCopy({ topology })` takes the reservation structure —
+ * the fact the three examples differ by — and the copy module turns it into the name. The
+ * homepage's single cockpit passes nothing and keeps the plain `§18.5` heading: disambiguation
+ * exists to tell things apart, and there is nothing there to tell apart.
  */
 import { ConnectionCockpit, type Maybe } from '../../../../packages/ui/src/patterns/index.ts'
 
@@ -46,6 +54,7 @@ const minutesOf = (value: Maybe<number>): number | null => (value.known ? value.
         demo: true,
         availableMinutes: minutesOf(demoConnectionProtected.availableMinutes),
         requiredMinutes: minutesOf(demoConnectionProtected.requiredMinutes),
+        topology: demoConnectionProtected.topology,
       })}
       headingLevel={3}
     />
@@ -64,6 +73,7 @@ const minutesOf = (value: Maybe<number>): number | null => (value.known ? value.
           demo: true,
           availableMinutes: minutesOf(demoConnectionSelfTransfer.availableMinutes),
           requiredMinutes: minutesOf(demoConnectionSelfTransfer.requiredMinutes),
+          topology: demoConnectionSelfTransfer.topology,
         })}
         headingLevel={3}
       />
@@ -73,6 +83,7 @@ const minutesOf = (value: Maybe<number>): number | null => (value.known ? value.
           demo: true,
           availableMinutes: minutesOf(demoConnectionInsufficient.availableMinutes),
           requiredMinutes: minutesOf(demoConnectionInsufficient.requiredMinutes),
+          topology: demoConnectionInsufficient.topology,
         })}
         headingLevel={3}
       />

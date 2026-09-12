@@ -51,6 +51,18 @@ const page = pages.flightStatus
     <div class="dpx-cockpit__stack">
       <SegmentCard segment={demoSegmentOnward} copy={segmentCardCopy} headingLevel={3} />
     </div>
+    {
+      /*
+       * What "Confidence: High" on the card above actually describes (copy review F-5).
+       *
+       * Beside a named flight and a clock time it reads as a forecast about the flight; it is a
+       * word about the ANSWER — how fresh the response is and whether the sources agree. Once per
+       * card GROUP, after the stack: inside every card it would be four repetitions of a sentence
+       * nobody reads the fourth time, and in the footer it would not be beside the value it
+       * qualifies.
+       */
+    }
+    <p class="dpx-lookup__note" role="note">{cockpit.segment.confidenceNote}</p>
     <Disclaimer label={disclaimers.labels.flightData}>{page.disclaimer}</Disclaimer>
   </Section>
 
@@ -75,14 +87,28 @@ const page = pages.flightStatus
       {/* §17 conflicting providers: both snapshots, the newest named, confidence lowered. */}
       <SegmentCard segment={demoSegmentConflicting} copy={segmentCardCopy} headingLevel={3} />
     </div>
+    {/* The same note for the second group: this stack is where confidence is LOWERED, and why. */}
+    <p class="dpx-lookup__note" role="note">{cockpit.segment.confidenceNote}</p>
   </Section>
 
   <Section heading={page.sections.today.heading}>
     <p class="dpx-section__intro">{page.sections.today.body}</p>
 
     <div class="dpx-cockpit__stack">
-      {/* §17 searching: the state the result region is in while a lookup is outstanding. */}
-      <LoadingBlock label={lookup.heading} message={lookup.states.searching} lines={3} />
+      {
+        /*
+         * §17 searching, ILLUSTRATED. `illustration` drops `aria-busy` and keeps everything else:
+         * this page shows a reader what a lookup looks like while it waits, and nothing here is
+         * waiting. A permanent `aria-busy="true"` told assistive technology otherwise, and
+         * technology that honours it may defer or skip the block (`docs/ACCESSIBILITY.md` F28).
+         */
+      }
+      <LoadingBlock
+        label={lookup.heading}
+        message={lookup.states.searching}
+        lines={3}
+        illustration
+      />
 
       {/* §17 provider unavailable: the state every lookup reaches in this deployment. */}
       <div class="dpp-state" data-state="provider_unavailable">
@@ -117,9 +143,9 @@ const page = pages.flightStatus
       </StateBlock>
     </div>
 
+    {/* `{' '}`: see LookupForm.astro. Astro drops the newline between the two nodes. */}
     <p class="dpx-lookup__no-code">
-      <strong>{lookup.noBookingCode.line}</strong>
-      {lookup.noBookingCode.why}
+      <strong>{lookup.noBookingCode.line}</strong>{' '}{lookup.noBookingCode.why}
     </p>
   </Section>
 </BaseLayout>

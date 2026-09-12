@@ -1001,11 +1001,12 @@
   inline-size: 100%;
 }
 
-/* The reading, as words, in the page rather than in an attribute. `aria-valuetext` is exposed to
-   assistive technology and to nothing else, so before this existed a sighted reader — in glare, at
-   a gate, colour-vision deficient or not — got a coloured bar of indeterminate extent and no number
-   (ACCESSIBILITY.md B3). `role="progressbar"` has presentational children in WAI-ARIA 1.2, so this
-   text is shown to the eye without being announced a second time. */
+/* The reading and the band, as words, in the page as well as in an attribute. An attribute is
+   exposed to assistive technology and to nothing else, so before this existed a sighted reader — in
+   glare, at a gate, colour-vision deficient or not — got a coloured bar of indeterminate extent and
+   no number (ACCESSIBILITY.md B3). This text is for the eye: role="progressbar" has presentational
+   children in WAI-ARIA 1.2, so nothing inside it reaches the accessibility tree, which is why
+   aria-valuetext carries both strings rather than only the value (ACCESSIBILITY.md B7). */
 .dp-progress__readout {
   margin: 0;
   display: flex;

@@ -562,18 +562,20 @@ describe('Skeleton, ProgressBar, AdSlot', () => {
     expect(markup).toContain('role="progressbar"')
     expect(markup).toContain('aria-valuenow="18"')
     expect(markup).toContain('aria-valuemax="45"')
-    expect(markup).toContain('aria-valuetext="18 of 45 minutes"')
+    expect(markup).toContain('aria-valuetext="18 of 45 minutes, Watch"')
     expect(markup).toContain('dp-progress--watch')
     expect(markup).not.toMatch(/gauge|speedometer|dial|needle/i)
   })
 
   /**
-   * ACCESSIBILITY.md B3, SC 1.4.1. `aria-valuetext` is exposed to assistive technology and to
-   * nothing else, so the reading has to exist as a text node too — and the band has to be a word,
-   * not a hue. Stripping every ARIA attribute from the markup is the assertion: whatever survives
-   * is what a sighted reader actually gets.
+   * ACCESSIBILITY.md B3 and B7, SC 1.4.1 and SC 1.3.1. Two failures in opposite directions, and the
+   * assertion has to catch both: an ARIA attribute is exposed to assistive technology and to
+   * nothing else, while everything inside `role="progressbar"` is presentational and exposed to
+   * nobody. So the reading and the band each have to appear TWICE — once as a text node a sighted
+   * reader gets, once in `aria-valuetext`. Stripping every ARIA attribute is how the first half is
+   * measured: whatever survives is what is actually on the page.
    */
-  it('renders the reading and the band as visible text, not only in ARIA', () => {
+  it('renders the reading and the band as visible text AND in ARIA', () => {
     const markup = html(
       <ProgressBar
         value={18}
@@ -589,6 +591,12 @@ describe('Skeleton, ProgressBar, AdSlot', () => {
     expect(visible).toContain('Watch')
     expect(markup).toContain('>18 of 45 minutes<')
     expect(markup).toContain('dp-progress__band')
+
+    // B7: the band is a required prop and the recommended-action signal; an announced value that
+    // omits it tells a screen-reader user how much slack is left and not what to do about it.
+    const announced = /aria-valuetext="([^"]*)"/.exec(markup)?.[1]
+    expect(announced).toBe('18 of 45 minutes, Watch')
+    expect(announced).toContain('Watch')
   })
 
   it('clamps out-of-range readings instead of overflowing the track', () => {

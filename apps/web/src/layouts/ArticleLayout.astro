@@ -1,0 +1,178 @@
+---
+/**
+ * The shell for a content-collection article — a guide or a passenger-rights explainer.
+ *
+ * THE ANSWER COMES FIRST. `answerFirst` is rendered above the body, not as a summary at the end.
+ * `DIRECTIVE.md §19` requires an answer-first introduction on every indexable page, and the reason
+ * is the reader: someone opening "flight cancelled — what to do" on airport wifi has one question,
+ * and making them scroll for it is a design that serves the word count instead of the person. The
+ * bodies extend the answer and never repeat it, so the two are not redundant.
+ *
+ * THE EDITORIAL STATUS IS VISIBLE AND THE ROBOTS RULE FOLLOWS IT. `status ∈ {publishable,
+ * published}` is what makes a route exist at all (`content.config.ts`). A served `publishable` page
+ * carries `noindex` AND says "Editorial status: awaiting final review" in its header, because prose
+ * about passenger rights that has not had its final read should be readable by whoever was sent the
+ * link and invisible to everyone else. `entryRobots` computes both from one place, so the meta tag
+ * and the visible line can never disagree (finding H-5, `trust-compliance-officer`).
+ *
+ * NO §26 DISCLAIMER IS ADDED HERE. Every entry ends with its own verbatim disclaimer paragraph
+ * (`content-editorial-lead`), and a second copy stacked underneath would read as boilerplate — the
+ * exact devaluation `§26` is trying to avoid by placing the sentence beside the result rather than
+ * only in the footer.
+ *
+ * THE SOURCE BLOCK RENDERS WHAT WAS ACTUALLY VERIFIED. Authority, canonical address, and the date
+ * the registry last verified it — or "not yet verified" where that date is null, which is every
+ * record in this build. `internalRefs` are rendered as plain text paths, never as links: they are
+ * repository documents, not public URLs.
+ *
+ * `contextSources` ARE RENDERED APART FROM `sources`, AND LABELLED. They are registry records whose
+ * `citableForRuleValues` is false — a press release reporting on a reform, for instance. Listing one
+ * beside a regulator would imply the two carry the same weight, and `DIRECTIVE.md §3.5` is explicit
+ * that a news summary never outranks the regulator. They are never linked and never counted.
+ */
+import BaseLayout from './BaseLayout.astro'
+import { cockpit } from '../lib/copy/cockpit.ts'
+import { sourceBlockLabels } from '../components/copy-gaps.ts'
+import { pages } from '../lib/copy/pages.ts'
+import { resolveSources } from '../components/source-registry.ts'
+
+interface Props {
+  title: string
+  description: string
+  heading: string
+  answerFirst: string
+  status: string
+  reviewedAt: string
+  robots: 'index' | 'noindex'
+  sources: readonly string[]
+  /** Registry ids that report on a rule without being it. Rendered as context, never as authority. */
+  contextSources?: readonly string[] | undefined
+  internalRefs?: readonly string[] | undefined
+  nav?: string | undefined
+}
+
+const {
+  title,
+  description,
+  heading,
+  answerFirst,
+  status,
+  reviewedAt,
+  robots,
+  sources,
+  contextSources,
+  internalRefs,
+  nav,
+} = Astro.props
+
+const resolved = resolveSources(sources)
+const resolvedContext = resolveSources(contextSources ?? [])
+
+const reviewedDate = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+}).format(new Date(`${reviewedAt}T00:00:00Z`))
+---
+
+<BaseLayout title={title} description={description} kind="article" robots={robots} nav={nav}>
+  <header class="dpx-article__header" slot="page-header">
+    <div class="dpx-shell">
+      <h1 class="dpx-article__title">{heading}</h1>
+
+      <div class="dpx-article__answer">
+        <span class="dpx-article__answer-label">{pages.article.answerFirstLabel}</span>
+        {answerFirst}
+      </div>
+
+      <p class="dpx-article__meta">
+        <span>
+          {pages.article.reviewedLabel}
+          <time datetime={reviewedAt}>{reviewedDate}</time>
+        </span>
+        {status !== 'published' && <span>{pages.article.awaitingReview}</span>}
+      </p>
+    </div>
+  </header>
+
+  <div class="dpx-article__body">
+    <div class="dpx-shell">
+      <div class="prose">
+        <slot />
+      </div>
+    </div>
+  </div>
+
+  {
+    (resolved.length > 0 || resolvedContext.length > 0 || (internalRefs?.length ?? 0) > 0) && (
+      <section class="dpx-article__sources" aria-labelledby="article-sources">
+        <div class="dpx-shell">
+          <h2 class="dpx-section__title" id="article-sources">
+            {pages.article.sourcesHeading}
+          </h2>
+          <p class="dpx-section__intro">{pages.article.sourcesIntro}</p>
+
+          {resolved.length > 0 && (
+            <ul class="dpp-list">
+              {resolved.map((source) => (
+                <li>
+                  <strong>{source.label}</strong>
+                  {source.address !== undefined && (
+                    <Fragment>
+                      {' — '}
+                      {source.href === undefined ? (
+                        <span>{source.address}</span>
+                      ) : (
+                        <a href={source.href} rel="noopener noreferrer" target="_blank">
+                          {source.address}
+                        </a>
+                      )}
+                    </Fragment>
+                  )}
+                  {' · '}
+                  {source.lastVerifiedAt === null
+                    ? sourceBlockLabels.notYetVerified
+                    : `${cockpit.rights.lastVerified} ${source.lastVerifiedAt}`}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {resolvedContext.length > 0 && (
+            <Fragment>
+              <h3 class="dpx-definition__term">{sourceBlockLabels.contextHeading}</h3>
+              <p class="dpx-section__intro">{sourceBlockLabels.contextIntro}</p>
+              <ul class="dpp-list">
+                {resolvedContext.map((source) => (
+                  <li>
+                    <strong>{source.label}</strong>
+                    {source.address !== undefined && (
+                      <Fragment>
+                        {' — '}
+                        <span>{source.address}</span>
+                      </Fragment>
+                    )}
+                    {' · '}
+                    {sourceBlockLabels.contextNote}
+                  </li>
+                ))}
+              </ul>
+            </Fragment>
+          )}
+
+          {(internalRefs?.length ?? 0) > 0 && (
+            <Fragment>
+              <h3 class="dpx-definition__term">{sourceBlockLabels.internalRefsHeading}</h3>
+              <ul class="dpp-list">
+                {(internalRefs ?? []).map((reference) => (
+                  <li>{reference}</li>
+                ))}
+              </ul>
+            </Fragment>
+          )}
+        </div>
+      </section>
+    )
+  }
+</BaseLayout>

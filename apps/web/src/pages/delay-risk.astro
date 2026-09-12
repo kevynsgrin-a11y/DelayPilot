@@ -1,0 +1,85 @@
+---
+/**
+ * `/delay-risk/` — why the output is a band and not a number.
+ *
+ * The page renders the thing it is explaining: a labelled LINEAR meter with named band stops, a
+ * `Heuristic risk band` chip beside it, and the five band words with their `§27` sentences. There
+ * is no dial, no needle, no arc and no percentage on this page in any channel — including the
+ * accessible name of the meter, which carries the reading and the band as words rather than letting
+ * a screen reader compute "40 percent" from valuenow (`ProgressBar`'s own docblock, finding B7).
+ *
+ * The `§26` prediction disclaimer sits beside the meter, not only in the footer.
+ */
+import { BandMeter, Disclaimer } from '../../../../packages/ui/src/patterns/index.ts'
+import { ProvenanceChip, StatusPill } from '@delaypilot/ui'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+import { bandStops } from '../components/pattern-copy.ts'
+import { disclaimerLabels } from '../components/copy-gaps.ts'
+
+import { bandDescription, bandLabel, bandOrder } from '../lib/copy/bands.ts'
+import { cockpit } from '../lib/copy/cockpit.ts'
+import { pages } from '../lib/copy/pages.ts'
+import { unavailableReasons } from '../lib/copy/provenance.ts'
+
+const page = pages.delayRisk
+
+const TONE = {
+  on_track: 'safe',
+  watch: 'watch',
+  at_risk: 'critical',
+  disrupted: 'critical',
+  unknown: 'unknown',
+} as const
+---
+
+<BaseLayout title={page.title} description={page.description} nav="delay-risk">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.sections.whyABand.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whyABand.body}</p>
+    <p><ProvenanceChip kind="heuristic" freshness={unavailableReasons.noCalibratedModel.fact} /></p>
+  </Section>
+
+  <Section heading={page.sections.whatFeedsIt.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whatFeedsIt.body}</p>
+  </Section>
+
+  <Section heading={cockpit.assessment.bandLabel}>
+    <ul class="dpx-tiles dpx-tiles--three">
+      {
+        bandOrder.map((band) => (
+          <li class="dpx-tile">
+            <StatusPill status={TONE[band]} label={bandLabel(band)} />
+            <p class="dpx-tile__body">{bandDescription(band)}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <BandMeter
+      band="watch"
+      label={cockpit.connection.meterLabel}
+      valueText={bandDescription('watch')}
+      bandLabel={bandLabel('watch')}
+      stopLabels={bandStops}
+      scaleLabel={cockpit.connection.bandScaleLabel}
+      currentStopLabel={cockpit.connection.currentBand}
+      calibrated={false}
+      heuristicNote={cockpit.assessment.heuristicNote}
+    />
+
+    <Disclaimer label={disclaimerLabels.prediction}>{page.disclaimer}</Disclaimer>
+  </Section>
+
+  <Section heading={page.sections.whatWouldChangeIt.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whatWouldChangeIt.body}</p>
+  </Section>
+
+  <Section heading={page.sections.weather.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.weather.body}</p>
+    <p class="dpx-lookup__note">{cockpit.rights.causeNote}</p>
+  </Section>
+</BaseLayout>

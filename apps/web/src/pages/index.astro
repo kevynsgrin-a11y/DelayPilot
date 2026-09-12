@@ -1,148 +1,293 @@
 ---
 /**
- * Homepage.
+ * The homepage, in the `DIRECTIVE.md §18.3` order, section for section.
  *
- * The full homepage in DIRECTIVE.md section 18.3 — hero lookup, demo result, connection-risk and
- * passenger-rights explainers, pricing, source strip — is Phase 10 and belongs to
- * frontend-ui-engineer. This page carries only statements that are true today.
+ *   compact header → hero with primary lookup → trust line and source/freshness explanation →
+ *   interactive demo result → "What DelayPilot tells you" → connection-risk explainer →
+ *   passenger-rights explainer → monitoring/alert demonstration → [pricing cards] →
+ *   source and methodology strip → selected guides → [affiliate module] → footer
  *
- * It deliberately contains no flight-lookup control, because the lookup it would open does not
- * exist yet, and a control that does nothing is a dead control (AGENTS.md section 1.6). For the
- * same reason there is no pricing section (no billing exists), no demo flight result (every flight
- * number, airline, gate and time in design/v0-preview/lib/demo.ts is generated fiction, and two of
- * its airline codes collide with live IATA designators), and no statistic of any kind.
+ * TWO SECTIONS ARE DELIBERATELY ABSENT, and their absence is the honest state rather than an
+ * oversight:
  *
- * What it does instead is state the operating rules the product is actually built on. Those are
- * true today, they are enforced in code and in AGENTS.md, and they are the reason to trust the
- * thing when it does ship.
+ * · **Pricing cards.** Billing is Phase 8. No plan, no price and no purchase path exists, and a
+ *   price with nothing behind it is a promise the product cannot keep (`AGENTS.md §1.6`). A
+ *   "billing not configured" band on a marketing homepage would be worse: it advertises an absence.
+ * · **The affiliate module.** No agreement exists with any partner, and `DIRECTIVE.md §20` disables
+ *   every affiliate category until one does. An empty disclosed module is still a module.
+ *
+ * NO AD IS PLACED. The `§20` permitted homepage position is after the complete demo and the first
+ * explanatory section; it is marked in a comment at exactly that point and handed to
+ * `monetization-partnerships-engineer`. Nothing is placed above or inside the lookup, ever.
+ *
+ * SELECTED GUIDES RENDERS ONLY IF A GUIDE IS SERVED. With none, the section is omitted entirely —
+ * not rendered as an empty state, because an empty "Guides" heading on a homepage advertises
+ * content that does not exist.
+ *
+ * MOTION: two ambient motifs (the hero operations-desk backdrop and the route globe — ADR 0003
+ * rule 2b's cap, exactly), CSS scroll-driven reveals on the marketing sections only, and the
+ * scroll-scrubbed chronology. Nothing inside the demo cockpit moves.
  */
+import { Card, ProvenanceChip, StatusPill } from '@delaypilot/ui'
+import { severityToStatusTone } from '@delaypilot/ui'
+
 import BaseLayout from '../layouts/BaseLayout.astro'
+import Chronology from '../components/Chronology.astro'
+import DemoCockpit from '../components/DemoCockpit.astro'
+import HeroMotif from '../components/HeroMotif.astro'
+import LookupForm from '../components/LookupForm.astro'
+import ProvenanceLegend from '../components/ProvenanceLegend.astro'
+import RouteGlobe from '../components/RouteGlobe.astro'
+import Section from '../components/Section.astro'
+import { contactRoutesEnabled, servedGuides } from '../components/routes.ts'
 
-const title = 'DelayPilot — Stay ahead of flight disruptions'
-const description =
-  'Track a flight, understand connection risk, and see the refund, care, and rebooking rules that may apply.'
+import { chronology } from '../lib/copy/chronology.ts'
+import { cockpit } from '../lib/copy/cockpit.ts'
+import { home } from '../lib/copy/home.ts'
+import { pages } from '../lib/copy/pages.ts'
 
-/** The six-value provenance vocabulary is fixed by AGENTS.md section 1.2. It is not paraphrasable. */
-const provenance = [
-  {
-    label: 'Live',
-    meaning: 'A licensed provider returned a fresh response within its freshness threshold.',
-  },
-  {
-    label: 'Cached',
-    meaning: 'A prior licensed response, still inside the permitted cache window.',
-  },
-  {
-    label: 'Stale',
-    meaning: 'Past the normal freshness threshold, still shown — and shown as stale.',
-  },
-  { label: 'Demo', meaning: 'Fixture data, always labelled “Demo data — not a live flight.”' },
-  {
-    label: 'Unavailable',
-    meaning: 'No trustworthy response exists. The answer is unknown, and says so.',
-  },
-  {
-    label: 'Heuristic risk band',
-    meaning: 'A qualitative band. No calibrated model is deployed, so no percentage is shown.',
-  },
-]
+const guides = await servedGuides()
 
-const commitments = [
-  {
-    heading: 'No booking reference. Ever.',
-    body: 'DelayPilot never asks for a PNR or record locator — not as an input, not in a URL, not in a log. It is not a field anywhere in the product.',
-  },
-  {
-    heading: 'Every datum carries its source',
-    body: 'Where a value came from and how old it is travels with it from the provider all the way to the pixel. A number with no provenance does not get displayed.',
-  },
-  {
-    heading: '“May apply”, never “you are owed”',
-    body: 'Passenger-rights output is an informational estimate tied to a dated, versioned rule set with links to the official source. It is not a determination, and not legal advice.',
-  },
-  {
-    heading: 'Unknown is a designed answer',
-    body: 'When no trustworthy source has answered, the interface says so. It does not fill the gap with a plausible guess, a blank, or a zero.',
-  },
-]
+/**
+ * `/accessibility/` is emitted only when `PUBLIC_CONTACT_EMAIL` is configured, so the methodology
+ * strip drops it when it is not. A strip link to a route the build did not emit is a dead link.
+ */
+const strip = Object.entries(home.methodologyStrip.links).filter(
+  ([href]) => href !== '/accessibility/' || contactRoutesEnabled,
+)
+
+const severityTone = severityToStatusTone
 ---
 
-<BaseLayout title={title} description={description} nav="home">
-  <section class="hero">
-    <h1>Stay ahead of flight disruptions.</h1>
+<BaseLayout title={pages.home.title} description={pages.home.description} nav="home">
+  {
+    /* 2. Hero with the primary lookup. The lookup is visible at 375px without scrolling past
+       marketing: the heading, the support line and the form are the first three blocks. */
+  }
+  <section class="dpx-hero" aria-labelledby="hero-title">
+    <HeroMotif />
+    <div class="dpx-shell">
+      <div class="dpx-hero__grid">
+        <div>
+          <h1 class="dpx-hero__title" id="hero-title">{home.hero.heading}</h1>
+          <p class="dpx-hero__support">{home.hero.intro}</p>
 
-    <p class="lede">
-      Track a flight, understand connection risk, and see the refund, care, and rebooking rules that
-      may apply—before airport chaos makes the decision for you.
-    </p>
+          <p class="dpx-hero__ctas">
+            <a class="dp-button dp-button--primary" href="#track-a-flight" data-dp-focus-lookup>
+              {home.ctas.primary}
+            </a>
+            <a class="dp-button dp-button--secondary" href="#demonstration">
+              {home.ctas.secondary}
+            </a>
+          </p>
+        </div>
 
-    <ul class="trust-line">
-      <li>Source-linked status</li>
-      <li>Versioned passenger-rights rules</li>
-      <li>No booking code required</li>
-    </ul>
+        <div>
+          <LookupForm headingLevel={2} />
+        </div>
+      </div>
+
+      {
+        /* The trust line and the availability note sit BELOW the grid, not above the form.
+           `§18.7` requires the primary lookup to be visible at 375px without scrolling past
+           marketing, and every sentence placed before it on a phone pushes it further down. On a
+           wide viewport the row spans both columns and reads as a caption under the pair. */
+      }
+      <ul class="dpx-trust" aria-label={home.hero.trustLineLabel}>
+        {home.trustLine.map((item) => <li class="dpx-trust__item">{item}</li>)}
+      </ul>
+
+      <p class="dpx-lookup__note dpx-hero__availability">{home.hero.availabilityNote}</p>
+    </div>
   </section>
 
-  <section class="section">
-    <h2>How this site handles uncertainty</h2>
+  {/* 3. Trust line and source/freshness explanation — the six labels, as the real chips. */}
+  <Section heading={home.sources.heading} intro={home.sources.intro} id="provenance" reveal>
+    <ProvenanceLegend />
+    <p class="dpx-lookup__note">{home.sources.disclaimer}</p>
+  </Section>
 
-    <p class="section__intro">
-      Every piece of flight information DelayPilot shows carries where it came from and how old it
-      is. These six labels are the entire vocabulary — there are no synonyms, and none of them is
-      ever omitted to make a screen look tidier.
-    </p>
+  {/* 4. The interactive demo result. */}
+  <Section heading={home.demo.heading} intro={home.demo.intro} id="demonstration">
+    <DemoCockpit />
+  </Section>
 
-    <dl class="card-grid">
+  {/* 5. What DelayPilot tells you — exactly four tiles. */}
+  <Section heading={home.tells.heading} intro={home.tells.intro} id="what-it-tells-you" reveal>
+    <ul class="dpx-tiles dpx-tiles--four">
       {
-        provenance.map((item) => (
-          <div class="card">
-            <dt>
-              <h3>{item.label}</h3>
-            </dt>
-            <dd style="margin: 0;">
-              <p>{item.meaning}</p>
-            </dd>
+        home.tells.items.map((tile) => (
+          <li class="dpx-tile">
+            <h3 class="dpx-tile__title">{tile.title}</h3>
+            <p class="dpx-tile__body">{tile.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {
+    /*
+    §20 PERMITTED HOMEPAGE AD POSITION, LEFT DELIBERATELY EMPTY.
+    "Homepage after the complete demo and first explanatory section" — that is this point, and no
+    other. Nothing is placed in this wave: no consent platform, no slot id and no ad code exists.
+    `monetization-partnerships-engineer` fills it through `AdSlotShell` with
+    `placement="home_after_demo_and_first_explainer"`. It may never move above the demo, into the
+    hero, or anywhere near the lookup form.
+  */
+  }
+
+  {/* 6. Connection-risk explainer. */}
+  <Section
+    heading={home.connection.heading}
+    intro={home.connection.intro}
+    id="connection-risk"
+    reveal
+  >
+    <dl class="dpx-definitions">
+      {
+        home.connection.terms.map((term) => (
+          <div class="dpx-definition">
+            <dt class="dpx-definition__term">{term.term}</dt>
+            <dd class="dpx-definition__body">{term.body}</dd>
           </div>
         ))
       }
     </dl>
-  </section>
 
-  <section class="section">
-    <h2>What DelayPilot will not do</h2>
-
-    <p class="section__intro">
-      People read a tool like this while standing at a gate, tired, about to make an expensive and
-      irreversible decision. These are the rules the product is built under, and they are enforced
-      in the codebase rather than promised in marketing copy.
-    </p>
-
-    <div class="card-grid">
+    <h3 class="dpx-section__title">{home.connection.derivationHeading}</h3>
+    <p class="dpx-section__intro">{home.connection.derivationIntro}</p>
+    <dl class="dpx-definitions">
       {
-        commitments.map((item) => (
-          <article class="card">
-            <h3>{item.heading}</h3>
-            <p>{item.body}</p>
-          </article>
+        home.connection.derivations.map((term) => (
+          <div class="dpx-definition">
+            <dt class="dpx-definition__term">{term.term}</dt>
+            <dd class="dpx-definition__body">{term.body}</dd>
+          </div>
         ))
       }
-    </div>
-  </section>
+    </dl>
 
-  <section class="section">
-    <h2>Where the build is today</h2>
+    <h3 class="dpx-section__title">{home.connection.selfTransferHeading}</h3>
+    <p class="dpx-section__intro">{home.connection.selfTransfer}</p>
+    <p class="dpx-lookup__note">{home.connection.disclaimer}</p>
+  </Section>
 
-    <div class="prose">
-      <p>
-        DelayPilot is under construction and this page is the honest state of it. There is no flight
-        lookup yet, no account, and no live provider connected — so rather than show a demo flight
-        with invented times and gates, the site shows nothing it cannot source.
-      </p>
-      <p>
-        <span class="chip chip--unavailable"><span class="chip__dot"></span>Unavailable</span> is the
-        label that applies to live flight data right now, and it will keep applying until a licensed provider
-        is connected under a recorded licence.
-      </p>
-    </div>
-  </section>
+  {/* 7. Passenger-rights explainer — the five permitted statuses, rendered as the real pills. */}
+  <Section heading={home.rights.heading} intro={home.rights.intro} id="passenger-rights" reveal>
+    <h3 class="dpx-section__title">{home.rights.statusHeading}</h3>
+    <ul class="dpx-tiles">
+      {
+        home.rights.statuses.map((entry) => (
+          <li class="dpx-tile">
+            <StatusPill
+              status={
+                entry.status === 'likely_applies'
+                  ? 'safe'
+                  : entry.status === 'may_apply'
+                    ? 'watch'
+                    : 'unknown'
+              }
+              label={entry.label}
+            />
+            <p class="dpx-tile__body">{entry.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h3 class="dpx-section__title">{home.rights.disciplineHeading}</h3>
+    <p class="dpx-section__intro">{home.rights.discipline}</p>
+
+    <h3 class="dpx-section__title">{home.rights.currentVsFutureHeading}</h3>
+    <p class="dpx-section__intro">{home.rights.currentVsFuture}</p>
+
+    <p class="dpx-lookup__note">{home.rights.disclaimer}</p>
+  </Section>
+
+  {
+    /* 8. Monitoring and alert demonstration. The §28 alert timeline itself is rendered inside the
+       demo cockpit above, where a timeline belongs beside the itinerary it describes; this section
+       is the severity ladder it climbs and the chronology it moves through. */
+  }
+  <Section heading={home.monitoring.heading} intro={home.monitoring.intro} id="monitoring" reveal>
+    <ul class="dpx-tiles dpx-tiles--four">
+      {
+        home.monitoring.severities.map((entry) => (
+          <li class="dpx-tile">
+            <StatusPill
+              status={severityTone[entry.severity as keyof typeof severityTone]}
+              label={entry.label}
+            />
+            <p class="dpx-tile__body">{entry.body}</p>
+          </li>
+        ))
+      }
+    </ul>
+
+    <h3 class="dpx-section__title">{chronology.heading}</h3>
+    <p class="dpx-section__intro">{chronology.intro}</p>
+    <Chronology />
+
+    <p class="dpx-lookup__note">{home.monitoring.contents}</p>
+    <p class="dpx-lookup__note">{home.monitoring.notConnected}</p>
+  </Section>
+
+  {/* 9. Pricing cards — OMITTED. See the docblock at the top of this file. */}
+
+  {/* 10. Source and methodology strip, with the route globe and its required caption. */}
+  <Section
+    heading={home.methodologyStrip.heading}
+    intro={home.methodologyStrip.intro}
+    id="methodology-strip"
+    reveal
+  >
+    <RouteGlobe />
+    <ul class="dpx-link-strip">
+      {
+        strip.map(([href, label]) => (
+          <li>
+            <a class="dpx-link-strip__link" href={href}>
+              {label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  {/* 11. Selected guides — rendered only when at least one guide entry is served. */}
+  {
+    guides.length > 0 && (
+      <Section heading={home.guidesStrip.heading} intro={home.guidesStrip.intro} id="guides" reveal>
+        <ul class="dpx-card-list">
+          {guides.map((entry) => (
+            <li>
+              <Card as="article">
+                <h3 class="dpx-entry-card__title">
+                  <a href={`/guides/${entry.id}/`}>{entry.data.title}</a>
+                </h3>
+                <p class="dpx-entry-card__description">{entry.data.description}</p>
+                <p class="dpx-entry-card__meta">
+                  {pages.guidesIndex.reviewedLabel}{' '}
+                  <time datetime={entry.data.reviewedAt}>{entry.data.reviewedAt}</time>
+                </p>
+              </Card>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    )
+  }
+
+  {/* 12. Restrained affiliate module — OMITTED. See the docblock at the top of this file. */}
+
+  {
+    /* A single provenance chip, so the homepage itself declares what its demo panels are.
+       Belt and braces beside the cockpit's own chips: this page shows a result, and a result
+       without a label is the thing AGENTS.md §1.2 exists to prevent. */
+  }
+  <p class="dpx-shell dpx-lookup__note">
+    <ProvenanceChip kind="demo" freshness={cockpit.demoCaption} />
+  </p>
 </BaseLayout>

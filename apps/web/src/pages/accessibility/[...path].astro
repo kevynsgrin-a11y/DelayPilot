@@ -1,0 +1,119 @@
+---
+/**
+ * `/accessibility/` — the accessibility statement, to the `docs/ACCESSIBILITY.md §13` contract.
+ *
+ * IT SHARES `/contact/`'s CONDITION, and that is the whole reason it is here rather than beside the
+ * other explainer routes. §13 item 5 requires a feedback route that reaches a person, reachable
+ * without JavaScript and without a CAPTCHA. With no `PUBLIC_CONTACT_EMAIL` configured there is no
+ * such route, and a conformance statement nobody can reply to is itself a barrier — so the page is
+ * not emitted at all rather than published with a dead "report a barrier" section.
+ *
+ * THE CONFORMANCE WORD IS "PARTIALLY CONFORMANT" AND IT COMES FROM THE COPY MODULE, not from this
+ * shell. `docs/ACCESSIBILITY.md §13` item 7: no claim that the site "is accessible" may be made
+ * without a passing audit, and the Phase 12 route-level, keyboard and screen-reader passes have not
+ * been run. Every factual claim on this page — the standard, the date, the known issues, the tools
+ * and their versions — is transcribed from that document by `ux-copy-steward` and must be reviewed
+ * by `accessibility-lead` before publication. This file decides nothing; it lays out what it is
+ * given, in the order §13 specifies.
+ *
+ * `kind="utility"`: no ambient motif, no reveal, no ad. A page about barriers does not get motion.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Section from '../../components/Section.astro'
+import { contactEmail } from '../../components/routes.ts'
+
+import { accessibilityFeedback, pages } from '../../lib/copy/pages.ts'
+
+export function getStaticPaths() {
+  return contactEmail === undefined ? [] : [{ params: { path: undefined } }]
+}
+
+const page = pages.accessibility
+const feedback = accessibilityFeedback(contactEmail ?? null)
+---
+
+<BaseLayout
+  title={page.title}
+  description={page.description}
+  kind="utility"
+  nav="accessibility"
+  reviewedAt={page.lastVerified}
+>
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.standardHeading}>
+    <p class="dpx-section__intro">{page.standard}</p>
+    <p class="dpx-lookup__note">{page.standardBody}</p>
+  </Section>
+
+  <Section heading={page.lastVerifiedHeading}>
+    <p class="dpx-section__intro">
+      <time datetime={page.lastVerified}>{page.lastVerified}</time>
+    </p>
+    <p class="dpx-lookup__note">{page.lastVerifiedBody}</p>
+  </Section>
+
+  <Section heading={page.statusHeading}>
+    <p class="dpx-section__intro">{page.status}</p>
+    <p class="dpx-lookup__note">{page.statusBody}</p>
+    <p class="dpx-lookup__note">{page.noClaim}</p>
+  </Section>
+
+  <Section heading={page.knownIssuesHeading}>
+    <p class="dpx-section__intro">{page.knownIssuesIntro}</p>
+    <ul class="dpx-card-list">
+      {
+        page.knownIssues.map((issue) => (
+          <li class="dpx-entry-card">
+            <h3 class="dpx-entry-card__title">
+              {issue.id} · {issue.affected}
+            </h3>
+            <p class="dpx-entry-card__meta">{issue.criterion}</p>
+            <p class="dpx-entry-card__description">{issue.description}</p>
+            <p class="dpx-entry-card__meta">{issue.expected}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+
+  <Section heading={page.notTestedHeading}>
+    <p class="dpx-section__intro">{page.notTestedBody}</p>
+  </Section>
+
+  <Section heading={page.environmentsHeading}>
+    <p class="dpx-section__intro">{page.environmentsIntro}</p>
+    <dl class="dpx-definitions">
+      {
+        page.environments.map((environment) => (
+          <div class="dpx-definition">
+            <dt class="dpx-definition__term">
+              {environment.name} {environment.version}
+            </dt>
+            <dd class="dpx-definition__body">{environment.used}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="dpx-lookup__note">{page.environmentsNotTested}</p>
+  </Section>
+
+  <Section heading={page.methodHeading}>
+    <p class="dpx-section__intro">{page.method}</p>
+  </Section>
+
+  <Section heading={page.feedbackHeading}>
+    <p class="dpx-section__intro">{page.feedbackIntro}</p>
+    <p class="dpx-section__intro">
+      {
+        feedback.address === null ? (
+          feedback.body
+        ) : (
+          <a href={`mailto:${feedback.address}`}>{feedback.address}</a>
+        )
+      }
+    </p>
+    <p class="dpx-lookup__note">{page.feedbackNoJavaScript}</p>
+  </Section>
+</BaseLayout>

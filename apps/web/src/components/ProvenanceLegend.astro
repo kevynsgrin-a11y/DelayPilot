@@ -1,0 +1,25 @@
+---
+/**
+ * The six `AGENTS.md §1.2` provenance labels, each rendered as the real chip beside its meaning.
+ *
+ * This is the `DIRECTIVE.md §18.3` "trust line and source/freshness explanation" section, and it
+ * is deliberately built from the same `ProvenanceChip` primitive the cockpit uses rather than from
+ * a picture of one: a legend that drifts from the thing it explains is worse than no legend.
+ *
+ * Exactly six. `provenanceOrder` is the copy module's iteration order, strongest claim to weakest,
+ * and a seventh entry is a defect rather than a feature.
+ */
+import { ProvenanceChip } from '@delaypilot/ui'
+import { provenanceMeanings, provenanceOrder } from '../lib/copy/provenance.ts'
+---
+
+<ul class="dpx-provenance-legend">
+  {
+    provenanceOrder.map((kind) => (
+      <li class="dpx-provenance-legend__item">
+        <ProvenanceChip kind={kind} />
+        <p class="dpx-provenance-legend__meaning">{provenanceMeanings[kind]}</p>
+      </li>
+    ))
+  }
+</ul>

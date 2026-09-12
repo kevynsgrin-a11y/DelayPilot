@@ -1,0 +1,150 @@
+---
+/**
+ * Footer — the last section of the `DIRECTIVE.md §18.3` order, and the one piece of chrome that is
+ * mandatory on EVERY public page.
+ *
+ * It carries the `DIRECTIVE.md §3.4` independence disclaimer as rendered text, byte-exact, from
+ * `disclaimers.independence`. That sentence is not a nicety: `AGENTS.md §1.4` requires it wherever
+ * a reader could mistake DelayPilot for an airline, an airport, a regulator, a law firm, a claims
+ * company or a data provider — which is every page. `apps/web/scripts/verify-dist.mjs` fails the
+ * build if a single emitted page is missing it, in either direction.
+ *
+ * ALL FIVE POLICY ROUTES ARE LISTED. `/privacy/`, `/terms/`, `/affiliate-disclosure/`,
+ * `/advertising-policy/` and `/editorial-policy/` — three of them are otherwise reachable only from
+ * an in-page link (finding H-4, `trust-compliance-officer`).
+ *
+ * Conditional entries follow `./routes.ts`: Guides appears only when a guide is served, Passenger
+ * rights only when its overview is, and Accessibility and Contact only when `PUBLIC_CONTACT_EMAIL`
+ * is configured. A footer link to a route that was not emitted is a dead control
+ * (`AGENTS.md §1.6`).
+ */
+import { disclaimers } from '../lib/copy/disclaimers.ts'
+import { copyright, nav } from '../lib/copy/nav.ts'
+import { contactRoutesEnabled, hasRightsOverview, servedGuides } from './routes.ts'
+
+interface Props {
+  current?: string | undefined
+}
+
+const { current } = Astro.props
+
+/**
+ * The year in the copyright line.
+ *
+ * A build-time constant, never `new Date()`: two builds of the same tree must produce byte-identical
+ * output (`AGENTS.md §3.4`), and a component that reads the clock breaks that at midnight on 31
+ * December and again on every visual-regression run. `platform-release-sre` bumps it with the
+ * release.
+ */
+const BUILD_YEAR = 2026
+
+const guides = await servedGuides()
+const rightsOverview = await hasRightsOverview()
+
+const productGroup = {
+  label: nav.footer.groups.product,
+  items: [
+    { href: '/flight-status/', label: nav.footer.links['/flight-status/'], key: 'flight-status' },
+    { href: '/delay-risk/', label: nav.footer.links['/delay-risk/'], key: 'delay-risk' },
+    {
+      href: '/connection-risk/',
+      label: nav.footer.links['/connection-risk/'],
+      key: 'connection-risk',
+    },
+  ],
+}
+
+const rightsGroup = {
+  label: nav.footer.groups.rights,
+  items: [
+    ...(rightsOverview
+      ? [
+          {
+            href: '/passenger-rights/',
+            label: nav.footer.links['/passenger-rights/'],
+            key: 'passenger-rights',
+          },
+        ]
+      : []),
+    ...(guides.length > 0
+      ? [{ href: '/guides/', label: nav.footer.links['/guides/'], key: 'guides' }]
+      : []),
+  ],
+}
+
+const aboutGroup = {
+  label: nav.footer.groups.about,
+  items: [
+    { href: '/about/', label: nav.footer.links['/about/'], key: 'about' },
+    { href: '/methodology/', label: nav.footer.links['/methodology/'], key: 'methodology' },
+    { href: '/data-sources/', label: nav.footer.links['/data-sources/'], key: 'data-sources' },
+    ...(contactRoutesEnabled
+      ? [
+          {
+            href: '/accessibility/',
+            label: nav.footer.links['/accessibility/'],
+            key: 'accessibility',
+          },
+          { href: '/contact/', label: nav.footer.links['/contact/'], key: 'contact' },
+        ]
+      : []),
+  ],
+}
+
+const legalGroup = {
+  label: nav.footer.groups.legal,
+  items: [
+    { href: '/privacy/', label: nav.footer.links['/privacy/'], key: 'privacy' },
+    { href: '/terms/', label: nav.footer.links['/terms/'], key: 'terms' },
+    {
+      href: '/editorial-policy/',
+      label: nav.footer.links['/editorial-policy/'],
+      key: 'editorial-policy',
+    },
+    {
+      href: '/affiliate-disclosure/',
+      label: nav.footer.links['/affiliate-disclosure/'],
+      key: 'affiliate-disclosure',
+    },
+    {
+      href: '/advertising-policy/',
+      label: nav.footer.links['/advertising-policy/'],
+      key: 'advertising-policy',
+    },
+  ],
+}
+
+const groups = [productGroup, rightsGroup, aboutGroup, legalGroup].filter(
+  (group) => group.items.length > 0,
+)
+---
+
+<footer class="dpx-footer">
+  <div class="dpx-shell">
+    <nav class="dpx-footer__groups" aria-label={nav.footerLabel}>
+      {
+        groups.map((group) => (
+          <div>
+            <p class="dpx-footer__group-label">{group.label}</p>
+            <ul class="dpx-footer__list">
+              {group.items.map((item) => (
+                <li>
+                  <a
+                    class="dpx-footer__link"
+                    href={item.href}
+                    aria-current={current === item.key ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </nav>
+
+    <p class="dpx-footer__disclaimer">{disclaimers.independence}</p>
+    <p class="dpx-footer__copyright">{copyright(BUILD_YEAR)}</p>
+  </div>
+</footer>

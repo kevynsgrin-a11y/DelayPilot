@@ -1,0 +1,334 @@
+---
+/**
+ * The `DIRECTIVE.md §28` demonstration cockpit, rendered in the `§18.5` order, exactly.
+ *
+ * title/date/travelers/monitoring → overall status → itinerary (horizontal on desktop, vertical on
+ * mobile) → segment cards → latest meaningful change → next-best-action → delay and cancellation
+ * assessment → connection assessment → weather and airspace → rights estimate → the complete action
+ * checklist → evidence and receipts → alerts → source and freshness → upgrade prompt. The order is
+ * not a layout preference: it is what a person standing at a gate needs, in the order they need it.
+ *
+ * EVERY PANEL SAYS IT IS A DEMONSTRATION. The banner carries "Demonstration itinerary", and every
+ * data-bearing panel below carries `results.demo` — "Demo data — not a live flight." — beside its
+ * `Demo` chip (`AGENTS.md §1.2`, `DIRECTIVE.md §28`). A polished demo that reads as live data is
+ * the fabrication rule with better styling.
+ *
+ * WHAT IS NOT HERE, AND WHY.
+ * · **No gate and no terminal.** Both render their unknown sentence. A fabricated gate is the
+ *   single most tempting invention in this product and the one that would send someone to the
+ *   wrong end of a terminal.
+ * · **No percentage, in any channel.** Not in text, not in a title attribute, not in an accessible
+ *   name. The connection reports available time, required time, slack and a band, and the band
+ *   carries a `Heuristic risk band` chip because no calibrated model is deployed.
+ *   `apps/web/scripts/verify-dist.mjs` fails the build on a `%` anywhere inside this markup.
+ * · **No price.** The upgrade prompt renders the `§17` billing-not-configured state: no plan, no
+ *   figure, no button. A price with no purchase path is a promise the product cannot keep.
+ * · **No ad.** The `§20` permitted position on a free trip result is AFTER the complete action
+ *   area; that point is marked in a comment below and handed to
+ *   `monetization-partnerships-engineer`. Nothing is placed while no consent platform exists.
+ *
+ * MOTION. None. ADR 0003 rule 1 excludes every data-bearing component from the marketing allowance,
+ * and this is nothing but data-bearing components. The section is not wrapped in a reveal.
+ *
+ * THE ASSESSMENT METER'S READING IS ITS OWN LABEL, not the `§27` sentence. `ProgressBar` joins the
+ * reading and the band into one `aria-valuetext`, and a full sentence followed by a comma and a
+ * word announces badly ("A material disruption is confirmed. Start with the action checklist
+ * below., Disrupted"). "Risk band, Disrupted" is the whole reading, and it differs from the band
+ * word, which is what finding F24 requires. The `§27` sentence is rendered by the overall-status
+ * panel above, where it belongs.
+ */
+import { Card, StatusPill } from '@delaypilot/ui'
+import {
+  ActionChecklist,
+  AlertTimeline,
+  BandMeter,
+  ConnectionCockpit,
+  Disclaimer,
+  EvidencePacket,
+  ItineraryTimeline,
+  orderActionItems,
+  RightsCard,
+  SegmentCard,
+  SourceFreshnessPanel,
+  StateBlock,
+  localDate,
+} from '../../../../packages/ui/src/patterns/index.ts'
+
+import { bandLabel } from '../lib/copy/bands.ts'
+import { cockpit } from '../lib/copy/cockpit.ts'
+import { demo } from '../lib/copy/demo.ts'
+import { disclaimers } from '../lib/copy/disclaimers.ts'
+import { results } from '../lib/copy/results.ts'
+import { states } from '../lib/copy/states.ts'
+import { unavailableReasons } from '../lib/copy/provenance.ts'
+
+import {
+  demoActions,
+  demoAirports,
+  demoAssessmentFactors,
+  demoAlerts,
+  demoChronology,
+  demoConnectionProtected,
+  demoEvidenceMissing,
+  demoEvidenceSchedule,
+  demoEvidenceSummary,
+  demoRightsUnitedStates,
+  demoSegmentCanceled,
+  demoSegmentInbound,
+  demoSourceRows,
+  demoTrip,
+} from '../demo/itinerary.ts'
+
+import {
+  actionChecklistCopy,
+  alertTimelineCopy,
+  bandStops,
+  connectionCopy,
+  evidencePacketCopy,
+  itineraryTimelineCopy,
+  rightsCopy,
+  segmentCardCopy,
+  sourceFreshnessCopy,
+  stopRoles,
+} from './pattern-copy.ts'
+import { conditionsNotConnected, disclaimerLabels } from './copy-gaps.ts'
+
+const orderedActions = orderActionItems(demoActions)
+const nextStep = orderedActions.slice(0, 1)
+
+const connection = demoConnectionProtected
+const availableMinutes = connection.availableMinutes.known
+  ? connection.availableMinutes.value
+  : null
+const requiredMinutes = connection.requiredMinutes.known ? connection.requiredMinutes.value : null
+
+const stops = [
+  {
+    id: 'stop-dm1',
+    code: demoAirports.DM1.code,
+    name: demoAirports.DM1.name,
+    time: demoSegmentInbound.origin.scheduled,
+    roleLabel: stopRoles.departure,
+  },
+  {
+    id: 'stop-dm2',
+    code: demoAirports.DM2.code,
+    name: demoAirports.DM2.name,
+    time: demoSegmentInbound.destination.scheduled,
+    roleLabel: stopRoles.connection,
+  },
+  {
+    id: 'stop-dm3',
+    code: demoAirports.DM3.code,
+    name: demoAirports.DM3.name,
+    time: demoSegmentCanceled.destination.scheduled,
+    roleLabel: stopRoles.arrival,
+  },
+]
+
+const legs = [
+  {
+    id: 'leg-101',
+    flightNumber: demoSegmentInbound.flightNumber,
+    airline: demoSegmentInbound.airline,
+    statusLabel: cockpit.segment.status,
+    band: 'watch' as const,
+  },
+  {
+    id: 'leg-202',
+    flightNumber: demoSegmentCanceled.flightNumber,
+    airline: demoSegmentCanceled.airline,
+    statusLabel: cockpit.segment.status,
+    band: 'disrupted' as const,
+  },
+]
+
+const tripDate = localDate(demoTrip.dateInstant, demoTrip.dateZone)
+
+/** The latest meaningful change is the last URGENT event, not simply the newest row. */
+const latestChange =
+  [...demoAlerts].reverse().find((event) => event.severity === 'urgent') ?? demoAlerts[0]
+
+/**
+ * The evidence packet's rights summary: one line per entitlement, each naming its status word.
+ * Composed from the assessment rather than written out, so the packet cannot drift from the card
+ * it summarises.
+ */
+const rightsSummary = demoRightsUnitedStates.lines.map(
+  (line) => `${line.label}: ${cockpit.rights.statusLabels[line.status]}. ${line.detail}`,
+)
+---
+
+<div class="dpx-cockpit" id="demonstration-cockpit">
+  {/* The §28 banner. Not a badge in a corner: the first thing read, above everything it labels. */}
+  <div class="dpx-cockpit__banner">
+    <p class="dpx-cockpit__banner-title">{cockpit.demoBanner}</p>
+    <p class="dpx-cockpit__banner-note">{cockpit.demoCaption} {demo.note}</p>
+  </div>
+
+  {/* 1. Title, date, travelers, monitoring state. */}
+  <Card as="section" aria-label={cockpit.headings.trip}>
+    <h3 class="dpx-cockpit__section-title">{demoTrip.title}</h3>
+    <dl class="dpx-cockpit__trip">
+      <div class="dpp-row">
+        <dt class="dpp-row__label">{cockpit.trip.dateLabel}</dt>
+        <dd class="dpp-row__value">
+          {tripDate} · {demoAirports.DM1.code} · {demoAirports.DM1.zone}
+        </dd>
+      </div>
+      <div class="dpp-row">
+        <dt class="dpp-row__label">{cockpit.trip.travelersLabel}</dt>
+        <dd class="dpp-row__value">{demoTrip.travelers}</dd>
+      </div>
+      <div class="dpp-row">
+        <dt class="dpp-row__label">{cockpit.trip.monitoringLabel}</dt>
+        <dd class="dpp-row__value">{demoTrip.monitoringState}</dd>
+      </div>
+    </dl>
+  </Card>
+
+  {/* 2. Overall status. */}
+  <Card as="section" aria-label={cockpit.headings.overallStatus}>
+    <h3 class="dpx-cockpit__section-title">{cockpit.headings.overallStatus}</h3>
+    <StatusPill status="critical" label={bandLabel('disrupted')} />
+    <p class="dpp-rights__lede">{results.disrupted}</p>
+  </Card>
+
+  {/* 3. Horizontal itinerary on desktop, vertical timeline on mobile — one ordered list. */}
+  <section aria-label={cockpit.headings.timeline}>
+    <h3 class="dpx-cockpit__section-title">{cockpit.headings.timeline}</h3>
+    <ItineraryTimeline stops={stops} legs={legs} copy={itineraryTimelineCopy} />
+  </section>
+
+  {/* 4. Segment cards. */}
+  <section aria-label={cockpit.headings.segments}>
+    <h3 class="dpx-cockpit__section-title">{cockpit.headings.segments}</h3>
+    <div class="dpx-cockpit__stack">
+      <SegmentCard segment={demoSegmentInbound} copy={segmentCardCopy} headingLevel={4} />
+      <SegmentCard segment={demoSegmentCanceled} copy={segmentCardCopy} headingLevel={4} />
+    </div>
+    <Disclaimer label={disclaimerLabels.flightData}>{disclaimers.flightData}</Disclaimer>
+  </section>
+
+  {/* 5. Latest meaningful change. */}
+  <Card as="section" aria-label={cockpit.headings.latestChange}>
+    <h3 class="dpx-cockpit__section-title">{cockpit.headings.latestChange}</h3>
+    <p class="dpp-actions__label">{latestChange?.title}</p>
+    <p class="dpp-actions__detail">{latestChange?.detail}</p>
+  </Card>
+
+  {/* 6. Next-best-action card. The single top-ranked step, by deadline then reversibility. */}
+  <ActionChecklist
+    items={nextStep}
+    copy={{ ...actionChecklistCopy, heading: cockpit.headings.nextStep }}
+    headingLevel={3}
+    idPrefix="demo-next"
+  />
+
+  {/* 7. Delay and cancellation assessment. A band and its reasons — never a percentage. */}
+  <Card as="section" aria-label={cockpit.headings.assessment}>
+    <h3 class="dpx-cockpit__section-title">{cockpit.headings.assessment}</h3>
+    <BandMeter
+      band="disrupted"
+      label={cockpit.assessment.bandLabel}
+      valueText={cockpit.assessment.bandLabel}
+      bandLabel={bandLabel('disrupted')}
+      stopLabels={bandStops}
+      scaleLabel={cockpit.connection.bandScaleLabel}
+      currentStopLabel={cockpit.connection.currentBand}
+      calibrated={false}
+      heuristicNote={unavailableReasons.noCalibratedModel.fact}
+    />
+    <h4 class="dpp-connection__note-heading">{cockpit.assessment.factorsHeading}</h4>
+    <ul class="dpp-list">
+      {demoAssessmentFactors.map((factor) => <li>{factor}</li>)}
+    </ul>
+    <Disclaimer label={disclaimerLabels.prediction}>{disclaimers.prediction}</Disclaimer>
+  </Card>
+
+  {
+    /* 8. Connection assessment. W, T, S, every component with its derivation class, and the band. */
+  }
+  <ConnectionCockpit
+    assessment={connection}
+    copy={connectionCopy({ demo: true, availableMinutes, requiredMinutes })}
+    headingLevel={3}
+  />
+
+  {/* 9. Weather and airspace factors. No feed is connected, so this is the unavailable state. */}
+  <StateBlock kind="provider_unavailable" severity="info" title={cockpit.headings.conditions}>
+    <p>{conditionsNotConnected}</p>
+  </StateBlock>
+
+  {/* 10. Rights estimate. Statuses only, no amounts: no rule set is in force. */}
+  <RightsCard
+    assessment={demoRightsUnitedStates}
+    copy={rightsCopy({ demo: true })}
+    headingLevel={3}
+    idPrefix="demo-us"
+  />
+
+  {/* 11. The complete action checklist — jurisdiction-aware and source-linked. */}
+  <ActionChecklist
+    items={orderedActions}
+    copy={actionChecklistCopy}
+    headingLevel={3}
+    idPrefix="demo-actions"
+  />
+  <p class="dpp-actions__detail">{cockpit.actions.orderNote}</p>
+  <p class="dpp-actions__detail">{cockpit.actions.neverOnYourBehalf}</p>
+
+  {
+    /*
+    §20 PERMITTED AD POSITION, LEFT DELIBERATELY EMPTY.
+    This point — after the COMPLETE action area and before the evidence organizer — is the only
+    place on a free trip result where an eligible ad may appear, and at most one. Nothing is placed
+    here in this wave: no consent platform, no slot id and no ad code exists, and `AGENTS.md §4`
+    requires consent before a slot loads. `monetization-partnerships-engineer` fills it through
+    `AdSlotShell` with `placement="free_trip_after_action_checklist"`.
+    It must never move above this line: an ad between a warning and its action, or beside the
+    rights card above, is forbidden outright.
+  */
+  }
+
+  {/* 12. Evidence and receipt organizer. Never auto-emailed, never auto-submitted. */}
+  <EvidencePacket
+    copy={evidencePacketCopy({ demo: true })}
+    tripTitle={demoTrip.title}
+    summaryLines={demoEvidenceSummary}
+    scheduleLines={demoEvidenceSchedule}
+    chronology={demoChronology}
+    airlineMessages={[]}
+    expenses={[]}
+    rightsSummary={rightsSummary}
+    ruleSet={cockpit.rights.ruleSetDemo}
+    missingEvidence={demoEvidenceMissing}
+    sources={demoRightsUnitedStates.sources}
+    provenance={demoRightsUnitedStates.provenance}
+    headingLevel={3}
+    idPrefix="demo-evidence"
+  />
+  <p class="dpp-actions__detail">{cockpit.evidence.neverSent}</p>
+
+  {/* 13. Alerts. */}
+  <AlertTimeline
+    events={demoAlerts}
+    copy={alertTimelineCopy({ demo: true })}
+    headingLevel={3}
+    idPrefix="demo-alerts"
+  />
+  <p class="dpp-actions__detail">{cockpit.alerts.notConfigured}</p>
+
+  {/* 14. Source and freshness panel. */}
+  <SourceFreshnessPanel
+    rows={demoSourceRows}
+    copy={sourceFreshnessCopy({ demo: true })}
+    headingLevel={3}
+    idPrefix="demo-sources"
+  />
+
+  {/* 15. Upgrade prompt — after the value, and in the §17 billing-not-configured state. */}
+  <StateBlock kind="billing_not_configured" severity="info" title={cockpit.upgrade.heading}>
+    <p>{states.billingNotConfigured.body}</p>
+  </StateBlock>
+</div>

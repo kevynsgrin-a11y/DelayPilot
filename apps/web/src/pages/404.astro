@@ -1,0 +1,57 @@
+---
+/**
+ * The 404 page.
+ *
+ * `noindex`, `kind="utility"` — no ambient motif, no scroll reveal, and no ad, because ADR 0003
+ * rule 1 excludes error pages from the motion allowance and `AGENTS.md §4` forbids an ad on one
+ * outright. A traveler who has just hit a broken link is not an inventory opportunity.
+ *
+ * The links below are computed from `routes.ts`, so this page cannot itself contain a dead link —
+ * which would be a particularly bad joke on a 404.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+import { contactRoutesEnabled, hasRightsOverview, servedGuides } from '../components/routes.ts'
+
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
+
+const guides = await servedGuides()
+const rightsOverview = await hasRightsOverview()
+
+const links = [
+  { href: '/', label: nav.brand },
+  { href: '/flight-status/', label: nav.footer.links['/flight-status/'] },
+  { href: '/delay-risk/', label: nav.footer.links['/delay-risk/'] },
+  { href: '/connection-risk/', label: nav.footer.links['/connection-risk/'] },
+  ...(rightsOverview
+    ? [{ href: '/passenger-rights/', label: nav.footer.links['/passenger-rights/'] }]
+    : []),
+  ...(guides.length > 0 ? [{ href: '/guides/', label: nav.footer.links['/guides/'] }] : []),
+  { href: '/methodology/', label: nav.footer.links['/methodology/'] },
+  { href: '/data-sources/', label: nav.footer.links['/data-sources/'] },
+  { href: '/about/', label: nav.footer.links['/about/'] },
+  ...(contactRoutesEnabled ? [{ href: '/contact/', label: nav.footer.links['/contact/'] }] : []),
+]
+
+const page = pages.notFound
+---
+
+<BaseLayout title={page.title} description={page.description} kind="utility" robots="noindex">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.helpHeading}>
+    <ul class="dpx-link-strip">
+      {
+        links.map((link) => (
+          <li>
+            <a class="dpx-link-strip__link" href={link.href}>
+              {link.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </Section>
+</BaseLayout>

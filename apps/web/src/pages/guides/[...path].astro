@@ -1,0 +1,96 @@
+---
+/**
+ * `/guides/` and `/guides/<slug>/` — emitted ONLY for entries the editorial workflow has released.
+ *
+ * One file produces both the index and every article, because both depend on the same question:
+ * which entries are served. `getStaticPaths` returns the index path only when at least one guide is
+ * served, so with none the route family does not exist at all — no empty index, no "no guides yet"
+ * page, and no navigation entry pointing at either (`AGENTS.md §1.6`).
+ *
+ * THE RULE-SLOT GUARD. Guide bodies may contain `{{rule:<jurisdiction>:<dotted.path>}}` tokens,
+ * which resolve against a versioned rule set and render the value beside its rule-set version and
+ * effective date. NO RULE SET IS IN FORCE in this deployment, so no slot can resolve — and a raw
+ * `{{rule:…}}` reaching a reader would be a placeholder in a shipped surface (`AGENTS.md §1.6`) on
+ * a page about their legal rights. The build therefore FAILS CLOSED: an entry whose body contains a
+ * slot is refused at build time with the id that carried it. Today no served entry has one, so the
+ * guard is silent; the moment one is promoted to `publishable` before its rule set exists, the
+ * build stops rather than the page shipping.
+ */
+import { getEntry, render } from 'astro:content'
+
+import ArticleLayout from '../../layouts/ArticleLayout.astro'
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Section from '../../components/Section.astro'
+import { entryRobots, servedGuides, type GuideEntry } from '../../components/routes.ts'
+import { assertNoUnresolvedRuleSlots } from '../../components/rule-slots.ts'
+
+import { pages } from '../../lib/copy/pages.ts'
+
+export async function getStaticPaths() {
+  const guides = await servedGuides()
+  if (guides.length === 0) return []
+
+  return [
+    { params: { path: undefined }, props: { entry: undefined, guides } },
+    ...guides.map((entry) => ({ params: { path: entry.id }, props: { entry, guides } })),
+  ]
+}
+
+interface Props {
+  entry: GuideEntry | undefined
+  guides: GuideEntry[]
+}
+
+const { entry, guides } = Astro.props as Props
+
+const article = entry === undefined ? undefined : ((await getEntry('guides', entry.id)) ?? entry)
+
+if (article !== undefined) {
+  assertNoUnresolvedRuleSlots(`guides/${article.id}`, article.body ?? '')
+}
+
+const rendered = article === undefined ? undefined : await render(article)
+const Content = rendered?.Content
+const index = pages.guidesIndex
+---
+
+{
+  article === undefined || Content === undefined ? (
+    <BaseLayout title={index.title} description={index.description} nav="guides">
+      <PageHeader slot="page-header" title={index.h1} intro={index.intro} />
+      <Section heading={index.h1} intro={index.intro}>
+        <ul class="dpx-card-list">
+          {guides.map((guide) => (
+            <li class="dpx-entry-card">
+              <h3 class="dpx-entry-card__title">
+                <a href={`/guides/${guide.id}/`}>{guide.data.title}</a>
+              </h3>
+              <p class="dpx-entry-card__description">{guide.data.description}</p>
+              <p class="dpx-entry-card__meta">
+                {index.reviewedLabel}{' '}
+                <time datetime={guide.data.reviewedAt}>{guide.data.reviewedAt}</time>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </Section>
+    </BaseLayout>
+  ) : (
+    <ArticleLayout
+      title={`${article.data.title} — DelayPilot`}
+      description={article.data.description}
+      heading={article.data.title}
+      answerFirst={article.data.answerFirst}
+      status={article.data.status}
+      reviewedAt={article.data.reviewedAt}
+      robots={entryRobots(article)}
+      sources={article.data.sources}
+      contextSources={article.data.contextSources}
+      internalRefs={article.data.internalRefs}
+      nav="guides"
+    >
+      <Content />
+    </ArticleLayout>
+  )
+}

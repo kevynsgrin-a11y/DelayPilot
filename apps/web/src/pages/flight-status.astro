@@ -1,0 +1,125 @@
+---
+/**
+ * `/flight-status/` — what a status card shows, what it refuses to say, and what it does today.
+ *
+ * This is an explanatory route, not a tool: the lookup lives on the homepage, where `§18.3` puts
+ * it. What this page adds is the thing a status page usually leaves out — the four `§17` states a
+ * real lookup reaches on a bad day, rendered as real panels rather than described in prose:
+ * on time, stale, partial data, and two providers disagreeing.
+ *
+ * THE CONFLICTING-PROVIDERS PANEL IS THE POINT OF THE PAGE. When two sources disagree, DelayPilot
+ * shows BOTH snapshots, names the newest high-quality source, and lowers confidence. It does not
+ * silently pick a winner, because the winner it picked would be indistinguishable from a fact.
+ *
+ * Every panel carries its own provenance chip and the demo caption; the `§26` flight-data
+ * disclaimer sits beside the panels it qualifies, not only in the footer.
+ */
+import {
+  SegmentCard,
+  StateBlock,
+  LoadingBlock,
+  Disclaimer,
+} from '../../../../packages/ui/src/patterns/index.ts'
+import { Card, ProvenanceChip } from '@delaypilot/ui'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+import { segmentCardCopy } from '../components/pattern-copy.ts'
+import { disclaimerLabels } from '../components/copy-gaps.ts'
+
+import { cockpit } from '../lib/copy/cockpit.ts'
+import { lookup } from '../lib/copy/lookup.ts'
+import { pages } from '../lib/copy/pages.ts'
+import { results } from '../lib/copy/results.ts'
+
+import {
+  demoSegmentConflicting,
+  demoSegmentOnward,
+  demoSegmentPartial,
+  demoSegmentStale,
+} from '../demo/itinerary.ts'
+
+const page = pages.flightStatus
+---
+
+<BaseLayout title={page.title} description={page.description} nav="flight-status">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.sections.whatYouSee.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whatYouSee.body}</p>
+    <div class="dpx-cockpit__stack">
+      <SegmentCard segment={demoSegmentOnward} copy={segmentCardCopy} headingLevel={3} />
+    </div>
+    <Disclaimer label={disclaimerLabels.flightData}>{page.disclaimer}</Disclaimer>
+  </Section>
+
+  <Section heading={page.sections.whatItDoesNotTell.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whatItDoesNotTell.body}</p>
+    <p class="dpx-lookup__note">{cockpit.rights.causeNote}</p>
+  </Section>
+
+  <Section heading={page.sections.whenDataIsMissing.heading}>
+    <p class="dpx-section__intro">{page.sections.whenDataIsMissing.body}</p>
+
+    <div class="dpx-cockpit__stack">
+      {/* §17 stale: shown, and shown AS stale. Context, never confirmation. */}
+      <div>
+        <p class="dpx-lookup__note">{results.stale}</p>
+        <SegmentCard segment={demoSegmentStale} copy={segmentCardCopy} headingLevel={3} />
+      </div>
+
+      {/* §17 partial data: the fields that exist are shown, the rest name what is missing. */}
+      <SegmentCard segment={demoSegmentPartial} copy={segmentCardCopy} headingLevel={3} />
+
+      {/* §17 conflicting providers: both snapshots, the newest named, confidence lowered. */}
+      <SegmentCard segment={demoSegmentConflicting} copy={segmentCardCopy} headingLevel={3} />
+    </div>
+  </Section>
+
+  <Section heading={page.sections.today.heading}>
+    <p class="dpx-section__intro">{page.sections.today.body}</p>
+
+    <div class="dpx-cockpit__stack">
+      {/* §17 searching: the state the result region is in while a lookup is outstanding. */}
+      <LoadingBlock label={lookup.heading} message={lookup.states.searching} lines={3} />
+
+      {/* §17 provider unavailable: the state every lookup reaches in this deployment. */}
+      <div class="dpp-state" data-state="provider_unavailable">
+        <Card>
+          <ProvenanceChip kind="unavailable" />
+          <p class="dpx-lookup__note">{lookup.states.providerUnavailable}</p>
+          <p class="dpx-lookup__note">{lookup.states.providerUnavailableNextStep}</p>
+          <p class="dpx-lookup__actions">
+            <a class="dp-button dp-button--secondary" href="/#demonstration">
+              {lookup.demoShortcut.label}
+            </a>
+          </p>
+        </Card>
+      </div>
+
+      {/* §17 no match and invalid flight: reachable from the homepage form's validation. */}
+      <StateBlock kind="no_match" severity="watch" title={lookup.heading}>
+        <p>{lookup.states.noMatch}</p>
+      </StateBlock>
+
+      <StateBlock kind="invalid_flight" severity="watch" title={lookup.heading}>
+        <p>{lookup.states.invalidFlight}</p>
+      </StateBlock>
+
+      {/* §17 multiple matches and rate limited. */}
+      <StateBlock kind="multiple_matches" severity="info" title={lookup.heading}>
+        <p>{lookup.states.multipleMatches}</p>
+      </StateBlock>
+
+      <StateBlock kind="rate_limited" severity="watch" title={lookup.heading}>
+        <p>{lookup.states.rateLimited}</p>
+      </StateBlock>
+    </div>
+
+    <p class="dpx-lookup__no-code">
+      <strong>{lookup.noBookingCode.line}</strong>
+      {lookup.noBookingCode.why}
+    </p>
+  </Section>
+</BaseLayout>

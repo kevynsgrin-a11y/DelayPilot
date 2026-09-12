@@ -2,8 +2,11 @@
   "extends": ["astro/tsconfigs/strict", "../../tsconfig.base.json"],
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["astro/client"]
+    "types": ["astro/client"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "allowImportingTsExtensions": true
   },
-  "include": [".astro/types.d.ts", "src/**/*", "astro.config.mjs"],
+  "include": [".astro/types.d.ts", "src/**/*", "test/**/*", "astro.config.mjs"],
   "exclude": ["dist"]
 }

@@ -1,0 +1,2034 @@
+/**
+ * DelayPilot page layer.
+ *
+ * Owner: frontend-ui-engineer. Load order, fixed: apps/web/src/styles/tokens.css (brand) →
+ * @delaypilot/ui/primitives.css (brand) → this file. Nothing here redefines a token; everything
+ * here consumes one. There is no literal colour in this file.
+ *
+ * IT REPLACES THE PRE-PHASE-10 PAGE LAYER. `tokens.css §10` still carries `.hero`, `.section`,
+ * `.card-grid`, `.card`, `.site-header`, `.site-footer`, `.shell`, `.chip` and `.skip-link` for the
+ * two policy pages that were written before this session. This file uses none of them; its own
+ * classes are prefixed `dpx-` (page layer) and `dpp-` (pattern layer) so the two sets cannot
+ * collide while brand-design-director removes the old one. The ONE shared name is `.prose`, which
+ * is defined here because the policy pages and the article shell both depend on it and the legacy
+ * copy is being deleted.
+ *
+ * NO INLINE STYLE, ANYWHERE. The served policy is `style-src 'self'` with no 'unsafe-inline'
+ * (apps/web/public/_headers), so a `style="…"` attribute is discarded by the browser and the rule
+ * silently does not apply. Every dynamic value in this file therefore arrives as a DATA ATTRIBUTE
+ * over a finite set, or as a class. `apps/web/scripts/verify-dist.mjs` fails the build on a style
+ * attribute in any emitted page.
+ *
+ * MOTION. Everything below is CSS-only and lives inside ADR 0003:
+ *   · scroll-driven entrance reveals (rule 2a) — `animation-timeline: view()`, once per element,
+ *     opacity plus a translate under the 24px cap, `transform`/`opacity` only. The un-animated DOM
+ *     is the final state, so a browser without scroll timelines renders finished content.
+ *   · two ambient motifs per route (rule 2b) — the hero operations-desk backdrop and the route
+ *     globe. Both are `aria-hidden`, carry no data, cycle within `--motion-ambient-cycle` (12s),
+ *     and are paused off-screen.
+ *   · cross-document view transitions (rule 2c) — the native CSS API, capped at `--motion-base`.
+ *     No `<ClientRouter />`: Astro documents it as unsupported alongside CSP, and a JavaScript
+ *     router is not needed to cross-fade two static documents.
+ *   · the scroll-scrubbed chronology (rule 2d) — additive only; the list is complete without it.
+ * Under `prefers-reduced-motion: reduce` every one of those collapses to a single static frame
+ * (rule 4). The collapse is at the END of this file so it wins on order.
+ */
+
+/* --------------------------------------------------------------------------------------------- */
+/* 1. Document and shell.                                                                         */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-body {
+  display: flex;
+  flex-direction: column;
+  min-block-size: 100vh;
+}
+
+.dpx-main {
+  flex: 1 1 auto;
+}
+
+/* Bounded readable width at every breakpoint (DIRECTIVE.md §18.7 Desktop). */
+.dpx-shell {
+  inline-size: 100%;
+  max-inline-size: var(--layout-shell-max);
+  margin-inline: auto;
+  padding-inline: var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .dpx-shell {
+    padding-inline: var(--space-24);
+  }
+}
+
+.dpx-shell--wide {
+  max-inline-size: 78rem;
+}
+
+.dpx-section {
+  padding-block: var(--space-48);
+  border-block-start: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+.dpx-section:first-of-type {
+  border-block-start: 0;
+}
+
+@media (min-width: 1024px) {
+  .dpx-section {
+    padding-block: var(--space-64);
+  }
+}
+
+.dpx-section__head {
+  max-inline-size: var(--layout-prose-max);
+  margin-block-end: var(--space-24);
+}
+
+.dpx-section__eyebrow {
+  margin: 0 0 var(--space-8);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.dpx-section__title {
+  margin: 0 0 var(--space-12);
+  font-size: var(--font-size-30);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.dpx-section__intro {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-18);
+}
+
+.dpx-skip-link {
+  position: absolute;
+  inset-block-start: var(--space-8);
+  inset-inline-start: var(--space-8);
+  z-index: 20;
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-16);
+  border-radius: var(--radius-control);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  transform: translateY(calc(-1 * (var(--target-min) + var(--space-16))));
+}
+
+.dpx-skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 2. Header and mega-nav.                                                                        */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-header {
+  border-block-end: var(--border-width-hairline) solid var(--border-hairline);
+  background: var(--surface-sunken);
+  /* Persisted across a cross-document view transition. Declared here, never as a directive. */
+  view-transition-name: dpx-header;
+}
+
+.dpx-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+  min-block-size: 3.5rem;
+}
+
+.dpx-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-block-size: var(--target-min);
+  padding-inline-end: var(--space-8);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.dpx-brand__mark {
+  display: block;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+}
+
+.dpx-brand__lockup {
+  display: block;
+  block-size: 1.25rem;
+  inline-size: auto;
+}
+
+.dpx-nav {
+  display: none;
+}
+
+.dpx-nav__list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpx-nav__link,
+.dpx-nav__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-12);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: var(--font-size-14);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.dpx-nav__link:hover,
+.dpx-nav__trigger:hover {
+  background: var(--surface-elevated);
+  color: var(--text-primary);
+}
+
+.dpx-nav__link[aria-current='page'] {
+  color: var(--text-primary);
+  box-shadow: inset 0 -2px 0 0 var(--border-accent);
+}
+
+.dpx-nav__item {
+  position: relative;
+}
+
+.dpx-nav__marker {
+  transition: rotate var(--motion-transition-control);
+}
+
+.dpx-nav__trigger[aria-expanded='true'] .dpx-nav__marker {
+  rotate: 180deg;
+}
+
+.dpx-nav__panel {
+  position: absolute;
+  inset-block-start: calc(100% + var(--space-4));
+  inset-inline-start: 0;
+  z-index: 15;
+  min-inline-size: 15rem;
+  margin: 0;
+  padding: var(--space-8);
+  border: var(--border-width-hairline) solid var(--border-emphasis);
+  border-radius: var(--radius-card);
+  background: var(--surface-elevated);
+  box-shadow: var(--shadow-overlay);
+  list-style: none;
+}
+
+.dpx-nav__panel[hidden] {
+  display: none;
+}
+
+.dpx-nav__panel-link {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-12);
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
+  font-size: var(--font-size-14);
+  text-decoration: none;
+}
+
+.dpx-nav__panel-link:hover {
+  background: var(--surface-card);
+}
+
+.dpx-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+@media (min-width: 1024px) {
+  .dpx-nav {
+    display: block;
+  }
+}
+
+/* No-JavaScript degradation. The server renders a plain LINK to the group's first item and a
+   HIDDEN disclosure button with identical inner markup; `nav.ts` swaps which of the two is hidden
+   once its module runs. Identical markup means identical width, so the swap shifts nothing. With
+   no JavaScript the link is what remains, and every destination is still reachable. */
+.dpx-nav__link[hidden],
+.dpx-nav__trigger[hidden] {
+  display: none;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 3. Mobile navigation — a native <dialog>.                                                      */
+/*                                                                                                */
+/* `showModal()` gives a focus trap, Escape-to-close, and — the reason it is used here rather than */
+/* the Drawer primitive — genuine INERTNESS of the page behind it, from the platform rather than   */
+/* from a JavaScript trap. That closes docs/ACCESSIBILITY.md F15 for this surface.                 */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-menu-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-8);
+  min-block-size: var(--target-min);
+  min-inline-size: var(--target-min);
+  padding-inline: var(--space-12);
+  border: var(--border-width-hairline) solid var(--border-interactive);
+  border-radius: var(--radius-control);
+  background: var(--surface-card);
+  color: var(--text-primary);
+  font: inherit;
+  font-size: var(--font-size-14);
+  cursor: pointer;
+}
+
+/* Declared AFTER `.dpx-menu-button`'s base rule: both are (0,1,0), so the later one wins, and a
+   media query adds no specificity. With the hide sitting above the base rule the menu button stayed
+   visible at 1440 beside the full mega-nav. */
+@media (min-width: 1024px) {
+  .dpx-menu-button {
+    display: none;
+  }
+
+  /* The drawer's own close button is inside the dialog and must stay visible at every width. */
+  .dpx-drawer .dpx-menu-button {
+    display: inline-flex;
+  }
+}
+
+.dpx-drawer {
+  inline-size: min(22rem, 100vw);
+  max-inline-size: 100vw;
+  block-size: 100dvh;
+  max-block-size: 100dvh;
+  margin: 0 0 0 auto;
+  padding: 0;
+  border: 0;
+  border-inline-start: var(--border-width-hairline) solid var(--border-emphasis);
+  background: var(--surface-card);
+  color: var(--text-primary);
+}
+
+.dpx-drawer::backdrop {
+  background: var(--surface-scrim);
+}
+
+.dpx-drawer__inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+  block-size: 100%;
+  padding: var(--space-16);
+  overflow-y: auto;
+}
+
+.dpx-drawer__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-16);
+}
+
+.dpx-drawer__title {
+  margin: 0;
+  font-size: var(--font-size-18);
+}
+
+.dpx-drawer__group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpx-drawer__group-label {
+  margin: var(--space-16) 0 var(--space-4);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.dpx-drawer__link {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-8);
+  border-radius: var(--radius-control);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.dpx-drawer__link[aria-current='page'] {
+  background: var(--accent-subtle-bg);
+}
+
+/* A modal <dialog> does not lock the page behind it in every engine. This does, in CSS, with no
+   JavaScript and no class to remember to remove. */
+html:has(.dpx-drawer[open]) {
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 4. Theme control.                                                                              */
+/* --------------------------------------------------------------------------------------------- */
+
+/* The header copy appears only where there is room for it beside the brand and the nav. Below
+   1024px the drawer carries the control instead; exactly one of the two is ever rendered. */
+.dpx-theme {
+  display: none;
+}
+
+.dpx-theme--drawer {
+  display: inline-flex;
+  align-self: start;
+}
+
+@media (min-width: 1024px) {
+  .dpx-theme {
+    display: inline-flex;
+  }
+
+  .dpx-theme--drawer {
+    display: none;
+  }
+}
+
+.dpx-theme,
+.dpx-theme--drawer {
+  align-items: center;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-2);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-pill);
+}
+
+.dpx-theme__legend {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Native radios: arrow-key navigation, roving tab order and correct announcement come from the
+   platform rather than from a key handler. The input is clipped, never `display: none`, so it
+   stays focusable and stays in the accessibility tree. */
+.dpx-theme__option {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: var(--target-min);
+  min-inline-size: var(--target-min);
+  padding-inline: var(--space-8);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+  cursor: pointer;
+  transition:
+    background-color var(--motion-transition-control),
+    color var(--motion-transition-control);
+}
+
+.dpx-theme__input {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.dpx-theme__option:has(.dpx-theme__input:checked) {
+  background: var(--accent-subtle-bg);
+  color: var(--text-primary);
+  box-shadow: inset 0 0 0 var(--border-width-hairline) var(--border-accent);
+}
+
+/* The focus ring is redrawn on the visible pill, because the input it belongs to is clipped. */
+.dpx-theme__option:has(.dpx-theme__input:focus-visible) {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 5. Footer.                                                                                     */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-footer {
+  margin-block-start: var(--space-64);
+  padding-block: var(--space-48);
+  border-block-start: var(--border-width-hairline) solid var(--border-hairline);
+  background: var(--surface-sunken);
+  font-size: var(--font-size-14);
+}
+
+.dpx-footer__groups {
+  display: grid;
+  gap: var(--space-24);
+  grid-template-columns: 1fr;
+  margin-block-end: var(--space-32);
+}
+
+@media (min-width: 768px) {
+  .dpx-footer__groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .dpx-footer__groups {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.dpx-footer__group-label {
+  margin: 0 0 var(--space-8);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.dpx-footer__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpx-footer__link {
+  display: flex;
+  align-items: center;
+  min-block-size: var(--target-min);
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.dpx-footer__link:hover {
+  text-decoration: underline;
+}
+
+.dpx-footer__disclaimer {
+  max-inline-size: var(--layout-prose-max);
+  margin: 0 0 var(--space-16);
+  color: var(--text-secondary);
+}
+
+.dpx-footer__copyright {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 6. Hero and the operations-desk backdrop.                                                      */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  padding-block: var(--space-48) var(--space-48);
+  background: var(--surface-sunken);
+}
+
+@media (min-width: 1024px) {
+  .dpx-hero {
+    padding-block: var(--space-64) var(--space-64);
+  }
+}
+
+.dpx-hero__grid {
+  display: grid;
+  gap: var(--space-24);
+  grid-template-columns: 1fr;
+  align-items: start;
+  margin-block-end: var(--space-24);
+}
+
+@media (min-width: 1024px) {
+  .dpx-hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--space-48);
+  }
+}
+
+.dpx-hero__title {
+  margin: 0 0 var(--space-16);
+  font-size: var(--font-size-36);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@media (min-width: 1024px) {
+  .dpx-hero__title {
+    font-size: var(--font-size-44);
+  }
+}
+
+.dpx-hero__support {
+  max-inline-size: 46ch;
+  margin: 0 0 var(--space-24);
+  color: var(--text-secondary);
+  font-size: var(--font-size-18);
+}
+
+.dpx-hero__ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin-block-end: 0;
+}
+
+.dpx-hero__availability {
+  max-inline-size: var(--layout-prose-max);
+  margin-block-start: var(--space-12);
+}
+
+.dpx-trust {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpx-trust__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+  color: var(--text-secondary);
+}
+
+.dpx-trust__item::before {
+  content: '';
+  inline-size: 0.375rem;
+  block-size: 0.375rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-bg);
+}
+
+/* The backdrop. Decorative, aria-hidden, behind empty surface only — never behind prose, so no
+   measured contrast pair changes (ADR 0003 rule 2b). */
+.dpx-motif {
+  position: absolute;
+  z-index: -1;
+  color: var(--text-accent);
+  pointer-events: none;
+  /* `content-visibility: auto` lets the UA skip rendering — and therefore animating — the motif
+     while it is outside the viewport, which is the "paused off-screen" requirement. */
+  content-visibility: auto;
+  contain-intrinsic-size: 240px 240px;
+}
+
+.dpx-motif svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+/*
+ * ADR 0003 rule 2b: "never behind body text in a way that changes a measured pair."
+ *
+ * Below 1024px the hero is one column and everything in it is text, so there is nowhere a motif can
+ * sit that is not behind a sentence. The whole layer is therefore hidden there rather than faded —
+ * fading it would still put it behind the headline, just less visibly. At 1024 and above it lives
+ * in the right-hand half, where the opaque lookup card and empty surface are.
+ */
+.dpx-motif {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .dpx-motif {
+    display: block;
+  }
+}
+
+.dpx-motif--radar {
+  inset-block-start: -3rem;
+  inset-inline-end: -4rem;
+  inline-size: 28rem;
+  opacity: 0.5;
+}
+
+.dpx-motif--routes {
+  inset-block-end: -3rem;
+  inset-inline-end: -8rem;
+  inline-size: 30rem;
+  opacity: 0.4;
+}
+
+/* Texture, not a feature. Drawn in the hairline border colour rather than the accent, at a third
+   of the opacity the other two carry: at accent strength it read as graph paper and competed with
+   the headline it sits behind. It never moves (scripts/assets/MOTIFS.md §3.3). */
+.dpx-motif--grid {
+  inset-block: 0;
+  inset-inline: 45% 0;
+  block-size: 100%;
+  color: var(--border-emphasis);
+  opacity: 0.3;
+  contain-intrinsic-size: none;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 7. Ambient motion (ADR 0003 rule 2b). Cycle <= --motion-ambient-cycle.                         */
+/* --------------------------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  .dpx-motif--radar #sweep {
+    transform-origin: 50% 50%;
+    animation: dpx-radar-sweep var(--motion-ambient-cycle) linear infinite;
+  }
+
+  .dpx-motif--routes .packet {
+    cx: 0;
+    cy: 0;
+    offset-rotate: 0deg;
+    animation: dpx-packet var(--motion-ambient-cycle) linear infinite;
+  }
+
+  .dpx-motif--routes .packet:nth-of-type(1) {
+    offset-path: url(#route-1);
+  }
+
+  .dpx-motif--routes .packet:nth-of-type(2) {
+    offset-path: url(#route-2);
+    animation-delay: -4s;
+  }
+
+  .dpx-motif--routes .packet:nth-of-type(3) {
+    offset-path: url(#route-3);
+    animation-delay: -8s;
+  }
+
+  /* A quarter of the ambient cycle — three seconds, matching the figure in
+     scripts/assets/MOTIFS.md §3.4. Derived from the token rather than written as a literal, so it
+     collapses with the token and stays inside the ADR 0003 rule 2b ceiling by construction. It
+     runs ONCE (`forwards`): the globe is a drawing, not a loop. */
+  .dpx-globe #routes path {
+    stroke-dasharray: var(--dpx-globe-arc-length);
+    stroke-dashoffset: var(--dpx-globe-arc-length);
+    animation: dpx-globe-draw calc(var(--motion-ambient-cycle) / 4) ease-out forwards;
+  }
+}
+
+@keyframes dpx-radar-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dpx-packet {
+  from {
+    offset-distance: 0%;
+  }
+
+  to {
+    offset-distance: 100%;
+  }
+}
+
+@keyframes dpx-globe-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 8. Route globe.                                                                                */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-globe {
+  /* The longest arc on a 480-unit canvas, used as the dash length for the draw-in. A single
+     constant rather than a per-path measurement: it only has to be >= the real length. */
+  --dpx-globe-arc-length: 900;
+
+  display: block;
+  inline-size: min(100%, 24rem);
+  margin-inline: auto;
+  color: var(--text-accent);
+  content-visibility: auto;
+  contain-intrinsic-size: 384px 384px;
+}
+
+.dpx-globe svg {
+  display: block;
+  inline-size: 100%;
+  block-size: auto;
+}
+
+.dpx-globe-figure {
+  margin: 0;
+}
+
+.dpx-globe-figure__caption {
+  margin-block-start: var(--space-12);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+  text-align: center;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 9. Scroll-driven entrance reveals (ADR 0003 rule 2a).                                          */
+/*                                                                                                */
+/* The un-animated DOM is the FINAL state: `.dpx-reveal` sets nothing by itself, and the animation */
+/* only exists inside `@supports (animation-timeline: view())`. A browser without scroll timelines */
+/* — and a user who prefers reduced motion — sees finished content, never a blank waiting to fade. */
+/* --------------------------------------------------------------------------------------------- */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .dpx-reveal {
+      animation: dpx-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 26%;
+    }
+  }
+}
+
+@keyframes dpx-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-reveal-distance));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 10. The scroll-scrubbed chronology (ADR 0003 rule 2d).                                         */
+/*                                                                                                */
+/* The base DOM is a complete, ordered, readable list. Scrubbing is purely additive: it dims the   */
+/* steps that are not yet in view and brings the current one up. With no scroll timeline, or under */
+/* reduced motion, every step renders at full strength, which is the static frame.                 */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-chronology {
+  display: grid;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: dpx-step;
+}
+
+.dpx-chronology__step {
+  position: relative;
+  padding: var(--space-16) var(--space-16) var(--space-16) var(--space-48);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+  counter-increment: dpx-step;
+}
+
+.dpx-chronology__step::before {
+  content: counter(dpx-step);
+  position: absolute;
+  inset-block-start: var(--space-16);
+  inset-inline-start: var(--space-16);
+  display: grid;
+  place-items: center;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  border-radius: var(--radius-pill);
+  background: var(--accent-subtle-bg);
+  color: var(--text-accent);
+  font-size: var(--font-size-12);
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+.dpx-chronology__label {
+  margin: 0 0 var(--space-4);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpx-chronology__description {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.dpx-chronology__note {
+  margin-block-start: var(--space-16);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .dpx-chronology__step {
+      animation: dpx-scrub linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 32%;
+    }
+  }
+}
+
+@keyframes dpx-scrub {
+  from {
+    opacity: 0.45;
+    transform: translateY(var(--motion-reveal-distance));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 11. Lookup form.                                                                               */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-lookup {
+  padding: var(--space-24);
+  border: var(--border-width-hairline) solid var(--border-emphasis);
+  border-radius: var(--radius-dialog);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-elevated);
+}
+
+.dpx-lookup__title {
+  margin: 0 0 var(--space-8);
+  font-size: var(--font-size-20);
+}
+
+.dpx-lookup__intro {
+  margin: 0 0 var(--space-16);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-lookup__fields {
+  display: grid;
+  gap: var(--space-16);
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+  .dpx-lookup__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dpx-lookup__fields > .dpx-lookup__field--wide {
+    grid-column: 1 / -1;
+  }
+}
+
+/* The visible example, under the help text and distinct from it. Never a placeholder. */
+.dpx-lookup__example {
+  display: block;
+  margin-block-start: var(--space-4);
+  color: var(--text-secondary);
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+.dpx-lookup__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+  margin-block-start: var(--space-24);
+}
+
+.dpx-lookup__note {
+  margin: var(--space-16) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-lookup__no-code {
+  margin: var(--space-16) 0 0;
+  padding: var(--space-12);
+  border-inline-start: var(--border-width-emphasis) solid var(--border-accent);
+  background: var(--accent-subtle-bg);
+  font-size: var(--font-size-14);
+}
+
+.dpx-lookup__no-code strong {
+  display: block;
+}
+
+.dpx-lookup__result {
+  margin-block-start: var(--space-24);
+}
+
+.dpx-lookup__result[hidden] {
+  display: none;
+}
+
+.dpx-errors {
+  margin-block-end: var(--space-16);
+}
+
+.dpx-errors[hidden] {
+  display: none;
+}
+
+.dpx-errors__list {
+  margin: var(--space-8) 0 0;
+  padding-inline-start: var(--space-24);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 12. Tiles, strips and cards on the marketing routes.                                           */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-tiles {
+  display: grid;
+  gap: var(--space-16);
+  grid-template-columns: 1fr;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .dpx-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .dpx-tiles--four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .dpx-tiles--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dpx-tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+
+.dpx-tile__title {
+  margin: 0;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpx-tile__body {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-definitions {
+  display: grid;
+  gap: var(--space-16);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .dpx-definitions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dpx-definition {
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+
+.dpx-definition__term {
+  margin: 0 0 var(--space-4);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpx-definition__body {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-provenance-legend {
+  display: grid;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .dpx-provenance-legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .dpx-provenance-legend {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dpx-provenance-legend__item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+
+.dpx-provenance-legend__meaning {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-link-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpx-link-strip__link {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: var(--target-min);
+  padding-inline: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-interactive);
+  border-radius: var(--radius-pill);
+  color: var(--text-primary);
+  font-size: var(--font-size-14);
+  text-decoration: none;
+}
+
+.dpx-link-strip__link:hover {
+  border-color: var(--border-accent);
+}
+
+.dpx-card-list {
+  display: grid;
+  gap: var(--space-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 768px) {
+  .dpx-card-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dpx-entry-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+
+.dpx-entry-card__title {
+  margin: 0;
+  font-size: var(--font-size-18);
+}
+
+.dpx-entry-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dpx-entry-card__title a:hover {
+  text-decoration: underline;
+}
+
+.dpx-entry-card__description {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-entry-card__meta {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 13. Cockpit layout.                                                                            */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-cockpit {
+  display: grid;
+  gap: var(--space-24);
+}
+
+.dpx-cockpit__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-12) var(--space-16);
+  border: var(--border-width-emphasis) dashed var(--chip-demo-border);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+
+.dpx-cockpit__banner-title {
+  margin: 0;
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpx-cockpit__banner-note {
+  flex: 1 1 18rem;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-cockpit__section-title {
+  margin: 0 0 var(--space-12);
+  font-size: var(--font-size-20);
+}
+
+.dpx-cockpit__trip {
+  display: grid;
+  gap: var(--space-8);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .dpx-cockpit__trip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.dpx-cockpit__stack {
+  display: grid;
+  gap: var(--space-24);
+}
+
+.dpx-scenarios {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin: 0 0 var(--space-16);
+  padding: 0;
+  list-style: none;
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 14. Pattern layer (packages/ui/src/patterns).                                                  */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpp-row {
+  display: grid;
+  gap: var(--space-2);
+  padding-block: var(--space-8);
+  border-block-end: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+@media (min-width: 768px) {
+  .dpp-row {
+    grid-template-columns: minmax(0, 12rem) minmax(0, 1fr);
+    gap: var(--space-16);
+    align-items: baseline;
+  }
+}
+
+.dpp-row__label {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-row__value {
+  margin: 0;
+}
+
+.dpp-row__note {
+  display: block;
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-unknown {
+  color: var(--text-secondary);
+  font-style: normal;
+}
+
+.dpp-time {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4) var(--space-8);
+}
+
+.dpp-time__clock {
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+.dpp-time__zone {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4);
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-time__code {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.dpp-time__iana::before,
+.dpp-time__abbr::before {
+  content: '· ';
+}
+
+.dpp-time__date,
+.dpp-time__estimated {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-provenance {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.dpp-provenance__demo {
+  flex: 1 1 100%;
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-disclaimer {
+  margin-block-start: var(--space-16);
+  padding: var(--space-12);
+  border-inline-start: var(--border-width-emphasis) solid var(--border-emphasis);
+  background: var(--surface-sunken);
+}
+
+.dpp-disclaimer__text {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-list {
+  margin: 0;
+  padding-inline-start: var(--space-24);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-list > li + li {
+  margin-block-start: var(--space-4);
+}
+
+.dpp-segment,
+.dpp-connection,
+.dpp-rights,
+.dpp-actions,
+.dpp-evidence,
+.dpp-alerts,
+.dpp-freshness {
+  display: grid;
+  gap: var(--space-16);
+}
+
+.dpp-segment__header,
+.dpp-connection__header,
+.dpp-evidence__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8) var(--space-12);
+}
+
+/* The rights header stacks: the title, then the jurisdiction and rule-set pair, then the chip. Laid
+   out as a row it centred a one-line heading against a two-row definition list. */
+.dpp-rights__header {
+  display: grid;
+  gap: var(--space-8);
+  justify-items: start;
+}
+
+.dpp-segment__title,
+.dpp-connection__title,
+.dpp-rights__title,
+.dpp-actions__title,
+.dpp-evidence__title,
+.dpp-alerts__title,
+.dpp-freshness__title {
+  margin: 0;
+  font-size: var(--font-size-18);
+}
+
+.dpp-segment__route {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-12);
+  margin: 0;
+}
+
+.dpp-segment__endpoint {
+  display: inline-flex;
+  flex-direction: column;
+}
+
+.dpp-segment__code {
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+.dpp-segment__place {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-segment__arrow {
+  color: var(--text-secondary);
+}
+
+.dpp-segment__times,
+.dpp-segment__facts,
+.dpp-connection__figures,
+.dpp-rights__meta {
+  margin: 0;
+}
+
+.dpp-segment__conflict {
+  padding: var(--space-12);
+  border: var(--border-width-hairline) solid var(--status-watch-border);
+  border-radius: var(--radius-card);
+  background: var(--status-watch-bg);
+}
+
+.dpp-segment__conflict-heading {
+  margin: 0 0 var(--space-8);
+  color: var(--status-watch-fg);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-14);
+}
+
+.dpp-connection__badges {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  margin: 0;
+}
+
+.dpp-connection__airport {
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-connection__topology-note,
+.dpp-connection__self-transfer {
+  margin: 0;
+}
+
+.dpp-connection__self-transfer {
+  padding: var(--space-12);
+  border-inline-start: var(--border-width-emphasis) solid var(--status-watch-border);
+  background: var(--status-watch-bg);
+  color: var(--status-watch-fg);
+}
+
+.dpp-connection__notes {
+  display: grid;
+  gap: var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .dpp-connection__notes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.dpp-connection__note-heading,
+.dpp-rights__subheading,
+.dpp-evidence__subheading {
+  margin: 0 0 var(--space-8);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.dpp-not-required {
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-band {
+  display: grid;
+  gap: var(--space-8);
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+
+.dpp-band__readout {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-8);
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpp-band__word {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.dpp-band__provenance {
+  margin: 0;
+}
+
+.dpp-band__stops {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpp-band__stop {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-8);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: var(--font-size-12);
+}
+
+.dpp-band__stop[data-current='true'] {
+  border-color: var(--border-accent);
+  border-width: var(--border-width-emphasis);
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpp-band__stop[data-band='on_track'] .dpp-band__stop-icon {
+  color: var(--status-safe-fg);
+}
+
+.dpp-band__stop[data-band='watch'] .dpp-band__stop-icon {
+  color: var(--status-watch-fg);
+}
+
+.dpp-band__stop[data-band='at_risk'] .dpp-band__stop-icon,
+.dpp-band__stop[data-band='disrupted'] .dpp-band__stop-icon {
+  color: var(--status-critical-fg);
+}
+
+.dpp-band__stop[data-band='unknown'] .dpp-band__stop-icon {
+  color: var(--status-unknown-fg);
+}
+
+.dpp-rights__lines,
+.dpp-actions__list,
+.dpp-alerts__list,
+.dpp-freshness__list {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dpp-actions__list {
+  counter-reset: dpp-action;
+}
+
+.dpp-rights__line,
+.dpp-actions__item,
+.dpp-alerts__item,
+.dpp-freshness__row {
+  padding: var(--space-12);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+
+.dpp-actions__item {
+  counter-increment: dpp-action;
+}
+
+.dpp-rights__line-head,
+.dpp-alerts__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.dpp-rights__line-label,
+.dpp-actions__label,
+.dpp-alerts__event-title {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpp-rights__line-detail,
+.dpp-actions__detail,
+.dpp-alerts__event-detail,
+.dpp-rights__lede {
+  margin: var(--space-4) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-rights__lede {
+  font-size: var(--font-size-16);
+  color: var(--text-primary);
+}
+
+.dpp-rights__line-amount {
+  margin: var(--space-4) 0 0;
+  font-variant-numeric: var(--font-variant-tabular);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpp-rights__result-note,
+.dpp-actions__empty,
+.dpp-alerts__empty,
+.dpp-evidence__empty,
+.dpp-evidence__trip,
+.dpp-evidence__rule-set,
+.dpp-freshness__meaning,
+.dpp-freshness__source,
+.dpp-freshness__subject {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-freshness__subject,
+.dpp-evidence__trip {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.dpp-freshness__row {
+  display: grid;
+  gap: var(--space-8);
+}
+
+.dpp-rights__source-offline,
+.dpp-rights__source-note {
+  color: var(--text-secondary);
+}
+
+.dpp-actions__meta,
+.dpp-actions__consequence,
+.dpp-actions__sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-4) var(--space-12);
+  margin: var(--space-8) 0 0;
+  font-size: var(--font-size-12);
+  color: var(--text-secondary);
+}
+
+.dpp-actions__consequence {
+  padding: var(--space-8);
+  border-inline-start: var(--border-width-emphasis) solid var(--status-critical-border);
+  background: var(--status-critical-bg);
+  color: var(--status-critical-fg);
+  font-size: var(--font-size-14);
+}
+
+.dpp-actions__meta-label {
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+}
+
+.dpp-itinerary {
+  display: grid;
+  gap: var(--space-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (min-width: 1024px) {
+  .dpx-cockpit .dpp-itinerary {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+  }
+}
+
+.dpp-itinerary__stop {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-12);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-card);
+}
+
+.dpp-itinerary__role {
+  margin: 0;
+  font-size: var(--font-size-12);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+}
+
+.dpp-itinerary__code {
+  margin: 0;
+  font-size: var(--font-size-24);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+.dpp-itinerary__place {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-itinerary__leg {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-8);
+  margin: var(--space-8) 0 0;
+  padding-block-start: var(--space-8);
+  border-block-start: var(--border-width-hairline) dashed var(--border-hairline);
+  font-size: var(--font-size-12);
+}
+
+.dpp-itinerary__leg-flight {
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: var(--font-variant-tabular);
+}
+
+.dpp-itinerary__leg-airline {
+  color: var(--text-secondary);
+}
+
+.dpp-state {
+  display: grid;
+  gap: var(--space-12);
+}
+
+.dpp-loading {
+  padding: var(--space-16);
+  border: var(--border-width-hairline) solid var(--border-hairline);
+  border-radius: var(--radius-card);
+  background: var(--surface-sunken);
+}
+
+.dpp-loading__message {
+  margin: 0 0 var(--space-12);
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpp-evidence__section {
+  display: grid;
+  gap: var(--space-8);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 15. Prose — article typography.                                                                */
+/*                                                                                                */
+/* Shared surface: the policy pages (trust-compliance-officer) and the article shell both use it.  */
+/* Bounded at --layout-prose-max so a line never exceeds a comfortable measure at 1440px.          */
+/* --------------------------------------------------------------------------------------------- */
+
+.prose {
+  max-inline-size: var(--layout-prose-max);
+  color: var(--text-primary);
+}
+
+.prose > * + * {
+  margin-block-start: var(--space-16);
+}
+
+.prose h2 {
+  margin-block-start: var(--space-48);
+  font-size: var(--font-size-24);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.prose h3 {
+  margin-block-start: var(--space-32);
+  font-size: var(--font-size-20);
+  line-height: var(--line-height-heading);
+}
+
+.prose h4 {
+  margin-block-start: var(--space-24);
+  font-size: var(--font-size-18);
+}
+
+.prose p,
+.prose li {
+  color: var(--text-secondary);
+}
+
+.prose strong {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.prose ul,
+.prose ol {
+  padding-inline-start: var(--space-24);
+}
+
+.prose li + li {
+  margin-block-start: var(--space-8);
+}
+
+.prose a {
+  color: var(--text-accent);
+}
+
+.prose blockquote {
+  margin-inline: 0;
+  padding: var(--space-12) var(--space-16);
+  border-inline-start: var(--border-width-emphasis) solid var(--border-accent);
+  background: var(--surface-sunken);
+}
+
+.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+}
+
+.prose table {
+  inline-size: 100%;
+  border-collapse: collapse;
+}
+
+.prose th,
+.prose td {
+  padding: var(--space-8);
+  border-block-end: var(--border-width-hairline) solid var(--border-hairline);
+  text-align: start;
+}
+
+.prose hr {
+  border: 0;
+  border-block-start: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 16. Article shell.                                                                             */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-article__header {
+  padding-block: var(--space-32);
+  border-block-end: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+.dpx-article__title {
+  margin: 0 0 var(--space-16);
+  max-inline-size: var(--layout-prose-max);
+  font-size: var(--font-size-36);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.dpx-article__answer {
+  max-inline-size: var(--layout-prose-max);
+  margin: 0 0 var(--space-16);
+  padding: var(--space-16);
+  border-inline-start: var(--border-width-emphasis) solid var(--border-accent);
+  background: var(--surface-sunken);
+  font-size: var(--font-size-18);
+}
+
+.dpx-article__answer-label {
+  display: block;
+  margin-block-end: var(--space-4);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.dpx-article__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-16);
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-14);
+}
+
+.dpx-article__body {
+  padding-block: var(--space-32);
+}
+
+.dpx-article__sources {
+  padding-block: var(--space-32);
+  border-block-start: var(--border-width-hairline) solid var(--border-hairline);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 17. Page header for non-home routes.                                                           */
+/* --------------------------------------------------------------------------------------------- */
+
+.dpx-page-header {
+  padding-block: var(--space-48);
+  border-block-end: var(--border-width-hairline) solid var(--border-hairline);
+  background: var(--surface-sunken);
+}
+
+.dpx-page-header__title {
+  margin: 0 0 var(--space-16);
+  max-inline-size: 24ch;
+  font-size: var(--font-size-36);
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+.dpx-page-header__intro {
+  max-inline-size: var(--layout-prose-max);
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-18);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 18. Print — the evidence packet is a record, not a screen.                                     */
+/* --------------------------------------------------------------------------------------------- */
+
+@media print {
+  .dpx-header,
+  .dpx-footer,
+  .dpx-skip-link,
+  .dpx-motif,
+  .dpx-globe {
+    display: none;
+  }
+
+  .dpx-shell {
+    max-inline-size: none;
+    padding-inline: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 19. Cross-document view transitions (ADR 0003 rule 2c).                                        */
+/*                                                                                                */
+/* The native CSS View Transition API, not Astro's <ClientRouter />: zero JavaScript, and Astro    */
+/* documents its router as unsupported alongside CSP. `--motion-view-transition` is 180ms, which   */
+/* is --motion-base, the cap rule 2c sets.                                                        */
+/* --------------------------------------------------------------------------------------------- */
+
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: var(--motion-view-transition);
+  animation-timing-function: var(--motion-ease-entrance);
+}
+
+::view-transition-group(dpx-header) {
+  animation-duration: var(--motion-view-transition);
+}
+
+/* --------------------------------------------------------------------------------------------- */
+/* 20. Reduced motion (ADR 0003 rule 4). Last, so it wins on order.                                */
+/*                                                                                                */
+/* tokens.css already collapses every duration token and every transition. This block turns off    */
+/* the three things this file adds that tokens.css cannot know about: the cross-document view      */
+/* transition, the ambient motifs, and the scroll-driven timelines. Each collapses to the single   */
+/* static frame the markup already contains.                                                      */
+/* --------------------------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+
+  .dpx-reveal,
+  .dpx-chronology__step,
+  .dpx-motif--radar #sweep,
+  .dpx-motif--routes .packet,
+  .dpx-globe #routes path {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .dpx-globe #routes path {
+    stroke-dasharray: none;
+    stroke-dashoffset: 0;
+  }
+}

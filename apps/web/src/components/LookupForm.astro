@@ -1,0 +1,268 @@
+---
+/**
+ * The `DIRECTIVE.md §18.4` flight lookup.
+ *
+ * NO BOOKING-REFERENCE FIELD, LABEL, PLACEHOLDER, HELP TEXT, EXAMPLE, `name`, `autocomplete` HINT
+ * OR QUERY PARAMETER — see `FlightLookupFields.tsx`, which is where the field list is fixed. The
+ * absence is stated out loud below (`lookup.noBookingCode`), because a reader trained by claims
+ * sites to expect that field will otherwise go looking for it.
+ *
+ * WHAT SUBMITTING DOES, TODAY. No licensed flight-data provider is connected in this deployment
+ * (`docs/BUILD_PLAN.md §7`), so the truthful result is the `§17` provider-unavailable state:
+ * an `Unavailable` chip, the sentence naming the missing fact, the next useful step, the demo
+ * shortcut, and the `§26` flight-data disclaimer. `AGENTS.md §1.5` — fail closed. The form is not a
+ * dead control: it validates what you entered, tells you if it is malformed, and then reports the
+ * real state of the system rather than a fabricated result.
+ *
+ * THE `searching` STATE IS REAL, AND IT IS BRIEF. `§18.4` requires a loading state, and the region
+ * carries `aria-busy="true"` while it is in it (the composing half of `docs/ACCESSIBILITY.md` B4).
+ * With nothing to wait for, that interval is one task. It is NOT padded with a timer: simulating
+ * work that is not happening would be theatre, and this product's whole argument is that it does
+ * not do that.
+ *
+ * EVERY RESULT STATE IS PRE-RENDERED IN THE HTML and toggled with `hidden`. Three consequences,
+ * all of them wanted: each state is a designed render rather than a template that might be wrong,
+ * each is reachable without JavaScript having to build it, and `apps/web/scripts/verify-dist.mjs`
+ * can enumerate them from the built page.
+ *
+ * COPY REACHES THE SCRIPT THROUGH `data-*` ATTRIBUTES. An Astro `<script>` is a separate module and
+ * cannot read this frontmatter; `define:vars` would solve that by making the script INLINE, which
+ * `script-src 'self'` refuses. Data attributes keep every string in `lib/copy` and the script free
+ * of literals.
+ */
+import { Callout, Card, ProvenanceChip } from '@delaypilot/ui'
+import {
+  Disclaimer,
+  FlightLookupFields,
+  LoadingBlock,
+} from '../../../../packages/ui/src/patterns/index.ts'
+import { lookup } from '../lib/copy/lookup.ts'
+import { disclaimerLabels } from './copy-gaps.ts'
+
+interface Props {
+  /** Heading level, so the form sits correctly under the section it is placed in. */
+  headingLevel?: 2 | 3
+}
+
+const { headingLevel = 2 } = Astro.props
+const Heading = headingLevel === 2 ? 'h2' : 'h3'
+---
+
+<div class="dpx-lookup" id="track-a-flight" tabindex="-1">
+  <Heading class="dpx-lookup__title" id="lookup-title">{lookup.heading}</Heading>
+  <p class="dpx-lookup__intro">{lookup.intro}</p>
+
+  <form
+    data-dp-lookup
+    aria-labelledby="lookup-title"
+    novalidate
+    data-message-airline={lookup.validation.airlineRequired}
+    data-message-flight={lookup.validation.flightNumberInvalid}
+    data-message-date={lookup.validation.dateInvalid}
+  >
+    <div class="dpx-errors" hidden tabindex="-1" data-dp-errors>
+      <Callout severity="urgent" title={lookup.validation.summaryHeading}>
+        <ul class="dpx-errors__list" data-dp-errors-list></ul>
+      </Callout>
+    </div>
+
+    <FlightLookupFields
+      listboxId="lookup-airline-listbox"
+      copy={{
+        airlineLabel: lookup.fields.airline.label,
+        airlineHint: lookup.fields.airline.help,
+        airlineExample: lookup.fields.airline.example,
+        flightNumberLabel: lookup.fields.flightNumber.label,
+        flightNumberHint: lookup.fields.flightNumber.help,
+        flightNumberExample: lookup.fields.flightNumber.example,
+        dateLabel: lookup.fields.date.label,
+        dateHint: lookup.fields.date.help,
+        originLabel: lookup.fields.origin.label,
+        originHint: lookup.fields.origin.help,
+        destinationLabel: lookup.fields.destination.label,
+        destinationHint: lookup.fields.destination.help,
+        airlineListboxLabel: lookup.fields.airline.label,
+        dateExample: lookup.fields.date.example,
+        originExample: lookup.fields.origin.example,
+        destinationExample: lookup.fields.destination.example,
+      }}
+    />
+
+    <div class="dpx-lookup__actions">
+      <button class="dp-button dp-button--primary" type="submit">{lookup.submit}</button>
+      <a class="dp-button dp-button--secondary" href="#demonstration">
+        {lookup.demoShortcut.label}
+      </a>
+    </div>
+  </form>
+
+  <p class="dpx-lookup__no-code">
+    <strong>{lookup.noBookingCode.line}</strong>
+    {lookup.noBookingCode.why}
+  </p>
+
+  <div class="dpx-lookup__result" data-dp-result>
+    <p class="dpx-lookup__note" data-dp-state="initial">{lookup.states.initial}</p>
+
+    <div data-dp-state="searching" hidden>
+      <LoadingBlock label={lookup.heading} message={lookup.states.searching} lines={3} />
+    </div>
+
+    <div
+      class="dpp-state"
+      data-state="provider_unavailable"
+      data-dp-state="unavailable"
+      tabindex="-1"
+      hidden
+    >
+      <Card>
+        <ProvenanceChip kind="unavailable" />
+        <p class="dpx-lookup__note">{lookup.states.providerUnavailable}</p>
+        <p class="dpx-lookup__note">{lookup.states.providerUnavailableNextStep}</p>
+        <p class="dpx-lookup__actions">
+          <a class="dp-button dp-button--secondary" href="#demonstration">
+            {lookup.demoShortcut.label}
+          </a>
+        </p>
+        <p class="dpx-lookup__note">{lookup.demoShortcut.help}</p>
+        <Disclaimer label={disclaimerLabels.flightData}>{lookup.disclaimer}</Disclaimer>
+      </Card>
+    </div>
+  </div>
+</div>
+
+<script>
+  const form = document.querySelector<HTMLFormElement>('[data-dp-lookup]')
+  const root = document.querySelector<HTMLDivElement>('.dpx-lookup')
+
+  if (form !== null && root !== null) {
+    const errorBox = root.querySelector<HTMLDivElement>('[data-dp-errors]')
+    const errorList = root.querySelector<HTMLUListElement>('[data-dp-errors-list]')
+    const states = new Map<string, HTMLElement>()
+    for (const element of root.querySelectorAll<HTMLElement>('[data-dp-state]')) {
+      const name = element.getAttribute('data-dp-state')
+      if (name !== null) states.set(name, element)
+    }
+
+    const field = (name: string): HTMLInputElement | null =>
+      form.querySelector<HTMLInputElement>(`[data-dp-field="${name}"]`)
+
+    const show = (name: string): void => {
+      for (const [key, element] of states) element.hidden = key !== name
+    }
+
+    /** Write an error into the `Field` markup contract, using the control's own generated id. */
+    const setFieldError = (input: HTMLInputElement, message: string | null): string => {
+      const wrapper = input.closest('.dp-field')
+      const errorId = `${input.id}-error`
+      if (wrapper === null) return errorId
+
+      let paragraph = wrapper.querySelector<HTMLParagraphElement>(`#${CSS.escape(errorId)}`)
+      if (message === null) {
+        paragraph?.remove()
+        wrapper.classList.remove('dp-field--invalid')
+        input.removeAttribute('aria-invalid')
+        const described = (input.getAttribute('aria-describedby') ?? '')
+          .split(' ')
+          .filter((token) => token !== '' && token !== errorId)
+        if (described.length > 0) input.setAttribute('aria-describedby', described.join(' '))
+        else input.removeAttribute('aria-describedby')
+        return errorId
+      }
+
+      if (paragraph === null) {
+        paragraph = document.createElement('p')
+        paragraph.className = 'dp-field__error'
+        paragraph.id = errorId
+        wrapper.append(paragraph)
+      }
+      paragraph.textContent = message
+      wrapper.classList.add('dp-field--invalid')
+      input.setAttribute('aria-invalid', 'true')
+      const described = (input.getAttribute('aria-describedby') ?? '')
+        .split(' ')
+        .filter((token) => token !== '')
+      if (!described.includes(errorId)) described.push(errorId)
+      input.setAttribute('aria-describedby', described.join(' '))
+      return errorId
+    }
+
+    const validate = (): { readonly input: HTMLInputElement; readonly message: string }[] => {
+      const problems: { input: HTMLInputElement; message: string }[] = []
+
+      const airline = field('airline')
+      if (airline !== null) {
+        const message = airline.value.trim() === '' ? (form.dataset['messageAirline'] ?? '') : null
+        setFieldError(airline, message)
+        if (message !== null) problems.push({ input: airline, message })
+      }
+
+      const flight = field('flightNumber')
+      if (flight !== null) {
+        const value = flight.value.trim()
+        const message = /^\d{1,4}$/.test(value) ? null : (form.dataset['messageFlight'] ?? '')
+        setFieldError(flight, message)
+        if (message !== null) problems.push({ input: flight, message })
+      }
+
+      const date = field('date')
+      if (date !== null) {
+        const message = /^\d{4}-\d{2}-\d{2}$/.test(date.value)
+          ? null
+          : (form.dataset['messageDate'] ?? '')
+        setFieldError(date, message)
+        if (message !== null) problems.push({ input: date, message })
+      }
+
+      return problems
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault()
+      const problems = validate()
+
+      if (errorBox !== null && errorList !== null) {
+        errorList.replaceChildren()
+        if (problems.length > 0) {
+          for (const problem of problems) {
+            const item = document.createElement('li')
+            const link = document.createElement('a')
+            link.href = `#${problem.input.id}`
+            link.textContent = problem.message
+            link.addEventListener('click', (linkEvent) => {
+              linkEvent.preventDefault()
+              problem.input.focus()
+            })
+            item.append(link)
+            errorList.append(item)
+          }
+          errorBox.hidden = false
+          errorBox.focus()
+          show('initial')
+          return
+        }
+        errorBox.hidden = true
+      }
+
+      // No provider is connected, so the region is busy for exactly one task. It is not padded.
+      show('searching')
+      const unavailable = states.get('unavailable')
+      setTimeout(() => {
+        show('unavailable')
+        unavailable?.focus()
+      }, 0)
+    })
+
+    // Progressive upgrade for the hero's primary call to action: the anchor already lands on the
+    // lookup without JavaScript; with it, focus goes straight into the first field.
+    for (const trigger of document.querySelectorAll<HTMLAnchorElement>('[data-dp-focus-lookup]')) {
+      trigger.addEventListener('click', (event) => {
+        const airline = field('airline')
+        if (airline === null) return
+        event.preventDefault()
+        root.scrollIntoView({ block: 'start' })
+        airline.focus()
+      })
+    }
+  }
+</script>

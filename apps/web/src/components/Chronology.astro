@@ -1,0 +1,38 @@
+---
+/**
+ * The scroll-scrubbed demonstration chronology — ADR 0003 rule 2d.
+ *
+ * THE BASE DOM IS A COMPLETE, READABLE, CORRECTLY ORDERED LIST. That is the rule, and it is not a
+ * formality: with no scroll timeline, with JavaScript off, under `prefers-reduced-motion: reduce`,
+ * or in a browser that has never heard of `animation-timeline`, every one of the five steps renders
+ * at full strength in the right order. The scrub is dimming and a 16 px lift on entry — purely
+ * additive, opacity and transform only, no layout property, and no JavaScript scroll handler
+ * anywhere (`app.css §10`).
+ *
+ * `chronology.staticNote` is rendered unconditionally, under the list, and says exactly that: the
+ * list above is the whole chronology and the motion carries no information of its own. A reader who
+ * cannot see the motion has not missed anything, and is told so rather than left to wonder.
+ *
+ * NO TIMES AND NO NUMBERS. The five steps describe what CHANGES; the demonstration cockpit is where
+ * labelled demo values live. A chronology with clock times invites a reader to treat it as a
+ * schedule, and this one is not.
+ */
+import { chronology } from '../lib/copy/chronology.ts'
+
+const steps = chronology.order.map((key) => ({
+  key,
+  ...chronology.steps[key as keyof typeof chronology.steps],
+}))
+---
+
+<ol class="dpx-chronology">
+  {
+    steps.map((step) => (
+      <li class="dpx-chronology__step">
+        <p class="dpx-chronology__label">{step.label}</p>
+        <p class="dpx-chronology__description">{step.description}</p>
+      </li>
+    ))
+  }
+</ol>
+<p class="dpx-chronology__note">{chronology.staticNote}</p>

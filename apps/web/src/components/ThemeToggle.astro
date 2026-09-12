@@ -1,0 +1,118 @@
+---
+/**
+ * Theme control — system / light / dark.
+ *
+ * NATIVE RADIOS, not three buttons with `aria-checked`. `System` is a real third choice, not the
+ * absence of a choice, so a radio group is the honest shape — and the platform then supplies arrow
+ * key navigation, the roving tab stop, and the "2 of 3" announcement for free. The inputs are
+ * clipped rather than `display: none`, so they stay focusable and stay in the accessibility tree;
+ * the focus ring is redrawn on the visible pill in `layouts/app.css`.
+ *
+ * The choice is stored in `localStorage` under `dp-theme` and applied as `data-theme` on `<html>`,
+ * which is the override contract `apps/web/src/styles/tokens.css` publishes. `system` REMOVES the
+ * attribute, so the stylesheet's `prefers-color-scheme` block takes over again.
+ *
+ * The script below is an Astro `<script>`, which Vite emits as an external same-origin module —
+ * allowed by `script-src 'self'` with no CSP change. The flash of the wrong theme on first paint is
+ * handled separately and earlier, by the blocking classic script at `/theme-init.js`
+ * (`apps/web/src/pages/theme-init.js.ts`), because a module script is deferred and would arrive
+ * after the first paint.
+ *
+ * Before that module runs, `System` is the checked radio even for a reader who chose dark. The
+ * rendered THEME is already correct by then — `/theme-init.js` saw to that — so what the module
+ * corrects is the control's own state, not the page's appearance.
+ */
+import { nav } from '../lib/copy/nav.ts'
+
+interface Props {
+  /**
+   * Where this instance sits. The header copy is hidden below 1024px, where there is no room for it
+   * beside the brand and the menu button; the drawer copy is the one a phone uses.
+   */
+  placement?: 'header' | 'drawer'
+}
+
+const { placement = 'header' } = Astro.props
+
+const options = [
+  { value: 'system', label: nav.theme.system },
+  { value: 'light', label: nav.theme.light },
+  { value: 'dark', label: nav.theme.dark },
+] as const
+---
+
+<fieldset class:list={['dpx-theme', placement === 'drawer' && 'dpx-theme--drawer']} data-dp-theme>
+  <legend class="dpx-theme__legend">{nav.theme.groupLabel}</legend>
+  {
+    options.map((option) => (
+      <label class="dpx-theme__option">
+        <input
+          class="dpx-theme__input"
+          type="radio"
+          name={`dp-theme-${placement}`}
+          value={option.value}
+          checked={option.value === 'system'}
+        />
+        <span>{option.label}</span>
+      </label>
+    ))
+  }
+</fieldset>
+
+<script>
+  const STORAGE_KEY = 'dp-theme'
+
+  /*
+   * Two groups exist in the document — one in the header, one in the mobile drawer — and exactly
+   * one is rendered at any width, because the other is inside `display: none` or inside a closed
+   * `<dialog>`.
+   *
+   * THEY MUST NOT SHARE A `name`. Two radio inputs with the same name in one document are ONE
+   * group, so checking the drawer's "System" silently unchecked the header's, and after this loop
+   * ran neither control showed a selection at all — measured in Chromium, every option `checked`
+   * false. Each group therefore gets its own name (`dp-theme-header`, `dp-theme-drawer`) and the
+   * two are kept in step here, by value, instead.
+   */
+  const groups = Array.from(document.querySelectorAll<HTMLFieldSetElement>('[data-dp-theme]'))
+  const inputs = groups.flatMap((group) =>
+    Array.from(group.querySelectorAll<HTMLInputElement>('input[type="radio"]')),
+  )
+
+  const read = (): string => {
+    try {
+      return localStorage.getItem(STORAGE_KEY) ?? 'system'
+    } catch {
+      return 'system'
+    }
+  }
+
+  const apply = (choice: string): void => {
+    if (choice === 'light' || choice === 'dark') {
+      document.documentElement.setAttribute('data-theme', choice)
+    } else {
+      document.documentElement.removeAttribute('data-theme')
+    }
+  }
+
+  // Sync the controls to the stored choice. `/theme-init.js` has already applied it to the page.
+  const stored = read()
+  for (const input of inputs) {
+    input.checked = input.value === stored
+  }
+
+  for (const group of groups) {
+    group.addEventListener('change', (event) => {
+      const target = event.target
+      if (!(target instanceof HTMLInputElement) || !target.checked) return
+      apply(target.value)
+      for (const input of inputs) {
+        input.checked = input.value === target.value
+      }
+      try {
+        localStorage.setItem(STORAGE_KEY, target.value)
+      } catch {
+        // Storage unavailable. The attribute is still applied for this document.
+      }
+    })
+  }
+</script>

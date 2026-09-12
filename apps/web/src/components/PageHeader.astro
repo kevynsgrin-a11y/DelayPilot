@@ -1,0 +1,24 @@
+---
+/**
+ * The heading block for every route that is not the homepage.
+ *
+ * One `<h1>` per page, its introduction bounded to a readable measure, and — where the page has
+ * one — an eyebrow above it. Nothing here animates: the heading is the first thing a reader needs,
+ * and ADR 0003 rule 3 forbids motion a user must wait through before content is readable.
+ */
+interface Props {
+  title: string
+  intro: string
+  eyebrow?: string | undefined
+}
+
+const { title, intro, eyebrow } = Astro.props
+---
+
+<header class="dpx-page-header">
+  <div class="dpx-shell">
+    {eyebrow !== undefined && <p class="dpx-section__eyebrow">{eyebrow}</p>}
+    <h1 class="dpx-page-header__title">{title}</h1>
+    <p class="dpx-page-header__intro">{intro}</p>
+  </div>
+</header>

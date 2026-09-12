@@ -1,0 +1,57 @@
+---
+/**
+ * `/data-sources/` — the sources DelayPilot is built to read, and the plain statement that none of
+ * them is connected here.
+ *
+ * `DIRECTIVE.md §33` names them; this page lists each by name with its intended use, and says in
+ * its own section that NOTHING is connected in this deployment. Naming a provider is not a
+ * relationship: there is no logo, no wordmark and no claim of endorsement anywhere on the page
+ * (`AGENTS.md §1.4`), and the "candidates" section says so outright.
+ *
+ * The six provenance labels are rendered as the real chips with their meanings, because this is the
+ * page a reader lands on when they want to know what "Stale" means.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import ProvenanceLegend from '../components/ProvenanceLegend.astro'
+import Section from '../components/Section.astro'
+import { registryVersion } from '../components/source-registry.ts'
+
+import { pages } from '../lib/copy/pages.ts'
+
+const page = pages.dataSources
+---
+
+<BaseLayout title={page.title} description={page.description} nav="data-sources">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.sections.today.heading}>
+    <p class="dpx-section__intro">{page.sections.today.body}</p>
+  </Section>
+
+  <Section heading={page.sections.candidates.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.candidates.body}</p>
+    <dl class="dpx-definitions">
+      {
+        page.sources.map((source) => (
+          <div class="dpx-definition">
+            <dt class="dpx-definition__term">{source.name}</dt>
+            <dd class="dpx-definition__body">{source.use}</dd>
+          </div>
+        ))
+      }
+    </dl>
+  </Section>
+
+  <Section heading={page.sections.labels.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.labels.body}</p>
+    <ProvenanceLegend />
+  </Section>
+
+  <Section heading={page.sections.verification.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.verification.body}</p>
+    <p class="dpx-lookup__note">
+      {pages.article.sourcesHeading}: {registryVersion}
+    </p>
+  </Section>
+</BaseLayout>

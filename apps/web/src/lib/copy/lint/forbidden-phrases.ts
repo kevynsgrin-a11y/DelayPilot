@@ -76,10 +76,15 @@ const COPY_TREES: readonly string[] = [
 
 /**
  * Assembled rather than written, for the reason in the header: this file must not contain the
- * literals it bans. These two are single tokens, so there is no separator to hide behind.
+ * literals it bans. These three are single tokens, so there is no separator to hide behind.
+ *
+ * `RANK_NUMERAL` is the hash-and-digit spelling of a rank claim. It has to be assembled for the
+ * same reason as the other two — the scanner keeps `#` when a digit follows it, so writing the
+ * literal here would make this file its own first hit.
  */
 const SUPERLATIVE = ['be', 'st'].join('')
 const TICKET_ABBREVIATION = ['pn', 'r'].join('')
+const RANK_NUMERAL = ['#', '1'].join('')
 
 export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
   // ── AGENTS.md §1.3, the enumerated list ────────────────────────────────────────────────────
@@ -183,6 +188,28 @@ export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
       // third-party symbol name that cannot be renamed here, and not a claim about anything.
       'best cmap',
     ],
+  },
+  /**
+   * The rank claim, in both spellings — the hash-and-digit form and the spelled form. Raised by
+   * `trust-compliance-officer`'s S3 sweep: the §7 superlative clause was enforced for two wordings
+   * and missed the one that marketing copy reaches for first. A rank is the same unsubstantiated
+   * claim as the superlative above, and DelayPilot has no ranking, no measurement, and no
+   * comparison set behind either spelling of it.
+   *
+   * Both were zero-hit across the scanned tree by hand before they landed, so these add enforcement
+   * and no backlog.
+   */
+  {
+    id: 'rank-claim-numeral',
+    tokens: [RANK_NUMERAL],
+    invariant: 'DIRECTIVE.md §7 — voice: the never list',
+    why: 'A rank claim with no ranking behind it. DelayPilot publishes no comparison and no measurement.',
+  },
+  {
+    id: 'rank-claim-words',
+    tokens: ['number', 'one'],
+    invariant: 'DIRECTIVE.md §7 — voice: the never list',
+    why: 'The spelled form of the same rank claim. Say what the product does instead.',
   },
 
   // ── Near misses. Same meaning, different words, banned for the same reason. ─────────────────

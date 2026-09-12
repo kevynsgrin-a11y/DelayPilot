@@ -69,8 +69,64 @@ export function bandDescription(band: Band): string {
 }
 
 function minutesPhrase(value: number): string {
-  const whole = Math.round(value)
-  return `${String(whole)} ${whole === 1 || whole === -1 ? 'minute' : 'minutes'}`
+  const whole = Math.round(Math.abs(value))
+  return `${String(whole)} ${whole === 1 ? 'minute' : 'minutes'}`
+}
+
+/**
+ * A duration in minutes, as a phrase. THE ONLY PLACE THE WORDS "minute" AND "minutes" ARE WRITTEN.
+ *
+ * It exists because the adapter was writing them: `pattern-copy.ts` carried its own `minutesWord`
+ * helper, which put two rendered words outside this module and outside one owner's hands. An
+ * adapter may compose copy exports; it may not author them (`docs/VOICE.md §12`).
+ *
+ * @param minutes a duration — the transfer components, the available window, the required time
+ *
+ * A NEGATIVE DURATION IS SPELLED, NEVER DRAWN. `-18` renders "minus 18 minutes", not "-18 minutes".
+ * A hyphen-minus is one glyph that assistive technology may drop or read inconsistently, and the
+ * value it flips is usually the one that decides whether a connection works. No reading from this
+ * module ever depends on it.
+ *
+ * A signed quantity should not arrive here at all — the only one on the connection surface is
+ * slack, and slack has its own sentence in `slackMinutesText`. This branch is the floor under a
+ * mis-routed value, not the intended path. A copy function never throws inside a render.
+ */
+export function minutesText(minutes: number): string {
+  const whole = Math.round(minutes)
+  return whole < 0 ? `minus ${minutesPhrase(whole)}` : minutesPhrase(whole)
+}
+
+/**
+ * The Slack row's reading: available time minus required transfer time, in words.
+ *
+ * WHY THIS IS NOT `minutesText`. Slack is the one signed quantity on the connection surface and the
+ * most consequential value on it — negative slack means the connection does not work as scheduled.
+ * Rendered through the shared duration helper it read "-18 minutes", which put the entire meaning
+ * of the row on a single hyphen: drop the glyph and "18 minutes" says the opposite of the truth, to
+ * the reader least able to check it. So the sign is carried by a word.
+ *
+ * @param minutes slack in minutes, or `null` when either input to it is unknown
+ *
+ * | Input | Reading             | Why                                                        |
+ * | ----- | ------------------- | ---------------------------------------------------------- |
+ * | `18`  | 18 minutes of slack | The quantity first, matching the tabular column it sits in |
+ * | `0`   | No slack            | Exactly none, and known to be none. Not "0 minutes"        |
+ * | `-18` | 18 minutes short    | Short of what the transfer needs. No glyph carries it      |
+ * | `null`| Slack unknown       | A statement about our information, not about the transfer  |
+ *
+ * `null` is not zero (`AGENTS.md §1.1`): "No slack" says the connection has none, "Slack unknown"
+ * says we do not know. The `null` branch is worded identically to `requiredOfAvailableText(null,
+ * null)` so the meter and the row beneath it name the same missing fact the same way.
+ *
+ * No branch equals a band label or a meter name (F24, `docs/VOICE.md §9.1`), and no branch writes a
+ * number into a string — every figure arrives as the argument.
+ */
+export function slackMinutesText(minutes: number | null): string {
+  if (minutes === null) return 'Slack unknown'
+  const whole = Math.round(minutes)
+  if (whole === 0) return 'No slack'
+  if (whole < 0) return `${minutesPhrase(whole)} short`
+  return `${minutesPhrase(whole)} of slack`
 }
 
 /**
@@ -103,7 +159,9 @@ export function requiredOfAvailableText(
   if (requiredMinutes === null && availableMinutes === null) return 'Slack unknown'
   if (requiredMinutes === null) return 'Required transfer time unknown'
   if (availableMinutes === null) return 'Available connection time unknown'
-  return `${String(Math.round(requiredMinutes))} of ${minutesPhrase(availableMinutes)}`
+  // Through `minutesText`, not the private helper: a window that somehow arrives negative is
+  // spelled rather than drawn, for the reason in that function's note.
+  return `${String(Math.round(requiredMinutes))} of ${minutesText(availableMinutes)}`
 }
 
 /**

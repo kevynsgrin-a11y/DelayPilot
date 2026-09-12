@@ -73,19 +73,34 @@ missing fact and, where one exists, the next useful step. Those sentences live i
 `provenance.unavailableReasons` so that one missing fact has one wording everywhere.
 
 `Demo` never travels alone. `AGENTS.md §1.2` requires the label to be **accompanied by**
-`results.demo` — "Demo data — not a live flight." The S3 review found the rule read two ways on the
-rendered site, so it is now stated once, precisely:
+`results.demo` — "Demo data — not a live flight." — and `DIRECTIVE.md §28` writes it as **"Every
+demo panel says 'Demo data — not a live flight.'"** Neither admits an exception, and this file
+cannot create one: the precedence at the top of this page runs `AGENTS.md` > `DIRECTIVE.md` > here.
 
-- **Inside a bannered demonstration section** — one that opens with `cockpit.demoBanner`
-  ("Demonstration itinerary") and `results.demo` **above** the panels — the section's caption
-  accompanies every `Demo` chip beneath it. The homepage cockpit is built this way: banner and
-  caption first, then thirteen labelled panels. Repeating the sentence on each one would turn it
-  into wallpaper, which is the failure `§26` placement is trying to avoid in the other direction.
-- **Anywhere else — every panel carrying a `Demo` chip carries the caption itself.** A demo segment
-  card dropped into an explanatory page has no banner above it, so the chip is the only thing
-  telling a reader the flight is not real, and a chip alone is a word, not a sentence.
-- **A provenance legend is not a panel.** A chip in a legend labels the vocabulary, not a datum, and
-  is accompanied by `provenanceMeanings.demo`.
+> **Rule: every panel that displays a demo operational value carries the sentence itself.**
+
+- **The caption is per panel, and it is the panel's own.** It renders as the muted provenance
+  caption beside that panel's `Demo` chip — the `.dpp-provenance__demo` line five patterns already
+  render — never as a repeated banner and never as a heading.
+- **The banner is the section opener, not a substitute.** `cockpit.demoBanner` ("Demonstration
+  itinerary") still opens the demonstration section. It does not discharge the per-panel
+  requirement for the panels beneath it.
+- **A provenance legend is not a panel.** A chip in a legend labels the vocabulary rather than a
+  datum, and is accompanied by `provenanceMeanings.demo`.
+
+**An earlier revision of this section exempted panels inside a bannered section, on the grounds
+that repeating the sentence would turn it into wallpaper. That exemption is withdrawn**
+(orchestrator resolution, `DIRECTIVE.md §3.1`, on `trust-compliance-officer`'s F4). Two reasons,
+and the second is the one that settles it:
+
+1. A voice guide may tighten an invariant. It may not relax one, and that is what the exemption did.
+2. The trust sweep measured the failure the exemption assumed away: **on a phone the banner scrolls
+   off**, and what is left beside a fixture value is a bare `Demo` chip — one word, no sentence, on
+   the surface where a reader is most likely to mistake a demonstration for their own flight.
+
+The wallpaper concern is real and is answered by **placement and weight** — a muted caption beside
+the chip it belongs to, not a stack of banners — never by omission. A sentence a reader can skim
+past costs nothing; a sentence that is not there costs them the assumption that the number is real.
 
 ---
 
@@ -154,6 +169,11 @@ tests, fixtures, notifications, or documentation (`AGENTS.md §1.3`).
 - "your claim is approved"
 - "the airline owes you"
 - "we guarantee"
+- "#1" and "number one" — a rank claim is the §7 superlative in another spelling, and DelayPilot
+  publishes no ranking, no measurement, and no comparison set. Added in the S3 review at
+  `trust-compliance-officer`'s request: the clause was enforced for two wordings and missed the one
+  marketing copy reaches for first. Rules `rank-claim-numeral` and `rank-claim-words`; zero hits
+  across the scanned tree when they landed.
 
 ### 4.3 Ticket-identifier vocabulary — `AGENTS.md §2`
 
@@ -282,6 +302,14 @@ Case-insensitive, whitespace-normalized, and tolerant of:
 | escape sequences       | `'Your flight will\nbe canceled'`         |
 | capitals               | `LEGALLY ENTITLED`                        |
 
+**One character is not folded: `#` immediately before a digit.** It is a separator everywhere else,
+so markdown headings, blockquote markers and bullets still never break a phrase — but folding it
+before a digit reduced the rank numeral to a bare digit, which cannot be matched without matching
+every digit in the repository. Keeping it there makes that one claim addressable and changes nothing
+else: an issue reference, a section reference and a hex colour keep their `#` and are excluded by the
+digit boundary on the pattern, so `#12`, `#3` and `#1a2b3c` are not hits. The clean fixture carries
+all four cases.
+
 Matching is anchored on non-alphanumeric boundaries, so `bestseller` and
 `unguaranteedcompensational` are not hits.
 
@@ -405,7 +433,7 @@ affiliate strings exist as constants and render nowhere.
 
 ---
 
-## 9. Three rules the reviews produced
+## 9. Five rules the reviews produced
 
 ### 9.1 F24 — a reading never equals its band
 
@@ -453,6 +481,20 @@ A `§27` result sentence is never a reading. It is the paragraph a reader gets a
 the words inside it: put through `valueText` it renders "Conditions are changing. Review the factors
 and keep alerts on., Watch", a full stop followed by a comma, and it duplicates the tile that
 already carries the sentence.
+
+**Confirmed against `docs/ACCESSIBILITY.md` B9 and F27.** Both surfaces take the same triple, and it
+needs no new string — every part of it already exists in `cockpit.ts`:
+
+| Slot                         | Export                         | Renders as                        |
+| ---------------------------- | ------------------------------ | --------------------------------- |
+| name (`label`, `aria-label`) | `cockpit.headings.assessment`  | Delay and cancellation assessment |
+| reading (`valueText`)        | `cockpit.assessment.bandLabel` | Risk band                         |
+| value (`bandLabel`)          | `bandLabel(band)`              | Watch / Disrupted                 |
+
+Announced "Delay and cancellation assessment, Risk band, Watch" on `/delay-risk/` and "… Disrupted"
+on the homepage. Three slots, three strings, none repeating another, and no number invented for a
+meter that has none. `copy.test.ts` asserts the three are pairwise distinct across every band, so a
+future edit cannot collapse two of them back together.
 
 ### 9.2 F17 — every new tab announces itself
 
@@ -514,6 +556,69 @@ Ask `ux-copy-steward` for the string; do not reintroduce it locally, and do not 
 `requiredOfAvailableText` with the arguments swapped — a swap is what produced the original defect,
 and a swap is invisible at the call site.
 
+### 9.4 No reading rests on a hyphen-minus
+
+Also from the S3 review, on the same surface. The Slack row rendered **`-18 minutes`**: the single
+most consequential value on a connection screen — negative slack means the connection does not work
+as scheduled — with its entire meaning carried by one glyph that assistive technology may drop or
+read inconsistently. Lose the glyph and "18 minutes" says the opposite of the truth, to the reader
+least able to check it against the picture.
+
+> **Rule: a sign is a word. No reading in this module renders a leading `-`.**
+
+`slackMinutesText(minutes)` is the Slack row's reading:
+
+| Input  | Reading               | Why                                                        |
+| ------ | --------------------- | ---------------------------------------------------------- |
+| `18`   | `18 minutes of slack` | The quantity first, matching the tabular column it sits in |
+| `1`    | `1 minute of slack`   | Pluralized                                                 |
+| `0`    | `No slack`            | Exactly none, and known to be none. Never "0 minutes"      |
+| `-18`  | `18 minutes short`    | Short of what the transfer needs. No glyph carries it      |
+| `null` | `Slack unknown`       | A statement about our information, not about the transfer  |
+
+`0` and `null` are different sentences and must never render as each other (`AGENTS.md §1.1`). The
+`null` branch is worded identically to `requiredOfAvailableText(null, null)`, so the meter and the
+row beneath it name the same missing fact the same way; `copy.test.ts` asserts that identity.
+
+`minutesText(minutes)` is the duration phrase — **the only place in the repository where the words
+"minute" and "minutes" are written.** It replaces the `minutesWord` helper that
+`apps/web/src/components/pattern-copy.ts` was authoring: an adapter may compose copy exports, it may
+not write them (§12). A negative arriving there is a mis-routed signed value rather than a duration,
+so it renders "minus 18 minutes" — still speakable, still no glyph — as a floor, not a feature.
+
+### 9.5 A repeated surface is told apart by the fact that distinguishes it
+
+`docs/ACCESSIBILITY.md` F26. `/connection-risk/` renders three connection cockpits to show the three
+reservation structures. Each was a `region` named "Connection" containing a `region` named "Every
+component of the required transfer time", so a landmark list offered **six entries under two names**
+and nothing said which example was which.
+
+> **Rule: when a page renders the same surface more than once, the name carries the fact that makes
+> the instances different — not a position, not a number.**
+
+"Connection one", "Connection two", "Connection three" would satisfy a uniqueness rule and help
+nobody: a reader jumping to a landmark needs to know which case they have landed in, and the case is
+what the examples differ by. The topology is that fact, and it is also the fact that changes the
+answer, so it is what the name carries:
+
+| Topology       | `connectionHeading(topology)`              | `connectionComponentsCaption(topology)`                                  |
+| -------------- | ------------------------------------------ | ------------------------------------------------------------------------ |
+| `protected`    | Connection on one protected itinerary      | Every component of the required transfer time on one protected itinerary |
+| `selfTransfer` | Connection on separate tickets             | … on separate tickets                                                    |
+| `unknown`      | Connection when the reservation is unknown | … when the reservation is unknown                                        |
+| `null`         | Connection                                 | Every component of the required transfer time                            |
+
+Every disambiguated name still **begins with the `§18.5` section word**, so a landmark list reads as
+one group of related things rather than three unrelated entries, and alphabetical landmark lists keep
+them together.
+
+`null` is the single-cockpit case and returns the plain heading. Disambiguation exists to tell things
+apart; where there is nothing to tell apart it is just a longer name, and the demonstration
+itinerary's one cockpit keeps the section heading its `§18.5` heading order declares.
+
+This is the shape a real trip needs, not only the explainer page: an itinerary with two connections
+renders two of these, and they will have to be told apart by something other than their position.
+
 ---
 
 ## 10. Notifications (`DIRECTIVE.md §16`)
@@ -557,27 +662,59 @@ Marketing unsubscribe copy is separate from operational messages and never share
 - **No exclamation marks.** Not one.
 - **Times** always carry the airport code and the time zone (`AGENTS.md §3.3`).
 
+### 11.1 Which spelling governs the content tree — ruling, 2026-09-12
+
+Raised by `content-editorial-lead`: `apps/web/src/content/**` is consistently British — _traveller_,
+_modelled_, _realise_, _honour_, _cancelled_ — while the rule above says American. The ruling, so
+that neither tree is edited twice:
+
+**1. American spelling governs the content tree too.** It is one product with one voice, and a
+reader who moves from a guide to the cockpit should not be able to tell that two people wrote them.
+`apps/web/src/content/**` is inside the scope this file declares at the top — "every string a user
+can read … and article bodies" — and nothing about a body being markdown changes that.
+
+**2. It is not this session's work.** The sweep is a dedicated S4 pass by
+`content-editorial-lead`, over a tree this agent does not own and must not touch. Until it lands,
+British spelling in a served article body is a known, recorded divergence and **not** a defect a
+build gate should fail on. A half-converted tree is worse than a consistent one in either dialect.
+
+**3. Slugs are exempt, permanently.** A slug is a URL identifier, not prose. `/guides/flight-cancelled-what-to-do/`
+is fixed by `DIRECTIVE.md §18.6`, which spells the launch article "flight cancelled — what to do",
+and a URL that has been published is a promise to everything that links to it. Changing one costs a
+redirect, a re-index, and every inbound link that does not follow it — to change a letter. Slugs
+stay as `§18.6` writes them, in that spelling, permanently.
+
+**4. An article TITLE follows §18.6 where §18.6 names it, and the house style otherwise.** The
+directive's own wording is the title of record for the twenty launch articles; the sweep converts
+body prose, not the titles the directive fixes. Where the directive names no title, American.
+
+**5. Quoted material is never converted, in any tree.** A regulator's words, a statute's words, an
+airline's published commitment and the `§26`/`§27` fixed text are transcribed exactly as their
+source writes them — including `DIRECTIVE.md`, which uses both spellings of "cancel(l)ed" in
+different places. The lint bans both spellings of the forbidden phrase for exactly that reason, and
+a house style that rewrites a quotation has stopped being a house style.
+
 ---
 
 ## 12. Where the strings live
 
 `apps/web/src/lib/copy/` — `index.ts` re-exports everything.
 
-| Module           | Holds                                                                         |
-| ---------------- | ----------------------------------------------------------------------------- |
-| `disclaimers.ts` | The seven fixed disclaimers and the placement map                             |
-| `results.ts`     | `§27` microcopy; `freshness()` and `freshnessUnknown()`                       |
-| `provenance.ts`  | The six labels, their meanings, and the `unavailable` reasons                 |
-| `bands.ts`       | Band words, the two meter readings, `delayValueText()` — §9.1 and §9.3        |
-| `nav.ts`         | Header, footer, menus, skip link, `newTab`, theme, `copyright(year)`          |
-| `home.ts`        | The homepage in the `§18.3` order                                             |
-| `lookup.ts`      | The `§18.4` form, its validation, and its `§17` states                        |
-| `cockpit.ts`     | The `§18.5` trip cockpit, per-field unknowns included                         |
-| `chronology.ts`  | The `§28` alert timeline, five steps, no clock times                          |
-| `pages.ts`       | Per-route metadata and body copy; the accessibility statement; article chrome |
-| `states.ts`      | The `§17` general states                                                      |
-| `demo.ts`        | The `§28` synthetic identifiers                                               |
-| `lint/`          | The forbidden-phrase scanner, its fixtures, and its tests                     |
+| Module           | Holds                                                                          |
+| ---------------- | ------------------------------------------------------------------------------ |
+| `disclaimers.ts` | The seven fixed disclaimers and the placement map                              |
+| `results.ts`     | `§27` microcopy; `freshness()` and `freshnessUnknown()`                        |
+| `provenance.ts`  | The six labels, their meanings, and the `unavailable` reasons                  |
+| `bands.ts`       | Band words, the meter reading, the slack and minute phrases — §9.1, §9.3, §9.4 |
+| `nav.ts`         | Header, footer, menus, skip link, `newTab`, theme, `copyright(year)`           |
+| `home.ts`        | The homepage in the `§18.3` order                                              |
+| `lookup.ts`      | The `§18.4` form, its validation, and its `§17` states                         |
+| `cockpit.ts`     | The `§18.5` trip cockpit, per-field unknowns, the per-topology names — §9.5    |
+| `chronology.ts`  | The `§28` alert timeline, five steps, no clock times                           |
+| `pages.ts`       | Per-route metadata and body copy; the accessibility statement; article chrome  |
+| `states.ts`      | The `§17` general states                                                       |
+| `demo.ts`        | The `§28` synthetic identifiers                                                |
+| `lint/`          | The forbidden-phrase scanner, its fixtures, and its tests                      |
 
 **No component, page, or layout holds a literal.** If a string is missing, it is requested by name
 in a handoff to `ux-copy-steward`, not invented in place. The slot renders the closest existing

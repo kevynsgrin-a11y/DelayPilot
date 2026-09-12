@@ -49,6 +49,9 @@ const joined = (...parts: readonly string[]): string => parts.join('')
 const TICKET_CODE = ['confirmation', 'code'].join(' ')
 /** A bare superlative claim, assembled. Used by the collocation test. */
 const SUPERLATIVE_CLAIM = joined('the ', 'be', 'st', ' tracker there is')
+/** The rank numeral and its spelled form, assembled. Used by the rank-claim test. */
+const RANK_NUMERAL = joined('#', '1')
+const RANK_WORDS = ['number', 'one'].join(' ')
 
 describe('normalization', () => {
   it('folds case, hyphens, underscores and runs of whitespace to one shape', () => {
@@ -109,6 +112,8 @@ describe('the seeded violation fixture', () => {
       'accuracy-superlative',
       'payout-promise',
       'ticket-identifier-a', // scoped rule, and the fixture is inside the copy tree
+      'rank-claim-numeral', // the hash-and-digit spelling, which survives normalization
+      'rank-claim-words', // and the spelled form of the same claim
     ]) {
       expect(ids, `expected the scanner to report ${id}`).toContain(id)
     }
@@ -260,6 +265,47 @@ describe('match precision', () => {
     const elsewhere = scanText(sentence, { file: 'apps/web/src/pages/privacy.astro' })
     expect(idsIn(inCopy)).toContain('ticket-identifier-d')
     expect(elsewhere).toEqual([])
+  })
+
+  it('catches a rank claim in both spellings, and nothing that merely looks like one', () => {
+    // Raised by trust-compliance-officer's S3 sweep: the §7 superlative clause was enforced for
+    // two wordings and missed the one marketing copy reaches for first.
+    expect(idsIn(scanText(`DelayPilot is ${RANK_NUMERAL} for connections.`))).toContain(
+      'rank-claim-numeral',
+    )
+    expect(idsIn(scanText(`The ${RANK_WORDS} choice of frequent flyers.`))).toContain(
+      'rank-claim-words',
+    )
+    // Capitals and a trailing full stop are the same claim.
+    expect(idsIn(scanText(`We are ${RANK_WORDS.toUpperCase()}.`))).toContain('rank-claim-words')
+
+    // The numeral survives normalization because `#` is kept before a digit — and ONLY there, so
+    // none of these is a hit. An issue reference, a section reference, a hex colour, and the
+    // ordinary word before an ordinary numeral all have to stay quiet, or the rule gets switched
+    // off within a week.
+    for (const quiet of [
+      'See issue #12 for the rationale.',
+      '#3 of the methodology explains it.',
+      'The accent is #1a2b3c in the light theme.',
+      '--ink-950:#07111f',
+      'Segment number 1 departs first.',
+      'It is numbered one of three.',
+    ]) {
+      expect(scanText(quiet), `"${quiet}" must not be a hit`).toEqual([])
+    }
+  })
+
+  it('keeps the hash as a separator everywhere a digit does not follow it', () => {
+    // The markdown tolerance this scanner was built for must survive the exception above: a
+    // heading marker, a blockquote and a bullet still fold to a space.
+    // A leading space is dropped by the collapse rule, so these fold to the bare word.
+    expect(normalize('## Heading').text).toBe('heading')
+    expect(normalize('#tag').text).toBe('tag')
+    expect(normalize('a ## b').text).toBe('a b')
+    // Assembled, like every other banned literal in this file: the scanner keeps this shape, so
+    // writing it out would make the test its own first hit.
+    expect(normalize(RANK_NUMERAL).text).toBe(RANK_NUMERAL)
+    expect(normalize(`${RANK_NUMERAL}a`).text).toBe(`${RANK_NUMERAL}a`)
   })
 
   it('covers article bodies, which are prose in DelayPilot voice', () => {

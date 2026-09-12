@@ -1,4 +1,4 @@
-# Clean fixture — the same nine passages, written the way DelayPilot writes
+# Clean fixture — the same ten passages, written the way DelayPilot writes
 
 Each section below is the corrected form of the matching section in
 `../violating/overclaim-sample.md`. The scanner must report zero hits here, with the allowlist
@@ -49,3 +49,9 @@ Every value carries the source it came from and how old that response is.
 ## 9. No ticket identifier is requested
 
 Enter an airline, a flight number, and a date. Nothing printed on your ticket is required.
+
+## 10. No rank, because there is no ranking
+
+DelayPilot shows the connection decomposition — available time, required transfer time, and the
+slack between them — with every component labeled by how it was derived. See issue #12 and section
+#3 of the methodology; a hex colour such as #1a2b3c is not a claim either.

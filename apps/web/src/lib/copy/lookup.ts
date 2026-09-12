@@ -54,12 +54,25 @@ export const lookup = {
     },
   },
 
+  /**
+   * THREE MESSAGES, BECAUSE THERE ARE THREE VALIDATIONS. Each one is wired: `LookupForm.astro`
+   * passes them to its script as `data-message-airline`, `data-message-flight` and
+   * `data-message-date`.
+   *
+   * A FOURTH WAS REMOVED IN THE S3 REVIEW and the reason is recorded here so it is reinstated
+   * rather than re-invented. `dateOutOfRange` — "That date is outside the range this lookup
+   * covers" — described a bound that does not exist: `FlightLookupFields` renders `type="date"`
+   * with no `min` and no `max`, and the range it would announce is a licensed provider's lookup
+   * window. No provider is connected, so any bound written today would be a system limit nobody
+   * measured (`AGENTS.md §1.1`) attached to a validation nothing can fail.
+   *
+   * When a provider lands with a real window, ask `ux-copy-steward` for the message and it comes
+   * back with the bound interpolated, never hardcoded.
+   */
   validation: {
     airlineRequired: 'Enter the operating airline, by name or by code.',
     flightNumberInvalid: 'Enter the flight number as digits only, without the airline code.',
     dateInvalid: 'Enter a departure date as a year, a month, and a day.',
-    dateOutOfRange:
-      'That date is outside the range this lookup covers. Choose a date closer to today.',
     /** Rendered at the top of the form on submit, with focus moved to it. */
     summaryHeading: 'Check these details before searching',
   },

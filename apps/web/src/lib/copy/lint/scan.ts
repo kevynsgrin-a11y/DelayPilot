@@ -13,7 +13,8 @@
  *  - **Separators folded to a single space**: whitespace, hyphens, underscores, dots, slashes,
  *    pipes, list and quote markers, and the dashes. This is what makes the scanner tolerant of LINE
  *    WRAPPING (a phrase broken across two prose lines), of markdown blockquote and bullet
- *    continuations, and of the hyphen/space variants the charter names.
+ *    continuations, and of the hyphen/space variants the charter names. The one exception is `#`
+ *    immediately before a digit, which is kept: see the note at that branch.
  *  - **`\n`, `\r`, `\t` escape sequences folded to a space**, because a phrase split across a
  *    template literal is still a phrase.
  *  - **camelCase split**, so an identifier spells out the claim it encodes.
@@ -260,7 +261,19 @@ export function normalize(source: string): Normalized {
       continue
     }
 
+    // `#` IS A SEPARATOR EXCEPT IMMEDIATELY BEFORE A DIGIT. It folds to a space so that markdown
+    // headings, blockquote markers and list continuations do not break a phrase — but folding it
+    // everywhere destroyed the one claim that is written with it, the rank numeral, which reduced
+    // to a bare digit and could not be matched without matching every digit in the repository.
+    // Keeping the `#` when a digit follows makes the claim addressable and changes nothing else:
+    // a markdown heading is `#` before a space or a letter, and a hex colour or an issue reference
+    // keeps its `#` but is excluded by the digit boundary on the phrase pattern (`#12` is not a
+    // hit). Verified before the rule landed: no bare rank numeral exists in the scanned tree.
     if (SEPARATORS.has(c)) {
+      if (c === '#' && isDigit(source.charAt(i + 1))) {
+        push(c, i)
+        continue
+      }
       push(' ', i)
       continue
     }

@@ -221,6 +221,23 @@ export const pages = {
     ],
     labelsHeading: 'The labels',
     labels: provenanceLabels,
+
+    /**
+     * The label on `registryVersion` from `data/rights/sources/registry.json`.
+     *
+     * The token looks like a date with something appended, and the S3 copy review found it rendered
+     * as "Sources: <token>" — on the one page whose whole subject is provenance, the one line that
+     * explained nothing. A reader cannot tell a revision identifier from a verification date by
+     * looking at it, and on this page the wrong guess is the flattering one: "checked on that day".
+     *
+     * So the label says REVISION, and `registryVersionNote` says outright that it is not a date on
+     * which anything was checked. Every record in this build has a null `lastVerifiedAt`
+     * (`pages.article.notYetVerified`), which makes the distinction load-bearing rather than
+     * pedantic.
+     */
+    registryVersionLabel: 'Source registry revision',
+    registryVersionNote:
+      'The revision of the registry this page is built from. It is a version identifier, not a date on which a source was checked: each source carries its own verified date, or says that it has none.',
   },
 
   about: {
@@ -281,6 +298,27 @@ export const pages = {
   },
 
   /**
+   * Shared chrome for the five policy pages (`privacy`, `terms`, `affiliate-disclosure`,
+   * `advertising-policy`, `editorial-policy`). Owner of the pages: `trust-compliance-officer`.
+   *
+   * THE PAGES ARE A CARVE-OUT; THIS IS NOT PART OF IT. `docs/VOICE.md §12.1` puts the body of a
+   * policy page outside "no page holds a literal", because the sentences are the commitment the
+   * company is making and are reviewed and dated as a unit. The carve-out is about the body, not
+   * the page: a string that appears identically on all five is chrome, and chrome has one owner.
+   *
+   * `relatedHeading` is the S3 review's F-13 — the same `h2` was transcribed five times. One
+   * export, five importers, and it can no longer drift into five slightly different headings.
+   *
+   * The per-page LINK DESCRIPTIONS underneath it stay in the pages: each one says why that
+   * particular policy is relevant to this particular page, which is an editorial judgment about
+   * the document and belongs with the document. The LINK LABELS should come from
+   * `nav.footer.links[<route>]`, which is already keyed by the same route paths these links use.
+   */
+  policy: {
+    relatedHeading: 'Related policies',
+  },
+
+  /**
    * The accessibility statement. Contract: `docs/ACCESSIBILITY.md §13`.
    *
    * Every factual claim here comes from `docs/ACCESSIBILITY.md` and nowhere else. The conformance
@@ -300,41 +338,79 @@ export const pages = {
     standardHeading: 'The standard claimed',
     /** Digits: a standard version identifier, not a measurement. */
     standard: 'WCAG 2.2 Level AA',
+    /**
+     * `§13.1` row 7. The touch-target claim was unscoped and is true only of the mobile layout: at
+     * the narrow width every non-inline target clears the product's own floor, while at the wide
+     * width five guide-card title links are shorter than it and pass the success criterion through
+     * its spacing exception. The product's floor is a `DIRECTIVE.md §18.7` MOBILE rule, so the
+     * sentence now says which layout it is a claim about. A tighter-than-required claim that is
+     * true on one layout and stated for both is still an overclaim (`AGENTS.md §1.3`).
+     */
     standardBody:
-      'DelayPilot is built to the Web Content Accessibility Guidelines at Level AA. Two rules are held tighter than the guidelines require: the reduced contrast allowance for large text is never used, and the minimum touch target is larger than the guideline floor.',
+      'DelayPilot is built to the Web Content Accessibility Guidelines at Level AA. Two rules are held tighter than the guidelines require: the reduced contrast allowance for large text is never used anywhere, and on the mobile layout every target that is not a link inside a sentence is larger than the guideline floor. On wider layouts some links are smaller than that and meet the criterion through its spacing exception instead.',
     lastVerifiedHeading: 'Last verified',
     /** Digits: the date of the review recorded in `docs/ACCESSIBILITY.md`. */
-    lastVerified: '2026-09-11',
+    lastVerified: '2026-09-12',
+    /**
+     * `§13.1` rows 1 and 2. The date and the SCOPE move together: a date that points at a narrower
+     * review than the one that happened understates coverage, which is the overclaim rule running
+     * in the unusual direction. The scope below is `docs/ACCESSIBILITY.md §15.1` and nothing else.
+     */
     lastVerifiedBody:
-      'That is the date of the most recent review. It covers the design system: the color tokens, the focus system, reduced motion, and the accessible semantics of the shared components.',
+      'That is the date of the most recent review. It covered every route this build serves, the two that are emitted only when a contact address is configured, and the interface states those routes can reach: automated rule checks on each route in both themes and with motion reduced, keyboard operation driven by real key presses, focus indicators measured from rendered pixels, browser zoom, reflow at narrow widths, text-spacing overrides, and touch-target sizes.',
 
     statusHeading: 'Conformance status',
     status: 'Partially conformant',
+    /**
+     * `§13.1` row 3. The old sentence gave a reason that has since become two-thirds false — the
+     * route-level and keyboard passes HAVE been run. The word "partially" is unchanged and the
+     * reason is now the true one and the stronger one: two Level AA failures are open on routes a
+     * reader can reach today. A status whose stated reason is out of date is a status a reader
+     * cannot use.
+     */
     statusBody:
-      'Partially conformant means parts of this site do not yet conform. The design system has been measured and reviewed and passed. The route-level checks, the keyboard passes, and the screen-reader passes have not been run, so no stronger word would be true.',
+      'Partially conformant means parts of this site do not yet conform. Two Level AA failures are open on routes you can reach right now, and they are listed below with everything else that is outstanding. The route-level and keyboard passes have been run; the screen-reader passes have not.',
     noClaim:
       'This statement does not say that DelayPilot is accessible, or that it meets every standard. An audit that has not been run cannot support that claim, and a statement you cannot rely on is worse than no statement.',
 
     knownIssuesHeading: 'Known issues',
+    /**
+     * `§13.1` rows 8, 9 and 10. The list was four entries and two of them had stopped being true:
+     * the sharing-image finding is closed, and the dialog finding is not true of anything a reader
+     * of this site can open. Sixteen findings from the most recent review were missing.
+     *
+     * A known-issues list that is shorter than the review it claims to summarize is the failure
+     * `§13` item 3 names outright — "no issue may be omitted because it is embarrassing" — and it
+     * fails a reader in the one direction that matters, because they are reading it to decide
+     * whether to trust the thing they just hit.
+     */
     knownIssuesIntro:
-      'Every finding still open from the most recent review, with what it affects and when it is expected to be fixed. Nothing has been left out for being awkward.',
+      'Everything still open from the most recent review, including the two failures that stop this site claiming more than it does. Each entry says what it affects, which rule it engages, and when it is expected to be fixed. Nothing has been left out for being awkward.',
     /** Digits: finding ids and success-criterion numbers. Identifiers, not measurements. */
     knownIssues: [
       {
-        id: 'F15',
-        affected: 'Dialogs and drawers',
-        criterion: 'SC 1.3.2 Meaningful Sequence, SC 2.4.3 Focus Order',
+        id: 'B8',
+        affected: 'The homepage and the connection-risk page, at the narrowest supported width',
+        criterion: 'SC 1.4.10 Reflow',
         description:
-          'Content behind an open dialog is not made inert. Focus is trapped inside the dialog and the dialog is marked as modal, so screen readers already treat the background as hidden, but a pointer or a stylus can still reach it.',
-        expected: 'With the dialog patterns in the current frontend release.',
+          'Both pages need sideways scrolling at the narrowest width the rule covers, because a minimum width inside the cockpit panels stops them narrowing far enough. Nothing is unreachable, but you have to scroll across to read it, and the same thing happens on a phone when text spacing is increased.',
+        expected: 'Being fixed now. This statement does not publish while it is open.',
       },
       {
-        id: 'F22',
-        affected: 'Social sharing image',
-        criterion: 'SC 1.1.1 Non-text Content',
+        id: 'B9',
+        affected: 'The band meter on the delay-risk page',
+        criterion: 'SC 2.4.6 Headings and Labels, SC 1.3.1 Info and Relationships',
         description:
-          'The sharing image carries the product name and the promise as artwork. Pages that reference it must publish a text alternative carrying both, or the card is an image with no text for anyone whose client does not render it.',
-        expected: 'With the page metadata work in the current release.',
+          'The meter that shows the risk band carried the name of a different measurement, so a screen reader announced it as a connection transfer time. There is no connection on that page. A sighted reader saw an unnamed scale, so the two were told different things.',
+        expected: 'Being fixed now. This statement does not publish while it is open.',
+      },
+      {
+        id: 'F15',
+        affected: 'Dialog and drawer components that no page uses yet',
+        criterion: 'SC 1.3.2 Meaningful Sequence, SC 2.4.3 Focus Order',
+        description:
+          'These two unreleased components do not make the page behind them inert, so a pointer or a stylus could reach it. The only dialog this site actually opens is the navigation drawer, which is a native dialog: the browser makes the background inert, and that has been measured rather than assumed.',
+        expected: 'Before either component is used on a page.',
       },
       {
         id: 'F23',
@@ -345,28 +421,151 @@ export const pages = {
         expected: 'With the theme definitions in the current release.',
       },
       {
-        id: 'F24',
-        affected: 'Slack and delay meters',
-        criterion: 'SC 1.3.1 Info and Relationships, accessible name quality',
+        id: 'F25',
+        affected: 'Two panels on the homepage cockpit',
+        criterion: 'SC 1.3.1 Info and Relationships',
         description:
-          'The meter announces its reading and its band together. When a value was unknown, both were the same word and it stuttered. The strings now differ, so an unknown reading names the missing quantity first and the band second.',
-        expected: 'Fixed in this release. Confirmation waits on a screen-reader pass.',
+          'The weather-and-airspace panel and the Trip Pass panel render their titles as ordinary paragraphs rather than headings, so moving through the page heading by heading skips exactly the two panels that say something is unavailable.',
+        expected: 'With the callout work in the current release.',
+      },
+      {
+        id: 'F26',
+        affected: 'The connection-risk page',
+        criterion: 'Landmark uniqueness, SC 1.3.1 Info and Relationships',
+        description:
+          'The page shows three connection examples. Each is a region with the same name, and each contains a table region with the same name, so a landmark list offers six entries under two names and nothing tells the examples apart.',
+        expected: 'With the connection-risk work in the current release.',
+      },
+      {
+        id: 'F27',
+        affected: 'The risk-band meter on the homepage',
+        criterion: 'Accessible name quality',
+        description:
+          'The meter is named for the reading it gives, so it announces the same phrase twice in one breath before it gets to the band.',
+        expected: 'With the meter labels in the current release.',
+      },
+      {
+        id: 'F28',
+        affected: 'The loading example on the flight-status page',
+        criterion: 'SC 4.1.2 Name, Role, Value',
+        description:
+          'That page illustrates the loading state with a real loading block, so it permanently tells assistive technology that a region is busy when nothing is loading. Some software defers or skips a busy region.',
+        expected: 'With the flight-status examples in the current release.',
+      },
+      {
+        id: 'F29',
+        affected: 'Status pills on segment cards',
+        criterion: 'Accessible name quality',
+        description:
+          'Each status pill reads out the word "Status" after the status itself, because the name of the field was passed where a detail about the value belongs.',
+        expected: 'With the segment card in the current release.',
+      },
+      {
+        id: 'F30',
+        affected: 'The operational detail on the demonstration segments',
+        criterion: 'SC 1.3.1 Info and Relationships',
+        description:
+          'In that list the label "Status" is paired with the demonstration caption on one segment and with a real status sentence on another, so one label means two different things on one page.',
+        expected: 'With the demonstration fixture in the current release.',
+      },
+      {
+        id: 'F31',
+        affected: 'The rights table on the passenger-rights page',
+        criterion: 'SC 1.3.1 Info and Relationships, SC 1.4.10 Reflow',
+        description:
+          'The table has no caption, its row headers are not marked as headers, and it has no scrollable container, so it forces sideways scrolling at the narrowest width and cannot be scrolled with a keyboard.',
+        expected: 'With the article table work in the current release.',
+      },
+      {
+        id: 'F32',
+        affected: 'The error summary on the flight lookup',
+        criterion: 'SC 2.4.3 Focus Order, SC 4.1.2 Name, Role, Value',
+        description:
+          'Focus moves to the summary correctly and its outline is drawn, but the summary itself has no role and no name, so what gets announced when you land on it is left to the browser rather than stated.',
+        expected: 'With the lookup form in the current release.',
+      },
+      {
+        id: 'F33',
+        affected: 'The skip link and the main landmark',
+        criterion: 'SC 2.4.1 Bypass Blocks',
+        description:
+          'The main landmark cannot take focus itself. The skip link was measured working in the browser used for this review; without that attribute, some browser and screen-reader pairs handle it less well.',
+        expected: 'With the layout work in the current release.',
+      },
+      {
+        id: 'F34',
+        affected: 'Informational callouts and toasts',
+        criterion: 'Non-color cue integrity',
+        description:
+          'An informational notice wears the same glyph as the unknown state, whose meaning on this site is specifically that fresh information is missing. A neutral glyph now exists and is not yet used.',
+        expected: 'With the icon work in the current release.',
+      },
+      {
+        id: 'F35',
+        affected: 'The homepage hero on wide screens',
+        criterion: 'Decoration rule, no success criterion is failing today',
+        description:
+          'A decorative background layer reaches behind the end of one line of the hero text. Both themes stay above the contrast floor, but the measured pair moves, and the rule here is that decoration never changes a measured pair.',
+        expected: 'With the hero layout in the current release.',
+      },
+      {
+        id: 'F36',
+        affected: 'This statement',
+        criterion: 'Statement contract',
+        description:
+          'This page has been rewritten against the most recent review and is waiting for the accessibility lead to check it again. A statement about conformance is a factual claim about the review, so it does not publish on the say-so of whoever wrote it.',
+        expected: 'Before this page is published.',
+      },
+      {
+        id: 'F37',
+        affected: 'The feedback section on this page',
+        criterion: 'Statement contract',
+        description:
+          'The section pointed at the address as being below a sentence that renders above it, and it did not say how long a reply takes. The wording is fixed; the order of the two is being fixed with it.',
+        expected: 'Before this page is published.',
+      },
+      {
+        id: 'F38',
+        affected: 'The inlined route illustration',
+        criterion: 'Markup hygiene',
+        description:
+          'The illustration emits two attributes twice, because the source file already carries what the inliner adds. Nothing is wrong for a reader today; a duplicate attribute is a parse error that a stricter validator will report as one.',
+        expected: 'With the asset pipeline in the current release.',
       },
     ],
 
     notTestedHeading: 'What has not been tested yet',
+    /**
+     * `§13.1` row 4. Five of the six things this sentence listed have now been run. Leaving it up
+     * would understate the product to the person deciding whether to trust it — the overclaim rule
+     * pointing the other way, and just as misleading.
+     *
+     * The remaining gap is stated precisely, because the distinction matters: the review read the
+     * browser's accessibility tree, which is what a screen reader is GIVEN, not what it SAYS.
+     */
     notTestedBody:
-      'Automated checks on each route, keyboard-only passes of the main journeys, screen-reader passes, browser zoom, reflow at a narrow width, and text-spacing overrides have not been run. They need a browser and assistive technology, and neither exists in the environment where this release was built. They are scheduled for the quality sweep before launch.',
+      'One thing has not been done: a pass with a real screen reader. The review read the semantics out of the browser instead — the roles, the names, the states, and the order, which is what a screen reader is handed. That catches a missing name, a wrong role, or a broken order. It does not catch how a sentence lands on someone standing at a gate. No screen reader can be installed in the environment this release is built in, so that pass is scheduled for the quality sweep before launch.',
 
     environmentsHeading: 'What was tested, and with what',
+    /** `§13.1` row 5. A real browser drove every route-level check; the old sentence denied it. */
     environmentsIntro:
-      'The checks that have been run were run without a browser: contrast measured directly from the shipped stylesheet, and the shared components rendered to markup and read.',
+      'The route-level checks were run in a real browser, driving real key presses, against the built site served under the same security policy the live site uses. Contrast was measured from rendered pixels and from the shipped stylesheet rather than estimated, and focus indicators were measured the same way.',
     /** Digits: tool version identifiers, pinned to the verification date above. */
     environments: [
       {
+        name: 'Chromium',
+        version: '1194',
+        used: 'Driving every route-level check: keyboard walks, focus and contrast measurement from rendered pixels, zoom, reflow, text spacing, and touch-target sizes.',
+      },
+      {
+        name: 'axe-core',
+        version: '4.13.0',
+        used: 'The automated rule sweep, run on each route in both themes and with motion reduced.',
+      },
+      {
         name: 'Node.js',
         version: '22.22.2',
-        used: 'Running the contrast measurements and the component render harness.',
+        used: 'Running the harnesses, the contrast measurements, and the component render checks.',
       },
       {
         name: 'Vitest',
@@ -379,8 +578,14 @@ export const pages = {
         used: 'Rendering each shared component to markup so its roles, names, and states could be read as a screen reader would receive them.',
       },
     ],
+    /**
+     * `§13.1` row 6. The browser half was false and is removed; the screen-reader half is kept
+     * word for word, because it states the limit precisely and the reviewer asked that it survive.
+     * The third sentence is added: one engine is not several, and a result in one engine should
+     * not be read as a result everywhere.
+     */
     environmentsNotTested:
-      'No browser and no screen reader has been used. There is no Safari with VoiceOver result here, no Firefox with NVDA result, and none is implied by anything above.',
+      'No screen reader has been used. There is no Safari with VoiceOver result here, no Firefox with NVDA result, and none is implied by anything above. One browser engine was used, not several, so nothing here is a claim about how another one behaves.',
 
     methodHeading: 'How this was assessed',
     method:
@@ -389,8 +594,15 @@ export const pages = {
     feedbackHeading: 'Report a barrier',
     feedbackIntro:
       'If something here stopped you, tell us what you were trying to do and what happened. A description of the barrier is enough; you do not need to know which rule it breaks.',
+    /**
+     * `§13.1` row 11 / F37. The old wording said "the address below" while the address renders
+     * ABOVE it. Reworded to be ORDER-NEUTRAL rather than re-pointed, so it stays true whichever
+     * way `frontend-ui-engineer` settles the ordering, and cannot be falsified again by a layout
+     * change. On a page whose argument is that it rounds nothing up, a wrong spatial reference is
+     * the wrong kind of error to ship.
+     */
     feedbackNoJavaScript:
-      'This page and the address below work without JavaScript and without solving a puzzle.',
+      'This page and the email address on it work without JavaScript and without solving a puzzle.',
   },
 
   contact: {
@@ -473,20 +685,33 @@ export const pages = {
  * into copy is an address that goes stale. When none is configured, the statement says so plainly:
  * `docs/ACCESSIBILITY.md §13` requires a feedback route that reaches a person, and a link to an
  * address that does not exist would be a dead control (`AGENTS.md §1.6`).
+ *
+ * `responseTime` IS A THIRD FIELD, AND THAT IS THE FIX FOR `§13.1` ROW 12 / F37. It used to be
+ * folded into `body`, which the shell renders only on the no-address branch — so on the branch that
+ * actually ships, the one sentence `§13` item 5 requires by name reached nobody. A required element
+ * hidden inside a fallback string is a required element that is missing, and it was missing for the
+ * reason these things usually are: nothing named it, so nothing could notice it was gone. Now it is
+ * its own field, present on BOTH branches, and `copy.test.ts` asserts that.
+ *
+ * It is the same sentence as `/contact/`, deliberately. One promise about how long a reply takes,
+ * in one place, so the two pages cannot drift into two different promises.
  */
 export function accessibilityFeedback(contactEmail: string | null): {
   readonly body: string
   readonly address: string | null
+  readonly responseTime: string
 } {
   if (contactEmail === null || contactEmail.trim() === '') {
     return {
       body: 'No contact address is configured for this deployment, so there is no route to report a barrier from this page yet. This statement will name one as soon as there is one.',
       address: null,
+      responseTime: pages.contact.responseTime,
     }
   }
   return {
     body: `Email ${contactEmail}. ${pages.contact.responseTime}`,
     address: contactEmail,
+    responseTime: pages.contact.responseTime,
   }
 }
 

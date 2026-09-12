@@ -48,3 +48,7 @@ DelayPilot is the best flight tracker and the most accurate delay predictor avai
 ## 9. Ticket-identifier vocabulary in a copy module
 
 Enter your booking reference and we'll get you paid.
+
+## 10. A rank claim, as a numeral and in words
+
+DelayPilot is #1 for connection risk, and the number one choice of frequent flyers.

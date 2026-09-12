@@ -170,11 +170,22 @@ export const cockpit = {
     requiredMinutes: 'Required transfer time',
     slack: 'Slack',
     /**
-     * `aria-label` for the connection slack meter, and for that meter only — a band meter on the
-     * delay and cancellation assessment is a different quantity and takes `headings.assessment`.
-     * The reading itself comes from `bands.requiredOfAvailableText`, in the bar's direction.
+     * `aria-label` for the connection meter, and for that meter only — a band meter on the delay
+     * and cancellation assessment is a different quantity and takes `headings.assessment`.
+     *
+     * THE NAME NAMES WHAT THE BAR FILLS, like the reading does (`docs/VOICE.md §9.3`). It used to
+     * say "Connection slack against the required transfer time", which named a third ratio: the
+     * bar fills required transfer time within the available window, and the reading beside it says
+     * "44 of 51 minutes" in that order, so a name about slack-against-required described neither.
+     * `BandMeter` renders `label` into `aria-label` and nowhere visible, so the mismatch was
+     * invisible to a sighted reader and unverifiable by the reader it was given to — which is the
+     * asymmetry `docs/ACCESSIBILITY.md` B9 was raised about, one surface over.
+     *
+     * Announced with the reading and the band: "Required transfer time within the available
+     * connection window, 44 of 51 minutes, Watch". Slack is still the row underneath, in words,
+     * from `bands.slackMinutesText`.
      */
-    meterLabel: 'Connection slack against the required transfer time',
+    meterLabel: 'Required transfer time within the available connection window',
     componentsHeading: 'Transfer components',
     componentsCaption: 'Every component of the required transfer time',
     columnStep: 'Transfer step',
@@ -338,11 +349,18 @@ export const cockpit = {
     methodLabel: 'Assessment method',
   },
 
-  /** `§18.5` upgrade prompt, shown only after value. `§17` billing: billing not configured. */
+  /**
+   * `§18.5` upgrade prompt, shown only after value.
+   *
+   * ONE STATE, ONE SENTENCE. The `§17` billing-not-configured copy lives in
+   * `states.billingNotConfigured` and nowhere else. This module carried a second, near-identical
+   * wording of it until the S3 copy review; it had no caller — `DemoCockpit.astro` renders the
+   * `states` one — and two sentences for one state is a rule expressed in two places, which is a
+   * defect under `AGENTS.md §3.2` whether the duplicate is a rule or the words that report it. The
+   * copy that is one edit away from disagreeing with itself is the copy that eventually does.
+   */
   upgrade: {
     heading: 'Trip Pass',
-    billingNotConfigured:
-      'Purchases are not available in this deployment. No payment processor is configured, so nothing can be bought here and no price is shown.',
   },
 
   /**
@@ -372,3 +390,59 @@ export const cockpit = {
     rights: 'A fact this rule turns on is missing, so no status can be reached for it yet.',
   },
 } as const
+
+/**
+ * Which reservation structure a connection cockpit is showing. The copy module's own three cases —
+ * the frontend's `mixed_ticket` maps onto `selfTransfer`, because a mixed ticket is a separate-ticket
+ * transfer as far as a traveler's exposure goes, and that mapping is already made in
+ * `apps/web/src/components/pattern-copy.ts`.
+ */
+export type ConnectionTopologyKey = 'protected' | 'selfTransfer' | 'unknown'
+
+const TOPOLOGY_QUALIFIER: Readonly<Record<ConnectionTopologyKey, string>> = {
+  protected: 'on one protected itinerary',
+  selfTransfer: 'on separate tickets',
+  unknown: 'when the reservation is unknown',
+}
+
+/**
+ * The accessible name of a connection cockpit, disambiguated by its reservation structure.
+ *
+ * `docs/ACCESSIBILITY.md` F26. `/connection-risk/` renders three cockpits side by side to show the
+ * three topologies. Each was a region named "Connection" containing a region named "Every component
+ * of the required transfer time", so a landmark list offered six entries under two names and
+ * nothing said which example was which. A landmark list is a navigation aid; six identical entries
+ * make it a worse one than no landmarks at all, because it costs a visit to each to find out.
+ *
+ * The topology IS the distinguishing fact — it is the thing the three examples differ by, and the
+ * thing that changes the answer — so it is what the name carries.
+ *
+ * @param topology the reservation structure, or `null` where only one cockpit is on the page
+ *
+ * PASS `null` WHEN THERE IS NOTHING TO DISAMBIGUATE. A single cockpit keeps the plain `§18.5`
+ * section heading, which is what the cockpit's heading order declares and what a reader of the
+ * demonstration itinerary should hear. Disambiguation exists to tell things apart; adding it where
+ * there is nothing to tell apart is just a longer name.
+ *
+ * This is also the shape a real trip needs: an itinerary with two connections will render two of
+ * these, and they will need telling apart by something other than their position on the page.
+ */
+export function connectionHeading(topology: ConnectionTopologyKey | null): string {
+  if (topology === null) return cockpit.headings.connection
+  return `${cockpit.headings.connection} ${TOPOLOGY_QUALIFIER[topology]}`
+}
+
+/**
+ * The caption of the transfer-components table inside a connection cockpit, disambiguated the same
+ * way and for the same reason — the table is itself a named region (it scrolls, so it is keyboard
+ * operable), and three of them shared one name.
+ *
+ * The caption is a `<caption>`, not a heading: it describes the table to someone who has landed on
+ * it out of context, which is exactly the reader this finding is about.
+ *
+ * @param topology the reservation structure, or `null` where only one cockpit is on the page
+ */
+export function connectionComponentsCaption(topology: ConnectionTopologyKey | null): string {
+  if (topology === null) return cockpit.connection.componentsCaption
+  return `${cockpit.connection.componentsCaption} ${TOPOLOGY_QUALIFIER[topology]}`
+}

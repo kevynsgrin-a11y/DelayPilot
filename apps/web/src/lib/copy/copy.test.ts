@@ -22,11 +22,13 @@ import {
   bandLabel,
   bandOrder,
   delayValueText,
+  minutesText,
   requiredOfAvailableText,
+  slackMinutesText,
   type Band,
 } from './bands.ts'
 import { chronology } from './chronology.ts'
-import { cockpit } from './cockpit.ts'
+import { cockpit, connectionComponentsCaption, connectionHeading } from './cockpit.ts'
 import { demo } from './demo.ts'
 import { disclaimerPlacement, disclaimers, type DisclaimerKey } from './disclaimers.ts'
 import { home } from './home.ts'
@@ -399,6 +401,14 @@ describe('band words and meter readings', () => {
       delayValueText(20),
       delayValueText(20, true),
       delayValueText(-6),
+      slackMinutesText(null),
+      slackMinutesText(0),
+      slackMinutesText(18),
+      slackMinutesText(-18),
+      minutesText(0),
+      minutesText(1),
+      minutesText(47),
+      minutesText(-18),
       // The segment status words land in the same announcements, so they are checked here too.
       ...Object.values(cockpit.segment.statusLabels),
     ]
@@ -432,12 +442,109 @@ describe('band words and meter readings', () => {
       requiredOfAvailableText(44, 51),
       delayValueText(null),
       delayValueText(20),
+      slackMinutesText(null),
+      slackMinutesText(0),
+      slackMinutesText(18),
+      slackMinutesText(-18),
     ]
     for (const name of meterNames) {
       for (const reading of readings) {
         expect(reading, `"${reading}" repeats the meter name "${name}"`).not.toBe(name)
       }
     }
+    // B9's resolution, asserted as a triple rather than described: the delay and cancellation
+    // meter takes the section for its name, the quantity for its reading, and the band for its
+    // value. Three slots, three different strings, announced in that order.
+    expect(cockpit.headings.assessment).not.toBe(cockpit.assessment.bandLabel)
+    for (const band of bandOrder) {
+      expect(cockpit.assessment.bandLabel).not.toBe(bandLabel(band))
+      expect(cockpit.headings.assessment).not.toBe(bandLabel(band))
+    }
+  })
+
+  it('names the connection meter after what its bar fills — B9 follow-up', () => {
+    // docs/VOICE.md §9.3. ConnectionCockpit fills required-of-available and the reading says
+    // "44 of 51 minutes" in that order, so the accessible name has to describe that same ratio.
+    // It used to say "slack against the required transfer time", a third ratio that matched
+    // neither the bar nor the words, and BandMeter renders `label` nowhere visible — so only the
+    // reader who could not check it was told it.
+    expect(cockpit.connection.meterLabel).toBe(
+      'Required transfer time within the available connection window',
+    )
+    expect(cockpit.connection.meterLabel).not.toContain('slack')
+    expect(cockpit.connection.meterLabel).not.toContain('Slack')
+    // Slack is still stated — as the row underneath, in words.
+    expect(cockpit.connection.slack).toBe('Slack')
+    expect(slackMinutesText(7)).toContain('slack')
+  })
+
+  it('tells three connection cockpits apart by their reservation structure — F26', () => {
+    // /connection-risk/ renders three cockpits. Each was a region named "Connection" containing a
+    // region named "Every component of the required transfer time": six landmarks, two names,
+    // nothing saying which example is which. The topology is the distinguishing fact.
+    const topologies = ['protected', 'selfTransfer', 'unknown'] as const
+    const headings = topologies.map((topology) => connectionHeading(topology))
+    const captions = topologies.map((topology) => connectionComponentsCaption(topology))
+
+    expect(new Set(headings).size).toBe(topologies.length)
+    expect(new Set(captions).size).toBe(topologies.length)
+    expect(headings).toEqual([
+      'Connection on one protected itinerary',
+      'Connection on separate tickets',
+      'Connection when the reservation is unknown',
+    ])
+    // Every disambiguated name still starts with the §18.5 section word, so a landmark list reads
+    // as one group rather than three unrelated entries.
+    for (const heading of headings)
+      expect(heading.startsWith(cockpit.headings.connection)).toBe(true)
+    for (const caption of captions) {
+      expect(caption.startsWith(cockpit.connection.componentsCaption)).toBe(true)
+    }
+    // `null` is the single-cockpit case and adds nothing: disambiguation exists to tell things
+    // apart, and a longer name where there is nothing to tell apart is just a longer name.
+    expect(connectionHeading(null)).toBe(cockpit.headings.connection)
+    expect(connectionComponentsCaption(null)).toBe(cockpit.connection.componentsCaption)
+  })
+
+  it('reads slack in words, so no meaning rests on a hyphen-minus', () => {
+    // The S3 review found the Slack row rendering "-18 minutes" on /connection-risk/ — the most
+    // consequential value on the surface, with its entire meaning carried by one glyph that
+    // assistive technology may drop. Every branch below is speakable, and the sign is a word.
+    expect(slackMinutesText(18)).toBe('18 minutes of slack')
+    expect(slackMinutesText(1)).toBe('1 minute of slack')
+    expect(slackMinutesText(0)).toBe('No slack')
+    expect(slackMinutesText(-18)).toBe('18 minutes short')
+    expect(slackMinutesText(-1)).toBe('1 minute short')
+    expect(slackMinutesText(null)).toBe('Slack unknown')
+    // Rounded, not truncated, and the sign survives rounding.
+    expect(slackMinutesText(17.6)).toBe('18 minutes of slack')
+    expect(slackMinutesText(-17.6)).toBe('18 minutes short')
+    // null is not zero (AGENTS.md §1.1): one is a statement about the connection, the other about
+    // our information, and they must never render as each other.
+    expect(slackMinutesText(0)).not.toBe(slackMinutesText(null))
+    // The unknown branch names the same missing fact as the meter above the row.
+    expect(slackMinutesText(null)).toBe(requiredOfAvailableText(null, null))
+    // No branch draws the sign.
+    for (const value of [18, 1, 0, -1, -18, -17.6]) {
+      expect(slackMinutesText(value)).not.toContain('-')
+    }
+  })
+
+  it('writes the minute words in exactly one place', () => {
+    // F-9: `pattern-copy.ts` carried its own `minutesWord`, which put two rendered words outside
+    // the copy module. This is the export that replaces it.
+    expect(minutesText(0)).toBe('0 minutes')
+    expect(minutesText(1)).toBe('1 minute')
+    expect(minutesText(47)).toBe('47 minutes')
+    expect(minutesText(46.6)).toBe('47 minutes')
+    // A duration should never arrive negative — slack has its own sentence — but if one does, the
+    // sign is spelled rather than drawn.
+    expect(minutesText(-1)).toBe('minus 1 minute')
+    expect(minutesText(-18)).toBe('minus 18 minutes')
+    for (const value of [-1, -18]) expect(minutesText(value)).not.toContain('-')
+    // The meter reading composes the same helper, so the two can never pluralize differently.
+    expect(requiredOfAvailableText(44, 1)).toBe('44 of 1 minute')
+    expect(requiredOfAvailableText(44, 51)).toBe('44 of 51 minutes')
   })
 
   it('names which quantity is missing rather than collapsing both', () => {
@@ -604,7 +711,12 @@ describe('route metadata', () => {
     ROUTE_KEYS.map((key) => [key, pages[key]])
 
   it('accounts for every key in the module', () => {
-    expect(Object.keys(pages).sort()).toEqual([...ROUTE_KEYS, 'article'].sort())
+    // `article` and `policy` are not routes. `article` is the chrome an article shell puts around
+    // a body from content-editorial-lead; `policy` is the chrome shared by the five policy pages,
+    // whose bodies are the policy itself (docs/VOICE.md §12.1). Neither has a title or a
+    // description of its own, so both are held apart from the route list rather than exempted
+    // inside the assertions below.
+    expect(Object.keys(pages).sort()).toEqual([...ROUTE_KEYS, 'article', 'policy'].sort())
   })
 
   it('gives every route a unique title and description', () => {
@@ -640,7 +752,12 @@ describe('the accessibility statement', () => {
 
   it('claims partial conformance and nothing stronger', () => {
     expect(page.status).toBe('Partially conformant')
-    expect(page.statusBody).toContain('have not been run')
+    // §13.1 row 3. The word does not change; the reason does. It used to be "the route-level,
+    // keyboard and screen-reader passes have not been run", which is now two-thirds false, and a
+    // status whose stated reason is out of date is a status a reader cannot use. The reason is now
+    // the true one and the stronger one: open Level AA failures on routes reachable today.
+    expect(page.statusBody).toContain('Level AA failures are open')
+    expect(page.statusBody).toContain('screen-reader passes have not')
     expect(page.noClaim).toContain('does not say that DelayPilot is accessible')
   })
 
@@ -652,28 +769,71 @@ describe('the accessibility statement', () => {
   })
 
   it('lists every finding that ACCESSIBILITY.md leaves open', () => {
-    expect(page.knownIssues.map((issue) => issue.id)).toEqual(['F15', 'F22', 'F23', 'F24'])
+    // docs/ACCESSIBILITY.md §15 — the two blockers and F25–F38, plus the two carried findings that
+    // are still open. F22 and F24 are closed (§15.2) and are gone from the list; F15 stays but is
+    // scoped to the components that are not rendered on any route.
+    expect(page.knownIssues.map((issue) => issue.id)).toEqual([
+      'B8',
+      'B9',
+      'F15',
+      'F23',
+      'F25',
+      'F26',
+      'F27',
+      'F28',
+      'F29',
+      'F30',
+      'F31',
+      'F32',
+      'F33',
+      'F34',
+      'F35',
+      'F36',
+      'F37',
+      'F38',
+    ])
     for (const issue of page.knownIssues) {
       expect(issue.affected.length).toBeGreaterThan(3)
       expect(issue.criterion.length).toBeGreaterThan(3)
       expect(issue.description.length).toBeGreaterThan(60)
       expect(issue.expected.length).toBeGreaterThan(10)
     }
+    // A closed finding listed as open is as wrong as an open one left out, in the other direction.
+    for (const closed of ['F22', 'F24']) {
+      expect(page.knownIssues.map((issue) => issue.id)).not.toContain(closed)
+    }
   })
 
   it('names the environments with versions, and says what was not tested', () => {
     expect(page.environments.length).toBeGreaterThan(0)
     for (const environment of page.environments) {
-      expect(environment.version).toMatch(/^\d+\.\d+/)
+      expect(environment.version).toMatch(/^\d+/)
     }
-    expect(page.environmentsNotTested).toContain('No browser and no screen reader')
-    expect(page.notTestedBody).toContain('screen-reader passes')
+    // A real browser ran the route-level checks (§15.1), so the page may not say otherwise — and
+    // the screen-reader limit must survive the edit word for word (§13.1 row 6).
+    expect(page.environments.map((environment) => environment.name)).toContain('Chromium')
+    expect(page.environments.map((environment) => environment.name)).toContain('axe-core')
+    expect(page.environmentsNotTested).not.toContain('No browser')
+    expect(page.environmentsNotTested).toContain('No screen reader has been used')
+    expect(page.environmentsNotTested).toContain('no Firefox with NVDA result')
+    expect(page.notTestedBody).toContain('screen reader')
+    // §13.1 rows 3 and 4: these passes HAVE been run and the page may not claim they have not.
+    expect(page.notTestedBody).not.toMatch(/keyboard[- ]only passes .* have not been run/)
+    expect(page.statusBody).toContain('have been run')
   })
 
   it('states the standard, the date, and the method', () => {
     expect(page.standard).toBe('WCAG 2.2 Level AA')
-    expect(page.lastVerified).toBe('2026-09-11')
+    // §13.1 row 1: the date of the most recent review, not of the one before it.
+    expect(page.lastVerified).toBe('2026-09-12')
     expect(page.method).toContain('Self-assessment')
+  })
+
+  it('scopes the tighter-than-required target claim to the layout it is true on', () => {
+    // §13.1 row 7. The product's own 44 × 44 floor is a DIRECTIVE.md §18.7 MOBILE rule and is met
+    // there; at the wide layout some links are smaller and pass through the spacing exception.
+    expect(page.standardBody).toContain('mobile layout')
+    expect(page.standardBody).toContain('spacing exception')
   })
 
   it('renders a feedback route from configuration, and says so when there is none', () => {
@@ -687,6 +847,23 @@ describe('the accessibility statement', () => {
       expect(missing.address).toBeNull()
       expect(missing.body).toContain('No contact address is configured')
     }
+  })
+
+  it('always carries the response time, on both branches — §13 item 5', () => {
+    // F37. It used to live inside `body`, which the shell renders only when there is no address —
+    // so on the branch that actually ships, the sentence §13 item 5 requires reached nobody. It is
+    // its own field now, and it is the same sentence as /contact/ so the two cannot drift.
+    for (const input of [null, '', '   ', 'access@example.test']) {
+      expect(accessibilityFeedback(input).responseTime).toBe(pages.contact.responseTime)
+    }
+    expect(pages.contact.responseTime.length).toBeGreaterThan(10)
+  })
+
+  it('does not point at the address by position — F37', () => {
+    // The address renders above the sentence, so "the address below" was false. The replacement is
+    // order-neutral, which keeps it true whichever way the shell settles the ordering.
+    expect(page.feedbackNoJavaScript).not.toMatch(/\b(below|above)\b/)
+    expect(page.feedbackNoJavaScript).toContain('without JavaScript')
   })
 
   it('builds the contact page from the configured address', () => {

@@ -40,7 +40,7 @@ Air traffic measures do their damage through aircraft rotation. A morning measur
 
 This is why a delay explanation can be simultaneously true and useless. "Air traffic control" may well be the honest origin of your delay, four aircraft rotations ago.
 
-It is also why the most useful thing you can look at during a system-wide disruption is not the departure board but the inbound aircraft. If the aircraft that is supposed to become your flight has not left its previous airport, your departure time is aspirational regardless of what the board says.
+It is also why the thing to watch during a system-wide disruption is not the departure board but the inbound aircraft. If the aircraft that is supposed to become your flight has not left its previous airport, your departure time is aspirational regardless of what the board says.
 
 ## What a published measure does not establish
 
@@ -62,7 +62,7 @@ Whether your specific flight's aircraft is affected, which you establish by look
 
 ## What to do now, in order
 
-1. **Check where the inbound aircraft is,** not just your departure time. It is the most informative signal available to a passenger.
+1. **Check where the inbound aircraft is,** not just your departure time. It is public information, and it tells you what the departure board does not.
 2. **Rebook early if a measure is in effect and your trip has a hard deadline.** Capacity is consumed in the order people ask for it.
 3. **Prefer an earlier alternative over a better one** in a constrained system. The later flight is more exposed to the accumulating constraint.
 4. **Ask for care as the wait lengthens,** and keep receipts. This does not depend on who caused the constraint.

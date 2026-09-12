@@ -1,10 +1,10 @@
 ---
 title: 'Your flight was cancelled: what to do, in order'
-description: 'A cancellation is a sequence of decisions, and some cannot be undone. The order that keeps the most options open, whatever framework applies to you.'
+description: 'A cancellation is a sequence of decisions, and some cannot be undone. The order that keeps your options open, whatever framework applies to you.'
 pageType: guide
 status: source_review
 intent: 'Give a disrupted passenger a reversibility-ordered sequence of actions for a cancellation, before they know which jurisdiction applies.'
-answerFirst: 'Get yourself onto a new flight first, then deal with money, then deal with rights. The single most expensive mistake at the desk is accepting a voucher or a changed itinerary before you know what else was available, because acceptance is the one step you usually cannot take back. Everything else on this page can be done later; that decision cannot.'
+answerFirst: 'Get yourself onto a new flight first, then deal with money, then deal with rights. The decision to be careful about at the desk is accepting a voucher or a changed itinerary before you know what else was available, because acceptance is the step you usually cannot take back. Everything else on this page can be done later; that decision cannot.'
 sources:
   - dot-refunds
   - eu-your-europe-air
@@ -60,15 +60,15 @@ The order below runs from reversible to irreversible. Do the early items even if
 
 6. **Do not accept a voucher or credit while you are still deciding.** A voucher is the airline's product. Accepting it can end the question of getting your money back. If someone is pressing you to accept quickly, that is a reason to slow down, not to hurry.
 
-7. **Ask for the reason in writing.** One sentence by email: please confirm the reason recorded for the cancellation of this flight. The answer is an assertion, not a finding, and it is still the most useful sentence you can obtain.
+7. **Ask for the reason in writing.** One sentence by email: please confirm the reason recorded for the cancellation of this flight. The answer is an assertion, not a finding, and it is still where every framework's cause test starts.
 
 8. **File with the airline first, then escalate.** Every framework expects you to ask the airline before you ask anyone else. If the airline's answer does not match its own published position, the regulator's complaint route is the next step, and it is free.
 
 ## Two things that quietly cost people money
 
-**Leaving the airport without asking for care.** People assume that a weather cancellation removes every obligation. In several frameworks the care obligation is not conditional on fault, and a reasonable receipted expense is easier to recover than anything else on this page.
+**Leaving the airport without asking for care.** People assume that a weather cancellation removes every obligation. In several frameworks the care obligation is not conditional on fault, and a reasonable receipted expense is a bounded, documented ask that does not wait on the cause argument.
 
-**Accepting the first rebooking without asking what else exists.** The first option offered is the one the airline's system found fastest, not necessarily the one that suits your onward plans. Asking about partner airlines and nearby airports costs one question.
+**Accepting the first rebooking without asking what else exists.** The first option offered is the one the airline's system surfaced first, not necessarily the one that suits your onward plans. Asking about partner airlines and nearby airports costs one question.
 
 ## Sources
 

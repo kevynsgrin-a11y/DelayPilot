@@ -58,7 +58,7 @@ A Canadian assessment usually stalls on: which category the airline assigned and
 
 ## What to do now, in order
 
-1. **Ask the airline, in writing, which category it assigned and why.** This is the single most valuable sentence you can obtain in Canada, and it costs an email.
+1. **Ask the airline, in writing, which category it assigned and why.** That sentence is what everything else on this page turns on, and it costs an email.
 2. **Record your actual arrival time at your destination.** The bands are measured from it.
 3. **Keep every notification the airline sent, with timestamps.** The communication obligations are themselves part of the regulations.
 4. **Accept care and keep receipts** while the category is still being argued about.

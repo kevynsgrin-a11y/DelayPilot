@@ -67,8 +67,8 @@ The absence of the feature does not leave you without options, and none of the f
 1. **Get the carrier, flight number, and date** before they leave. A screenshot of the itinerary is enough, and they can crop out anything they would rather not share.
 2. **Agree what "something has gone wrong" means,** and what you should do if it happens. Most family stress during a disruption is coordination failure rather than missing information.
 3. **Agree who talks to the airline.** Two people calling the same airline about the same trip slows both of them down and produces contradictory answers.
-4. **Watch the inbound aircraft on the day.** It is the single most informative public signal about whether a departure will slip.
-5. **Keep your own written note of what you were told and when.** If the traveller is exhausted at a transfer desk, the person at home with a timeline is the most useful member of the group.
+4. **Watch the inbound aircraft on the day.** It is public information, and it is the fact a departure time depends on.
+5. **Keep your own written note of what you were told and when.** If the traveller is exhausted at a transfer desk, the person at home with a timeline is the one who can still say what happened when.
 6. **Never accept an offer to "just log in and sort it out".** If a change is needed, the person holding the ticket makes it, or authorises it in writing with the airline directly.
 
 ## What you still need to know

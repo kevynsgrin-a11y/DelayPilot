@@ -21,13 +21,13 @@ topics:
   - actions
 ---
 
-There is a specific moment at which people buy travel insurance: after the storm is named, after the strike is announced, after the airline's app has started rearranging itineraries. It is the most understandable purchase in travel and the one most likely to produce an argument later, because it is exactly the moment the policy's own definitions start doing work.
+There is a specific moment at which people buy travel insurance: after the storm is named, after the strike is announced, after the airline's app has started rearranging itineraries. It is an understandable moment to buy, and it is also the moment the policy's own definitions start doing work.
 
 ## The contract is the answer, and nothing else is
 
 A travel policy is a commercial contract between you and an insurer. Its wording defines what is covered, when cover attaches, what evidence it requires, what it excludes, and how long you have to tell them. No article, comparison site, or assistant — including this one — can tell you what your policy does, because the answer is a document that varies by insurer, by product, by country of sale, and by version.
 
-That is not a hedge. It is the single most useful thing to know, because it changes where you look: the definitions section of your own certificate rather than a general explanation of travel insurance.
+That is not a hedge. It is the thing to know first, because it changes where you look: the definitions section of your own certificate rather than a general explanation of travel insurance.
 
 ## Why the purchase moment matters
 
@@ -60,7 +60,7 @@ We do not sell insurance, we do not link to an insurer today, and no affiliate m
 
 When commercial modules exist, the rules that govern them are already written down and are not negotiable per-partner: no insurance link is ever presented as covering a disruption that is already underway, no commercial partner is ever presented as the remedy for a statutory right, official rights information always precedes any commercial suggestion, and every partner link is disclosed and marked as such. Those rules live in `AGENTS.md §4` and `DIRECTIVE.md §20`.
 
-The reason for spelling this out on a page about insurance is that this is the category where the temptation is largest: a disrupted, anxious reader is the most valuable insurance lead in existence, and that is exactly the reader who should be being told to read their existing policy and to ask the airline.
+The reason for spelling this out on a page about insurance is that this is the category where the temptation sits: a disrupted, anxious reader is the reader an insurance funnel is built for, and that is exactly the reader who should be being told to read their existing policy and to ask the airline.
 
 ## What you still need to know
 

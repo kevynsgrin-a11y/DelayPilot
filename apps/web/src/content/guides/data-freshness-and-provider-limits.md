@@ -83,7 +83,7 @@ A freshness label is useless if the time beside it is ambiguous, so times get th
 
 Instants are stored in UTC. Each airport carries its own time-zone identifier, stored separately rather than derived from a numeric offset, because an offset cannot tell you what a place does in summer. Service dates are derived in the origin airport's local time, which is the only definition that matches how a traveller and an airline both talk about "the flight on Tuesday".
 
-Displayed times name the airport and the zone. That removes the single most common reading error in an itinerary: comparing a departure in one zone with an arrival in another and concluding that a flight is shorter, longer, or on a different day than it is. Overnight flights, date-line crossings, and the two annual clock changes are handled as ordinary cases rather than as exceptions, and they are tested as such.
+Displayed times name the airport and the zone. That removes an ordinary reading error: comparing a departure in one zone with an arrival in another and concluding that a flight is shorter, longer, or on a different day than it is. Overnight flights, date-line crossings, and the two annual clock changes are handled as ordinary cases rather than as exceptions, and they are tested as such.
 
 ## What you still need to know
 

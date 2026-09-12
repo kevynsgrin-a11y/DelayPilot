@@ -56,9 +56,9 @@ If the airline's stated reason and the observable facts do not match — a cance
 1. **Ask, at the desk, which category the airline has applied.** Ask it as a question about the airline's own commitment, not as an accusation.
 2. **Get the reason in writing.** A chat transcript, an email, or the reason field in the app. Spoken answers at a desk evaporate.
 3. **Ask for what the commitment covers by name.** "Your published commitment covers a hotel for a controllable overnight — can you arrange it, or should I book and send you the receipt?" is a better sentence than "what are you going to do for me?".
-4. **Buy what is reasonable and keep receipts** if the airline will not arrange it. Reasonable is the operative word, and modest receipted expenses are the easiest thing to recover.
+4. **Buy what is reasonable and keep receipts** if the airline will not arrange it. Reasonable is the operative word, and a modest receipted expense is the kind of ask a commitment is written to cover.
 5. **Note the inbound aircraft's story if you can see it.** The flight that was supposed to become your flight is often the whole explanation.
-6. **Escalate in writing** if the airline's own published commitment and its behaviour do not match. That gap, documented, is the strongest complaint you can file, and the regulator's complaint route is free.
+6. **Escalate in writing** if the airline's own published commitment and its behaviour do not match. That gap, documented, is what a complaint is made of, and the regulator's complaint route is free.
 
 ## How this interacts with the refund layer
 

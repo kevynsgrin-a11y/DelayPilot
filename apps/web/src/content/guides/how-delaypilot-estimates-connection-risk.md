@@ -43,7 +43,7 @@ Each term is displayed separately. Deplaning depends on where you are seated and
 
 Every term in `T` is labelled as measured, policy-derived, airport-derived, or estimated.
 
-This is not decoration. It tells you which parts of the assessment you can improve by knowing something we do not, and it prevents the most common failure of transfer estimates, which is a single confident figure that cannot be argued with. If the immigration term is estimated and the walk is airport-derived, you know which one to adjust when you have cleared immigration at that airport before.
+This is not decoration. It tells you which parts of the assessment you can improve by knowing something we do not, and it prevents the failure this design is aimed at, which is a single confident figure that cannot be argued with. If the immigration term is estimated and the walk is airport-derived, you know which one to adjust when you have cleared immigration at that airport before.
 
 The same discipline applies to freshness. Every input arrives with its own timestamp and one of the six provenance labels, and an assessment built on stale data says so on its face.
 
@@ -59,7 +59,7 @@ Where they do not exist — which is the current state — no percentage is disp
 
 A connection is described by exactly one state, and the vocabulary is fixed: none, protected, self-transfer, mixed ticket, unknown topology, ample slack, watch, high risk, likely missed, already missed, or insufficient data.
 
-Two of those deserve emphasis. **Unknown topology** means we do not know whether your flights are on one reservation, and we ask rather than guess, because guessing in the reassuring direction is the most harmful error available here. **Self-transfer** is never upgraded to protected on the strength of a comfortable-looking gap; feasibility is not protection, and no amount of slack makes two tickets into one journey.
+Two of those deserve emphasis. **Unknown topology** means we do not know whether your flights are on one reservation, and we ask rather than guess, because a wrong guess in the reassuring direction would be read as protection that does not exist. **Self-transfer** is never upgraded to protected on the strength of a comfortable-looking gap; feasibility is not protection, and no amount of slack makes two tickets into one journey.
 
 **Insufficient data** is a real state with its own copy, not a blank card.
 
@@ -80,7 +80,7 @@ Supply three facts and the assessment improves more than any modelling could: wh
 ## What to do with the output
 
 1. **Read the slack and the components, not the colour.**
-2. **Fix the gate-close assumption if you can.** Ask at the first gate; a known gate-close time is worth more than any modelling improvement.
+2. **Fix the gate-close assumption if you can.** Ask at the first gate; a known gate-close time replaces the assumption the whole estimate rests on.
 3. **Treat a thin positive slack as thin.** The uncertainty allowance is an allowance, not a promise.
 4. **If the state is unknown topology, answer the question.** It changes both this assessment and the rights analysis.
 5. **Prepare the fallback while slack is still positive:** the next departure, the last departure of the day, and what an overnight costs.

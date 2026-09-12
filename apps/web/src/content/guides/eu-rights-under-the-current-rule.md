@@ -34,7 +34,7 @@ Look for the phrase "operated by" on the itinerary or the boarding pass. If it i
 
 ## Fact two: one reservation, or several?
 
-This is the fact with the largest effect and the least glamour. A journey sold on one reservation is assessed to its final destination — the place your ticket says you were going, not the airport where the connection broke. Flights bought separately are separate journeys, no matter how tight or how sensible the connection looked.
+This is the least glamorous of the five facts, and the one the rest of the assessment is built on. A journey sold on one reservation is assessed to its final destination — the place your ticket says you were going, not the airport where the connection broke. Flights bought separately are separate journeys, no matter how tight or how sensible the connection looked.
 
 Check the number of separate confirmations in your email. Two confirmations generally means two journeys. If a travel site sold you both in one transaction, that still does not necessarily make them one contract of carriage; look at what the airlines issued, not what the reseller's page looked like. [Self-transfer risk](/guides/self-transfer-risk/) covers what changes when the answer is "several".
 
@@ -48,7 +48,7 @@ The evidence is the message itself with its timestamp, not your memory of the af
 
 The delay that matters for the fixed-sum question is measured at your final destination, and the qualifying threshold is a rule-set value: {{rule:eu:delay.compensationThreshold}}.
 
-"Arrived" has a technical meaning that is not the same as when the wheels touched down, and it is one of the most litigated points in the framework. Record the time the aircraft parked and the doors opened, to the minute, on the day. A photograph of the arrivals board or a timestamped message to someone meeting you is better evidence than a recollection.
+"Arrived" has a technical meaning that is not the same as when the wheels touched down, and the difference can decide which side of a threshold you land on. Record the time the aircraft parked and the doors opened, to the minute, on the day. A photograph of the arrivals board or a timestamped message to someone meeting you is better evidence than a recollection.
 
 ## Fact five: what the airline stated as the cause
 
@@ -72,7 +72,7 @@ The rule applied to an event is the one in force on the date of the event. A ref
 
 ## What you still need to know
 
-If any of the five facts is missing, say which one. An assessment that names its gap is useful; an assessment that guesses is worse than none. The gap most often is the stated cause, and the fastest route to closing it is a single written request to the airline.
+If any of the five facts is missing, say which one. An assessment that names its gap is useful; an assessment that guesses is worse than none. The gap most often is the stated cause, and a single written request to the airline is the step that can close it.
 
 ## What to do now, in order
 

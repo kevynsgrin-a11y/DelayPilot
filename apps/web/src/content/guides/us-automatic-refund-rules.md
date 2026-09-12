@@ -28,7 +28,7 @@ Two different things get called a refund at an airport. One is the fare you paid
 
 The rule is event-driven rather than inconvenience-driven. It attaches to a cancellation, to a change significant enough to meet the rule's own definition, and to a delay long enough to meet the rule's own threshold. The list of triggering events, the definition of significant, and the delay thresholds are values with effective dates, and they render here from the rule set rather than from this sentence: {{rule:us:refund.triggers}}, {{rule:us:refund.significantChange}}, {{rule:us:refund.significantDelay}}.
 
-What "significant" covers is broader than most people expect, and is worth reading in full on the [US rights explainer](/passenger-rights/us/): it can reach changes to departure or arrival times, changes to the airports at either end, added connections, and a downgrade in the cabin you paid for. It is a structural test, not a judgement about how annoyed you are.
+What "significant" covers is broader than the word suggests, and is worth reading in full on the [US rights explainer](/passenger-rights/us/): it can reach changes to departure or arrival times, changes to the airports at either end, added connections, and a downgrade in the cabin you paid for. It is a structural test, not a judgement about how annoyed you are.
 
 ## The decision that actually controls the outcome
 

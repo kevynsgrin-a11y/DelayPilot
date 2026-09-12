@@ -60,7 +60,7 @@ This is the section that matters, and it is short.
 
 **Neither predicts a cancellation.** Conditions influence capacity, and capacity influences schedules, and none of that determines the outcome for your flight. We never tell a reader that their flight will be cancelled.
 
-**Neither proves a legal cause.** This is the most costly misreading. A dramatic forecast does not establish that a specific disruption was outside an airline's control, and it says nothing about whether all reasonable measures were taken. Weather near an airport is context. It is never, on its own, a determination.
+**Neither proves a legal cause.** This is the misreading this page exists to prevent. A dramatic forecast does not establish that a specific disruption was outside an airline's control, and it says nothing about whether all reasonable measures were taken. Weather near an airport is context. It is never, on its own, a determination.
 
 ## How DelayPilot uses them
 
@@ -77,7 +77,7 @@ To connect weather to your own flight you need two things the weather products c
 1. **Check whether the forecast covers your departure window,** not just the moment you are reading it.
 2. **Look at the inbound aircraft as well as the sky.** An aircraft that has not left its previous airport is the more reliable signal.
 3. **Treat a bad forecast as a reason to hold options open,** not as a reason to assume the worst outcome.
-4. **Do not argue cause from the forecast.** It is the weakest card you can play and it invites an argument you cannot win at a desk.
+4. **Do not argue cause from the forecast.** A forecast is not a determination, and a desk is not where a cause argument gets settled.
 5. **Ask the airline in writing for the reason recorded for your flight,** and keep the answer.
 
 ## Sources

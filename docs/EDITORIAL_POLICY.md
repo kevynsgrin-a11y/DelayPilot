@@ -361,6 +361,44 @@ authoritative.
 `unknown` is a designed state, not a gap to fill. A sentence that needs a statistic it does not have
 is a sentence that gets deleted.
 
+### 7.1 An unmeasured superlative is a statistic with the number taken out
+
+"The fastest route to an answer." "The easiest thing to recover." "The single most commonly missing
+fact in UK claims." Each of those is a measurement written as prose. Nobody timed the routes,
+counted the recoveries, or sampled the claims. Removing the digits does not make the claim smaller —
+it makes it uncheckable, which is worse, because a reader cannot test it and a reviewer cannot open
+a source for it. A superlative is the one kind of invented statistic that gets past a grep for
+numbers.
+
+**The rule.** A superlative or a ranking — an `-est` word, "the most X", "the only X", "worth more
+than", "roughly doubles" — is written only where the set being ranked is closed, published, and
+visible to the reader, so the ranking can be checked without a measurement. Everywhere else the
+sentence is rewritten to state the function it was performing rather than the rank it was asserting.
+
+| Permitted                                 | Why it is checkable                                                     |
+| ----------------------------------------- | ----------------------------------------------------------------------- |
+| "the top row of that table"               | The table of five rights statuses is printed immediately above it       |
+| "the shortest gap a system will sell"     | Definitional: a connection minimum is that gap                          |
+| "our shortest review interval"            | The §5 interval table has three rows, and 30 days is the smallest       |
+| "the least reversible thing on this page" | The page enumerates its own actions in reversibility order              |
+| "the fullest set of obligations"          | A mapped regulatory claim about a named category, not an editorial rank |
+
+A hedged frequency — "often", "usually", "most of the work" — is an ordinary hedge rather than a
+ranking, and it stays. The test is whether the sentence would need a study behind it to be true.
+
+**Sweeping for it.** No lint can decide substantiation (`docs/VOICE.md §7.4`), so this one is a grep
+plus a judgment, run before an entry leaves `draft`:
+
+```bash
+grep -rnE "\b([a-z]+est|most [a-z]+|only [a-z]+|worth more than)\b" apps/web/src/content
+```
+
+Every hit is deleted, rewritten, or justified in one line against the table above.
+
+**Provenance.** Raised as F-14 by `ux-copy-steward` in the Phase 11 copy review, against two lines,
+and applied as a sweep of the whole class: 61 lines across 24 entries, logged in
+`apps/web/src/content/review-register.json` under `editorialActions`.
+
 ---
 
 ## 8. Corrections and retractions

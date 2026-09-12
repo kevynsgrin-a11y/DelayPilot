@@ -51,7 +51,7 @@ This is a real fork, and it is worth thinking about rather than reacting to. Tak
 
 A cancellation replaces the delay question with a choice: be rerouted at the earliest opportunity, be rerouted later at a time that suits you, or take the fare back. The choice is yours, and it is the least reversible thing on this page.
 
-Notice matters here in a way it does not for delays. How far in advance the airline told you is a live test, with bands in the rule set: {{rule:uk:cancellation.noticeBands}}. This is why the timestamp on the cancellation message is worth more than most people assume.
+Notice matters here in a way it does not for delays. How far in advance the airline told you is a live test, with bands in the rule set: {{rule:uk:cancellation.noticeBands}}. This is why the timestamp on the cancellation message is evidence rather than clutter.
 
 ## Stage five: you arrive, eventually
 
@@ -59,7 +59,7 @@ Now the fixed-sum question becomes answerable, because it is decided by how late
 
 The sums vary by the flight's distance band, and on the longest flights they vary again with the size of the arrival delay: {{rule:uk:compensation.bands}}, {{rule:uk:compensation.distanceBands}}, {{rule:uk:delay.compensationThreshold}}.
 
-Write down the actual arrival time, to the minute, on the day. It is the single most commonly missing fact in UK claims, and the one that decides which band applies on the flights where the difference is largest.
+Write down the actual arrival time, to the minute, on the day. It is the fact the bands are measured from, and nothing reconstructs it later.
 
 ## Where the airline's cause argument enters
 

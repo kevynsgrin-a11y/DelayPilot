@@ -22,7 +22,7 @@ topics:
   - risk
 ---
 
-Most flight-risk products lead with a number. A number is satisfying, comparable, and easy to put on a card. It is also the easiest thing in this entire domain to fake, because nothing on the screen tells a reader whether the number was measured, modelled, or invented.
+Most flight-risk products lead with a number. A number is satisfying, comparable, and easy to put on a card. It is also impossible to check from the screen, because nothing there tells a reader whether the number was measured, modelled, or invented.
 
 So the honest description of what DelayPilot shows today is a band with a label on it, and a refusal to dress it up.
 
@@ -37,7 +37,7 @@ The other labels describe where a piece of data came from and how fresh it is �
 The band is built from observable structural factors, each of which is displayed rather than folded into a hidden score:
 
 - **The state of the flight itself** — scheduled, delayed, or otherwise, with the time the information was last refreshed.
-- **The aircraft's position in its day.** A flight late in a rotation inherits the accumulated lateness of everything before it. This is often the single most informative thing available to a passenger.
+- **The aircraft's position in its day.** A flight late in a rotation inherits the accumulated lateness of everything before it, and that inheritance is visible to a passenger before the departure board changes.
 - **Operational context at the airports involved,** including published airspace measures where they exist.
 - **Observed and forecast weather at the named station** for each airport, as context and never as a cause.
 - **The structure of the itinerary** — connections, their slack, and whether a border or a bag change sits in the middle.
@@ -91,7 +91,7 @@ The band describes exposure, not outcome. Two facts do more to change your actua
 1. **Read the label before the colour.** Heuristic means heuristic.
 2. **Check the freshness beside it.** An assessment on stale data is context, not confirmation.
 3. **Look at the components,** especially the inbound aircraft, rather than the summary.
-4. **Use a raised band to keep options open early** — an alternative identified before a disruption is worth more than one found during it.
+4. **Use a raised band to keep options open early** — an alternative you have already identified is one you do not have to find while everyone else is looking.
 5. **Re-read after a refresh rather than acting on a single snapshot,** because these inputs change fast.
 
 ## Sources

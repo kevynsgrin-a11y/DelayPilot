@@ -15,6 +15,46 @@
     "contextSources": "Registry records with citableForRuleValues: false. They support a status note only and never count toward an entry minimum source count."
   },
   "sitemapRule": "Only status=published AND indexable=true may appear in a sitemap. publishable is served with noindex; draft, source_review, legal_review, review_due and stale are not emitted at all.",
+  "editorialActions": [
+    {
+      "id": "F-14",
+      "date": "2026-09-12",
+      "raisedBy": "ux-copy-steward",
+      "finding": "Unsubstantiated superlative in an article body (docs/VOICE.md §7.4). Reported on two lines; the fix was applied as a sweep of the same class across the whole tree.",
+      "severity": "minor",
+      "policy": "docs/EDITORIAL_POLICY.md §7.1 (an unmeasured superlative is a statistic), §8 minor row",
+      "action": "61 lines across 24 entries reworded to remove a ranking or a quantity nobody measured: fastest, easiest, strongest, most useful, most common, most expensive, the only, worth more than, roughly doubles the chance, thirty seconds, under a minute each. Each sentence now states the function it was performing instead of the rank it was asserting.",
+      "unchanged": "No claim in claim-map.json, no rule slot, no workflow status, no source id, no reviewedAt, no nextReviewDue, no indexable flag, and no regulatory value. Word floors re-checked after the sweep: lowest guide 962 words, lowest rights explainer 844.",
+      "reviewedAtNote": "reviewedAt is not bumped. Every entry already carries 2026-09-12, the date of this edit, so a bump would encode nothing; and a wording change to an entry that has never been published is not a re-review of its sources (§2.2 is still the gate that has not run).",
+      "correctionNoteOnPage": "None. §8 requires a dated on-page note for a correction to text a reader was served as published. Nothing in this tree is published; the six publishable entries are served with noindex under the awaiting-final-review line, and no meaning changed in any of the 61 lines.",
+      "entries": [
+        "guides/canada-appr-delay-and-cancellation",
+        "guides/controllable-vs-uncontrollable-us-disruption",
+        "guides/data-freshness-and-provider-limits",
+        "guides/eu-rights-under-the-current-rule",
+        "guides/family-monitoring-without-sharing-a-password",
+        "guides/flight-cancelled-what-to-do",
+        "guides/how-delaypilot-estimates-connection-risk",
+        "guides/how-delaypilot-estimates-disruption-risk",
+        "guides/metar-taf-terms",
+        "guides/minimum-connection-time-vs-realistic-connection",
+        "guides/missed-connection-on-one-ticket",
+        "guides/saving-receipts-and-evidence",
+        "guides/self-transfer-risk",
+        "guides/travel-insurance-timing-and-pre-existing-disruption",
+        "guides/uk261-delay-and-cancellation",
+        "guides/us-automatic-refund-rules",
+        "guides/voluntary-commitments-vs-legal-rights",
+        "guides/what-an-faa-ground-stop-means",
+        "guides/when-a-schedule-change-may-qualify-for-a-refund",
+        "passenger-rights/canada",
+        "passenger-rights/eu",
+        "passenger-rights/overview",
+        "passenger-rights/uk",
+        "passenger-rights/us"
+      ]
+    }
+  ],
   "entries": [
     {
       "slug": "guides/canada-appr-delay-and-cancellation",

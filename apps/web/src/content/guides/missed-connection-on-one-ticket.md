@@ -36,7 +36,7 @@ That automation is a convenience and a trap. The flight the system found is the 
 
 ## Where the delay is measured
 
-This is the fact that decides most assessments and the one most travellers get wrong. In the frameworks that use a final-destination test, your delay is the difference between when you were supposed to arrive at the end of the journey and when you actually arrived there. The delay on the first leg is a cause, not the measurement.
+This is the fact that decides most assessments, and it is worth being precise about. In the frameworks that use a final-destination test, your delay is the difference between when you were supposed to arrive at the end of the journey and when you actually arrived there. The delay on the first leg is a cause, not the measurement.
 
 A modest first-leg delay that costs you a connection and puts you on a flight the following morning produces a very large final-destination delay. That is the situation where people conclude that nothing can be done because "we were only a little late leaving", and it is precisely backwards.
 
@@ -46,7 +46,7 @@ The qualifying thresholds are rule-set values under each framework: {{rule:eu:de
 
 The waiting obligations apply at the transfer airport too. Where the wait is long enough, care — refreshments, communication, accommodation for an overnight — is triggered by rules that do not depend on whose fault the original delay was: {{rule:eu:care.thresholds}}, {{rule:uk:care.thresholds}}.
 
-An overnight in a transfer airport is the single most expensive form of this situation, and it is also the one with the clearest documentary trail: a receipt for a hotel, a receipt for a meal, a boarding pass showing the new flight. Keep all three.
+An overnight in a transfer airport is the expensive version of this situation, and it is also the one that leaves paperwork: a receipt for a hotel, a receipt for a meal, a boarding pass showing the new flight. Keep all three.
 
 ## What it is not
 
@@ -58,7 +58,7 @@ And it does not apply to separate tickets. If you bought the two flights indepen
 
 ## If you can see it failing while you are still in the air
 
-The most useful window in this entire situation is the last part of the inbound flight, and almost nobody uses it.
+The last part of the inbound flight is a window you can use, and it closes when the doors open.
 
 If the arrival time on the seat-back map or the crew announcement has already made the connection implausible, start working before the doors open. Check the airline's app for the onward options; many carriers rebook proactively and the new itinerary appears there first. Ask a member of the crew whether transfer staff will be meeting the flight, which is common at large hubs when a whole group of passengers is affected. Move to the front of the cabin if the crew agrees to it. Have the connecting flight number and gate already written down rather than looking for them in the jet bridge.
 
@@ -73,7 +73,7 @@ If you are unsure whether your journey is one reservation, count the confirmatio
 ## What to do now, in order
 
 1. **Screenshot the original itinerary before the app replaces it.** Once you are rebooked, the schedule you were sold disappears from the screen.
-2. **Ask what else is available before accepting the rebooking.** The first answer is the fastest one the system found, not the one that suits you.
+2. **Ask what else is available before accepting the rebooking.** The first answer is the one the system offered, not necessarily the one that suits you.
 3. **Ask for care at the transfer airport** if the wait is long or overnight, and keep receipts if you buy your own.
 4. **Note the actual arrival time at your final destination** when you finally land. It is the measurement the whole assessment uses.
 5. **Email the airline for its stated reason** for the original delay, in one sentence.

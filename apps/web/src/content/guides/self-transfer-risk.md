@@ -38,7 +38,7 @@ The saving on a self-transfer is not a trick and not a scam. It is the price of 
 
 **The waiting obligations do not attach.** The care obligations in the European and UK frameworks attach to the journey the carrier sold you. Where your flights are separate journeys, a delay on the first does not create an obligation on the second: {{rule:eu:care.thresholds}}, {{rule:uk:care.thresholds}}.
 
-The rules do not treat a separate-ticket connection as a protected through journey, however feasible it looked, however it was presented at the point of sale. DelayPilot never labels one as protected, and when we cannot tell from the data which kind of connection you have, we ask you rather than assume — because guessing wrong in the reassuring direction would be the most harmful thing this product could do.
+The rules do not treat a separate-ticket connection as a protected through journey, however feasible it looked, however it was presented at the point of sale. DelayPilot never labels one as protected, and when we cannot tell from the data which kind of connection you have, we ask you rather than assume — because guessing wrong in the reassuring direction is the error this product is built to avoid.
 
 ## What the first ticket still gives you
 
@@ -65,7 +65,7 @@ Before you can assess your own exposure: whether the two flights are truly separ
 1. **Confirm at first check-in whether your bag is tagged through,** and if it is not, plan on reclaiming it.
 2. **Find the second airline's check-in and bag-drop cut-off,** not its departure time. That is your real deadline.
 3. **Keep both tickets and both confirmations accessible offline.** A dead phone at a transfer desk is a bad place to be searching an inbox.
-4. **If the first flight starts slipping, work the second ticket early.** Changing a fare while your original flight is still scheduled is usually cheaper than replacing it after a no-show.
+4. **If the first flight starts slipping, work the second ticket early.** Changing it while your original flight is still scheduled keeps a choice that a no-show can remove.
 5. **Ask the first airline for care if the wait is long,** on its own merits. That obligation exists independently of the second ticket.
 6. **If the connection fails, buy the replacement deliberately, not in a panic.** Compare the second airline's own change fee, a new fare, and the following morning with a hotel before you commit.
 7. **Keep every receipt.** If you hold any travel-insurance cover, this is the situation where its own definitions decide what it does, and the receipts are the whole case.

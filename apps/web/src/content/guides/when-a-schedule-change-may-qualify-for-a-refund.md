@@ -67,7 +67,7 @@ There is also a version of this that costs money: refusing to engage at all, mis
 
 A schedule change is rarely only about the flight. A new arrival time can miss a connection you booked separately, arrive after a hotel's check-in desk closes, or land after the event you were travelling for has started. Those consequences are yours to notice; the airline's system is comparing two flights, not two trips.
 
-Work out what the new itinerary costs you in the rest of the trip before you answer. If the answer is "the trip no longer works", that is the situation the refund tests exist for, and it is much easier to make that argument before you have accepted the change than afterwards.
+Work out what the new itinerary costs you in the rest of the trip before you answer. If the answer is "the trip no longer works", that is the situation the refund tests exist for, and that argument is available to you before you accept the change in a way it may not be afterwards.
 
 ## What you still need to know
 

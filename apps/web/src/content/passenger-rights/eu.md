@@ -52,7 +52,7 @@ Two further conditions sit in front of it.
 
 ## Extraordinary circumstances are an assertion, not a weather report
 
-An airline can argue that a disruption was caused by extraordinary circumstances that could not have been avoided even if all reasonable measures had been taken. Three things follow, and they are the most misunderstood part of the framework.
+An airline can argue that a disruption was caused by extraordinary circumstances that could not have been avoided even if all reasonable measures had been taken. Three things follow, and none of them is what the phrase sounds like.
 
 It is an **assertion by the airline**, not a fact you can read off a forecast. A thunderstorm near the airport, a snow warning, or a busy airspace day is context. It does not establish that this particular disruption was outside the carrier's control, and it says nothing about whether all reasonable measures were taken.
 
@@ -74,7 +74,7 @@ An EU assessment usually stalls on: which carrier actually operated the flight, 
 2. **Screenshot the cancellation or change message with its timestamp visible.** Notice is a test, and a screenshot is evidence of it.
 3. **Ask for care while you are waiting,** and keep the receipts if you buy your own. This obligation does not wait for the cause argument to be settled.
 4. **Make the reroute-or-reimburse choice deliberately.** It is the decision on this page with the least room to change your mind.
-5. **Ask the airline, in writing, for the reason for the disruption.** Its answer is an assertion; it is also the input that unblocks most assessments.
+5. **Ask the airline, in writing, for the reason for the disruption.** Its answer is an assertion; it is also the input an assessment about cause is waiting on.
 6. **Take it to the national enforcement body** in the relevant country if the airline's answer and its own published position do not line up.
 
 ## Sources

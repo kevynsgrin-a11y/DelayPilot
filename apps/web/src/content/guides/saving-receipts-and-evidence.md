@@ -20,9 +20,9 @@ topics:
   - actions
 ---
 
-Every disruption produces two records. One is the airline's, which is complete, timestamped, and not yours. The other is whatever you happened to keep, which is usually a screenshot of the wrong thing and a memory that has already started rearranging itself. The gap between those two records is where most unsuccessful claims live.
+Every disruption produces two records. One is the airline's, which is complete, timestamped, and not yours. The other is whatever you happened to keep, which is usually a screenshot of the wrong thing and a memory that has already started rearranging itself. The gap between those two records is where an argument about facts starts.
 
-The good news is that the list of things worth capturing is short, and the most valuable items take under a minute each.
+The good news is that the list of things worth capturing is short, and most of it is screenshots and times written down on the day.
 
 ## Order by how fast it disappears
 
@@ -30,7 +30,7 @@ Capture in this order, because that is the order in which these things stop bein
 
 **First, the itinerary as it was sold.** Airline apps update in place. The moment you are rebooked, the schedule you originally bought vanishes from the screen and is replaced by the new one. Screenshot the original before you touch anything else. If you already have a confirmation email, that is the same information and it will not change — but check that it shows times and flight numbers, not just a link.
 
-**Second, the message that changed it.** The notification, email, or text that told you, with its timestamp visible. When you were told is a fact that several frameworks turn on, and the airline's own message is the only good evidence of it.
+**Second, the message that changed it.** The notification, email, or text that told you, with its timestamp visible. When you were told is a fact that several frameworks turn on, and the airline's own message is direct evidence of it.
 
 **Third, the times.** The time you actually boarded, the time the aircraft actually pushed back, and — above all — the time you actually arrived at your final destination, meaning when the aircraft parked and the doors opened. Write them down the same day. A photograph of the arrivals board with a phone timestamp is better than a recollection a week later.
 

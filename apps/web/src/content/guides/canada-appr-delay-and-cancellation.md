@@ -23,11 +23,11 @@ topics:
   - evidence
 ---
 
-Canadian air passenger rules hand the first and most consequential decision to the airline: which of three reason categories your disruption belongs in. Everything downstream — communication, care, rebooking, refund, and whether a fixed sum is even possible — follows from that assignment. The categories themselves are explained on the [Canada rights explainer](/passenger-rights/canada/). This page is about getting the assignment out of the airline and into writing while it still can be.
+Canadian air passenger rules hand the first decision to the airline: which of three reason categories your disruption belongs in. Everything downstream — communication, care, rebooking, refund, and whether a fixed sum is even possible — follows from that assignment. The categories themselves are explained on the [Canada rights explainer](/passenger-rights/canada/). This page is about getting the assignment out of the airline and into writing while it still can be.
 
-## Why the written reason is worth more than anything else you do
+## Why a written reason and a spoken one are not the same thing
 
-A spoken reason at a desk is not evidence, is often given by someone who does not know, and changes between staff members. A written reason is a position the airline has taken, dated, in its own words. If it later assigns a different category, the discrepancy is itself the strongest thing in your file.
+A spoken reason at a desk is not evidence, is often given by someone who does not know, and changes between staff members. A written reason is a position the airline has taken, dated, in its own words. If it later assigns a different category, the discrepancy is itself a dated fact in your file.
 
 The request does not need to be clever. One message, in the airline's own channel, on the day:
 
@@ -39,7 +39,7 @@ That is the whole technique. It works because the airline has to have an answer,
 
 The regulations attach obligations to the waiting itself. The airline is expected to keep you informed on a defined cadence, to look after you where the category calls for it, and to get you to your destination by rebooking within defined windows, with a refund available where that does not happen or no longer serves your purpose. Those values come from the rule set: {{rule:canada:communication.cadence}}, {{rule:canada:care.thresholds}}, {{rule:canada:rebooking.windows}}, {{rule:canada:refund.conditions}}.
 
-The communication obligation is the one most travellers do not realise exists, and it has a useful side effect: each update you receive is a timestamped record of what the airline knew and when. Keep them all, including the ones that told you nothing.
+The communication obligation is an easy one to overlook, and it has a useful side effect: each update you receive is a timestamped record of what the airline knew and when. Keep them all, including the ones that told you nothing.
 
 ## The fixed sum, and the clock on it
 

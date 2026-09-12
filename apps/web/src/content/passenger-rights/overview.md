@@ -37,13 +37,13 @@ DelayPilot reports exactly five rights statuses. There is no sixth, and none of 
 | `cannot_determine`       | A fact the rule turns on is missing, contradictory, or unverifiable. We say which fact.                            |
 | `future_rule_not_active` | A rule exists on paper but has not reached its effective date. We describe it and apply the rule in force instead. |
 
-Read `likely_applies` as the strongest thing an independent tool can honestly say. It means the conditions we can see are met under the version shown. It does not mean a claim will succeed, because the airline and the regulator assess facts we never see, including the airline's own operational records.
+Read `likely_applies` as the top row of that table and not as a verdict. It means the conditions we can see are met under the version shown. It does not mean a claim will succeed, because the airline and the regulator assess facts we never see, including the airline's own operational records.
 
 ## Why "may apply" is the normal result, not a hedge
 
 Most disruptions arrive with a fact missing. The cause is stated by the airline but not determined by anyone. The reservation structure is unclear from the outside. The notice you received exists in a message you no longer have. Every one of those gaps changes the outcome under at least one framework, so a tool that answered confidently would be answering a question it had not actually been given.
 
-`may_apply` names that gap instead of papering over it. Each `may_apply` result carries the specific condition it is waiting on, which is also the fastest route to a firm answer: one email to the airline asking for its stated reason in writing often converts `cannot_determine` into something decidable.
+`may_apply` names that gap instead of papering over it. Each `may_apply` result carries the specific condition it is waiting on, which is also the thing to go and get: one email to the airline asking for its stated reason in writing can convert `cannot_determine` into something decidable.
 
 ## The facts that decide the outcome
 
@@ -77,13 +77,13 @@ Baggage liability under the Montreal Convention is a separate framework again, w
 
 The four jurisdiction explainers are written, complete, and unpublished. Each regulatory sentence in them is mapped to a specific entry in our source registry, and none of those entries has been opened and verified in the environment that produced this build, because outbound network access to the regulators' own sites is blocked there. Under our editorial policy a page resting on a regulatory claim cannot pass source review on memory, so those pages stay unpublished until a reviewer opens each source, records the date it was verified, and a rule set reaches in-force status.
 
-That is a slower answer than a confident one. It is the only answer that is worth the reader's trust, and it is the reason this overview contains no amount, no threshold, and no deadline.
+That is a slower answer than a confident one. It is the answer this page can defend, and it is the reason this overview contains no amount, no threshold, and no deadline.
 
 ## What to do while the jurisdiction pages wait
 
 1. **Write down what you were told and when, in the airline's words.** This costs nothing now and is unrecoverable later.
-2. **Keep the original schedule.** A screenshot of the itinerary as sold is the fact most frequently missing when someone asks for help.
-3. **Ask the airline in writing for its stated reason for the disruption.** Its answer is not a determination, but it is the input that most often unblocks a `cannot_determine`.
+2. **Keep the original schedule.** A screenshot of the itinerary as sold is the fact the airline's app stops showing you once you are rebooked.
+3. **Ask the airline in writing for its stated reason for the disruption.** Its answer is not a determination, but it is the input a `cannot_determine` about cause is waiting on.
 4. **Decide slowly about anything irreversible.** Accepting a voucher or a changed itinerary can be a choice with consequences under more than one framework.
 5. **Go to the regulator's own site for the values.** Until our jurisdiction pages are verified, the authority is the regulator, not us.
 

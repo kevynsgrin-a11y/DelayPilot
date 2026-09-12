@@ -21,7 +21,7 @@ topics:
   - methodology
 ---
 
-Two connections at the same airport with the same gap can be completely different propositions. One is a walk down a corridor between two gates in the same concourse. The other crosses a border, reclaims a bag, re-enters security, and changes terminal by train. Any single figure that claims to cover both is hiding the only information you needed.
+Two connections at the same airport with the same gap can be completely different propositions. One is a walk down a corridor between two gates in the same concourse. The other crosses a border, reclaims a bag, re-enters security, and changes terminal by train. Any single figure that claims to cover both is hiding the difference that decides it.
 
 ## What a connection minimum actually is
 

@@ -26,7 +26,7 @@ topics:
   - refunds
 ---
 
-The single most expensive misunderstanding in US air travel is that a long delay produces a payment. It generally does not. What the federal layer does is define when the money you already paid has to come back to you, in what form, and how quickly. Everything that looks like compensation — a hotel, a meal, a credit, a cash gesture — comes from a different layer with a different author, and can be changed by that author without any change in the law.
+The misunderstanding this page exists to correct is the belief that a long delay produces a payment. It generally does not. What the federal layer does is define when the money you already paid has to come back to you, in what form, and how quickly. Everything that looks like compensation — a hotel, a meal, a credit, a cash gesture — comes from a different layer with a different author, and can be changed by that author without any change in the law.
 
 ## The five layers
 
@@ -81,7 +81,7 @@ A US assessment usually stalls on one of four facts. Whether the change to your 
 1. **Screenshot the itinerary as sold, and the itinerary as changed.** Free, instant, and impossible to reconstruct later.
 2. **Save the airline's message announcing the change, with its timestamp.** The words the airline used are a fact; what it meant is not.
 3. **Ask for the refund explicitly and in writing if you do not want the alternative.** Silence can look like acceptance.
-4. **Do not accept a credit or voucher while you are still deciding.** This is the most commonly regretted irreversible step in US disruption.
+4. **Do not accept a credit or voucher while you are still deciding.** Acceptance can close the refund question, and it is not a step you can take back.
 5. **Check the airline's commitments on the government dashboard** for the meals, hotel, and ground-transport layer, and keep the receipts either way.
 6. **Escalate to the regulator's complaint channel** if the airline's answer and its own published rule do not match.
 

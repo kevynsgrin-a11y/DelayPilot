@@ -54,7 +54,7 @@ Distance is measured as a great-circle distance between the airports, which is w
 
 ## Separate tickets are not one journey
 
-This is the UK section with the most money attached and the least ambiguity. Where your flights sit on one reservation, the assessment runs to your final destination. Where you bought two tickets and connected yourself — a self-transfer — you have two journeys, each assessed on its own, and the missed second flight is generally a flight you did not turn up for.
+This distinction decides whether the framework reaches your second flight at all, and it is not a judgment call. Where your flights sit on one reservation, the assessment runs to your final destination. Where you bought two tickets and connected yourself — a self-transfer — you have two journeys, each assessed on its own, and the missed second flight is generally a flight you did not turn up for.
 
 No amount of feasibility changes this. A connection can look comfortable, be sold to you by a travel site as a single itinerary, and still be two separate contracts. DelayPilot never marks a separate-ticket connection as protected, and when we cannot tell, we ask you rather than assume.
 

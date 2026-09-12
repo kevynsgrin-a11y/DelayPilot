@@ -29,13 +29,13 @@ On an airline's help page, a promise and an obligation are typeset identically. 
 
 If the words originate with a regulator — a rule, a regulation, a statutory instrument, an agency's own guidance page — you are reading an obligation. If the words originate with the airline and the government is merely collecting and publishing them, you are reading a commitment.
 
-The US customer-service dashboard is the clearest example of the second kind. It is published by the government, which makes it look statutory, and it reports what each airline has chosen to commit to, which makes it voluntary. Both things are true at once. The categories it tracks render from our rule set beside the date the source was last verified: {{rule:us:dashboard.commitmentCategories}}.
+The US customer-service dashboard is a clear example of the second kind. It is published by the government, which makes it look statutory, and it reports what each airline has chosen to commit to, which makes it voluntary. Both things are true at once. The categories it tracks render from our rule set beside the date the source was last verified: {{rule:us:dashboard.commitmentCategories}}.
 
 ## Question two: can it change without anyone voting?
 
 An obligation changes through a process with notice, comment, publication, and an effective date. A commitment changes when the airline updates its page.
 
-This is the question with the sharpest practical edge, because it tells you how much a screenshot is worth. Screenshot a commitment on the day of your disruption: it is the version that was in force for you, and it may not be there in a month. An obligation does not need that treatment, because it has a version history and an effective date that anyone can check later. DelayPilot stores regulatory values in versioned rule sets with effective dates for exactly this reason, and renders them beside the version that produced them.
+This question has a practical edge, because it tells you how much a screenshot is worth. Screenshot a commitment on the day of your disruption: it is the version that was in force for you, and it may not be there in a month. An obligation does not need that treatment, because it has a version history and an effective date that anyone can check later. DelayPilot stores regulatory values in versioned rule sets with effective dates for exactly this reason, and renders them beside the version that produced them.
 
 ## Question three: who do you complain to?
 
@@ -53,7 +53,7 @@ In the European, UK and Canadian frameworks, obligations reach further and can i
 
 Because it changes what you ask for, who you ask, and what evidence you keep.
 
-Asking an airline to honour its own published commitment is a conversation in which the airline's own words are the strongest card you hold, and one where escalation is largely about publicity and goodwill. Asking an airline to meet a regulatory obligation is a conversation with a third party available behind it, where the airline's words matter less than the rule and your dated facts.
+Asking an airline to honour its own published commitment is a conversation in which the airline's own words are the thing you are quoting, and one where escalation is largely about publicity and goodwill. Asking an airline to meet a regulatory obligation is a conversation with a third party available behind it, where the airline's words matter less than the rule and your dated facts.
 
 People who conflate the two tend to bring the wrong argument to each. They quote a regulation at a hotel-voucher problem that a commitment would have solved in a sentence, or they accept an airline's "that is our policy" answer on a question where policy was never the governing thing.
 
@@ -64,10 +64,10 @@ Before you can classify a promise, you need its source. Not a summary, a news ar
 ## What to do now, in order
 
 1. **Screenshot the airline's own commitment page on the day of your disruption.** It is the version that governs your situation and it is not archived for you.
-2. **Ask the four questions above about the sentence you are relying on.** Thirty seconds, and it tells you who you are really negotiating with.
+2. **Ask the four questions above about the sentence you are relying on.** One pass through them tells you who you are really negotiating with.
 3. **Split your correspondence.** One message about care, quoting the airline's own words. One message about the money, quoting the rule. Mixed messages get mixed answers.
-4. **Keep receipts even when you expect the airline to arrange things directly.** Reimbursement of a modest documented expense is the most recoverable item in any of these systems.
-5. **Escalate the obligation to the regulator, and the commitment to the airline's own complaints channel.** Sending each to the right place roughly doubles the chance of a useful answer.
+4. **Keep receipts even when you expect the airline to arrange things directly.** Reimbursement of a modest documented expense is the ask a receipt can carry on its own.
+5. **Escalate the obligation to the regulator, and the commitment to the airline's own complaints channel.** Sending each to the right place is what gets each one read by someone who can act on it.
 
 ## Sources
 

@@ -35,10 +35,11 @@
 
 import type { InputHTMLAttributes, JSX, ReactNode } from 'react'
 import { cx } from './class-names.ts'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
 export interface ComboboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  'className' | 'children' | 'role' | 'type' | 'aria-expanded' | 'aria-controls'
+  'className' | 'children' | 'role' | 'type' | 'aria-expanded' | 'aria-controls' | 'style'
 > {
   /** Id of the listbox element rendered in `children`. */
   readonly listboxId: string
@@ -69,7 +70,7 @@ export function Combobox({
         aria-controls={listboxId}
         aria-autocomplete="list"
         {...(activeOptionId === undefined ? {} : { 'aria-activedescendant': activeOptionId })}
-        {...rest}
+        {...withoutInlineStyle(rest)}
       />
       {children}
     </div>
@@ -91,7 +92,13 @@ export function ComboboxListbox({
   ...rest
 }: ComboboxListboxProps): JSX.Element {
   return (
-    <ul id={id} role="listbox" className="dp-combobox__listbox" hidden={hidden} {...rest}>
+    <ul
+      id={id}
+      role="listbox"
+      className="dp-combobox__listbox"
+      hidden={hidden}
+      {...withoutInlineStyle(rest)}
+    >
       {children}
     </ul>
   )

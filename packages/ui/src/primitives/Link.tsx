@@ -14,11 +14,12 @@
 
 import type { AnchorHTMLAttributes, JSX, ReactNode } from 'react'
 import { cx } from './class-names.ts'
+import { withoutInlineStyle } from './no-inline-style.ts'
 import { VisuallyHidden } from './VisuallyHidden.tsx'
 
 type NativeAnchorProps = Omit<
   AnchorHTMLAttributes<HTMLAnchorElement>,
-  'className' | 'children' | 'href' | 'rel' | 'target'
+  'className' | 'children' | 'href' | 'rel' | 'target' | 'style'
 >
 
 interface LinkBase extends NativeAnchorProps {
@@ -58,7 +59,7 @@ export function Link(props: LinkProps): JSX.Element {
         className,
       )}
       {...(newTab === undefined ? {} : { rel: 'noopener noreferrer', target: '_blank' })}
-      {...rest}
+      {...withoutInlineStyle(rest)}
     >
       {children}
       {newTab === undefined ? null : <VisuallyHidden>{newTab}</VisuallyHidden>}

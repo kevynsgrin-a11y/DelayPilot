@@ -11,13 +11,23 @@
  * behaviour: that a status can never ship without a shape and a label, that there are exactly six
  * provenance chips with the exact `AGENTS.md §1.2` labels, and that nothing renders a blank where a
  * designed state belongs.
+ *
+ * It also enforces the Content-Security-Policy contract. `apps/web/public/_headers` serves
+ * `style-src 'self'` with no `'unsafe-inline'`, which governs the `style` ATTRIBUTE as well as the
+ * `<style>` element, and an attribute cannot be allowed by hash because its value changes per
+ * render. Every `style={{…}}` a primitive emitted was therefore a declaration the browser discards:
+ * the ProgressBar fill rendered EMPTY at every reading, Stack gaps collapsed to zero, and Skeleton
+ * and AdSlot reserved no space at all — the CLS defect those two exist to prevent. The last
+ * describe in this file renders every primitive across every documented prop value and requires the
+ * string `style=` to be absent.
  */
 
+import { readdirSync, readFileSync } from 'node:fs'
 import { describe, expect, it } from 'vitest'
 import { renderToStaticMarkup } from 'react-dom/server'
-import type { ReactElement } from 'react'
+import { createElement, type ReactElement } from 'react'
 
-import { AdSlot } from '../src/primitives/AdSlot.tsx'
+import { AdSlot, adSlotSizes } from '../src/primitives/AdSlot.tsx'
 import { Badge } from '../src/primitives/Badge.tsx'
 import { Button } from '../src/primitives/Button.tsx'
 import { Callout } from '../src/primitives/Callout.tsx'
@@ -37,14 +47,15 @@ import { ProgressBar } from '../src/primitives/ProgressBar.tsx'
 import { ProvenanceChip } from '../src/primitives/ProvenanceChip.tsx'
 import { Radio } from '../src/primitives/Radio.tsx'
 import { Select } from '../src/primitives/Select.tsx'
-import { Skeleton } from '../src/primitives/Skeleton.tsx'
-import { Stack } from '../src/primitives/Stack.tsx'
+import { Skeleton, skeletonVariants, type SkeletonVariant } from '../src/primitives/Skeleton.tsx'
+import { Stack, type SpaceStep } from '../src/primitives/Stack.tsx'
 import { StatusPill } from '../src/primitives/StatusPill.tsx'
 import { Switch } from '../src/primitives/Switch.tsx'
 import { Tabs } from '../src/primitives/Tabs.tsx'
 import { Toast } from '../src/primitives/Toast.tsx'
 import { bindTooltipDismiss, Tooltip } from '../src/primitives/Tooltip.tsx'
 import { VisuallyHidden } from '../src/primitives/VisuallyHidden.tsx'
+import { withoutInlineStyle } from '../src/primitives/no-inline-style.ts'
 import {
   interimProvenanceKinds,
   interimSeverities,
@@ -53,6 +64,22 @@ import {
 } from '../src/tokens/interim-contracts.ts'
 
 const html = (element: ReactElement): string => renderToStaticMarkup(element)
+
+const primitivesCss = readFileSync(
+  new URL('../src/primitives/primitives.css', import.meta.url),
+  'utf8',
+)
+
+/** The finite sets the layout primitives are restricted to at the type level. */
+const spaceSteps = [2, 4, 8, 12, 16, 24, 32, 48, 64, 96] as const satisfies readonly SpaceStep[]
+const stackDirections = ['column', 'row'] as const
+const stackAligns = ['start', 'center', 'end', 'stretch', 'baseline'] as const
+const stackJustifies = ['start', 'center', 'end', 'between'] as const
+const gridColumnCounts = [2, 3, 4] as const
+const skeletonLineCounts = [2, 3, 4, 5, 6] as const
+const blockSkeletonVariants = skeletonVariants.filter(
+  (variant): variant is Exclude<SkeletonVariant, 'text-block'> => variant !== 'text-block',
+)
 
 describe('Button', () => {
   it('defaults to type=button so it cannot submit a form by accident', () => {
@@ -112,20 +139,49 @@ describe('Card, Badge, Stack, Grid, VisuallyHidden', () => {
     expect(html(<Badge numeric>18</Badge>)).toContain('tnum')
   })
 
-  it('takes its gap from the spacing scale', () => {
-    expect(html(<Stack gap={24}>row</Stack>)).toContain('gap:var(--space-24)')
+  // The gap used to be an inline style, which `style-src 'self'` discards: every Stack on the real
+  // site rendered with the browser default gap of zero. It is now an attribute over the scale, and
+  // primitives.css answers one step per rule.
+  it('takes its gap from the spacing scale, as an attribute the CSP allows', () => {
+    const markup = html(<Stack gap={24}>row</Stack>)
+    expect(markup).toContain('data-gap="24"')
+    expect(markup).not.toContain('style=')
   })
 
-  it('publishes the 8 + 4 cockpit split', () => {
+  it('carries direction, alignment, justification and wrapping as attributes', () => {
+    const markup = html(
+      <Stack direction="row" align="baseline" justify="between" wrap>
+        row
+      </Stack>,
+    )
+    expect(markup).toContain('data-direction="row"')
+    expect(markup).toContain('data-align="baseline"')
+    expect(markup).toContain('data-justify="between"')
+    expect(markup).toContain('data-wrap="true"')
+    expect(html(<Stack>column</Stack>)).not.toContain('data-wrap')
+  })
+
+  it('publishes the 8 + 4 cockpit split and a full-width row', () => {
     const markup = html(
       <Grid variant="cockpit">
         <GridArea area="primary">itinerary</GridArea>
         <GridArea area="secondary">sources</GridArea>
+        <GridArea area="full">disruption notice</GridArea>
       </Grid>,
     )
-    expect(markup).toContain('dp-grid--cockpit')
+    expect(markup).toContain('data-variant="cockpit"')
     expect(markup).toContain('dp-grid__primary')
     expect(markup).toContain('dp-grid__secondary')
+    expect(markup).toContain('dp-grid__full')
+    // The cockpit is always 8+4, so it never claims a column count.
+    expect(markup).not.toContain('data-columns')
+  })
+
+  it('names an even column count instead of composing a template string', () => {
+    const markup = html(<Grid columns={3}>cells</Grid>)
+    expect(markup).toContain('data-variant="equal"')
+    expect(markup).toContain('data-columns="3"')
+    expect(markup).not.toContain('style=')
   })
 
   it('keeps hidden text in the accessibility tree', () => {
@@ -523,11 +579,31 @@ describe('DataTable', () => {
 })
 
 describe('Skeleton, ProgressBar, AdSlot', () => {
-  it('reserves the final dimensions and names what is loading', () => {
-    const markup = html(<Skeleton width="12rem" height="1.5rem" label="Loading flight status" />)
-    expect(markup).toContain('inline-size:12rem')
-    expect(markup).toContain('block-size:1.5rem')
+  /**
+   * The dimensions used to be `width` and `height` props written to an inline style, which the
+   * served `style-src 'self'` discards — so the placeholder reserved nothing and became the layout
+   * shift it exists to prevent (DIRECTIVE.md §22, CLS < 0.1). They are now a named variant, and
+   * the rule that holds the box is asserted below against primitives.css.
+   */
+  it('reserves the final dimensions from a named variant and names what is loading', () => {
+    const markup = html(<Skeleton variant="card" label="Loading flight status" />)
+    expect(markup).toContain('data-variant="card"')
     expect(markup).toContain('Loading flight status')
+    expect(markup).not.toContain('style=')
+  })
+
+  it('defaults to one line of body copy and claims no line count', () => {
+    const markup = html(<Skeleton label="Loading flight status" />)
+    expect(markup).toContain('data-variant="text-line"')
+    expect(markup).not.toContain('data-lines')
+    expect(markup).not.toContain('dp-skeleton__line')
+  })
+
+  it('reserves one line element per line of a paragraph', () => {
+    const markup = html(<Skeleton variant="text-block" lines={4} label="Loading the summary" />)
+    expect(markup).toContain('data-lines="4"')
+    expect(markup.match(/dp-skeleton__line/g)).toHaveLength(4)
+    expect(html(<Skeleton variant="text-block" label="Loading" />)).toContain('data-lines="3"')
   })
 
   /**
@@ -537,14 +613,14 @@ describe('Skeleton, ProgressBar, AdSlot', () => {
    * `aria-busy`; the placeholder carries nothing.
    */
   it('is not a live region by default', () => {
-    const markup = html(<Skeleton width="12rem" height="1.5rem" label="Loading flight status" />)
+    const markup = html(<Skeleton label="Loading flight status" />)
     expect(markup).not.toContain('role="status"')
     expect(markup).not.toContain('aria-live')
     expect(markup).not.toContain('role="alert"')
   })
 
   it('can be made a live region explicitly, once per view', () => {
-    const markup = html(<Skeleton width="12rem" height="1.5rem" label="Loading" live />)
+    const markup = html(<Skeleton label="Loading" live />)
     expect(markup).toContain('role="status"')
   })
 
@@ -606,19 +682,75 @@ describe('Skeleton, ProgressBar, AdSlot', () => {
   })
 
   /**
+   * The extent used to be a custom property on an inline style, and the site serves
+   * `style-src 'self'` with no `'unsafe-inline'` — so the declaration was discarded and the meter
+   * rendered EMPTY at every reading, which made the B2 and B3 fixes invisible on the real site.
+   * `width` on an SVG `<rect>` is a presentation attribute, which `style-src` does not govern.
+   */
+  it('draws the fill as an SVG geometry attribute at every reading', () => {
+    const meter = (value: number | null): string =>
+      html(
+        <ProgressBar
+          value={value}
+          max={45}
+          band="watch"
+          bandLabel="Watch"
+          label="Connection slack"
+          valueText="18 of 45 minutes"
+        />,
+      )
+
+    expect(meter(0)).toContain('width="0%"')
+    expect(meter(18)).toContain('width="40%"')
+    expect(meter(45)).toContain('width="100%"')
+    // The drawing is presentational and the track is still there to be read against.
+    expect(meter(18)).toContain('<svg class="dp-progress__meter" aria-hidden="true"')
+    expect(meter(18)).toContain('dp-progress__track')
+    expect(meter(18)).not.toContain('style=')
+    // No percentage is rendered as text or announced anywhere (DIRECTIVE.md §18.5).
+    expect(meter(18).replace(/<[^>]*>/g, '')).not.toMatch(/%|percent/i)
+  })
+
+  /**
+   * `unknown` is a designed state (AGENTS.md §1.1): "0 of 45 minutes" is a claim about the flight,
+   * so a meter with no fresh input draws no fill and omits `aria-valuenow` — WAI-ARIA 1.2's
+   * spelling of "the current value is not known". The words stay the caller's.
+   */
+  it('draws no fill and claims no value when the reading is unknown', () => {
+    const markup = html(
+      <ProgressBar
+        value={null}
+        max={45}
+        band="unknown"
+        bandLabel="Unknown"
+        label="Connection slack"
+        valueText="Slack unknown"
+      />,
+    )
+    expect(markup).not.toContain('aria-valuenow')
+    expect(markup).not.toContain('<rect')
+    expect(markup).toContain('dp-progress__track')
+    expect(markup).toContain('aria-valuetext="Slack unknown, Unknown"')
+    expect(markup).toContain('>Slack unknown<')
+    expect(markup).not.toMatch(/>\s*[—–-]\s*</)
+  })
+
+  /**
    * ACCESSIBILITY.md F13: `<aside>` with a name is a `complementary` landmark however deeply it is
    * nested, so two slots on a page produced two identically named landmarks.
    */
   it('reserves and labels an ad slot without adding a landmark, and drops it from print', () => {
-    const markup = html(<AdSlot label="Advertisement" width="300px" height="250px" />)
+    const markup = html(<AdSlot label="Advertisement" size="300x250" />)
     expect(markup).not.toContain('<aside')
     expect(markup).toContain('role="group"')
     const labelledBy = /aria-labelledby="([^"]+)"/.exec(markup)?.[1]
     expect(markup).toContain(
       `<span class="dp-ad-slot__label" id="${String(labelledBy)}">Advertisement</span>`,
     )
-    expect(markup).toContain('inline-size:300px')
-    expect(markup).toContain('block-size:250px')
+    // The reserved box is a named IAB unit resolved in CSS, because an inline style is discarded by
+    // the served policy and a slot that reserves nothing is a CLS defect (AGENTS.md §4).
+    expect(markup).toContain('data-size="300x250"')
+    expect(markup).not.toContain('style=')
     expect(markup).toContain('dp-no-print')
   })
 })
@@ -651,5 +783,348 @@ describe('Callout and Toast', () => {
     expect(urgent).toContain('role="alert"')
     expect(info).toContain('role="status"')
     expect(urgent).toContain('aria-label="Dismiss"')
+  })
+})
+
+/**
+ * The Content-Security-Policy gate.
+ *
+ * `apps/web/public/_headers` serves `style-src 'self'` with no `'unsafe-inline'`. That directive
+ * governs the `style` ATTRIBUTE as well as the `<style>` element — Chromium refuses it outright,
+ * "Refused to apply inline style because it violates the following Content Security Policy
+ * directive: style-src 'self'" — and an attribute value cannot be allowed by hash, because the hash
+ * would have to be computed over content that changes on every render.
+ *
+ * So an inline style in a primitive is not a style-guide preference. It is a declaration the
+ * browser throws away: the ProgressBar fill was positioned by an inline custom property and the
+ * meter rendered empty at every reading; Stack gaps collapsed to zero; Skeleton and AdSlot reserved
+ * no space at all. This renders every primitive across every documented prop value and requires
+ * `style=` to be absent from all of it.
+ */
+describe('no primitive emits an inline style (CSP style-src self)', () => {
+  const cases: Readonly<Record<string, readonly ReactElement[]>> = {
+    Button: [
+      ...(['primary', 'secondary', 'ghost'] as const).flatMap((variant) => [
+        <Button variant={variant}>Track a flight</Button>,
+        <Button variant={variant} block>
+          Track a flight
+        </Button>,
+        <Button variant={variant} iconOnly aria-label="Close">
+          <Icon name="close" decorative />
+        </Button>,
+      ]),
+      <Button disabled type="submit">
+        Submit
+      </Button>,
+    ],
+    Link: [
+      ...(['inline', 'standalone'] as const).map((variant) => (
+        <Link href="/methodology/" variant={variant}>
+          Methodology
+        </Link>
+      )),
+      <Link href="https://example.org/rule" newTab="opens in a new tab">
+        Official source
+      </Link>,
+      <Link href="/trip/" iconOnly aria-label="Open trip">
+        <Icon name="chevron-down" decorative />
+      </Link>,
+    ],
+    Card: (['div', 'section', 'article', 'li'] as const).flatMap((as) =>
+      (['raised', 'flat'] as const).map((variant) => (
+        <Card as={as} variant={variant} aria-label="Panel">
+          body
+        </Card>
+      )),
+    ),
+    Badge: (['neutral', 'accent'] as const).flatMap((tone) => [
+      <Badge tone={tone}>Saved</Badge>,
+      <Badge tone={tone} numeric>
+        18
+      </Badge>,
+    ]),
+    Stack: [
+      ...spaceSteps.map((gap) => <Stack gap={gap}>gap</Stack>),
+      ...stackDirections.flatMap((direction) =>
+        stackAligns.flatMap((align) =>
+          stackJustifies.flatMap((justify) =>
+            [false, true].map((wrap) => (
+              <Stack direction={direction} align={align} justify={justify} wrap={wrap}>
+                cell
+              </Stack>
+            )),
+          ),
+        ),
+      ),
+    ],
+    Grid: [
+      ...gridColumnCounts.map((columns) => <Grid columns={columns}>cells</Grid>),
+      <Grid variant="cockpit">
+        <GridArea area="primary">itinerary</GridArea>
+        <GridArea area="secondary">sources</GridArea>
+        <GridArea area="full">disruption notice</GridArea>
+      </Grid>,
+    ],
+    Icon: [
+      ...iconNames.map((name) => <Icon name={name} decorative />),
+      <Icon name="status-critical" title="Cancelled" />,
+    ],
+    StatusPill: interimStatusTones.flatMap((status) => [
+      <StatusPill status={status} label={`state ${status}`} />,
+      <StatusPill status={status} label={`state ${status}`} detail="18 min" />,
+    ]),
+    ProvenanceChip: interimProvenanceKinds.flatMap((kind) => [
+      <ProvenanceChip kind={kind} />,
+      <ProvenanceChip kind={kind} freshness="Updated 6 minutes ago from ADSB" />,
+    ]),
+    Field: [
+      <Field label="Flight number">{(control) => <Input {...control} />}</Field>,
+      <Field
+        label="Flight number"
+        hint="For example 1234"
+        error="Enter a flight number"
+        required
+        requirementNote="Required"
+      >
+        {(control) => <Input {...control} numeric />}
+      </Field>,
+    ],
+    Input: [
+      <Input aria-label="Flight number" />,
+      <Input aria-label="Flight number" numeric placeholder="1234" inputMode="numeric" />,
+    ],
+    Select: [
+      <Select aria-label="Jurisdiction" defaultValue="eu">
+        <option value="eu">EU</option>
+      </Select>,
+    ],
+    Combobox: [
+      <Combobox listboxId="airports" expanded activeOptionId="airports-0" aria-label="Airport">
+        <ComboboxListbox id="airports" aria-label="Airport">
+          <ComboboxOption id="airports-0" selected active onSelect={() => undefined}>
+            LHR
+          </ComboboxOption>
+          <ComboboxOption
+            id="airports-1"
+            selected={false}
+            active={false}
+            onSelect={() => undefined}
+          >
+            LGW
+          </ComboboxOption>
+        </ComboboxListbox>
+      </Combobox>,
+      <Combobox listboxId="airports" expanded={false} aria-label="Airport">
+        <ComboboxListbox id="airports" aria-label="Airport" hidden>
+          <ComboboxOption id="airports-0" selected={false} active onSelect={() => undefined}>
+            LHR
+          </ComboboxOption>
+        </ComboboxListbox>
+      </Combobox>,
+    ],
+    Checkbox: [
+      <Checkbox name="alerts">Email alerts</Checkbox>,
+      <Checkbox name="alerts" defaultChecked>
+        Email alerts
+      </Checkbox>,
+      <Checkbox name="alerts" indeterminate>
+        Some
+      </Checkbox>,
+    ],
+    Radio: [
+      <Radio name="mode">Self-transfer</Radio>,
+      <Radio name="mode" defaultChecked>
+        Through-checked
+      </Radio>,
+    ],
+    Switch: [false, true].map((checked) => (
+      <Switch
+        checked={checked}
+        onCheckedChange={() => undefined}
+        label="Monitoring"
+        stateLabel={checked ? 'On' : 'Off'}
+      />
+    )),
+    Dialog: ([2, 3, 4] as const).map((headingLevel) => (
+      <Dialog
+        open
+        onClose={() => undefined}
+        title="Delete trip"
+        closeLabel="Close"
+        headingLevel={headingLevel}
+        footer={<Button variant="secondary">Cancel</Button>}
+      >
+        body
+      </Dialog>
+    )),
+    Drawer: (['bottom', 'end'] as const).map((side) => (
+      <Drawer open onClose={() => undefined} title="Filters" closeLabel="Close" side={side}>
+        body
+      </Drawer>
+    )),
+    Tooltip: [<Tooltip trigger={<button type="button">Slack</button>}>Minutes spare</Tooltip>],
+    Tabs: [
+      <Tabs
+        label="Trip sections"
+        selectedId="a"
+        onSelect={() => undefined}
+        tabs={[
+          { id: 'a', label: 'Itinerary', panel: 'one' },
+          { id: 'b', label: 'Sources', panel: 'two' },
+        ]}
+      />,
+    ],
+    Disclosure: [false, true].map((defaultOpen) => (
+      <Disclosure summary="Why this assessment" defaultOpen={defaultOpen} name="reasoning">
+        reasoning
+      </Disclosure>
+    )),
+    DataTable: [
+      <DataTable
+        caption="Status chronology"
+        rowKey={(row) => row.id}
+        rows={[{ id: '1', at: '14:05', note: 'Gate change' }]}
+        columns={[
+          { key: 'at', header: 'Time', numeric: true, rowHeader: true, cell: (row) => row.at },
+          { key: 'note', header: 'Change', cell: (row) => row.note },
+        ]}
+      />,
+    ],
+    Skeleton: [
+      ...blockSkeletonVariants.map((variant) => <Skeleton variant={variant} label="Loading" />),
+      ...skeletonLineCounts.map((lines) => (
+        <Skeleton variant="text-block" lines={lines} label="Loading" />
+      )),
+      <Skeleton label="Loading" live />,
+    ],
+    ProgressBar: interimStatusTones.flatMap((band) =>
+      [0, 18, 45, 120, null].map((value) => (
+        <ProgressBar
+          value={value}
+          max={45}
+          band={band}
+          bandLabel="Watch"
+          label="Connection slack"
+          valueText="18 of 45 minutes"
+        />
+      )),
+    ),
+    AdSlot: [
+      ...adSlotSizes.map((size) => <AdSlot label="Advertisement" size={size} />),
+      <AdSlot label="Advertisement" size="300x250">
+        <span>unit</span>
+      </AdSlot>,
+    ],
+    Callout: interimSeverities.flatMap((severity) => [
+      <Callout severity={severity} title={`Title ${severity}`}>
+        body
+      </Callout>,
+      <Callout
+        severity={severity}
+        title={`Title ${severity}`}
+        action={<Button variant="secondary">Act</Button>}
+      >
+        body
+      </Callout>,
+    ]),
+    Toast: interimSeverities.map((severity) => (
+      <Toast
+        severity={severity}
+        title={`Title ${severity}`}
+        dismissLabel="Dismiss"
+        onDismiss={() => undefined}
+      >
+        body
+      </Toast>
+    )),
+    VisuallyHidden: (['span', 'div'] as const).map((as) => (
+      <VisuallyHidden as={as}>Loading flight status</VisuallyHidden>
+    )),
+  }
+
+  it('covers every primitive in the package', () => {
+    // Read from the directory, not from a hand-kept list: a new primitive with no case here would
+    // otherwise pass this suite silently, and the next inline style would ship with it.
+    const modules = readdirSync(new URL('../src/primitives/', import.meta.url))
+      .filter((file) => file.endsWith('.tsx'))
+      .map((file) => file.replace(/\.tsx$/, ''))
+      .sort()
+    expect(Object.keys(cases).sort()).toEqual(modules)
+    expect(Object.values(cases).flat().length).toBeGreaterThan(150)
+  })
+
+  it.each(Object.entries(cases))('%s', (name, elements) => {
+    elements.forEach((element, index) => {
+      expect(html(element), `${name} case ${String(index)}`).not.toContain('style=')
+    })
+  })
+
+  it('drops a style a caller forces through, not only at the type level', () => {
+    const stripped = withoutInlineStyle({ id: 'flight', style: { color: 'red' } })
+    expect(Object.keys(stripped)).toEqual(['id'])
+
+    // Through a primitive that spreads native attributes: the guard is in the render path, so an
+    // untyped caller cannot reintroduce what the policy forbids.
+    const forced = { children: 'Track a flight', style: { color: 'red' } }
+    expect(html(createElement(Button, forced))).not.toContain('style=')
+  })
+})
+
+/**
+ * The finite sets are only safe if the stylesheet answers all of them. A variant with markup but no
+ * rule reserves nothing, which is the CLS defect (`DIRECTIVE.md §22`) in a new costume — so the
+ * type-level set and the CSS are asserted against each other rather than kept in step by memory.
+ */
+describe('every attribute value the primitives emit has a rule in primitives.css', () => {
+  it('answers every step of the spacing scale', () => {
+    for (const gap of spaceSteps) {
+      expect(primitivesCss, `gap ${String(gap)}`).toContain(`.dp-stack[data-gap='${String(gap)}']`)
+    }
+  })
+
+  it('answers every Stack direction, alignment and justification', () => {
+    for (const direction of stackDirections) {
+      expect(primitivesCss).toContain(`.dp-stack[data-direction='${direction}']`)
+    }
+    for (const align of stackAligns) {
+      expect(primitivesCss).toContain(`.dp-stack[data-align='${align}']`)
+    }
+    for (const justify of stackJustifies) {
+      expect(primitivesCss).toContain(`.dp-stack[data-justify='${justify}']`)
+    }
+    expect(primitivesCss).toContain(".dp-stack[data-wrap='true']")
+  })
+
+  it('answers every Grid variant, column count and area', () => {
+    for (const variant of ['equal', 'cockpit'] as const) {
+      expect(primitivesCss).toContain(`.dp-grid[data-variant='${variant}']`)
+    }
+    for (const columns of gridColumnCounts) {
+      expect(primitivesCss).toContain(`[data-columns='${String(columns)}']`)
+    }
+    for (const area of ['primary', 'secondary', 'full'] as const) {
+      expect(primitivesCss).toContain(`.dp-grid__${area}`)
+    }
+    // The cockpit split stays on the published grid tokens rather than a literal 8 and 4.
+    expect(primitivesCss).toContain('grid-column: span var(--grid-cockpit-primary);')
+    expect(primitivesCss).toContain('grid-column: span var(--grid-cockpit-secondary);')
+  })
+
+  it('reserves a box for every Skeleton variant', () => {
+    for (const variant of skeletonVariants) {
+      expect(primitivesCss, variant).toContain(`.dp-skeleton[data-variant='${variant}']`)
+    }
+  })
+
+  it('reserves a box for every AdSlot size', () => {
+    for (const size of adSlotSizes) {
+      const [width, height] = size.split('x')
+      const rule = primitivesCss.slice(
+        primitivesCss.indexOf(`.dp-ad-slot[data-size='${size}']`),
+        primitivesCss.indexOf(`.dp-ad-slot[data-size='${size}']`) + 160,
+      )
+      expect(rule, size).toContain(`inline-size: ${String(width)}px;`)
+      expect(rule, size).toContain(`block-size: ${String(height)}px;`)
+    }
   })
 })

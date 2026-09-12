@@ -10,10 +10,11 @@
 
 import type { InputHTMLAttributes, JSX } from 'react'
 import { cx } from './class-names.ts'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
 export interface InputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  'className' | 'size'
+  'className' | 'size' | 'style'
 > {
   readonly numeric?: boolean
   readonly className?: string
@@ -29,7 +30,7 @@ export function Input({
     <input
       type={type}
       className={cx('dp-input', numeric ? 'tnum' : undefined, className)}
-      {...rest}
+      {...withoutInlineStyle(rest)}
     />
   )
 }

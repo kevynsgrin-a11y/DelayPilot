@@ -8,10 +8,11 @@
 import { useEffect, useRef, type InputHTMLAttributes, type JSX, type ReactNode } from 'react'
 import { cx } from './class-names.ts'
 import { Icon } from './Icon.tsx'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
 export interface CheckboxProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  'className' | 'children' | 'type'
+  'className' | 'children' | 'type' | 'style'
 > {
   readonly children: ReactNode
   readonly indeterminate?: boolean
@@ -39,7 +40,7 @@ export function Checkbox({
         type="checkbox"
         className="dp-choice__input"
         {...(indeterminate ? { 'aria-checked': 'mixed' as const } : {})}
-        {...rest}
+        {...withoutInlineStyle(rest)}
       />
       <span className="dp-choice__box" aria-hidden="true">
         <Icon name={indeterminate ? 'minus' : 'check'} decorative className="dp-choice__mark" />

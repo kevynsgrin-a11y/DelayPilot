@@ -12,8 +12,12 @@
 
 import type { ButtonHTMLAttributes, JSX, ReactNode } from 'react'
 import { cx } from './class-names.ts'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
-type NativeButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'className' | 'children'>
+type NativeButtonProps = Omit<
+  ButtonHTMLAttributes<HTMLButtonElement>,
+  'className' | 'children' | 'style'
+>
 
 interface ButtonBase extends NativeButtonProps {
   readonly variant?: 'primary' | 'secondary' | 'ghost'
@@ -57,7 +61,7 @@ export function Button(props: ButtonProps): JSX.Element {
         iconOnly ? 'dp-button--icon-only' : undefined,
         className,
       )}
-      {...rest}
+      {...withoutInlineStyle(rest)}
     >
       {children}
     </button>

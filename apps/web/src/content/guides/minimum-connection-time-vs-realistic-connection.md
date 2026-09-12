@@ -57,7 +57,7 @@ There is also no speedometer, no dial, and no single score. Those designs imply 
 
 ## Separate tickets change the question entirely
 
-If your two flights are on separate reservations, none of the above makes the connection protected. Available time and required time are still useful — they tell you whether the transfer is physically plausible — but the consequences of failing are different, because no airline is responsible for moving you onward. DelayPilot never marks a separate-ticket connection as protected, and asks you when the data does not make the answer clear.
+If your two flights are on separate reservations, none of the above makes the connection protected. Available time and required time are still useful — they tell you whether the transfer is physically plausible — but the consequences of failing are different: the rules usually treat separate tickets as separate journeys, so nothing assumes an airline will move you onward. DelayPilot never marks a separate-ticket connection as protected, and asks you when the data does not make the answer clear.
 
 ## What you still need to know
 

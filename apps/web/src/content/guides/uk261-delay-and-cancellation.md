@@ -71,7 +71,7 @@ Nearby weather does not prove it. Neither does a news story about a busy day in 
 
 ## What you still need to know
 
-A UK assessment needs five things: the operating carrier, whether your flights were on one reservation, the notice you received with its timestamp, your true arrival time at the final destination, and the airline's stated reason in writing. Anything missing should be named rather than guessed — and if your flights were on separate tickets, read [self-transfer risk](/guides/self-transfer-risk/) first, because a self-transfer is not a protected through journey however it was sold.
+A UK assessment needs five things: the operating carrier, whether your flights were on one reservation, the notice you received with its timestamp, your true arrival time at the final destination, and the airline's stated reason in writing. Anything missing should be named rather than guessed — and if your flights were on separate tickets, read [self-transfer risk](/guides/self-transfer-risk/) first, because a self-transfer is not generally a protected through journey, however it was sold.
 
 ## What to do now, in order
 

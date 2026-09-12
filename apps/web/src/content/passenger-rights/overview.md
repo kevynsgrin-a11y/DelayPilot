@@ -27,17 +27,17 @@ A rights assessment is a reading of your facts against a dated rule set. It is n
 
 ## The five statuses
 
-DelayPilot reports exactly five rights statuses. There is no sixth, and none of them means that money is due to you.
+DelayPilot reports exactly five rights statuses. There is no sixth, and none of them means that money is due to you. The first column is the identifier in the data; the second is the wording a rights card shows you, so you can match this page to the card in front of you.
 
-| Status                   | What it means                                                                                                      |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------ |
-| `likely_applies`         | The facts we hold satisfy the conditions in the rule set, and no condition is left unknown.                        |
-| `may_apply`              | The facts we hold are consistent with the rule, but at least one condition depends on something we cannot confirm. |
-| `not_indicated`          | A condition in the rule set is not met on the facts we hold. Different facts could change this.                    |
-| `cannot_determine`       | A fact the rule turns on is missing, contradictory, or unverifiable. We say which fact.                            |
-| `future_rule_not_active` | A rule exists on paper but has not reached its effective date. We describe it and apply the rule in force instead. |
+| Status                   | On a rights card        | What it means                                                                                                      |
+| ------------------------ | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `likely_applies`         | Likely applies          | The facts we hold satisfy the conditions in the rule set, and no condition is left unknown.                        |
+| `may_apply`              | May apply               | The facts we hold are consistent with the rule, but at least one condition depends on something we cannot confirm. |
+| `not_indicated`          | Not indicated           | A condition in the rule set is not met on the facts we hold. Different facts could change this.                    |
+| `cannot_determine`       | Cannot determine        | A fact the rule turns on is missing, contradictory, or unverifiable. We say which fact.                            |
+| `future_rule_not_active` | Future rule, not active | A rule exists on paper but has not reached its effective date. We describe it and apply the rule in force instead. |
 
-Read `likely_applies` as the top row of that table and not as a verdict. It means the conditions we can see are met under the version shown. It does not mean a claim will succeed, because the airline and the regulator assess facts we never see, including the airline's own operational records.
+Read `likely_applies`, which a rights card labels Likely applies, as the top row of that table and not as a verdict. It means the conditions we can see are met under the version shown. It does not mean a claim will succeed, because the airline and the regulator assess facts we never see, including the airline's own operational records.
 
 ## Why "may apply" is the normal result, not a hedge
 

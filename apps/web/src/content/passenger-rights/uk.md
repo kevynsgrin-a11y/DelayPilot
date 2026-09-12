@@ -4,7 +4,7 @@ description: 'UK261 read from CAA guidance: which flights it reaches, care while
 pageType: rights-explainer
 jurisdiction: uk
 status: source_review
-intent: 'Set out the UK framework on its own terms, separate from the EU one, and make clear that a self-transfer on separate tickets is never a protected through journey.'
+intent: 'Set out the UK framework on its own terms, separate from the EU one, and make clear that a self-transfer on separate tickets is not generally a protected through journey.'
 answerFirst: 'UK261 is the UK framework, read from the Civil Aviation Authority guidance rather than from EU material. It can require care while you wait, a choice between rerouting and a refund, and in defined circumstances a fixed sum that depends on flight distance and how late you arrived. It is a separate framework from the EU one, and changes to the EU rules do not automatically change it.'
 sources:
   - uk-caa-delays

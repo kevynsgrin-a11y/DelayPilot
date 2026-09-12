@@ -1,10 +1,10 @@
 ---
 title: 'Self-transfer: what you are actually buying with two tickets'
-description: 'Two tickets joined by a gap you chose is not one journey. Nobody rebooks you, your bag stops at the first destination, and you are a no-show.'
+description: 'Two tickets joined by a gap you chose is not one journey. Nothing assumes you get rebooked, your bag usually stops short, and you are recorded as a no-show.'
 pageType: guide
 status: source_review
-intent: 'Show exactly which protections disappear when a connection is made on separate tickets, and how to size and manage a self-transfer gap deliberately.'
-answerFirst: 'A self-transfer is two separate journeys that you have joined yourself. If the first flight is late, no airline is responsible for getting you onto the second one, your bag usually has to be collected and checked in again, and the second carrier records a passenger who did not turn up. The saving is real; so is the risk, and it lands entirely on you.'
+intent: 'Show which protections you should not assume you have when a connection is made on separate tickets, and how to size and manage a self-transfer gap deliberately.'
+answerFirst: 'A self-transfer is two separate journeys that you have joined yourself. The rules usually treat them that way, so if the first flight is late, nothing assumes an airline will get you onto the second one, your bag usually has to be collected and checked in again, and the second carrier records a passenger who did not turn up. The saving is real; so is the risk, and it lands entirely on you.'
 sources:
   - eu-your-europe-air
   - uk-caa-delays
@@ -28,21 +28,21 @@ topics:
 
 The saving on a self-transfer is not a trick and not a scam. It is the price of the risk that an airline would otherwise carry, handed back to you. That is a perfectly reasonable trade when you have chosen it deliberately, sized the gap for the airport you are actually transferring at, and know what happens if it fails. It is a bad trade when you did not know you had made it, which is common, because a travel site can present two tickets in one clean itinerary that looks exactly like a through journey.
 
-## The four things that disappear
+## The four things you should not assume you have
 
-**Nobody rebooks you.** On one reservation, the carrier that delivered you late is expected to move you onward. On separate tickets, the second airline has no relationship with the first, no obligation created by its delay, and no reason to treat you as disrupted. From its records you did not arrive for your flight.
+**Nothing assumes you will be rebooked.** On one reservation, the carrier that delivered you late is expected to move you onward. On separate tickets, the second airline usually has no contractual relationship with the first, and nothing in the frameworks on this site assumes it will treat you as disrupted by that delay. From its records you did not arrive for your flight.
 
 **Your bag stops.** A bag checked on the first ticket is generally tagged to the first ticket's destination. You collect it, leave the arrivals hall, and check in again — which means you need enough time to clear whatever stands between the two, and enough time to make the second airline's check-in cut-off, which closes earlier than its departure.
 
 **Border formalities enter the picture.** Where the transfer involves immigration or customs, the walk is not the constraint; queues are. The same airport can be a comfortable transfer in one direction and an unrealistic one in the other.
 
-**The waiting obligations do not attach.** The care obligations in the European and UK frameworks attach to the journey the carrier sold you. Where your flights are separate journeys, a delay on the first does not create an obligation on the second: {{rule:eu:care.thresholds}}, {{rule:uk:care.thresholds}}.
+**The waiting obligations may not carry across.** The care obligations in the European and UK frameworks attach to the journey the carrier sold you. Where your flights are separate journeys, a delay on the first is not generally treated as creating an obligation on the second: {{rule:eu:care.thresholds}}, {{rule:uk:care.thresholds}}.
 
-The rules do not treat a separate-ticket connection as a protected through journey, however feasible it looked, however it was presented at the point of sale. DelayPilot never labels one as protected, and when we cannot tell from the data which kind of connection you have, we ask you rather than assume — because guessing wrong in the reassuring direction is the error this product is built to avoid.
+The rules do not generally treat a separate-ticket connection as a protected through journey, however feasible it looked, however it was presented at the point of sale. DelayPilot never labels one as protected, and when we cannot tell from the data which kind of connection you have, we ask you rather than assume — because guessing wrong in the reassuring direction is the error this product is built to avoid.
 
 ## What the first ticket still gives you
 
-The first flight is a journey in its own right. If it is delayed or cancelled, whatever the applicable framework says about that flight still applies — care while you wait, the reroute-or-refund choice, and in defined circumstances a fixed sum. What it does not do is reach forward to the money you spent on the second ticket. That second fare is generally a loss you carry, and it is the number people forget when comparing the price of a self-transfer with a through fare.
+The first flight is a journey in its own right. If it is delayed or cancelled, whatever the applicable framework says about that flight still applies — care while you wait, the reroute-or-refund choice, and in defined circumstances a fixed sum. What it does not usually reach is the money you spent on the second ticket. That second fare is generally a loss you carry, and it is the number people forget when comparing the price of a self-transfer with a through fare.
 
 ## Protection products are contracts, not rights
 

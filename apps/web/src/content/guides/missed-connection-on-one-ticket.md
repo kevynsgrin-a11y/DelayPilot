@@ -26,7 +26,7 @@ topics:
   - cancellations
 ---
 
-The word for a journey sold on one reservation is protected, and it is worth being precise about what the protection is. It is not a promise that you will make the connection. It is the fact that the connection is the airline's problem when you do not, and that your journey is assessed as one journey rather than as a series of unrelated flights. Both halves of that matter within an hour of landing at the transfer airport.
+The word for a journey sold on one reservation is protected, and it is worth being precise about what the protection is. It is not a promise that you will make the connection. It is that the frameworks generally treat the connection as the airline's to solve when you do not, and that your journey is assessed as one journey rather than as a series of unrelated flights. Both halves of that matter within an hour of landing at the transfer airport.
 
 ## Who moves you
 
@@ -54,7 +54,7 @@ It is not a compensation right in the US. The US federal layer is about refunds 
 
 It is not automatic anywhere. Every framework has conditions, and cause is one of them.
 
-And it does not apply to separate tickets. If you bought the two flights independently, you have two journeys and the second airline recorded you as not turning up. That situation is genuinely different and is covered in [self-transfer risk](/guides/self-transfer-risk/).
+And it does not generally apply to separate tickets. If you bought the two flights independently, you have two journeys and the second airline recorded you as not turning up. That situation is genuinely different and is covered in [self-transfer risk](/guides/self-transfer-risk/).
 
 ## If you can see it failing while you are still in the air
 

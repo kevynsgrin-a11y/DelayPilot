@@ -337,11 +337,41 @@ the Official Journal publication date and the computed effective date. Described
 the rule in force, applied to nothing — not early, not retroactively. **Applying it early is a
 critical defect.**
 
-**United Kingdom.** UK261 per the CAA's own guidance, as a framework separate from the EU one. A
-separate-ticket self-transfer is never a protected through journey.
+**United Kingdom.** UK261 per the CAA's own guidance, as a framework separate from the EU one. The
+rule set never models a separate-ticket self-transfer as a protected through journey; bodies say the
+rules generally treat separate tickets as separate journeys, never a flat determination in either
+direction (§6.5).
 
 **Canada.** APPR's three control categories, and the large-versus-small carrier classification taken
 from the official source. Proposed reforms are not law and are never written as law.
+
+### 6.5 A determination has no safe direction
+
+`AGENTS.md §1.3` bans stating a legal outcome as settled. The ban is direction-blind, and the
+negative direction is the one that slips through review, because it reads as caution rather than as
+a claim:
+
+| Written as settled                                    | What it actually asserts                              |
+| ----------------------------------------------------- | ----------------------------------------------------- |
+| "no airline is responsible for moving you onward"     | A determination about a carrier's obligations         |
+| "nobody rebooks you"                                  | The same determination, as a promise about the future |
+| "the waiting obligations do not attach"               | An application of the rule to facts we have not seen  |
+| "the connection is the airline's problem when you do" | The same defect, pointing the other way               |
+
+A reader who takes the negative version at face value stops asking, and the cost of that is the
+whole reason this product exists. The shape the product uses instead names what the rules generally
+do and what nothing assumes:
+
+> The rules usually treat separate tickets as separate journeys, so nothing assumes the second
+> airline will re-accommodate you.
+
+Three sentence patterns carry it: "the rules usually treat…", "nothing assumes…", "may not carry
+across". A statement about **DelayPilot's own behaviour** is not a determination and stays flat —
+"DelayPilot never marks a separate-ticket connection as protected" is a fact about the product, and
+hedging it would be the overclaim, not the fix. A claim in `claim-map.json` also stays flat: it is
+the proposition a reviewer opens a source to confirm or reject, not prose a reader sees.
+
+Raised as F-27 by `ux-copy-steward` in the Phase 11 copy re-check.
 
 ---
 

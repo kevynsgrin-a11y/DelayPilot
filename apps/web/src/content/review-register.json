@@ -53,6 +53,35 @@
         "passenger-rights/uk",
         "passenger-rights/us"
       ]
+    },
+    {
+      "id": "F-27",
+      "date": "2026-09-12",
+      "raisedBy": "ux-copy-steward",
+      "finding": "A flat legal determination in the negative direction (AGENTS.md §1.3, which is direction-blind). Reported on two lines; fixed as a sweep of the class.",
+      "severity": "medium",
+      "policy": "docs/EDITORIAL_POLICY.md §6.5, §8 material row",
+      "action": "13 lines across 5 entries hedged to the shape the product uses: the rules usually treat separate tickets as separate journeys, so nothing assumes the second airline will re-accommodate you. Includes one positive-direction hit in guides/missed-connection-on-one-ticket.md, which is the same class pointing the other way.",
+      "unchanged": "No claim in claim-map.json, no rule slot, no workflow status, no source id, no reviewedAt, no nextReviewDue, no indexable flag. Statements about DelayPilot's own labelling behaviour stay flat by design; claim-map claims stay flat because they are propositions awaiting verification, not reader-facing prose.",
+      "entries": [
+        "guides/minimum-connection-time-vs-realistic-connection",
+        "guides/missed-connection-on-one-ticket",
+        "guides/self-transfer-risk",
+        "guides/uk261-delay-and-cancellation",
+        "passenger-rights/uk"
+      ]
+    },
+    {
+      "id": "F-28",
+      "date": "2026-09-12",
+      "raisedBy": "ux-copy-steward",
+      "finding": "The five-statuses table in passenger-rights/overview.md taught the identifiers but never the labels a rights card renders, so a reader could not match the page to the card.",
+      "severity": "low",
+      "policy": "docs/VOICE.md §3, §12.1 item 4",
+      "action": "Added an On a rights card column carrying the five labels from cockpit.rights.statusLabels, extended the lead-in sentence to say what each column is, and rewrote the sentence under the table so it names the identifier and the label together instead of mixing registers.",
+      "caption": "Not added. Entry bodies are CommonMark plus GFM tables with no raw HTML (§3), and GFM has no table-caption syntax, so a real caption element is not expressible from a body. The lead-in sentence carries the caption text as prose on this table and on the six-label table in guides/data-freshness-and-provider-limits.md. A programmatic caption needs a remark plugin or a layout change from frontend-ui-engineer.",
+      "driftRisk": "The five labels are transcribed rather than imported, which docs/VOICE.md §12.1 item 4 names as a defect class. No copy-slot mechanism exists for Markdown bodies; a handoff is filed with ux-copy-steward and frontend-ui-engineer for either a {{copy:...}} slot or a test asserting this table against cockpit.rights.statusLabels. Verified byte-equal against the copy module in this session.",
+      "entries": ["passenger-rights/overview"]
     }
   ],
   "entries": [

@@ -61,7 +61,18 @@ const OVERCLAIM_ALLOWLIST = new Set([
   'DIRECTIVE.md',
   'docs/agents/CHARTER_TEMPLATE.md',
   'scripts/validate-build-system.mjs',
+  // ux-copy-steward's voice document defines the forbidden list in full (its charter names it as the
+  // one document allowed to).
+  'docs/VOICE.md',
 ])
+
+/**
+ * Directories whose files exist to *contain* a violation: the forbidden-phrase lint's fixtures
+ * (`apps/web/src/lib/copy/lint/`, ux-copy-steward). A lint with no proof it fires is not a lint,
+ * so its seeded-violation fixture must carry the phrases — and must never be served or imported
+ * by product code, which that lint's own tests assert.
+ */
+const OVERCLAIM_ALLOWLIST_PREFIXES = ['apps/web/src/lib/copy/lint/fixtures/']
 
 const errors = []
 const warnings = []
@@ -208,6 +219,7 @@ async function lintOverclaims() {
   for (const full of files) {
     const rel = path.relative(ROOT, full)
     if (OVERCLAIM_ALLOWLIST.has(rel)) continue
+    if (OVERCLAIM_ALLOWLIST_PREFIXES.some((prefix) => rel.startsWith(prefix))) continue
     const source = await readFile(full, 'utf8')
     const lines = source.split('\n')
 

@@ -13,7 +13,7 @@
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint . && pnpm lint:copy",
+    "lint": "pnpm --filter @delaypilot/web exec astro sync && eslint . && pnpm lint:copy",
     "lint:copy": "node --experimental-strip-types apps/web/src/lib/copy/lint/cli.ts",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",

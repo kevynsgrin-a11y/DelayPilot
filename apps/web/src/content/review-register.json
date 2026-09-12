@@ -1,0 +1,691 @@
+{
+  "version": 1,
+  "owner": "content-editorial-lead",
+  "generatedAt": "2026-09-12",
+  "purpose": "Review-due register for every content entry: workflow status, reviewed date, next review due, cited source ids and rule slots. Consumed by the source.review_due queue job (DIRECTIVE.md §16) and by the content-quality gate.",
+  "cadence": {
+    "euReformDotNoticeOrCta": 30,
+    "otherRegulatory": 90,
+    "productInternal": 180,
+    "unit": "days",
+    "demotionRule": "An entry whose cited source passes 180 days since lastVerifiedAt moves to review_due. A superseded or withdrawn rule set, or a failed re-verification, moves it to stale and out of the sitemap in the same build."
+  },
+  "sitemapRule": "Only status=published AND indexable=true may appear in a sitemap. publishable is served with noindex; draft, source_review, legal_review, review_due and stale are not emitted at all.",
+  "entries": [
+    {
+      "slug": "guides/canada-appr-delay-and-cancellation",
+      "path": "apps/web/src/content/guides/canada-appr-delay-and-cancellation.md",
+      "route": "/guides/canada-appr-delay-and-cancellation/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["cta-delays-cancellations", "cta-rebooking-refunds-compensation"],
+      "internalRefs": ["DIRECTIVE.md §15.4"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "canada",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:canada:care.thresholds}}",
+        "{{rule:canada:carrierClass.definition}}",
+        "{{rule:canada:claim.deadline}}",
+        "{{rule:canada:communication.cadence}}",
+        "{{rule:canada:compensation.arrivalDelayBands}}",
+        "{{rule:canada:compensation.largeCarrier}}",
+        "{{rule:canada:compensation.smallCarrier}}",
+        "{{rule:canada:rebooking.windows}}",
+        "{{rule:canada:refund.conditions}}"
+      ],
+      "claimCount": 8
+    },
+    {
+      "slug": "guides/controllable-vs-uncontrollable-us-disruption",
+      "path": "apps/web/src/content/guides/controllable-vs-uncontrollable-us-disruption.md",
+      "route": "/guides/controllable-vs-uncontrollable-us-disruption/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["dot-dashboard", "dot-refunds"],
+      "internalRefs": ["DIRECTIVE.md §15.1", "AGENTS.md §1.3"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "us",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": ["{{rule:us:dashboard.commitmentCategories}}"],
+      "claimCount": 5
+    },
+    {
+      "slug": "guides/data-freshness-and-provider-limits",
+      "path": "apps/web/src/content/guides/data-freshness-and-provider-limits.md",
+      "route": "/guides/data-freshness-and-provider-limits/",
+      "pageType": "guide",
+      "status": "publishable",
+      "indexable": true,
+      "servedThisBuild": true,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "AGENTS.md §1.1",
+        "AGENTS.md §1.2",
+        "AGENTS.md §1.5",
+        "AGENTS.md §3.3",
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §16",
+        "DIRECTIVE.md §28",
+        "docs/PROVIDER_LICENSING.md"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "guides/eu-2026-reform-timeline",
+      "path": "apps/web/src/content/guides/eu-2026-reform-timeline.md",
+      "route": "/guides/eu-2026-reform-timeline/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["eu-council-2026-07-13", "eu-your-europe-air"],
+      "internalRefs": ["DIRECTIVE.md §3.5", "DIRECTIVE.md §15.2", "AGENTS.md §1.3"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "eu",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:compensation.bands}}",
+        "{{rule:eu:current.effectiveFrom}}",
+        "{{rule:eu:current.version}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:eu:reform.adoptedOn}}",
+        "{{rule:eu:reform.care.thresholds}}",
+        "{{rule:eu:reform.compensation.bands}}",
+        "{{rule:eu:reform.delay.compensationThreshold}}",
+        "{{rule:eu:reform.effectiveFrom}}",
+        "{{rule:eu:reform.entryIntoForceOffset}}",
+        "{{rule:eu:reform.officialJournalPublishedOn}}"
+      ],
+      "claimCount": 5
+    },
+    {
+      "slug": "guides/eu-rights-under-the-current-rule",
+      "path": "apps/web/src/content/guides/eu-rights-under-the-current-rule.md",
+      "route": "/guides/eu-rights-under-the-current-rule/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["eu-your-europe-air", "eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §15.2"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "eu",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:cancellation.noticeBands}}",
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:compensation.bands}}",
+        "{{rule:eu:compensation.distanceBands}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:eu:rerouting.reduction}}"
+      ],
+      "claimCount": 8
+    },
+    {
+      "slug": "guides/family-monitoring-without-sharing-a-password",
+      "path": "apps/web/src/content/guides/family-monitoring-without-sharing-a-password.md",
+      "route": "/guides/family-monitoring-without-sharing-a-password/",
+      "pageType": "guide",
+      "status": "draft",
+      "indexable": false,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "AGENTS.md §2",
+        "DIRECTIVE.md §9",
+        "DIRECTIVE.md §16",
+        "DIRECTIVE.md §18.2",
+        "docs/BUILD_PLAN.md §10"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "guides/flight-cancelled-what-to-do",
+      "path": "apps/web/src/content/guides/flight-cancelled-what-to-do.md",
+      "route": "/guides/flight-cancelled-what-to-do/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": [
+        "dot-refunds",
+        "eu-your-europe-air",
+        "uk-caa-delays",
+        "cta-rebooking-refunds-compensation"
+      ],
+      "internalRefs": ["DIRECTIVE.md §15", "DIRECTIVE.md §26"],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 6
+    },
+    {
+      "slug": "guides/how-delaypilot-estimates-connection-risk",
+      "path": "apps/web/src/content/guides/how-delaypilot-estimates-connection-risk.md",
+      "route": "/guides/how-delaypilot-estimates-connection-risk/",
+      "pageType": "guide",
+      "status": "publishable",
+      "indexable": true,
+      "servedThisBuild": true,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §18.5",
+        "DIRECTIVE.md §27",
+        "AGENTS.md §1.2",
+        "AGENTS.md §3.4"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "guides/how-delaypilot-estimates-disruption-risk",
+      "path": "apps/web/src/content/guides/how-delaypilot-estimates-disruption-risk.md",
+      "route": "/guides/how-delaypilot-estimates-disruption-risk/",
+      "pageType": "guide",
+      "status": "publishable",
+      "indexable": true,
+      "servedThisBuild": true,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §27",
+        "AGENTS.md §1.1",
+        "AGENTS.md §1.2",
+        "docs/BUILD_PLAN.md"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "guides/metar-taf-terms",
+      "path": "apps/web/src/content/guides/metar-taf-terms.md",
+      "route": "/guides/metar-taf-terms/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["awc-data-api"],
+      "internalRefs": ["AGENTS.md §1.3", "AGENTS.md §2", "DIRECTIVE.md §13"],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 5
+    },
+    {
+      "slug": "guides/minimum-connection-time-vs-realistic-connection",
+      "path": "apps/web/src/content/guides/minimum-connection-time-vs-realistic-connection.md",
+      "route": "/guides/minimum-connection-time-vs-realistic-connection/",
+      "pageType": "guide",
+      "status": "publishable",
+      "indexable": true,
+      "servedThisBuild": true,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §18.5",
+        "DIRECTIVE.md §27",
+        "docs/PROVIDER_LICENSING.md"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "guides/missed-connection-on-one-ticket",
+      "path": "apps/web/src/content/guides/missed-connection-on-one-ticket.md",
+      "route": "/guides/missed-connection-on-one-ticket/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": [
+        "eu-your-europe-air",
+        "uk-caa-delays",
+        "dot-refunds",
+        "cta-rebooking-refunds-compensation"
+      ],
+      "internalRefs": ["DIRECTIVE.md §15"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "eu",
+          "version": "none-in-force"
+        },
+        {
+          "jurisdiction": "uk",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:uk:care.thresholds}}",
+        "{{rule:uk:delay.compensationThreshold}}"
+      ],
+      "claimCount": 6
+    },
+    {
+      "slug": "guides/saving-receipts-and-evidence",
+      "path": "apps/web/src/content/guides/saving-receipts-and-evidence.md",
+      "route": "/guides/saving-receipts-and-evidence/",
+      "pageType": "guide",
+      "status": "publishable",
+      "indexable": true,
+      "servedThisBuild": true,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §15",
+        "DIRECTIVE.md §18.5",
+        "DIRECTIVE.md §26",
+        "AGENTS.md §2"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "guides/self-transfer-risk",
+      "path": "apps/web/src/content/guides/self-transfer-risk.md",
+      "route": "/guides/self-transfer-risk/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["eu-your-europe-air", "uk-caa-delays"],
+      "internalRefs": ["DIRECTIVE.md §13", "DIRECTIVE.md §15.3", "DIRECTIVE.md §27"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "eu",
+          "version": "none-in-force"
+        },
+        {
+          "jurisdiction": "uk",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": ["{{rule:eu:care.thresholds}}", "{{rule:uk:care.thresholds}}"],
+      "claimCount": 3
+    },
+    {
+      "slug": "guides/travel-insurance-timing-and-pre-existing-disruption",
+      "path": "apps/web/src/content/guides/travel-insurance-timing-and-pre-existing-disruption.md",
+      "route": "/guides/travel-insurance-timing-and-pre-existing-disruption/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["dot-refunds", "eu-your-europe-air"],
+      "internalRefs": ["AGENTS.md §4", "DIRECTIVE.md §20", "DIRECTIVE.md §26"],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 2
+    },
+    {
+      "slug": "guides/uk261-delay-and-cancellation",
+      "path": "apps/web/src/content/guides/uk261-delay-and-cancellation.md",
+      "route": "/guides/uk261-delay-and-cancellation/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["uk-caa-delays", "eu-your-europe-air"],
+      "internalRefs": ["DIRECTIVE.md §15.3"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "uk",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:uk:cancellation.noticeBands}}",
+        "{{rule:uk:care.thresholds}}",
+        "{{rule:uk:compensation.bands}}",
+        "{{rule:uk:compensation.distanceBands}}",
+        "{{rule:uk:delay.compensationThreshold}}",
+        "{{rule:uk:delay.refundThreshold}}"
+      ],
+      "claimCount": 9
+    },
+    {
+      "slug": "guides/us-automatic-refund-rules",
+      "path": "apps/web/src/content/guides/us-automatic-refund-rules.md",
+      "route": "/guides/us-automatic-refund-rules/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["dot-refunds", "dot-whats-new"],
+      "internalRefs": ["DIRECTIVE.md §15.1"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "us",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.automaticConditions}}",
+        "{{rule:us:refund.form}}",
+        "{{rule:us:refund.significantChange}}",
+        "{{rule:us:refund.significantDelay}}",
+        "{{rule:us:refund.timing}}",
+        "{{rule:us:refund.triggers}}"
+      ],
+      "claimCount": 7
+    },
+    {
+      "slug": "guides/voluntary-commitments-vs-legal-rights",
+      "path": "apps/web/src/content/guides/voluntary-commitments-vs-legal-rights.md",
+      "route": "/guides/voluntary-commitments-vs-legal-rights/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["dot-dashboard", "dot-refunds", "dot-whats-new"],
+      "internalRefs": ["DIRECTIVE.md §15.1"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "us",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:us:dashboard.commitmentCategories}}",
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.triggers}}"
+      ],
+      "claimCount": 5
+    },
+    {
+      "slug": "guides/what-an-faa-ground-stop-means",
+      "path": "apps/web/src/content/guides/what-an-faa-ground-stop-means.md",
+      "route": "/guides/what-an-faa-ground-stop-means/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["faa-nas-status", "awc-data-api"],
+      "internalRefs": ["AGENTS.md §1.3", "DIRECTIVE.md §13"],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 5
+    },
+    {
+      "slug": "guides/when-a-schedule-change-may-qualify-for-a-refund",
+      "path": "apps/web/src/content/guides/when-a-schedule-change-may-qualify-for-a-refund.md",
+      "route": "/guides/when-a-schedule-change-may-qualify-for-a-refund/",
+      "pageType": "guide",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": [
+        "dot-refunds",
+        "dot-whats-new",
+        "eu-your-europe-air",
+        "cta-rebooking-refunds-compensation"
+      ],
+      "internalRefs": ["DIRECTIVE.md §15"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "us",
+          "version": "none-in-force"
+        },
+        {
+          "jurisdiction": "eu",
+          "version": "none-in-force"
+        },
+        {
+          "jurisdiction": "canada",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:canada:refund.conditions}}",
+        "{{rule:eu:cancellation.noticeBands}}",
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.significantChange}}"
+      ],
+      "claimCount": 5
+    },
+    {
+      "slug": "passenger-rights/canada",
+      "path": "apps/web/src/content/passenger-rights/canada.md",
+      "route": "/passenger-rights/canada/",
+      "pageType": "rights-explainer",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["cta-delays-cancellations", "cta-rebooking-refunds-compensation"],
+      "internalRefs": ["DIRECTIVE.md §15.4"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "canada",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:canada:care.thresholds}}",
+        "{{rule:canada:carrierClass.definition}}",
+        "{{rule:canada:cause.categories}}",
+        "{{rule:canada:claim.deadline}}",
+        "{{rule:canada:communication.cadence}}",
+        "{{rule:canada:compensation.arrivalDelayBands}}",
+        "{{rule:canada:compensation.largeCarrier}}",
+        "{{rule:canada:compensation.smallCarrier}}",
+        "{{rule:canada:obligations.byCategory}}",
+        "{{rule:canada:rebooking.windows}}",
+        "{{rule:canada:refund.conditions}}"
+      ],
+      "claimCount": 9
+    },
+    {
+      "slug": "passenger-rights/eu",
+      "path": "apps/web/src/content/passenger-rights/eu.md",
+      "route": "/passenger-rights/eu/",
+      "pageType": "rights-explainer",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["eu-your-europe-air", "eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §15.2", "DIRECTIVE.md §3.5"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "eu",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:cancellation.noticeBands}}",
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:compensation.bands}}",
+        "{{rule:eu:compensation.distanceBands}}",
+        "{{rule:eu:coverage.tests}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:eu:delay.reimbursementThreshold}}",
+        "{{rule:eu:rerouting.reduction}}"
+      ],
+      "claimCount": 9
+    },
+    {
+      "slug": "passenger-rights/overview",
+      "path": "apps/web/src/content/passenger-rights/overview.md",
+      "route": "/passenger-rights/",
+      "pageType": "rights-explainer",
+      "status": "publishable",
+      "indexable": true,
+      "servedThisBuild": true,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2027-03-11",
+      "sources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §15",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §26",
+        "DIRECTIVE.md §27",
+        "AGENTS.md §1.3",
+        "docs/EDITORIAL_POLICY.md"
+      ],
+      "ruleSetRefs": [],
+      "ruleSlots": [],
+      "claimCount": 0
+    },
+    {
+      "slug": "passenger-rights/uk",
+      "path": "apps/web/src/content/passenger-rights/uk.md",
+      "route": "/passenger-rights/uk/",
+      "pageType": "rights-explainer",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-12-11",
+      "sources": ["uk-caa-delays", "eu-your-europe-air", "icao-montreal"],
+      "internalRefs": ["DIRECTIVE.md §15.3", "DIRECTIVE.md §15.5"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "uk",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:uk:cancellation.noticeBands}}",
+        "{{rule:uk:care.thresholds}}",
+        "{{rule:uk:compensation.bands}}",
+        "{{rule:uk:compensation.distanceBands}}",
+        "{{rule:uk:coverage.tests}}",
+        "{{rule:uk:delay.compensationThreshold}}",
+        "{{rule:uk:delay.refundThreshold}}"
+      ],
+      "claimCount": 11
+    },
+    {
+      "slug": "passenger-rights/us",
+      "path": "apps/web/src/content/passenger-rights/us.md",
+      "route": "/passenger-rights/us/",
+      "pageType": "rights-explainer",
+      "status": "source_review",
+      "indexable": true,
+      "servedThisBuild": false,
+      "inSitemap": false,
+      "reviewedAt": "2026-09-12",
+      "nextReviewDue": "2026-10-12",
+      "sources": ["dot-refunds", "dot-whats-new", "dot-dashboard"],
+      "internalRefs": ["DIRECTIVE.md §15.1", "docs/EDITORIAL_POLICY.md"],
+      "ruleSetRefs": [
+        {
+          "jurisdiction": "us",
+          "version": "none-in-force"
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:us:dashboard.commitmentCategories}}",
+        "{{rule:us:deniedBoarding.amounts}}",
+        "{{rule:us:deniedBoarding.conditions}}",
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.form}}",
+        "{{rule:us:refund.significantChange}}",
+        "{{rule:us:refund.significantDelay}}",
+        "{{rule:us:refund.timing}}",
+        "{{rule:us:refund.triggers}}"
+      ],
+      "claimCount": 9
+    }
+  ]
+}

@@ -38,22 +38,29 @@ const MIN_LINES = 60
 const MAX_LINES = 260
 
 /**
- * Phrases that must never appear as product prose. AGENTS.md and DIRECTIVE.md define these
- * bans and therefore quote them; charters legitimately quote them inside "You must not".
- * Everything else in the repository is scanned.
+ * The AGENTS.md §1.3 phrases, stored as tokens and joined only at run time so that this file never
+ * contains a banned string itself.
+ *
+ * SCOPE, AND WHY IT IS NARROW. The canonical, complete forbidden-phrase lint is
+ * `apps/web/src/lib/copy/lint/` (ux-copy-steward): it scans apps, packages, tests, data, docs,
+ * scripts and the root files with a closed four-entry allowlist, and `pnpm lint` runs it. Charters
+ * under `.claude/agents/**` are the one tree it does not scan, so this pass covers exactly that tree
+ * and nothing else — one rule per file, never two (`AGENTS.md §3.2`). A charter legitimately quotes
+ * the strings it forbids inside "You must not"; the paragraph-context heuristic below tells a
+ * citation from an assertion.
  */
 const OVERCLAIM_PHRASES = [
-  'guaranteed compensation',
-  'guaranteed connection',
-  'legally entitled',
-  'you are owed',
-  'approved claim',
-  'we will win your',
-  'the airline must pay',
-  'your flight will be canceled',
-  'your flight will be cancelled',
-  'ai-powered flight',
-]
+  ['guaranteed', 'compensation'],
+  ['guaranteed', 'connection'],
+  ['legally', 'entitled'],
+  ['you', 'are', 'owed'],
+  ['approved', 'claim'],
+  ['we', 'will', 'win', 'your'],
+  ['the', 'airline', 'must', 'pay'],
+  ['your', 'flight', 'will', 'be', 'canceled'],
+  ['your', 'flight', 'will', 'be', 'cancelled'],
+  ['ai', 'powered', 'flight'],
+].map((tokens) => tokens.join(' '))
 
 /** Files whose job is to define or quote the bans. */
 const OVERCLAIM_ALLOWLIST = new Set([
@@ -65,15 +72,6 @@ const OVERCLAIM_ALLOWLIST = new Set([
   // one document allowed to).
   'docs/VOICE.md',
 ])
-
-/**
- * Directories whose files exist to *define or prove* the bans: the forbidden-phrase lint module
- * (`apps/web/src/lib/copy/lint/`, ux-copy-steward) — its phrase list, its seeded-violation
- * fixtures, and the test that asserts the lint fires on them. A lint with no proof it fires is not
- * a lint, so those files must carry the phrases; none of them is served or imported by product
- * code, which the lint's own tests assert. Nothing else under `apps/web/src/lib/copy/` is exempt.
- */
-const OVERCLAIM_ALLOWLIST_PREFIXES = ['apps/web/src/lib/copy/lint/']
 
 const errors = []
 const warnings = []
@@ -203,24 +201,18 @@ async function walk(dir, acc = []) {
 }
 
 async function lintOverclaims() {
-  const files = (await walk(ROOT)).filter((f) =>
-    /\.(md|mdx|ts|tsx|js|mjs|astro|json|html)$/.test(f),
-  )
-  // A banned phrase may legitimately be quoted in order to forbid it — policy docs and charters
-  // enumerate the ban list, and "## You must not" sections quote the exact strings they reject.
-  // So the unit of judgement is the enclosing paragraph plus its nearest heading, not the line:
-  // a phrase inside prohibiting context is a citation, anywhere else it is an assertion.
-  //
-  // This is deliberately the *build-system* lint. The product-facing lint over apps/** is owned by
-  // ux-copy-steward (Phase 10) and is stricter, because rendered copy has no legitimate reason to
-  // contain these strings at all.
+  const files = (await walk(path.join(ROOT, '.claude', 'agents'))).filter((f) => /\.md$/.test(f))
+  // A banned phrase may legitimately be quoted in order to forbid it — a charter's "## You must
+  // not" section quotes the exact strings it rejects. So the unit of judgement is the enclosing
+  // paragraph plus its nearest heading, not the line: a phrase inside prohibiting context is a
+  // citation, anywhere else it is an assertion. Every other tree is the copy lint's (see the note
+  // on OVERCLAIM_PHRASES).
   const PROHIBITING =
     /\b(never|not|forbid\w*|do not|don't|avoid|ban|banned|blocklist|denylist|disallow\w*|must not|prohibit\w*|overclaim\w*|reject\w*|violation|instead of|rather than|sweep|grep|lint)\b/i
 
   for (const full of files) {
     const rel = path.relative(ROOT, full)
     if (OVERCLAIM_ALLOWLIST.has(rel)) continue
-    if (OVERCLAIM_ALLOWLIST_PREFIXES.some((prefix) => rel.startsWith(prefix))) continue
     const source = await readFile(full, 'utf8')
     const lines = source.split('\n')
 
@@ -245,7 +237,8 @@ async function lintOverclaims() {
     })
 
     lines.forEach((line, i) => {
-      const lower = line.toLowerCase()
+      // Hyphens read as spaces so that a hyphenated spelling matches its token form.
+      const lower = line.toLowerCase().replace(/-/g, ' ')
       for (const phrase of OVERCLAIM_PHRASES) {
         if (!lower.includes(phrase)) continue
         const context = `${headingOf[i]}\n${paragraphText.get(paragraphOf[i]) ?? line}`

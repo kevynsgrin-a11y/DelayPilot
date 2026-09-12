@@ -169,7 +169,11 @@ export const cockpit = {
     availableMinutes: 'Available time',
     requiredMinutes: 'Required transfer time',
     slack: 'Slack',
-    /** `aria-label` for the slack meter. The reading itself comes from `bands.slackValueText`. */
+    /**
+     * `aria-label` for the connection slack meter, and for that meter only — a band meter on the
+     * delay and cancellation assessment is a different quantity and takes `headings.assessment`.
+     * The reading itself comes from `bands.requiredOfAvailableText`, in the bar's direction.
+     */
     meterLabel: 'Connection slack against the required transfer time',
     componentsHeading: 'Transfer components',
     componentsCaption: 'Every component of the required transfer time',

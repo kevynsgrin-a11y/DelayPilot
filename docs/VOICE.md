@@ -72,8 +72,20 @@ string — see §6.)
 missing fact and, where one exists, the next useful step. Those sentences live in
 `provenance.unavailableReasons` so that one missing fact has one wording everywhere.
 
-`Demo` never travels alone. Every demo panel carries `results.demo` — "Demo data — not a live
-flight." — and the demonstration surfaces additionally carry the banner "Demonstration itinerary".
+`Demo` never travels alone. `AGENTS.md §1.2` requires the label to be **accompanied by**
+`results.demo` — "Demo data — not a live flight." The S3 review found the rule read two ways on the
+rendered site, so it is now stated once, precisely:
+
+- **Inside a bannered demonstration section** — one that opens with `cockpit.demoBanner`
+  ("Demonstration itinerary") and `results.demo` **above** the panels — the section's caption
+  accompanies every `Demo` chip beneath it. The homepage cockpit is built this way: banner and
+  caption first, then thirteen labelled panels. Repeating the sentence on each one would turn it
+  into wallpaper, which is the failure `§26` placement is trying to avoid in the other direction.
+- **Anywhere else — every panel carrying a `Demo` chip carries the caption itself.** A demo segment
+  card dropped into an explanatory page has no banner above it, so the chip is the only thing
+  telling a reader the flight is not real, and a chip alone is a word, not a sentence.
+- **A provenance legend is not a panel.** A chip in a legend labels the vocabulary, not a datum, and
+  is accompanied by `provenanceMeanings.demo`.
 
 ---
 
@@ -157,7 +169,32 @@ The one permitted mention is the negative one: `DIRECTIVE.md §7` fixes the trus
 **"No booking code required"**, and `lookup.noBookingCode` says why in one sentence, because a
 traveler trained by claims sites to expect that field needs to be told it is not coming rather than
 left hunting for it. "Booking code" in that negative sentence is not on the banned list; the five
-above are.
+above are. That is not an allowlist entry and not a phrase exception — the token sequence is simply
+not banned, so the trust line passes the lint everywhere, in every tree, with nothing exempted.
+`lint.test.ts` asserts it in the copy tree, the content tree and the notification tree.
+
+**Where the five are enforced.** This rule carries a `scope` (`forbiddenPhrases[].scope`), because
+it bans a word rather than a claim, and a privacy page has to be able to name the field it promises
+never to ask for. The scoped trees are:
+
+| Tree                                    | Why it is in scope                                                   |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| `apps/web/src/lib/copy/**`              | The in-product voice. A label, a placeholder or an error lives here. |
+| `apps/web/src/content/**`               | Article bodies are the product speaking, so the same rule applies.   |
+| `packages/notifications/src/templates/` | A message a traveler receives, held to the same rule as a screen.    |
+
+`apps/web/src/content/**` was added in the S3 review, raised by `trust-compliance-officer`: §4.1 and
+§4.2 fire repository-wide but §4.3 was scoped to the copy trees only, which left article bodies
+covered by review and by the content lead's own grep rather than mechanically. The tree was scanned
+before the scope was widened and produced zero hits, so the change adds enforcement and no backlog:
+
+```
+node apps/web/src/lib/copy/lint/cli.ts --only apps/web/src/content
+forbidden-phrases: 27 files scanned under [apps/web/src/content], 0 skipped, 0 hit(s) in 0 file(s).
+```
+
+Everything outside those three trees — a privacy page, a terms page, an ADR, this file — may name
+the five, and must, wherever the point of the sentence is that DelayPilot does not ask for one.
 
 ### 4.4 Urgency and dark patterns
 
@@ -398,6 +435,25 @@ Note the second row of that table: `No delay reported` is a statement about the 
 `Delay unknown` is a statement about our information. Rendering the second as the first is the
 fabrication in `AGENTS.md §1.1`.
 
+**The S3 review extended the rule to the meter's name.** `ProgressBar` renders three caller strings:
+`label` as `aria-label`, and `valueText` as both the visible readout and the first half of
+`aria-valuetext`. Passing one string as two of the three says the same phrase twice in a single
+announcement — the same defect as F24, in a different slot. The rendered homepage carried
+`aria-label="Risk band"` beside `aria-valuetext="Risk band, Disrupted"`.
+
+> **Rule: a meter's reading may equal neither its band label nor its accessible name.**
+
+A band meter has one datum and three slots, so the three take different registers: the **name** is
+the surface (`cockpit.headings.assessment` — "Delay and cancellation assessment"), the **reading**
+is the quantity (`cockpit.assessment.bandLabel` — "Risk band"), and the **band label** is the value
+(`bandLabel(band)` — "Disrupted"). Announced: _Delay and cancellation assessment, Risk band,
+Disrupted._ Nothing is repeated and no number is invented for a meter that has none.
+
+A `§27` result sentence is never a reading. It is the paragraph a reader gets after the meter, not
+the words inside it: put through `valueText` it renders "Conditions are changing. Review the factors
+and keep alerts on., Watch", a full stop followed by a comma, and it duplicates the tile that
+already carries the sentence.
+
 ### 9.2 F17 — every new tab announces itself
 
 `Link` with `external` sets `target="_blank"` and gives no warning (`docs/ACCESSIBILITY.md §2.2`,
@@ -426,17 +482,37 @@ two is wrong.
 | Bar fills             | Function                                       | Reading            |
 | --------------------- | ---------------------------------------------- | ------------------ |
 | required of available | `requiredOfAvailableText(required, available)` | `44 of 51 minutes` |
-| available of required | `slackValueText(available, required)`          | `18 of 45 minutes` |
 
-Both exist because both readings are correct **somewhere**: "18 of 45 minutes" is the right sentence
-for a connection that does not fit — eighteen of the forty-five you need. Nothing in this release
-draws a bar in that direction, so the connection cockpit takes `requiredOfAvailableText`. Neither
-function wraps the other with the arguments swapped: a swap is what produced the defect, and a swap
-is invisible at the call site.
+The three unknown branches are **not** swapped with the arguments. Which quantity is missing does not
+depend on which way the bar fills, so `Required transfer time unknown` stays
+`Required transfer time unknown`, and F24 still holds — no branch returns the bare word.
 
-The three unknown branches are the same in both and are **not** swapped with the arguments. Which
-quantity is missing does not depend on which way the bar fills, so `Required transfer time unknown`
-stays `Required transfer time unknown`, and F24 still holds — no branch returns the bare word.
+#### The inverse reading was retired, and why
+
+A second function, `slackValueText(available, required)`, rendered the other direction —
+"18 of 45 minutes", eighteen of the forty-five you need. It shipped in S2 as the connection meter's
+reading, was found to contradict the bar it sat under, and was superseded by
+`requiredOfAvailableText` in the S3 fix. The Phase 10 review found it had **zero product callers**:
+`grep -rn slackValueText apps packages docs e2e tests` returned only its own definition, its own
+tests, and three comments describing it.
+
+It is deleted, with its tests, as of the S3 copy review. The reasoning, recorded because the other
+decision was available:
+
+- **No named future caller exists.** Nothing in `DIRECTIVE.md §18.5` or the §17 state matrix asks
+  for a meter that fills available of required, and no agent has requested one. "Someone might
+  want it" is not a caller.
+- **Keeping it was the more expensive option.** An exported reading with no call site is a string a
+  future author can reach for by name, and its name — `slackValueText` — reads like the obvious
+  choice for a slack meter, which is exactly how the inverted reading got onto the cockpit in the
+  first place. The defect was a plausible-looking function being available.
+- **Restoring it is cheap.** If a surface ever draws a bar in that direction, the function is four
+  lines and its unknown branches are already specified above. Re-deriving it costs less than the
+  risk of leaving a loaded name in the export list.
+
+Ask `ux-copy-steward` for the string; do not reintroduce it locally, and do not wrap
+`requiredOfAvailableText` with the arguments swapped — a swap is what produced the original defect,
+and a swap is invisible at the call site.
 
 ---
 
@@ -509,7 +585,44 @@ string until the real one lands.
 
 That is how `states.conditionsNotConnected`, `disclaimers.labels` and the `pages.article`
 source-block strings — `notYetVerified`, `internalRefsHeading`, `contextHeading`, `contextIntro`,
-`contextNote` — arrived: requested by name in `apps/web/src/components/copy-gaps.ts`, written here,
-and the interim file retired by `frontend-ui-engineer` once they landed. The request file carried a
-test asserting the copy module still lacked each export, so the gap could not quietly outlive the
-string that closed it.
+`contextNote` — arrived: `frontend-ui-engineer` filed the gap list as a handoff naming each export,
+`ux-copy-steward` wrote them here, and the adapter in `apps/web/src/components/pattern-copy.ts` now
+consumes them. The request carried a test asserting the copy module still lacked each export, so the
+gap could not quietly outlive the string that closed it.
+
+### 12.1 The two carve-outs, and their limits
+
+"No page holds a literal" governs the **product's own voice**: chrome, labels, states, results,
+disclaimers. Two bodies of prose are not that, and both are named here so the rule is not quietly
+widened or quietly abandoned.
+
+| Carve-out                                          | Owner                      | What it covers                         |
+| -------------------------------------------------- | -------------------------- | -------------------------------------- |
+| `apps/web/src/content/**` article bodies           | `content-editorial-lead`   | Guides and rights explainers           |
+| The five `apps/web/src/pages/*.astro` policy pages | `trust-compliance-officer` | Privacy, terms, and the three policies |
+
+An article body is the document. A policy page is the policy — its sentences are the commitment the
+company is making, they are reviewed and dated as a unit, and routing them through a copy module
+would put an editor between the owner and the words they are accountable for. `ROSTER.md §3`
+shared-surface note 4 already assigns the five pages to `trust-compliance-officer` while the route
+tree around them stays with `frontend-ui-engineer`; this is the copy half of that split.
+
+**The carve-out is about the body, not the page.** Both owners still take every one of these from
+the copy module, and a literal copy of one is a defect at the same severity as a literal anywhere
+else, because a fixed sentence that is transcribed instead of imported is a fixed sentence that will
+drift:
+
+1. Every `§26` disclaimer — `disclaimers.*`, never retyped.
+2. Every `§27` result string — `results.*`.
+3. The `§3.4` independence disclaimer — from `SiteFooter`, on every page, not restated in the body.
+4. The six provenance labels and the five rights-status labels — `provenanceLabels`,
+   `cockpit.rights.statusLabels`.
+5. Every shared UI string: navigation, footer groups, the reviewed line, the source block, the
+   `opens in a new tab` suffix, and any heading that appears on more than one of the five pages.
+
+A heading repeated verbatim across all five policy pages is chrome, not policy, and belongs here.
+
+**And the fixed text must survive the renderer.** An article body that types a `§26` disclaimer into
+markdown gets it back with the apostrophes curled, which is no longer byte-exact. Fixed text is
+rendered from the constant, or the markdown pipeline is configured not to rewrite punctuation
+(§11). Either is acceptable; transcription plus a smart-quote pass is not.

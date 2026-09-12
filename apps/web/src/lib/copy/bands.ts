@@ -17,10 +17,15 @@
  * second, no repetition. `copy.test.ts` asserts the rule across every band and every null
  * combination, so a future string cannot re-introduce the collision.
  *
+ * The S3 review extended that rule (`docs/VOICE.md §9.1`): a reading may not equal the meter's
+ * accessible NAME either. `ProgressBar` renders `label` as `aria-label` and `valueText` as both the
+ * visible readout and half of `aria-valuetext`, so passing one string as both makes a screen reader
+ * say the same phrase twice in one announcement — the F24 defect wearing different clothes.
+ *
  * THE READING NAMES THE QUANTITY THE BAR DRAWS, IN THE BAR'S DIRECTION. A meter that fills required
- * of available takes `requiredOfAvailableText`; one that fills available of required takes
- * `slackValueText`. Words that state the inverse of the bar beside them are worse than no words:
- * the picture and the sentence disagree, and the reader has no way to tell which one is wrong.
+ * of available takes `requiredOfAvailableText`. Words that state the inverse of the bar beside them
+ * are worse than no words: the picture and the sentence disagree, and the reader has no way to tell
+ * which one is wrong.
  *
  * NO NUMBER IS WRITTEN INTO A STRING. Every figure below arrives as an argument, from a value that
  * carried provenance and a calibration flag to get here (`AGENTS.md §1.1`, §1.2). There is no
@@ -79,16 +84,17 @@ function minutesPhrase(value: number): string {
  * exact inverse of the seven minutes of slack stated in the row below.
  *
  * So this is the reading for that meter: required first, available second, "44 of 51 minutes". It
- * is written out rather than wrapped around `slackValueText` with the arguments swapped, because a
- * swap is what produced the defect and a swap is invisible at the call site.
+ * is written out rather than wrapped around an inverse function with the arguments swapped, because
+ * a swap is what produced the defect and a swap is invisible at the call site. The inverse reading
+ * was retired in the S3 review for want of a caller (`docs/VOICE.md §9.3`).
  *
  * @param requiredMinutes the transfer time this connection needs — what the bar fills TO
  * @param availableMinutes the time between gate-in and gate-close — what the bar fills WITHIN
  *
- * The three unknown branches are identical to `slackValueText` and name WHICH quantity is missing.
- * They are deliberately NOT swapped: "Required transfer time unknown" is true regardless of which
- * ratio the bar draws, and rewording it by direction would name the wrong missing fact. No branch
- * returns a bare "Unknown", and none equals a band label (F24).
+ * The three unknown branches name WHICH quantity is missing, and are deliberately NOT swapped with
+ * the arguments: "Required transfer time unknown" is true regardless of which ratio the bar draws,
+ * and rewording it by direction would name the wrong missing fact. No branch returns a bare
+ * "Unknown", and none equals a band label (F24).
  */
 export function requiredOfAvailableText(
   requiredMinutes: number | null,
@@ -98,33 +104,6 @@ export function requiredOfAvailableText(
   if (requiredMinutes === null) return 'Required transfer time unknown'
   if (availableMinutes === null) return 'Available connection time unknown'
   return `${String(Math.round(requiredMinutes))} of ${minutesPhrase(availableMinutes)}`
-}
-
-/**
- * The other reading: how much of the required transfer time the available time covers — "18 of 45
- * minutes", eighteen of the forty-five you need.
- *
- * CORRECT ONLY WHERE THE BAR DRAWS available OF required. It is the wrong reading for the
- * connection cockpit's meter, which draws required of available; that surface takes
- * `requiredOfAvailableText`. Nothing in this release renders a bar in this direction, so unless a
- * surface deliberately does, the function you want is the one above.
- *
- * Kept, not marked `@deprecated`: `@typescript-eslint/no-deprecated` is an error under
- * `strictTypeChecked`, and the remaining callers live in `apps/web/src/components/` and
- * `apps/web/test/`, which belong to `frontend-ui-engineer`. Tagging it here would fail `pnpm lint`
- * inside another agent's tree before they have had the chance to move. Retiring it is a decision
- * for the Phase 10 review, once the wrapper that swaps these arguments is gone.
- *
- * None of the four return values equals any band label (F24).
- */
-export function slackValueText(
-  availableMinutes: number | null,
-  requiredMinutes: number | null,
-): string {
-  if (availableMinutes === null && requiredMinutes === null) return 'Slack unknown'
-  if (requiredMinutes === null) return 'Required transfer time unknown'
-  if (availableMinutes === null) return 'Available connection time unknown'
-  return `${String(Math.round(availableMinutes))} of ${minutesPhrase(requiredMinutes)}`
 }
 
 /**

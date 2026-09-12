@@ -53,9 +53,24 @@ export interface ForbiddenPhrase {
   readonly scope?: readonly string[]
 }
 
-/** The copy trees. Ticket-identifier vocabulary in either of these is a shipped defect. */
+/**
+ * The trees whose text is shipped as DelayPilot's own voice. Ticket-identifier vocabulary in any of
+ * them is a shipped defect.
+ *
+ * NOT the whole repository, and the exclusion is the point: a privacy page, a terms page and this
+ * repository's own documents have to be able to NAME the field that does not exist in order to
+ * promise it never will. The sentence that tells a traveler they will not be asked has to contain
+ * the word for the thing they will not be asked for. Banning it there would ban the promise.
+ *
+ * `apps/web/src/content` was added in the S3 review at the trust officer's request: an article body
+ * is prose in DelayPilot's voice, so the rule that keeps the vocabulary out of a label or a
+ * placeholder applies to it too. The tree was scanned before the scope was widened and produced
+ * zero hits, so this adds enforcement and not a backlog. Verified with
+ * `node apps/web/src/lib/copy/lint/cli.ts --only apps/web/src/content`.
+ */
 const COPY_TREES: readonly string[] = [
   'apps/web/src/lib/copy',
+  'apps/web/src/content',
   'packages/notifications/src/templates',
 ]
 

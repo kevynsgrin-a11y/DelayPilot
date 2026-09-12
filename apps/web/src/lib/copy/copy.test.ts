@@ -23,7 +23,6 @@ import {
   bandOrder,
   delayValueText,
   requiredOfAvailableText,
-  slackValueText,
   type Band,
 } from './bands.ts'
 import { chronology } from './chronology.ts'
@@ -389,10 +388,6 @@ describe('band words and meter readings', () => {
     // unknown slack meter says "Unknown, Unknown", which is a poor rendering of the one state a
     // traveler most has to trust. Every reading below must differ from every band label.
     const readings = [
-      slackValueText(null, null),
-      slackValueText(18, null),
-      slackValueText(null, 45),
-      slackValueText(18, 45),
       requiredOfAvailableText(null, null),
       requiredOfAvailableText(44, null),
       requiredOfAvailableText(null, 51),
@@ -412,14 +407,43 @@ describe('band words and meter readings', () => {
         expect(reading, `"${reading}" collides with the band label`).not.toBe(bandLabel(band))
       }
     }
-    expect(slackValueText(null, null)).not.toBe(bandLabel('unknown'))
-    expect(`${slackValueText(null, null)}, ${bandLabel('unknown')}`).toBe('Slack unknown, Unknown')
+    expect(requiredOfAvailableText(null, null)).not.toBe(bandLabel('unknown'))
+    expect(`${requiredOfAvailableText(null, null)}, ${bandLabel('unknown')}`).toBe(
+      'Slack unknown, Unknown',
+    )
+  })
+
+  it('never lets a reading equal the meter accessible name it is announced beside — F24', () => {
+    // The S3 review found `BandMeter label={cockpit.assessment.bandLabel}` paired with
+    // `valueText={cockpit.assessment.bandLabel}`, which renders aria-label="Risk band" beside
+    // aria-valuetext="Risk band, Disrupted" — the same phrase twice in one announcement. The rule
+    // in docs/VOICE.md §9.1 now covers the accessible name as well as the band word, and the
+    // meter names this module ships must stay distinct from the readings that sit inside them.
+    const meterNames = [
+      cockpit.connection.meterLabel,
+      cockpit.assessment.bandLabel,
+      cockpit.headings.assessment,
+      cockpit.connection.bandScaleLabel,
+    ]
+    const readings = [
+      requiredOfAvailableText(null, null),
+      requiredOfAvailableText(44, null),
+      requiredOfAvailableText(null, 51),
+      requiredOfAvailableText(44, 51),
+      delayValueText(null),
+      delayValueText(20),
+    ]
+    for (const name of meterNames) {
+      for (const reading of readings) {
+        expect(reading, `"${reading}" repeats the meter name "${name}"`).not.toBe(name)
+      }
+    }
   })
 
   it('names which quantity is missing rather than collapsing both', () => {
-    expect(slackValueText(18, null)).not.toBe(slackValueText(null, 45))
-    expect(slackValueText(18, 45)).toBe('18 of 45 minutes')
-    expect(slackValueText(18, 1)).toBe('18 of 1 minute')
+    expect(requiredOfAvailableText(null, 45)).not.toBe(requiredOfAvailableText(18, null))
+    expect(requiredOfAvailableText(18, 45)).toBe('18 of 45 minutes')
+    expect(requiredOfAvailableText(18, 1)).toBe('18 of 1 minute')
   })
 
   it('reads the meter in the direction the bar draws', () => {
@@ -430,11 +454,12 @@ describe('band words and meter readings', () => {
     const required = 44
     const available = 51
     expect(requiredOfAvailableText(required, available)).toBe('44 of 51 minutes')
-    // The same two facts through the other function, which reads available of required. It is the
-    // string the meter used to carry, and it is the inverse of the picture.
-    expect(slackValueText(available, required)).toBe('51 of 44 minutes')
+    // The inverse reading — "51 of 44 minutes" — is what the meter used to carry. No function in
+    // this module produces it any more (docs/VOICE.md §9.3), and this asserts the direction that
+    // replaced it rather than the one that was removed.
+    expect(requiredOfAvailableText(available, required)).toBe('51 of 44 minutes')
     expect(requiredOfAvailableText(required, available)).not.toBe(
-      slackValueText(available, required),
+      requiredOfAvailableText(available, required),
     )
     expect(requiredOfAvailableText(1, 51)).toBe('1 of 51 minutes')
     expect(requiredOfAvailableText(44, 1)).toBe('44 of 1 minute')
@@ -739,11 +764,11 @@ describe('every state this release renders has a string', () => {
     }
   })
 
-  it('supplies every label frontend-ui-engineer requested in copy-gaps.ts', () => {
-    // The gap list was filed as a handoff during this session. Each name below now exists here, so
-    // the adapter in apps/web/src/components/pattern-copy.ts can point at the copy module and the
-    // interim file can be retired. Losing one of these silently would put a literal back into a
-    // component, which is the failure this module exists to prevent.
+  it('supplies every label the pattern-copy adapter maps onto a component prop', () => {
+    // These names were filed as a gap list by frontend-ui-engineer during the S2 session and are
+    // now consumed by the adapter in apps/web/src/components/pattern-copy.ts; the interim request
+    // file that carried the list has been retired. Losing one of these silently would put a literal
+    // back into a component, which is the failure this module exists to prevent.
     expect(Object.keys(cockpit.segment.statusLabels)).toEqual([
       'scheduled',
       'delayed',

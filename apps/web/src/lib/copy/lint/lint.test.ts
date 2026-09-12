@@ -261,6 +261,33 @@ describe('match precision', () => {
     expect(idsIn(inCopy)).toContain('ticket-identifier-d')
     expect(elsewhere).toEqual([])
   })
+
+  it('covers article bodies, which are prose in DelayPilot voice', () => {
+    // Widened in the S3 review at the trust officer's request (`docs/VOICE.md §4.3`). An article
+    // body is the product speaking, so a ticket identifier in one is the same defect as one in a
+    // placeholder. The tree scanned clean before the scope changed.
+    const sentence = `Enter your ${TICKET_CODE}.`
+    const inContent = scanText(sentence, { file: 'apps/web/src/content/guides/example.md' })
+    expect(idsIn(inContent)).toContain('ticket-identifier-d')
+  })
+
+  it('permits the one negative mention the directive fixes as the trust line', () => {
+    // `DIRECTIVE.md §7` fixes the trust line as "No booking code required", and `lookup.noBookingCode`
+    // says why. "Booking code" is deliberately NOT a banned token sequence — a traveler trained by
+    // claims sites to expect that field has to be told it is not coming. The five banned
+    // identifiers are the ones a form could actually ask for.
+    const trustLine = 'No booking code required.'
+    const why =
+      'DelayPilot never asks for anything printed on your ticket, so there is no booking code field.'
+    for (const file of [
+      'apps/web/src/lib/copy/lookup.ts',
+      'apps/web/src/content/guides/example.md',
+      'packages/notifications/src/templates/example.ts',
+    ]) {
+      expect(scanText(trustLine, { file })).toEqual([])
+      expect(scanText(why, { file })).toEqual([])
+    }
+  })
 })
 
 describe('the command line entry', () => {

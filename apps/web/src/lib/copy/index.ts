@@ -35,7 +35,6 @@ export {
   bandOrder,
   delayValueText,
   requiredOfAvailableText,
-  slackValueText,
 } from './bands.ts'
 export type { Band } from './bands.ts'
 

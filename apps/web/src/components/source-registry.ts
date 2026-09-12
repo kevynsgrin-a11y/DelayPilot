@@ -14,6 +14,11 @@
  * A URL BECOMES A LINK ONLY WHEN THE REGISTRY RECORDS THE SOURCE AS REACHABLE. Until then the
  * address is rendered as text: a link the steward could not open is a citation nobody verified, and
  * a reader who follows it and lands on a 404 has been told something false about our process.
+ *
+ * A CONTEXT SOURCE IS NEVER A LINK, AND CANNOT BECOME ONE. `resolveContextSources` returns a type
+ * with no `href` at all, so a template that tries to link one fails `astro check` rather than
+ * shipping a press release presented like a regulator (`DIRECTIVE.md §3.5`: a news summary never
+ * outranks the regulator). That is enforcement by type rather than by reviewer attention.
  */
 
 import registry from '../../../../data/rights/sources/registry.json'
@@ -75,3 +80,19 @@ export function resolveSource(id: string): ResolvedSource {
 
 export const resolveSources = (ids: readonly string[]): readonly ResolvedSource[] =>
   ids.map(resolveSource)
+
+/**
+ * A registry record that reports ON a rule without being it — a press release, a news summary.
+ *
+ * Same fields as a source, minus `href`: the address is rendered, and it is rendered as text. The
+ * omission is the point, so `ArticleLayout` cannot link one even by accident.
+ */
+export type ResolvedContextSource = Omit<ResolvedSource, 'href'>
+
+export function resolveContextSource(id: string): ResolvedContextSource {
+  const { label, address, lastVerifiedAt, missing } = resolveSource(id)
+  return { id, label, address, lastVerifiedAt, missing }
+}
+
+export const resolveContextSources = (ids: readonly string[]): readonly ResolvedContextSource[] =>
+  ids.map(resolveContextSource)

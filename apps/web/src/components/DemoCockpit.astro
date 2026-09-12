@@ -91,7 +91,6 @@ import {
   sourceFreshnessCopy,
   stopRoles,
 } from './pattern-copy.ts'
-import { conditionsNotConnected, disclaimerLabels } from './copy-gaps.ts'
 
 const orderedActions = orderActionItems(demoActions)
 const nextStep = orderedActions.slice(0, 1)
@@ -207,7 +206,7 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
       <SegmentCard segment={demoSegmentInbound} copy={segmentCardCopy} headingLevel={4} />
       <SegmentCard segment={demoSegmentCanceled} copy={segmentCardCopy} headingLevel={4} />
     </div>
-    <Disclaimer label={disclaimerLabels.flightData}>{disclaimers.flightData}</Disclaimer>
+    <Disclaimer label={disclaimers.labels.flightData}>{disclaimers.flightData}</Disclaimer>
   </section>
 
   {/* 5. Latest meaningful change. */}
@@ -243,7 +242,7 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
     <ul class="dpp-list">
       {demoAssessmentFactors.map((factor) => <li>{factor}</li>)}
     </ul>
-    <Disclaimer label={disclaimerLabels.prediction}>{disclaimers.prediction}</Disclaimer>
+    <Disclaimer label={disclaimers.labels.prediction}>{disclaimers.prediction}</Disclaimer>
   </Card>
 
   {
@@ -255,9 +254,17 @@ const rightsSummary = demoRightsUnitedStates.lines.map(
     headingLevel={3}
   />
 
-  {/* 9. Weather and airspace factors. No feed is connected, so this is the unavailable state. */}
+  {
+    /*
+     * 9. Weather and airspace factors. No feed is connected, so this is the unavailable state:
+     * the missing FACT first, then the next step a reader can actually take. The section keeps
+     * `cockpit.headings.conditions` as its title, so `states.conditionsNotConnected.heading` —
+     * which is for a surface that shows this state without that heading — is not repeated here.
+     */
+  }
   <StateBlock kind="provider_unavailable" severity="info" title={cockpit.headings.conditions}>
-    <p>{conditionsNotConnected}</p>
+    <p>{states.conditionsNotConnected.body}</p>
+    <p>{states.conditionsNotConnected.action}</p>
   </StateBlock>
 
   {/* 10. Rights estimate. Statuses only, no amounts: no rule set is in force. */}

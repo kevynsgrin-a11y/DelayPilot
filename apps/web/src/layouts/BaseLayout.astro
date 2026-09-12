@@ -12,8 +12,11 @@
  * · **Icons** come from `scripts/assets/asset-manifest.mjs` — the SVG favicon, the ICO for legacy
  *   agents, and the 180px Apple touch icon. This replaces v1's `<link rel="icon" href="data:,">`
  *   placeholder, which is what lets `seo-engineer` drop `img-src data:` from the CSP.
- * · **No `manifest.webmanifest` link.** The file does not exist yet (`seo-engineer`, wave 2). A
- *   link to a missing file is a dead reference (`AGENTS.md §1.6`); it is added when the file is.
+ * · **The web app manifest** is linked because it now exists: `apps/web/public/manifest.webmanifest`
+ *   (`seo-engineer`), guarded by `node scripts/seo/verify-manifest.mjs`. It declares
+ *   `display: "browser"` — no service worker and no offline shell ship yet, so nothing here claims
+ *   an installed app that works offline. `manifest-src` is not enumerated in the served policy; it
+ *   falls back to `default-src 'self'`, which admits this same-origin file.
  * · **Fonts** are preloaded, both faces, `crossorigin` — they are same-origin `woff2` and a preload
  *   without `crossorigin` fetches the file twice.
  * · **Open Graph needs an ABSOLUTE url.** `Astro.site` is undefined until `PUBLIC_SITE_URL` is
@@ -120,6 +123,7 @@ const reviewedDate =
     <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
     <link rel="icon" href="/icons/favicon.ico" sizes="16x16 32x32 48x48" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
 
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eef5fb" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07111f" />

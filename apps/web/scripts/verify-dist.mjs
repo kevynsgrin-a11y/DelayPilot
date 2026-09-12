@@ -7,15 +7,16 @@
  * cannot catch and a reviewer would have to notice by hand, which is another way of saying:
  * something that ships broken eventually.
  *
- * THE POLICY IT CHECKS AGAINST. `apps/web/public/_headers` serves
+ * THE POLICY IT CHECKS AGAINST IS READ FROM `apps/web/public/_headers`, NEVER RESTATED HERE. That
+ * file belongs to `seo-engineer` and it moves: `img-src` carried `data:` for the placeholder favicon
+ * until BaseLayout v2 linked a real icon set, and a copy of the policy pasted into this script would
+ * still be checking the old one. So the `Content-Security-Policy` line is parsed at run time, the
+ * inline-hash allowlist is DERIVED from its `script-src` and `style-src` sources, and the summary
+ * prints the policy the build was actually held to.
  *
- *     script-src 'self'; style-src 'self'
- *
- * with NO 'unsafe-inline' and no hash sources. That file belongs to `seo-engineer` and cannot
- * change in this wave, so this build is held to it exactly as served: ZERO inline `<script>`, ZERO
- * inline `<style>`, and zero `style="…"` attributes. The allowlist below is therefore empty, and
- * that is the finding to report rather than a gap — `apps/web` needs no `'sha256-…'` addition to
- * `_headers` or to `apps/edge/src/index.ts`. If a future session adds a `client:*` directive, Astro
+ * As served today that policy is `script-src 'self'; style-src 'self'` with no hash sources, so the
+ * derived allowlist is empty and the build must contain ZERO inline `<script>`, ZERO inline
+ * `<style>` and zero `style="…"` attributes. If a future session adds a `client:*` directive, Astro
  * will inject an inline island style and two inline island scripts, this check will fail, and the
  * hashes it prints are what the header policy would then have to carry.
  *
@@ -33,6 +34,9 @@
  *   missing independence disclaimer            AGENTS.md §1.4, DIRECTIVE.md §3.4 — every page
  *   route-globe without its caption            ADR 0003 rule 6
  *   ad on a forbidden surface                  AGENTS.md §4, DIRECTIVE.md §20
+ *   a `data:` image while img-src forbids one  the served policy discards it; the image vanishes
+ *   'unsafe-inline' in the served policy       the widening this script exists to make visible
+ *   a page with no web app manifest link       every page is BaseLayout's, and BaseLayout links it
  *   unreferenced JavaScript chunk              `dist` must not misstate what the site loads
  *
  * WHAT IT DELIBERATELY ALLOWS. The one `%` in the built output is the `width` PRESENTATION
@@ -49,15 +53,98 @@ import { fileURLToPath } from 'node:url'
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const DIST = resolve(ROOT, 'dist')
+const HEADERS_FILE = resolve(ROOT, 'public/_headers')
+
+const findings = []
+const fail = (file, message) => findings.push(`${file}: ${message}`)
 
 /**
- * Inline script/style SHA-256 sources the SERVED policy admits.
+ * The served Content-Security-Policy, parsed out of `apps/web/public/_headers`.
  *
- * Empty, because `apps/web/public/_headers` carries none. Any inline element found is reported with
- * the hash it would need, so adding one is a deliberate act with a matching header change rather
- * than a silent breakage on the deployed site.
+ * Read rather than restated: this script's whole value is that it holds the build to the policy a
+ * browser will actually apply, and a second copy of that policy here would drift from the first one
+ * silently. `_headers` is `seo-engineer`'s file; this is a consumer of it.
  */
-const ALLOWED_INLINE_HASHES = new Set([])
+function readServedPolicy(source) {
+  const line = source
+    .split('\n')
+    .map((entry) => entry.trim())
+    .find((entry) => entry.toLowerCase().startsWith('content-security-policy:'))
+
+  if (line === undefined) {
+    console.error(
+      'verify-dist: apps/web/public/_headers carries no Content-Security-Policy line. The build ' +
+        'cannot be held to a policy that is not served; restore the header first.',
+    )
+    process.exit(1)
+  }
+
+  const policy = line.slice(line.indexOf(':') + 1).trim()
+  const directives = new Map()
+  for (const directive of policy.split(';')) {
+    const [name, ...sources] = directive.trim().split(/\s+/)
+    if (name === undefined || name === '') continue
+    directives.set(name.toLowerCase(), sources)
+  }
+  return { policy, directives }
+}
+
+const { policy: SERVED_POLICY, directives: POLICY } = readServedPolicy(
+  await readFile(HEADERS_FILE, 'utf8'),
+)
+
+/** Sources for a directive, falling back to `default-src` exactly as a browser does. */
+const sourcesFor = (directive) => POLICY.get(directive) ?? POLICY.get('default-src') ?? []
+
+/**
+ * Inline script/style hash sources the SERVED policy admits — derived, never typed by hand.
+ *
+ * Empty as the policy stands today. Any inline element found is reported with the hash it would
+ * need, so adding one is a deliberate act with a matching header change rather than a silent
+ * breakage on the deployed site.
+ */
+const ALLOWED_INLINE_HASHES = new Set(
+  ['script-src', 'style-src']
+    .flatMap((directive) => sourcesFor(directive))
+    .filter((source) => /^'(?:sha256|sha384|sha512)-/.test(source))
+    .map((source) => source.slice(1, -1)),
+)
+
+/**
+ * `'unsafe-inline'` on either directive makes every inline check below vacuous: the build could
+ * ship inline scripts and this script would pass them. `_headers` says in its own comments that a
+ * source added to unblock a red build is the failure mode it exists to prevent, so the widening is
+ * reported here rather than silently honoured.
+ */
+for (const directive of ['script-src', 'style-src']) {
+  if (sourcesFor(directive).includes("'unsafe-inline'")) {
+    fail(
+      'apps/web/public/_headers',
+      `${directive} carries 'unsafe-inline'. Every inline-element check in this script becomes ` +
+        `vacuous, so a green build stops being evidence of anything. Move the element to an ` +
+        `external same-origin file and take the source back out.`,
+    )
+  }
+}
+
+/**
+ * True when NO directive of the served policy admits a `data:` URI — which is the case today.
+ *
+ * `img-src` lost `data:` when BaseLayout v2 replaced the `<link rel="icon" href="data:,">`
+ * placeholder with a real icon set. So a `data:` URI anywhere in the emitted output is a resource a
+ * browser will refuse: a favicon that does not appear, or a background image that silently does not
+ * paint. `assetsInlineLimit: 0` in `astro.config.mjs` is what stops Vite producing one; this check
+ * is what makes that setting's effect verified rather than assumed.
+ */
+const DATA_URI_FORBIDDEN = ![...POLICY.values()].some((sources) => sources.includes('data:'))
+
+/**
+ * Every page is rendered by `apps/web/src/layouts/BaseLayout.astro`, and BaseLayout links the web
+ * app manifest. A page without the link is a page that bypassed the shell, which is how a head
+ * silently loses its canonical, its icons and its `theme-color` too.
+ */
+const MANIFEST_LINK = /<link\b[^>]*\brel="manifest"[^>]*>/i
+const MANIFEST_HREF = /<link\b[^>]*\brel="manifest"[^>]*\bhref="([^"]+)"/i
 
 /** `DIRECTIVE.md §3.4`, verbatim. Required on every emitted page. */
 const INDEPENDENCE =
@@ -125,9 +212,6 @@ const AD_FORBIDDEN_PREFIXES = [
   '/status/',
   '/404',
 ]
-
-const findings = []
-const fail = (file, message) => findings.push(`${file}: ${message}`)
 
 async function walk(directory) {
   const out = []
@@ -209,6 +293,49 @@ function checkInlineElements(file, html) {
         .map((match) => match[0].trim())
         .join(', ')}. style-src 'self' discards them, so the rule never applies. Use a data ` +
         `attribute over a finite set, an SVG presentation attribute, or a class.`,
+    )
+  }
+}
+
+/**
+ * A `data:` URI in an emitted asset while the served policy admits none.
+ *
+ * Runs over HTML and CSS both: a `url(data:…)` in a stylesheet is an image request like any other,
+ * and `img-src` governs it.
+ */
+function checkDataUris(file, source) {
+  if (!DATA_URI_FORBIDDEN) return
+  const uris = [
+    ...[...source.matchAll(/\s(?:src|href|srcset|content)="(data:[^"]*)"/gi)].map((m) => m[1]),
+    ...[...source.matchAll(/url\(\s*["']?(data:[^"')]*)/gi)].map((m) => m[1]),
+  ]
+  if (uris.length === 0) return
+  const shown = uris.slice(0, 3).map((uri) => `${uri.slice(0, 48)}…`)
+  fail(
+    file,
+    `${uris.length} data: URI(s) — ${shown.join(', ')}. The served policy admits none, so the ` +
+      `browser refuses every one of them and the resource simply does not appear. Emit the asset ` +
+      `as a file (astro.config.mjs pins assetsInlineLimit to 0), or coordinate a _headers change.`,
+  )
+}
+
+/** Every page comes from BaseLayout, and BaseLayout links the web app manifest. */
+function checkManifestLink(file, html) {
+  if (!MANIFEST_LINK.test(html)) {
+    fail(
+      file,
+      'no <link rel="manifest">. Every page is rendered by BaseLayout, which emits one, so a page ' +
+        'without it bypassed the shell — and a head that lost the manifest lost the icons and the ' +
+        'theme-color with it.',
+    )
+    return
+  }
+  const href = MANIFEST_HREF.exec(html)?.[1]
+  if (href === undefined || !href.startsWith('/')) {
+    fail(
+      file,
+      `<link rel="manifest"> points at ${href ?? '(no href)'}. It must be a same-origin path: the ` +
+        `served policy has no manifest-src and falls back to default-src 'self'.`,
     )
   }
 }
@@ -361,8 +488,14 @@ async function main() {
 
     checkInlineElements(label, source)
     checkBrandImages(label, source)
+    checkDataUris(label, source)
+    checkManifestLink(label, source)
     checkText(label, source, routes)
     checkAdPlacement(label, route, source)
+  }
+
+  for (const file of files.filter((entry) => entry.endsWith('.css'))) {
+    checkDataUris(relative(DIST, file), await readFile(file, 'utf8'))
   }
 
   if (findings.length > 0) {
@@ -373,9 +506,9 @@ async function main() {
   }
 
   console.log(
-    `verify-dist: ${html.length} page(s) and ${scripts.length} chunk(s) checked, 0 findings. ` +
-      `No inline script or style, so the served policy (script-src 'self'; style-src 'self') ` +
-      `needs no hash additions.`,
+    `verify-dist: ${html.length} page(s) and ${scripts.length} chunk(s) checked, 0 findings.\n` +
+      `  Held to the policy served by apps/web/public/_headers:\n    ${SERVED_POLICY}\n` +
+      `  No inline script or style and no data: URI, so that policy needs no additional source.`,
   )
 }
 

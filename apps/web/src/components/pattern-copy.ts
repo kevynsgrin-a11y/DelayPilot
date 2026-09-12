@@ -20,8 +20,8 @@
  *
  * F24 (`docs/ACCESSIBILITY.md`): `valueText` and `bandLabel` must never be the same string, because
  * `ProgressBar` joins them into one `aria-valuetext` and "Unknown, Unknown" is a poor rendering of
- * the one state a traveler most needs to trust. The reading always comes from `slackValueText` or
- * `delayValueText` and the band always from `bandLabel`.
+ * the one state a traveler most needs to trust. The reading always comes from
+ * `requiredOfAvailableText` or `delayValueText` and the band always from `bandLabel`.
  */
 
 import type {
@@ -42,14 +42,13 @@ import type {
 import {
   bandLabel,
   delayValueText,
-  slackValueText,
+  requiredOfAvailableText,
   type Band as CopyBand,
 } from '../lib/copy/bands.ts'
 import { cockpit } from '../lib/copy/cockpit.ts'
 import { disclaimers } from '../lib/copy/disclaimers.ts'
 import { nav } from '../lib/copy/nav.ts'
 import { results } from '../lib/copy/results.ts'
-import { disclaimerLabels } from './copy-gaps.ts'
 
 /** The two band vocabularies are the same five words; this assignment keeps them that way. */
 const asCopyBand = (band: Band): CopyBand => band
@@ -118,36 +117,21 @@ const topologyNote: Readonly<Record<ConnectionTopology, string>> = {
 }
 
 /**
- * The connection meter's reading.
- *
- * THE BAR AND THE WORDS MUST DESCRIBE THE SAME RATIO. `BandMeter` fills `required / available` —
- * how much of the window the transfer eats — because that is the shape a traveler can act on: a
- * nearly-full bar means nearly no room. `slackValueText(available, required)` renders the other
- * ratio, `available of required`, which is the right reading for a connection that does NOT fit
- * (18 of the 45 minutes you need) and the wrong one for a connection that just barely does: the
- * demonstration itinerary has 51 minutes available against 44 required, and the documented argument
- * order renders "51 of 44 minutes" beside a bar filled to 86 %. A reader can reasonably take "51 of
- * 44" as fifty-one minutes needed out of forty-four available — the exact opposite of the seven
- * minutes of slack the row below states.
- *
- * So when both figures are known the arguments are swapped, producing "44 of 51 minutes", which
- * agrees with the bar. When either is missing the documented order is used unchanged, because those
- * three branches name WHICH quantity is missing and swapping them would name the wrong one.
- * `apps/web/test/pattern-copy.test.ts` asserts all four branches, so a change inside
- * `slackValueText` fails here rather than silently inverting a reading at a gate.
- *
- * HANDOFF FILED: `to: ux-copy-steward` — either rename the parameters to
- * `slackValueText(numerator, denominator)`, or add a `requiredOfAvailableText(required, available)`
- * so this wrapper can go away.
- */
-export const meterReading = (available: number | null, required: number | null): string =>
-  available === null || required === null
-    ? slackValueText(available, required)
-    : slackValueText(required, available)
-
-/**
  * `meterValueText` is per-assessment, not per-page: it names WHICH quantity is missing when one is
- * (F24), so it cannot be a constant. The two minute figures are therefore arguments.
+ * (F24), so it cannot be a constant. The two minute figures are therefore arguments — and the ORDER
+ * they are passed in is the whole correctness question on this surface.
+ *
+ * `ConnectionCockpit` fills its meter `value={requiredMinutes}` of `max={availableMinutes}`: how
+ * much of the window the transfer eats, so a nearly-full bar means nearly no room. The words beside
+ * it must name that same ratio in that same order, which is what `requiredOfAvailableText(required,
+ * available)` renders — "44 of 51 minutes" for the demonstration itinerary's 44-minute transfer
+ * inside a 51-minute window. The other reading, `slackValueText(available, required)`, says "51 of
+ * 44 minutes" beside a bar filled to 86 %, which a tired reader can only take as its inverse. This
+ * wrapper used to swap arguments to correct that; `ux-copy-steward` took the handoff and the copy
+ * module now owns the reading, so there is nothing left here to invert.
+ *
+ * `apps/web/test/pattern-copy.test.ts` asserts all four branches THROUGH this function, so an
+ * inverted argument at this one call site fails there rather than at a gate.
  */
 export function connectionCopy(options: {
   readonly demo: boolean
@@ -179,13 +163,13 @@ export function connectionCopy(options: {
     bandScaleLabel: cockpit.connection.bandScaleLabel,
     currentBandLabel: cockpit.connection.currentBand,
     meterLabel: cockpit.connection.meterLabel,
-    meterValueText: meterReading(options.availableMinutes, options.requiredMinutes),
+    meterValueText: requiredOfAvailableText(options.requiredMinutes, options.availableMinutes),
     heuristicNote: cockpit.assessment.heuristicNote,
     minutesText: minutesWord,
     zoneLabel: cockpit.segment.zone,
     estimatedLabel: cockpit.segment.estimated,
     disclaimer: disclaimers.connection,
-    disclaimerLabel: disclaimerLabels.connection,
+    disclaimerLabel: disclaimers.labels.connection,
     ...(options.demo ? { demoCaption: cockpit.demoCaption } : {}),
   }
 }
@@ -205,7 +189,7 @@ export function rightsCopy(options: { readonly demo: boolean }): RightsCardCopy 
     reasoningSummary: cockpit.rights.reasoningToggle,
     statusLabel: cockpit.rights.statusLabels,
     disclaimer: disclaimers.rights,
-    disclaimerLabel: disclaimerLabels.rights,
+    disclaimerLabel: disclaimers.labels.rights,
     resultNote: results.rights,
     newTabLabel: nav.newTab,
     sourceUnavailableLabel: cockpit.rights.sourceUnavailable,
@@ -271,7 +255,7 @@ export function evidencePacketCopy(options: { readonly demo: boolean }): Evidenc
     sourceUnavailableLabel: cockpit.rights.sourceUnavailable,
     ruleSetLabel: cockpit.evidence.ruleSetLabel,
     disclaimer: disclaimers.rights,
-    disclaimerLabel: disclaimerLabels.rights,
+    disclaimerLabel: disclaimers.labels.rights,
     ...(options.demo ? { demoCaption: cockpit.demoCaption } : {}),
   }
 }

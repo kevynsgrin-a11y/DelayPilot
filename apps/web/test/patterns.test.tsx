@@ -39,7 +39,7 @@ import {
   stopRoles,
 } from '../src/components/pattern-copy.ts'
 import { cockpit } from '../src/lib/copy/cockpit.ts'
-import { bandLabel, slackValueText } from '../src/lib/copy/bands.ts'
+import { bandLabel, requiredOfAvailableText } from '../src/lib/copy/bands.ts'
 import { results } from '../src/lib/copy/results.ts'
 import {
   demoActions,
@@ -235,7 +235,7 @@ describe('ConnectionCockpit', () => {
       />,
     )
     expect(markup).toContain(
-      `aria-valuetext="${slackValueText(null, null)}, ${bandLabel('unknown')}"`,
+      `aria-valuetext="${requiredOfAvailableText(null, null)}, ${bandLabel('unknown')}"`,
     )
     expect(markup).not.toContain('aria-valuetext="Unknown, Unknown"')
   })
@@ -260,7 +260,7 @@ describe('BandMeter', () => {
         <BandMeter
           band={band}
           label={cockpit.connection.meterLabel}
-          valueText={slackValueText(51, 44)}
+          valueText={requiredOfAvailableText(44, 51)}
           bandLabel={bandLabel(band)}
           stopLabels={bandStops}
           scaleLabel={cockpit.connection.bandScaleLabel}
@@ -281,7 +281,7 @@ describe('BandMeter', () => {
       <BandMeter
         band="unknown"
         label={cockpit.connection.meterLabel}
-        valueText={slackValueText(null, null)}
+        valueText={requiredOfAvailableText(null, null)}
         bandLabel={bandLabel('unknown')}
         stopLabels={bandStops}
         scaleLabel={cockpit.connection.bandScaleLabel}
@@ -297,7 +297,7 @@ describe('BandMeter', () => {
       <BandMeter
         band="watch"
         label={cockpit.connection.meterLabel}
-        valueText={slackValueText(51, 44)}
+        valueText={requiredOfAvailableText(44, 51)}
         bandLabel={bandLabel('watch')}
         stopLabels={bandStops}
         scaleLabel={cockpit.connection.bandScaleLabel}

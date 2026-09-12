@@ -36,8 +36,8 @@ import {
   FlightLookupFields,
   LoadingBlock,
 } from '../../../../packages/ui/src/patterns/index.ts'
+import { disclaimers } from '../lib/copy/disclaimers.ts'
 import { lookup } from '../lib/copy/lookup.ts'
-import { disclaimerLabels } from './copy-gaps.ts'
 
 interface Props {
   /** Heading level, so the form sits correctly under the section it is placed in. */
@@ -125,7 +125,7 @@ const Heading = headingLevel === 2 ? 'h2' : 'h3'
           </a>
         </p>
         <p class="dpx-lookup__note">{lookup.demoShortcut.help}</p>
-        <Disclaimer label={disclaimerLabels.flightData}>{lookup.disclaimer}</Disclaimer>
+        <Disclaimer label={disclaimers.labels.flightData}>{lookup.disclaimer}</Disclaimer>
       </Card>
     </div>
   </div>

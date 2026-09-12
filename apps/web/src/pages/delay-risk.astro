@@ -17,10 +17,10 @@ import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
 import Section from '../components/Section.astro'
 import { bandStops } from '../components/pattern-copy.ts'
-import { disclaimerLabels } from '../components/copy-gaps.ts'
 
 import { bandDescription, bandLabel, bandOrder } from '../lib/copy/bands.ts'
 import { cockpit } from '../lib/copy/cockpit.ts'
+import { disclaimers } from '../lib/copy/disclaimers.ts'
 import { pages } from '../lib/copy/pages.ts'
 import { unavailableReasons } from '../lib/copy/provenance.ts'
 
@@ -71,7 +71,7 @@ const TONE = {
       heuristicNote={cockpit.assessment.heuristicNote}
     />
 
-    <Disclaimer label={disclaimerLabels.prediction}>{page.disclaimer}</Disclaimer>
+    <Disclaimer label={disclaimers.labels.prediction}>{page.disclaimer}</Disclaimer>
   </Section>
 
   <Section heading={page.sections.whatWouldChangeIt.heading} reveal>

@@ -21,20 +21,24 @@
  * only in the footer.
  *
  * THE SOURCE BLOCK RENDERS WHAT WAS ACTUALLY VERIFIED. Authority, canonical address, and the date
- * the registry last verified it — or "not yet verified" where that date is null, which is every
- * record in this build. `internalRefs` are rendered as plain text paths, never as links: they are
- * repository documents, not public URLs.
+ * the registry last verified it — or `pages.article.notYetVerified` where that date is null, which
+ * is every record in this build. `internalRefs` are rendered as plain text paths under their own
+ * heading, never as links: they are repository documents, not public URLs. Every string in the
+ * block comes from `pages.article` (`ux-copy-steward`); this shell chooses placement, not words.
  *
  * `contextSources` ARE RENDERED APART FROM `sources`, AND LABELLED. They are registry records whose
  * `citableForRuleValues` is false — a press release reporting on a reform, for instance. Listing one
  * beside a regulator would imply the two carry the same weight, and `DIRECTIVE.md §3.5` is explicit
- * that a news summary never outranks the regulator. They are never linked and never counted.
+ * that a news summary never outranks the regulator. They are never linked and never counted — and
+ * `resolveContextSources` returns a type with no `href`, so "never linked" is a type error here
+ * rather than a convention. Three entries carry `contextSources` today, all of them still in
+ * `source_review` and therefore unserved, so `apps/web/test/article-sources.test.ts` is what keeps
+ * this block honest until one of them is published.
  */
 import BaseLayout from './BaseLayout.astro'
 import { cockpit } from '../lib/copy/cockpit.ts'
-import { sourceBlockLabels } from '../components/copy-gaps.ts'
 import { pages } from '../lib/copy/pages.ts'
-import { resolveSources } from '../components/source-registry.ts'
+import { resolveContextSources, resolveSources } from '../components/source-registry.ts'
 
 interface Props {
   title: string
@@ -66,7 +70,7 @@ const {
 } = Astro.props
 
 const resolved = resolveSources(sources)
-const resolvedContext = resolveSources(contextSources ?? [])
+const resolvedContext = resolveContextSources(contextSources ?? [])
 
 const reviewedDate = new Intl.DateTimeFormat('en-GB', {
   day: 'numeric',
@@ -132,7 +136,7 @@ const reviewedDate = new Intl.DateTimeFormat('en-GB', {
                   )}
                   {' · '}
                   {source.lastVerifiedAt === null
-                    ? sourceBlockLabels.notYetVerified
+                    ? pages.article.notYetVerified
                     : `${cockpit.rights.lastVerified} ${source.lastVerifiedAt}`}
                 </li>
               ))}
@@ -141,8 +145,8 @@ const reviewedDate = new Intl.DateTimeFormat('en-GB', {
 
           {resolvedContext.length > 0 && (
             <Fragment>
-              <h3 class="dpx-definition__term">{sourceBlockLabels.contextHeading}</h3>
-              <p class="dpx-section__intro">{sourceBlockLabels.contextIntro}</p>
+              <h3 class="dpx-definition__term">{pages.article.contextHeading}</h3>
+              <p class="dpx-section__intro">{pages.article.contextIntro}</p>
               <ul class="dpp-list">
                 {resolvedContext.map((source) => (
                   <li>
@@ -154,7 +158,7 @@ const reviewedDate = new Intl.DateTimeFormat('en-GB', {
                       </Fragment>
                     )}
                     {' · '}
-                    {sourceBlockLabels.contextNote}
+                    {pages.article.contextNote}
                   </li>
                 ))}
               </ul>
@@ -163,7 +167,7 @@ const reviewedDate = new Intl.DateTimeFormat('en-GB', {
 
           {(internalRefs?.length ?? 0) > 0 && (
             <Fragment>
-              <h3 class="dpx-definition__term">{sourceBlockLabels.internalRefsHeading}</h3>
+              <h3 class="dpx-definition__term">{pages.article.internalRefsHeading}</h3>
               <ul class="dpp-list">
                 {(internalRefs ?? []).map((reference) => (
                   <li>{reference}</li>

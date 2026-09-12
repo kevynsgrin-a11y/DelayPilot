@@ -668,8 +668,10 @@ Ship a public "current rules vs adopted reform" timeline that never applies the 
 **15.3 United Kingdom.** UK261 per current CAA guidance: scope by origin/destination/carrier, care
 thresholds, refund choice after a qualifying long delay, cancellation, protected missed connections,
 extraordinary circumstances, and fixed bands — £220 under 1,500 km; £350 for 1,500–3,500 km;
-£260 or £520 for longer flights depending on arrival delay. Verify before activation. A separate-
-ticket self-transfer is never a protected through journey.
+£260 or £520 for longer flights depending on arrival delay. Verify before activation. The rule set
+never models a separate-ticket self-transfer as a protected through journey; reader-facing prose
+states that the rules generally treat separate tickets as separate journeys, never a flat
+determination in either direction (`AGENTS.md §1.3`).
 
 **15.4 Canada.** APPR: within airline control · within control but required for safety · outside
 control; large vs small airline; notice timing; arrival delay; rebooking vs refund; claim deadline.

@@ -125,7 +125,7 @@ repeal. _EU:_ currently effective EC 261 only; bands €250 / €400 / €600 wi
 rerouting reduction, rendered from the rule set; extraordinary circumstances explained as an airline
 assertion subject to determination, never as a fact you can infer from weather. _UK:_ UK261 per CAA —
 £220 under 1,500 km, £350 for 1,500–3,500 km, £260 or £520 for longer flights depending on arrival
-delay; a separate-ticket self-transfer is never a protected through journey. _Canada:_ APPR
+delay; the rule set never models a separate-ticket self-transfer as a protected through journey, and bodies say the rules generally treat separate tickets as separate journeys, never a flat determination in either direction. _Canada:_ APPR
 within-control / within-control-required-for-safety / outside-control, large airline CAD 400 / 700 /
 1,000 and small airline CAD 125 / 250 / 500 for qualifying within-control non-safety cases, airline
 size taken from the official source; proposed reforms are not law and are not written as law.

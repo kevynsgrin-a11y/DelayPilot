@@ -2,89 +2,224 @@
 /**
  * Terms of use.
  *
- * Deliberately short, because the site is small: static informational pages with no account, no
- * transaction and no user-submitted content. A long agreement describing subscriptions, user
- * accounts and submitted data would be describing a product that does not exist.
+ * Owner: trust-compliance-officer (docs/agents/ROSTER.md §3). Rewritten for this session, not
+ * appended to: the previous revision was an interim baseline written before the policy set existed.
  *
- * The independence and no-legal-advice statements are not boilerplate — they are the same
- * commitments AGENTS.md sections 1.3 and 1.4 bind the product to, and they are the ones that matter
- * for a tool people consult while deciding what to do about a disrupted flight.
+ * Two disciplines govern this file. First, it states only what the product provably does — verified
+ * at the reviewed date: packages/rights-engine exports nothing and no rule data exists, so no
+ * rights output is produced anywhere; FLIGHT_PROVIDER is `fixture` and no provider licence is
+ * recorded in docs/PROVIDER_LICENSING.md, so live flight data is Unavailable; there is no account,
+ * no purchase, and no code path that submits anything to a third party on a user's behalf.
  *
- * docs/agents/ROSTER.md section 3 assigns the policy pages to trust-compliance-officer; this is a
- * pre-Phase-11 baseline added under direct owner instruction because the site had no terms page.
+ * Second, the quoted disclaimers are verbatim fixed text — the independence disclaimer from
+ * DIRECTIVE.md §3.4 and three of the §26 result disclaimers. They are rendered from constants so
+ * that reformatting cannot reflow them, and they are not paraphrasable: AGENTS.md §7 requires
+ * escalation rather than an edit if one reads badly.
+ *
+ * The liability and governing-law section is deliberately unwritten. Naming a jurisdiction the
+ * operator has not designated would be an invented fact (AGENTS.md §1.1), and a limitation of
+ * liability that no lawyer has read is worth less than the honesty of saying so.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { disclaimers } from '../lib/copy/disclaimers.ts'
+import { results } from '../lib/copy/results.ts'
 
-const title = 'Terms — DelayPilot'
+const title = 'Terms of use — DelayPilot'
 const description =
-  'Terms of use for DelayPilot: informational only, independent of any airline or regulator, and not legal advice.'
+  'DelayPilot is an informational tool. It never files a claim, never books or purchases anything, and never represents you. The terms, stated plainly.'
 
-const lastUpdated = '29 August 2026'
+/**
+ * The quoted text below is imported, never retyped.
+ *
+ * apps/web/src/lib/copy/disclaimers.ts and results.ts (owner: ux-copy-steward) hold the fixed
+ * strings transcribed byte for byte from DIRECTIVE.md, and their test re-reads DIRECTIVE.md and
+ * fails on a single changed character. Declaring a second copy of a verbatim disclaimer in this
+ * file would create exactly the drift that test exists to prevent.
+ */
+const INDEPENDENCE_DISCLAIMER = disclaimers.independence
+const FLIGHT_DATA_DISCLAIMER = disclaimers.flightData
+const PREDICTION_DISCLAIMER = disclaimers.prediction
+const RIGHTS_DISCLAIMER = disclaimers.rights
+const DEMO_LABEL = results.demo
 ---
 
-<BaseLayout title={title} description={description} nav="terms">
-  <section class="hero">
+<BaseLayout title={title} description={description}>
+  <article class="prose">
     <h1>Terms of use</h1>
-    <p class="lede">
-      Short, because the site is small. It will grow when there is something more to govern.
+
+    <p>
+      <strong>DelayPilot is an information tool, and only that.</strong> It never files a claim, a complaint,
+      or a refund request. It never books, purchases, rebooks, or cancels anything. It never represents
+      you, and it never signs in anywhere as you. What it does is tell you what is known about a flight,
+      how much to trust that information, and which published rules may apply to your situation — with
+      the source, the version, and the timestamp attached.
     </p>
-    <p class="meta">Last updated: {lastUpdated}</p>
-  </section>
 
-  <section class="section">
-    <div class="prose">
-      <h2>What this site is</h2>
+    <p class="meta">Reviewed <time datetime="2026-09-12">12 September 2026</time>.</p>
 
-      <p>
-        DelayPilot is an independent travel-information tool. As of the date above it consists of
-        static informational pages. There is no account, no purchase, no subscription, and no way to
-        submit content.
-      </p>
+    <h2>What DelayPilot is</h2>
 
-      <h2>Independence</h2>
+    <blockquote>
+      <p>{INDEPENDENCE_DISCLAIMER}</p>
+    </blockquote>
 
-      <p>
-        DelayPilot is <strong>not</strong> an airline, airport, government agency, regulator, law firm,
-        claims-management company, or flight-data provider, and is not affiliated with, endorsed by, or
-        acting on behalf of any of them. Airline and airport names or codes, where they appear, are used
-        only to identify a flight or location.
-      </p>
+    <p>
+      Airline, airport, and regulator names, and IATA or ICAO codes, appear on this site only to
+      identify a flight, a place, or a rule. Their use does not imply any relationship. DelayPilot
+      is not affiliated with, endorsed by, appointed by, or acting for any airline, airport,
+      government agency, or regulator, and it does not display any third party's logo, wordmark, or
+      brand styling.
+    </p>
 
-      <h2>Not legal advice</h2>
+    <h2>What DelayPilot never does on your behalf</h2>
 
-      <p>
-        Passenger-rights information on this site is general and informational. It describes what
-        published rules <strong>may</strong> mean for a described situation, tied to a dated, versioned
-        rule set with links to the official source. It is not legal advice, not a determination of your
-        rights, and not a statement that any airline owes you anything. Whether a rule applies to your
-        specific case depends on facts this site does not have.
-      </p>
+    <ul>
+      <li>
+        It never submits a claim, complaint, refund request, rebooking, or purchase for you — not to
+        an airline, not to a regulator, not to anyone.
+      </li>
+      <li>It never acts as your agent, your representative, or your legal adviser.</li>
+      <li>
+        It never reads your email inbox, scrapes an airline account, or authenticates as you to a
+        third party.
+      </li>
+      <li>
+        It never asks for a booking reference or record locator, a passport, a government ID, a
+        Known Traveler Number, a redress number, a card number, or an airline account password.
+      </li>
+      <li>
+        It never classifies an emergency and never gives safety-critical aviation advice. Weather
+        and airspace information describes operating conditions, nothing more.
+      </li>
+    </ul>
 
-      <p>
-        For a decision with money or a missed connection riding on it, check the airline's own terms
-        and the relevant regulator, both of which are linked wherever this site cites them.
-      </p>
+    <p>
+      These are not preferences that a future release might relax. They are invariants the codebase
+      is built and reviewed against, and a change to any of them would be a change to what this
+      product is.
+    </p>
 
-      <h2>Accuracy and availability</h2>
+    <h2>Passenger-rights information is an estimate, not a decision</h2>
 
-      <p>
-        Operational flight information, when it ships, comes from third-party providers and can be
-        incomplete, delayed, or wrong. Where the site cannot source a value it says so rather than
-        estimating one. The site is provided as-is, without warranty, and may be unavailable or
-        changed at any time.
-      </p>
+    <p>
+      Where DelayPilot describes passenger rights, it describes what published rules{' '}
+      <strong>may</strong> mean for the facts you entered. Every assessment is tied to a named, dated
+      rule-set version with links to the official source, and is limited to five outcomes: a rule likely
+      applies, may apply, is not indicated, cannot be determined from what is known, or is a future rule
+      that is not yet in force. DelayPilot never tells you that a payment is due to you, never states
+      that an airline is required to pay you, and never presents an assessment as a determination. Only
+      the airline or the relevant regulator can decide your case.
+    </p>
 
-      <p>
-        DelayPilot never files, submits, or purchases anything on your behalf, and never
-        authenticates as you to a third party.
-      </p>
+    <blockquote>
+      <p>{RIGHTS_DISCLAIMER}</p>
+    </blockquote>
 
-      <h2>Changes</h2>
+    <p>
+      <strong>Today, no rule set is in force.</strong> The rights engine carries no rule data, so this
+      site produces no rights assessment at all. Any passenger-rights writing you find here is general
+      explanation with its official source linked, and the only rights output that will ever appear before
+      a rule set is published is inside clearly labelled demonstration content.
+    </p>
 
-      <p>
-        These terms will be updated as the product gains features that need governing. The date at
-        the top records when they last matched the site.
-      </p>
-    </div>
-  </section>
+    <h2>Flight information changes, and can be wrong</h2>
+
+    <p>
+      Operational flight information comes from third-party data providers and from official
+      aviation sources. It can be incomplete, delayed, or wrong, and it changes while you are
+      reading it. Every value DelayPilot displays carries a label saying where it came from and how
+      fresh it is, and where no trustworthy answer exists the interface says so rather than
+      estimating one.
+    </p>
+
+    <blockquote>
+      <p>{FLIGHT_DATA_DISCLAIMER}</p>
+    </blockquote>
+
+    <p>
+      Today no flight-data provider is connected and no provider licence is recorded, so live flight
+      data is <strong>Unavailable</strong> and the site says exactly that.
+    </p>
+
+    <h2>Risk and connection assessments are estimates</h2>
+
+    <p>
+      Delay risk, cancellation risk, and connection assessments are estimates derived from the
+      information available at the time. DelayPilot shows a qualitative risk band rather than a
+      percentage unless a calibrated model has been validated and deployed, because a number implies
+      a precision that an uncalibrated model does not have.
+    </p>
+
+    <blockquote>
+      <p>{PREDICTION_DISCLAIMER}</p>
+    </blockquote>
+
+    <h2>Demonstration content is fiction</h2>
+
+    <p>
+      To show what the product does without paid data, DelayPilot uses a deterministic, invented
+      itinerary. Every panel built from it carries this label:
+    </p>
+
+    <blockquote>
+      <p>{DEMO_LABEL}</p>
+    </blockquote>
+
+    <p>
+      Demonstration content never uses a real flight number with invented live details, and is never
+      indexed as though it were a real flight.
+    </p>
+
+    <h2>No warranty, and no guarantee of availability</h2>
+
+    <p>
+      This site is provided as it is, without warranty of accuracy, completeness, or fitness for a
+      particular purpose. It may be changed, interrupted, or withdrawn at any time. Do not rely on
+      it alone for a decision that cannot be reversed: confirm critical details with the operating
+      airline and the airport before you act.
+    </p>
+
+    <h2>Using this site</h2>
+
+    <p>
+      The site is free to read and needs no account. You may read, print, and share its pages. The
+      text, design, and original explanation remain DelayPilot's; regulatory text and official
+      source material belong to the bodies that publish it, and is linked rather than reproduced
+      wholesale. Do not use this site in a way that breaks the law or that interferes with its
+      operation for other readers.
+    </p>
+
+    <h2>Liability and governing law</h2>
+
+    <p>
+      <strong>This section is deliberately incomplete.</strong> The operator has not yet designated a
+      governing jurisdiction, and no limitation of liability has been through legal review. Rather than
+      copy a clause from elsewhere and present it as agreed, DelayPilot states the position plainly: no
+      such clause is asserted here, and nothing on this page is intended to remove a consumer protection
+      that the law of your country gives you. This section will be written once a jurisdiction is designated
+      and a lawyer has reviewed the result.
+    </p>
+
+    <h2>Changes to these terms</h2>
+
+    <p>
+      These terms are rewritten rather than added to when the product changes — an account system, a
+      purchase, a saved trip, or a published rule set each change what there is to govern. The
+      reviewed date at the top of this page records when its description last matched the site.
+    </p>
+
+    <h2>Related policies</h2>
+
+    <ul>
+      <li><a href="/privacy/">Privacy</a> — what is collected today, and what never will be.</li>
+      <li>
+        <a href="/editorial-policy/">Editorial policy</a> — how guidance is sourced, reviewed, and corrected.
+      </li>
+      <li>
+        <a href="/advertising-policy/">Advertising policy</a> and{' '}
+        <a href="/affiliate-disclosure/">affiliate disclosure</a> — how DelayPilot does and does not make
+        money.
+      </li>
+    </ul>
+  </article>
 </BaseLayout>

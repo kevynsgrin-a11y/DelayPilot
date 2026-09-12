@@ -64,7 +64,7 @@ cause, and must be rendered as such, never as a determination.
 No airline, airport, regulator, or data-provider logos, wordmarks, brand colours, or trade dress
 without a verified written licence recorded in `docs/PROVIDER_LICENSING.md`. Text names and
 IATA/ICAO identifiers are permitted where lawful and necessary. The independence disclaimer in
-`DIRECTIVE.md §35` ships in the footer of every public page.
+`DIRECTIVE.md §3.4` ships in the footer of every public page.
 
 ### 1.5 Fail closed
 

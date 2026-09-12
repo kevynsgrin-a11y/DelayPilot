@@ -1111,6 +1111,17 @@ regulatory diff.
 20. Google — Spam policies · https://developers.google.com/search/docs/essentials/spam-policies
 21. Google AdSense — Ad placement policies · https://support.google.com/adsense/answer/1346295
 22. Stripe docs · https://docs.stripe.com/
+23. EU — Regulation (EC) No 261/2004, the instrument itself (EUR-Lex) · https://eur-lex.europa.eu/eli/reg/2004/261/oj
+24. UK — Regulation (EC) No 261/2004 as it applies in UK law (legislation.gov.uk) · https://www.legislation.gov.uk/eur/2004/261
+25. Canada — Air Passenger Protection Regulations, SOR/2019-150 (Justice Laws) · https://laws-lois.justice.gc.ca/eng/regulations/SOR-2019-150/
+26. US — 14 CFR Part 260, Refunds and Other Consumer Protections (eCFR) · https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-260
+27. US — 14 CFR Part 250, Oversales (eCFR) · https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-250
+
+Entries 1–22 are regulators' consumer explanations and platform documentation; entries 23–27 are the
+legal instruments themselves. A rule value, threshold, band, or effective date is published only
+when it is traced to an instrument-level entry (23–27, or the Official Journal citation of the EU
+reform once it exists) **and** the regulator explanation that interprets it — an explanation alone
+is not a source for a legal value (`regulatory-source-steward` finding R-1, 2026-09-12).
 
 Add registry placeholders for the current official developer documentation of any enabled Cirium or
 OAG adapter.

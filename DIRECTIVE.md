@@ -358,7 +358,7 @@ action checklist, evidence packet, lookup result states, provenance chips, statu
 may use (a) pure-CSS scroll-driven entrance reveals that fire once per element and animate only
 `opacity`/`transform`, (b) at most two ambient decorative motifs per route, drawn as original
 SVG/CSS art, `aria-hidden`, carrying no text or data, cycling in ≤ 12 s and paused off-screen,
-(c) Astro View Transitions with a cross-fade of ≤ 180 ms, and (d) a scroll-scrubbed demonstration
+(c) cross-document CSS View Transitions with a cross-fade of ≤ 180 ms, and (d) a scroll-scrubbed demonstration
 chronology whose base DOM is a complete, readable, ordered list. Still forbidden everywhere:
 auto-advancing carousels, attention pulses on `watch`/`critical` states, motion on data poll or
 re-render, JavaScript scroll handlers for decoration, animated layout properties, and any motion a

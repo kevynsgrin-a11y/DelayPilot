@@ -193,6 +193,10 @@ export const reducedMotion: Readonly<Record<string, string>> = {
  * short — everything on it is a value a page would otherwise hand-roll.
  */
 export const externallyConsumedScaleTokens: Readonly<Record<string, string>> = {
+  'layout-shell-max':
+    'Page shell width — apps/web/src/layouts/app.css `.dpx-shell` (frontend-ui-engineer). No rule in this package sets a page width.',
+  'layout-prose-max':
+    'Prose measure cap — apps/web/src/layouts/app.css `.prose`, the one class shared with the policy pages (frontend-ui-engineer).',
   'motion-slow':
     'Drawer and sheet travel on §18.1 routes — frontend-ui-engineer, S3. Primitives use --motion-base.',
   'motion-reveal':

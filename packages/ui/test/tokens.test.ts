@@ -25,9 +25,8 @@ import { renderContrastTable } from '../src/tokens/contrast-table.ts'
 import { CONTRAST_TABLE_PATH, STYLESHEET_PATH } from './paths.ts'
 import { primitiveColorNames, primitiveColors } from '../src/tokens/primitive.ts'
 import {
+  contrastGateAliases,
   contrastGateNames,
-  legacyColorAliases,
-  legacyScaleAliases,
   semanticColorNames,
   semanticColors,
   semanticRaw,
@@ -197,12 +196,18 @@ describe('no unused token (AGENTS.md §1.6)', () => {
     }
   })
 
-  it('every compatibility alias is defined and still reachable', () => {
-    for (const alias of Object.keys(legacyColorAliases)) {
-      expect(generatedCss).toMatch(new RegExp(`^\\s*--${alias}: #[0-9a-f]{6};`, 'm'))
-    }
-    for (const alias of Object.keys(legacyScaleAliases)) {
-      expect(generatedCss).toContain(`--${alias}: var(--`)
+  /**
+   * The eleven flat names are the one exception to the rule above: no stylesheet rule consumes
+   * them, so the "referenced by a rule" checks cannot cover them. Their consumer is a text parser
+   * in CI, which needs a literal hex — so what is asserted is the shape that parser requires, in
+   * every theme block, and that the set has not quietly grown a twelfth member with no consumer.
+   */
+  it('emits every contrast-gate alias as a literal hex, and nothing beyond the eleven', () => {
+    expect(Object.keys(contrastGateAliases)).toEqual([...contrastGateNames])
+    for (const alias of contrastGateNames) {
+      const declarations = generatedCss.match(new RegExp(`^\\s*--${alias}: #[0-9a-f]{6};`, 'gm'))
+      // Light :root, :root[data-theme='light'], :root[data-theme='dark'], and the system-dark block.
+      expect(declarations, `--${alias}`).toHaveLength(4)
     }
   })
 })
@@ -239,7 +244,7 @@ describe('stylesheet structure the CI contrast gate depends on', () => {
   })
 
   it('parses each gate name to the value its semantic source holds', () => {
-    for (const [alias, target] of Object.entries(legacyColorAliases)) {
+    for (const [alias, target] of Object.entries(contrastGateAliases)) {
       expect(themes.light.get(`--${alias}`)).toBe(primitiveColors[semanticColors[target].light].hex)
       expect(themes.dark.get(`--${alias}`)).toBe(primitiveColors[semanticColors[target].dark].hex)
     }
@@ -281,7 +286,7 @@ describe('stylesheet structure the CI contrast gate depends on', () => {
   })
 })
 
-describe('typography, motion and the compatibility surface', () => {
+describe('typography, motion and the published surface', () => {
   it('emits the 1.2 type scale from a 16px base', () => {
     expect(Object.keys(typeScale)).toEqual([
       'font-size-12',
@@ -371,47 +376,56 @@ describe('typography, motion and the compatibility surface', () => {
     expect(generatedRules).not.toMatch(indirect)
   })
 
-  it('keeps every class the pre-Phase-10 pages depend on', () => {
-    const required = [
-      'skip-link',
-      'shell',
-      'site-header',
-      'site-header__inner',
-      'wordmark',
-      'wordmark__accent',
-      'site-nav',
+  /**
+   * The pre-Phase-10 page layer is gone (S3 wave 2).
+   *
+   * `tokens.css §10` used to re-express `.hero`, `.section`, `.card`, `.shell`, `.site-header`,
+   * `.chip` and friends on the new tokens so the pages written before the primitives existed kept
+   * working. apps/web/src/layouts/app.css replaced all of them with its own `dpx-`/`dpp-` layer,
+   * and the built HTML carries none of those class names any more, so the layer was deleted rather
+   * than left to rot. `.prose` is the ONE shared name: it is defined in app.css, and defining it
+   * here as well is what made a policy page take grid spacing and sibling margins at the same time.
+   *
+   * This stylesheet is now: tokens, a reset, focus, the published utilities (`.tnum` and the print
+   * hooks), reduced motion and print. Nothing that styles a page region belongs in it.
+   */
+  it('ships no page layer — only the utilities it publishes as a contract', () => {
+    const removed = [
       'hero',
-      'lede',
-      'trust-line',
       'section',
       'section__intro',
       'card-grid',
       'card',
-      'chip',
-      'chip--unavailable',
-      'chip--demo',
-      'chip__dot',
-      'prose',
-      'meta',
+      'shell',
+      'site-header',
+      'site-header__inner',
+      'site-nav',
+      'wordmark',
+      'wordmark__accent',
       'site-footer',
       'site-footer__nav',
+      'chip',
+      'chip__dot',
+      'chip--demo',
+      'chip--unavailable',
+      'skip-link',
+      'lede',
+      'trust-line',
+      'meta',
       'disclaimer',
-      'tnum',
+      'prose',
     ]
-    for (const className of required) {
-      expect(generatedCss, `.${className}`).toMatch(
-        new RegExp(`\\.${className.replace(/-/g, '-')}[\\s,{:.]`),
+    for (const className of removed) {
+      expect(generatedRules, `.${className} must not be defined here`).not.toMatch(
+        new RegExp(`(^|[\\s,])\\.${className}[\\s,{:.[]`, 'm'),
       )
     }
-    for (const custom of [
-      '--border',
-      '--border-strong',
-      '--radius',
-      '--radius-sm',
-      '--radius-lg',
-      '--font-sans',
-      '--font-mono',
-    ]) {
+
+    // What it does publish, and what frontend-ui-engineer may rely on by name.
+    for (const className of ['tnum', 'dp-print-only', 'dp-no-print', 'dp-print-url']) {
+      expect(generatedCss, `.${className}`).toMatch(new RegExp(`\\.${className}[\\s,{:.[]`))
+    }
+    for (const custom of ['--font-sans', '--font-mono']) {
       expect(generatedCss, custom).toMatch(new RegExp(`^\\s*${custom}:`, 'm'))
     }
   })

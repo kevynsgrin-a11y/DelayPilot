@@ -9,6 +9,9 @@
  * square — because hue is never allowed to be the only signal (`AGENTS.md §1.1`, `DIRECTIVE.md §7`
  * accessibility floor). Print one in greyscale and it is still identifiable.
  *
+ * `info` is the one neutral glyph and is NOT a status: it marks explanatory prose, never a flight,
+ * a freshness or a confidence. Nothing else in the set may be reused to mean "read this note".
+ *
  * Naming is at the type level: an icon is either decorative (`aria-hidden`, no name) or it carries
  * a `title`, which becomes its accessible name. There is no third option.
  */
@@ -27,6 +30,7 @@ export type IconName =
   | 'provenance-demo'
   | 'provenance-unavailable'
   | 'provenance-heuristic'
+  | 'info'
   | 'chevron-down'
   | 'check'
   | 'close'
@@ -81,6 +85,16 @@ const GLYPHS: Readonly<Record<IconName, Glyph>> = {
   },
   'provenance-heuristic': {
     stroke: ['M5 8.4v7.2', 'M19 8.4v7.2', 'M5 12h14'],
+  },
+
+  // --- Neutral information. NOT a status and not a provenance mark: it carries no claim about a
+  //     flight, a freshness or a confidence. It marks explanatory text — the §26 disclaimers, a
+  //     method note, a definition — so that prose no longer has to borrow `status-unknown`, whose
+  //     meaning is the specific one of "insufficient fresh information". Same 8.8 ring as the
+  //     status circle for optical weight; the upright bar and separated dot read differently from
+  //     the check inside `status-safe` at 16px and in greyscale.
+  info: {
+    stroke: ['M12 3.2a8.8 8.8 0 1 1 0 17.6 8.8 8.8 0 0 1 0-17.6z', 'M12 7.6v.01', 'M12 11.2v5.4'],
   },
 
   // --- Controls. ---

@@ -212,6 +212,28 @@ describe('Icon', () => {
     )
     expect(new Set(shapes).size).toBe(4)
   })
+
+  it('draws no two glyphs the same, so a name is never a synonym for another mark', () => {
+    const drawn = iconNames.map((name) => html(<Icon name={name} decorative />))
+    expect(new Set(drawn).size).toBe(iconNames.length)
+  })
+
+  /**
+   * `info` exists so explanatory prose — the §26 disclaimers, a method note — stops borrowing
+   * `status-unknown`, which means the specific thing "insufficient fresh information". A note that
+   * renders the unknown glyph tells a reader the product is missing data when it is not.
+   */
+  it('carries a neutral information glyph that is not any status mark', () => {
+    const info = html(<Icon name="info" decorative />)
+    expect(info).toContain('<path')
+    for (const tone of interimStatusTones) {
+      expect(info, `info vs status-${tone}`).not.toBe(
+        html(<Icon name={`status-${tone}`} decorative />),
+      )
+    }
+    // Neutral means neutral: no fill, so it takes the colour of the text it sits beside.
+    expect(info).not.toContain('fill="currentColor"')
+  })
 })
 
 describe('StatusPill', () => {

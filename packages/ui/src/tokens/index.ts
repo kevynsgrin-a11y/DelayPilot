@@ -43,9 +43,8 @@ export {
 } from './scale.ts'
 
 export {
+  contrastGateAliases,
   contrastGateNames,
-  legacyColorAliases,
-  legacyScaleAliases,
   semanticColorNames,
   semanticColors,
   semanticRaw,

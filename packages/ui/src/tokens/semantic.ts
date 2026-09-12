@@ -187,16 +187,19 @@ export const semanticRaw: Readonly<Record<string, ThemedRaw>> = {
 }
 
 /**
- * Compatibility aliases for the names the pre-Phase-10 public pages already use
- * (apps/web/src/layouts/BaseLayout.astro, pages/*.astro — frontend-ui-engineer's files, rebuilt in
- * the next session). They are generated from the semantic map above, so they cannot drift from it.
+ * The flat token names scripts/validate-contrast.mjs parses.
  *
- * These are emitted as literal hexes rather than `var()` references for one concrete reason:
- * scripts/validate-contrast.mjs parses `--name: #hex;` declarations straight out of the generated
- * stylesheet and requires eleven of these names in both themes. A `var()` alias would be invisible
- * to it and the CI gate would fail with "missing token" rather than measure anything.
+ * That script is the CI contrast gate (owner: principal-architect). It reads the generated
+ * stylesheet as text, collects every `--name: #hex;` declaration, and measures a fixed pair list
+ * built from these eleven names. So they are emitted as LITERAL HEXES rather than `var()`
+ * references: a `var()` alias is invisible to a text parser, and the gate would fail with
+ * "missing token" instead of measuring anything.
+ *
+ * Each one is generated from the semantic map above, so an alias cannot drift from the token it
+ * mirrors. Nothing in the page layer, the primitives or the patterns consumes these names — rules
+ * reference the semantic layer — and no twelfth name is added here without the gate needing it.
  */
-export const legacyColorAliases: Readonly<Record<string, SemanticColorName>> = {
+export const contrastGateAliases: Readonly<Record<string, SemanticColorName>> = {
   background: 'surface-base',
   surface: 'surface-card',
   'surface-raised': 'surface-elevated',
@@ -208,28 +211,7 @@ export const legacyColorAliases: Readonly<Record<string, SemanticColorName>> = {
   'status-watch': 'status-watch-fg',
   'status-critical': 'status-critical-fg',
   'status-unknown': 'status-unknown-fg',
-  border: 'border-hairline',
-  'border-strong': 'border-emphasis',
 }
 
 /** The eleven names scripts/validate-contrast.mjs requires in both themes. */
-export const contrastGateNames: readonly string[] = [
-  'background',
-  'surface',
-  'surface-raised',
-  'foreground',
-  'muted',
-  'accent',
-  'accent-contrast',
-  'status-safe',
-  'status-watch',
-  'status-critical',
-  'status-unknown',
-]
-
-/** Compatibility aliases for non-colour names the same pages use. */
-export const legacyScaleAliases: Readonly<Record<string, string>> = {
-  radius: 'radius-dialog',
-  'radius-sm': 'radius-card',
-  'radius-lg': 'radius-dialog',
-}
+export const contrastGateNames: readonly string[] = Object.keys(contrastGateAliases)

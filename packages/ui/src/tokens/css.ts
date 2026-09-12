@@ -28,13 +28,7 @@
 
 import { primitiveColors, primitiveColorNames } from './primitive.ts'
 import { breakpoints, motion, reducedMotion, scaleGroups, type ScaleToken } from './scale.ts'
-import {
-  legacyColorAliases,
-  legacyScaleAliases,
-  semanticColorNames,
-  semanticColors,
-  semanticRaw,
-} from './semantic.ts'
+import { contrastGateAliases, semanticColorNames, semanticColors, semanticRaw } from './semantic.ts'
 import { componentColorNames, componentColors } from './component.ts'
 import type { ThemeName } from './pairs.ts'
 
@@ -116,10 +110,7 @@ function scaleBlock(): string {
     }
     body.push('')
   }
-  body.push(`${INDENT}/* Compatibility aliases for the pre-Phase-10 public pages. */`)
-  for (const [alias, target] of Object.entries(legacyScaleAliases)) {
-    body.push(declaration(alias, `var(--${target})`, INDENT))
-  }
+  body.pop()
   return [
     '/* ------------------------------------------------------------------------------------------- */',
     '/* 2. Scales. Theme-independent: type, space, radius, border, size, layout, motion.             */',
@@ -151,10 +142,10 @@ function themeDeclarations(theme: ThemeName, indent: string): string[] {
 
   lines.push('')
   lines.push(
-    `${indent}/* Compatibility aliases. Literal hexes, not var(): scripts/validate-contrast.mjs`,
+    `${indent}/* The CI contrast gate's names. Literal hexes, not var(): scripts/validate-contrast.mjs`,
   )
-  lines.push(`${indent}   parses hex declarations and requires eleven of these names per theme. */`)
-  for (const [alias, target] of Object.entries(legacyColorAliases)) {
+  lines.push(`${indent}   parses hex declarations and requires all eleven in each theme. */`)
+  for (const [alias, target] of Object.entries(contrastGateAliases)) {
     const spec = semanticColors[target]
     const ramp = theme === 'light' ? spec.light : spec.dark
     lines.push(withNote(declaration(alias, primitiveColors[ramp].hex, indent), `--${target}`))
@@ -222,7 +213,7 @@ function componentBlock(): string {
 function darkPreferenceBlock(): string {
   return [
     '/* ------------------------------------------------------------------------------------------- */',
-    '/* 12. Semantic tokens — DARK, system preference.                                               */',
+    '/* 11. Semantic tokens — DARK, system preference.                                               */',
     '/*     LAST block in this file containing a literal hex. See the block-order note at the top of  */',
     '/*     packages/ui/src/tokens/css.ts: anything carrying light values placed after this would be  */',
     '/*     read by scripts/validate-contrast.mjs as part of the dark theme.                          */',
@@ -475,256 +466,6 @@ video {
   display: none;
 }`
 
-const LEGACY = `/* ------------------------------------------------------------------------------------------- */
-/* 10. Page layer for the pre-Phase-10 public pages.                                            */
-/*                                                                                              */
-/*     apps/web/src/layouts/BaseLayout.astro and apps/web/src/pages/*.astro are                 */
-/*     frontend-ui-engineer's files and are rebuilt on @delaypilot/ui primitives in the next     */
-/*     session. Until then these class names must keep working, so they are re-expressed on the  */
-/*     new tokens rather than deleted. This whole section is replaced, not extended.             */
-/* ------------------------------------------------------------------------------------------- */
-.skip-link {
-  position: absolute;
-  left: -9999px;
-  top: 0;
-  z-index: 100;
-  padding: var(--space-12) var(--space-16);
-  background: var(--surface-card);
-  color: var(--text-primary);
-  border: var(--border-width-hairline) solid var(--border-emphasis);
-  border-radius: var(--radius-card);
-  font-weight: var(--font-weight-semibold);
-  text-decoration: none;
-}
-
-.skip-link:focus {
-  left: var(--space-16);
-  top: var(--space-16);
-}
-
-.shell {
-  width: 100%;
-  max-width: var(--layout-shell-max);
-  margin-inline: auto;
-  padding-inline: clamp(var(--space-16), 0.5rem + 2vw, var(--space-32));
-}
-
-.site-header {
-  border-bottom: var(--border-width-hairline) solid var(--border-hairline);
-  background: var(--surface-card);
-}
-
-.site-header__inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-16);
-  min-height: var(--space-64);
-  flex-wrap: wrap;
-}
-
-.wordmark {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-  font-weight: var(--font-weight-semibold);
-  font-size: var(--font-size-18);
-  letter-spacing: var(--letter-spacing-tight);
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
-.wordmark__accent {
-  color: var(--text-accent);
-}
-
-.site-nav {
-  display: flex;
-  align-items: center;
-  gap: var(--space-24);
-  font-size: var(--font-size-14);
-}
-
-.site-nav a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  padding-block: var(--space-12);
-  min-height: var(--target-min);
-  display: inline-flex;
-  align-items: center;
-}
-
-.site-nav a:hover,
-.site-nav a[aria-current='page'] {
-  color: var(--text-primary);
-}
-
-.hero {
-  padding-block: clamp(var(--space-48), 2rem + 5vw, var(--space-96))
-    clamp(var(--space-32), 1.5rem + 3vw, var(--space-48));
-  display: grid;
-  gap: var(--space-24);
-  max-width: var(--layout-prose-max);
-}
-
-.lede {
-  font-size: var(--font-size-18);
-  color: var(--text-secondary);
-}
-
-.trust-line {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8) var(--space-16);
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  font-size: var(--font-size-14);
-  color: var(--text-secondary);
-}
-
-.trust-line li {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-8);
-}
-
-.trust-line li::before {
-  content: '';
-  inline-size: var(--space-8);
-  block-size: var(--space-8);
-  border-radius: var(--radius-pill);
-  background: var(--border-accent);
-  flex: none;
-}
-
-.section {
-  padding-block: clamp(var(--space-32), 1.5rem + 3vw, var(--space-48));
-  border-top: var(--border-width-hairline) solid var(--border-hairline);
-  display: grid;
-  gap: var(--space-24);
-}
-
-.section__intro {
-  max-width: var(--layout-prose-max);
-  color: var(--text-secondary);
-}
-
-.card-grid {
-  display: grid;
-  gap: var(--space-16);
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
-}
-
-.card {
-  background: var(--surface-card);
-  border: var(--border-width-hairline) solid var(--border-hairline);
-  border-radius: var(--radius);
-  padding: var(--space-24);
-  display: grid;
-  gap: var(--space-8);
-  align-content: start;
-}
-
-.card p {
-  color: var(--text-secondary);
-  font-size: var(--font-size-14);
-}
-
-/* The provenance vocabulary is fixed at exactly six values (AGENTS.md §1.2). These chips render
-   the label itself; they never stand in for a value, and they are not decorative. The full
-   six-variant primitive is ProvenanceChip in packages/ui/src/primitives/. */
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-2) var(--space-8);
-  border-radius: var(--radius-pill);
-  border: var(--border-width-hairline) solid currentcolor;
-  font-size: var(--font-size-12);
-  font-weight: var(--font-weight-semibold);
-  line-height: var(--line-height-ui);
-  /* Wraps, never truncates: the moment a freshness string lands in one of these, nowrap would
-     overflow at 320 CSS px and SC 1.4.10 Reflow would fail. Matches .dp-chip. */
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
-
-.chip--unavailable {
-  color: var(--chip-unavailable-fg);
-  background: var(--chip-unavailable-bg);
-}
-
-.chip--demo {
-  color: var(--chip-demo-fg);
-  background: var(--chip-demo-bg);
-  border-style: dashed;
-  border-width: var(--border-width-emphasis);
-}
-
-.chip__dot {
-  inline-size: var(--space-8);
-  block-size: var(--space-8);
-  border-radius: var(--radius-pill);
-  background: currentcolor;
-  flex: none;
-}
-
-.prose {
-  display: grid;
-  gap: var(--space-16);
-  max-width: var(--layout-prose-max);
-}
-
-.prose h2 {
-  margin-top: var(--space-16);
-}
-
-.prose p,
-.prose li {
-  color: var(--text-secondary);
-}
-
-.prose strong {
-  color: var(--text-primary);
-}
-
-.prose ul {
-  margin: 0;
-  padding-left: var(--space-24);
-  display: grid;
-  gap: var(--space-8);
-}
-
-.meta {
-  font-size: var(--font-size-14);
-  color: var(--text-secondary);
-}
-
-.site-footer {
-  border-top: var(--border-width-hairline) solid var(--border-hairline);
-  padding-block: var(--space-32) var(--space-48);
-  margin-top: var(--space-16);
-  display: grid;
-  gap: var(--space-16);
-  font-size: var(--font-size-14);
-  color: var(--text-secondary);
-}
-
-.site-footer__nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-12) var(--space-24);
-}
-
-.site-footer__nav a {
-  color: var(--text-secondary);
-}
-
-.disclaimer {
-  max-width: var(--layout-prose-max);
-}`
-
 function reducedMotionBlock(): string {
   const overrides = Object.entries(reducedMotion).map(([name, value]) => {
     if (!(name in motion)) {
@@ -734,7 +475,7 @@ function reducedMotionBlock(): string {
   })
   return [
     '/* ------------------------------------------------------------------------------------------- */',
-    '/* 11. Reduced motion.                                                                          */',
+    '/* 10. Reduced motion.                                                                          */',
     '/*     Every duration collapses, the reveal travel goes to zero and the ambient cycle stops.     */',
     '/*     ADR 0003 rule 4: reveals become instant, ambient motifs render a single static frame,     */',
     '/*     view transitions are off — and the state change itself is never removed, because the      */',
@@ -762,7 +503,7 @@ function reducedMotionBlock(): string {
 }
 
 const PRINT = `/* ------------------------------------------------------------------------------------------- */
-/* 13. Print — the evidence packet (DIRECTIVE.md §18.5).                                        */
+/* 12. Print — the evidence packet (DIRECTIVE.md §18.5).                                        */
 /*                                                                                              */
 /*     Placed after the dark block on purpose: an evidence packet printed from a dark theme      */
 /*     wastes ink and is harder to read on paper, and the selector list below includes           */
@@ -814,7 +555,11 @@ const PRINT = `/* --------------------------------------------------------------
     word-break: break-all;
   }
 
-  .card {
+  /* An evidence packet is assembled from Card, DataTable and Disclosure. Breaking one across a
+     page separates a value from the source line that qualifies it. */
+  .dp-card,
+  .dp-table,
+  .dp-disclosure {
     break-inside: avoid;
   }
 }`
@@ -831,7 +576,6 @@ export function renderTokensCss(): string {
     lightOverrideBlock(),
     componentBlock(),
     RESET_AND_BASE,
-    LEGACY,
     reducedMotionBlock(),
     darkPreferenceBlock(),
     PRINT,

@@ -124,27 +124,34 @@ Files live at `apps/web/src/content/guides/<slug>.md` and
 kebab-case, stable, never recycled for different content. Plain Markdown (CommonMark + GFM tables).
 No MDX, no raw HTML, no images.
 
-| Field           | Required | Rule                                                                                            |
-| --------------- | -------- | ----------------------------------------------------------------------------------------------- |
-| `title`         | yes      | Unique across all entries                                                                       |
-| `description`   | yes      | Unique, ≤ 160 characters                                                                        |
-| `pageType`      | yes      | `guide` \| `rights-explainer`                                                                   |
-| `status`        | yes      | One of the seven states                                                                         |
-| `intent`        | yes      | One sentence, distinct from every other entry. If two entries share an intent, one is a doorway |
-| `answerFirst`   | yes      | 2–4 sentences. The shell renders it as the lead; the body extends it and never repeats it       |
-| `sources`       | yes      | Array of `source_registry` ids. `[]` only with non-empty `internalRefs`                         |
-| `internalRefs`  | no       | Repo paths and sections, for product-internal claims                                            |
-| `ruleSetRefs`   | no       | `{ jurisdiction, version }`. Required if and only if the body uses a `{{rule:…}}` slot          |
-| `reviewedAt`    | yes      | Quoted `YYYY-MM-DD`                                                                             |
-| `nextReviewDue` | yes      | Quoted `YYYY-MM-DD`, per §5                                                                     |
-| `indexable`     | yes      | Boolean. Editorial intent for the index once published                                          |
-| `author`        | yes      | A role, never a private individual. Currently `content-editorial-lead`                          |
-| `topics`        | no       | Array of tags                                                                                   |
-| `jurisdiction`  | rights   | `overview` \| `us` \| `eu` \| `uk` \| `canada`                                                  |
+| Field            | Required | Rule                                                                                            |
+| ---------------- | -------- | ----------------------------------------------------------------------------------------------- |
+| `title`          | yes      | Unique across all entries                                                                       |
+| `description`    | yes      | Unique, ≤ 160 characters                                                                        |
+| `pageType`       | yes      | `guide` \| `rights-explainer`                                                                   |
+| `status`         | yes      | One of the seven states                                                                         |
+| `intent`         | yes      | One sentence, distinct from every other entry. If two entries share an intent, one is a doorway |
+| `answerFirst`    | yes      | 2–4 sentences. The shell renders it as the lead; the body extends it and never repeats it       |
+| `sources`        | yes      | Array of **primary** `source_registry` ids. `[]` only with non-empty `internalRefs`             |
+| `contextSources` | no       | Registry ids whose record is `citableForRuleValues: false`. Status notes only, never authority  |
+| `internalRefs`   | no       | Repo paths and sections, for product-internal claims                                            |
+| `ruleSetRefs`    | no       | `{ jurisdiction, version }`. Required if and only if the body uses a `{{rule:…}}` slot          |
+| `reviewedAt`     | yes      | Quoted `YYYY-MM-DD`                                                                             |
+| `nextReviewDue`  | yes      | Quoted `YYYY-MM-DD`, per §5                                                                     |
+| `indexable`      | yes      | Boolean. Editorial intent for the index once published                                          |
+| `author`         | yes      | A role, never a private individual. Currently `content-editorial-lead`                          |
+| `topics`         | no       | Array of tags                                                                                   |
+| `jurisdiction`   | rights   | `overview` \| `us` \| `eu` \| `uk` \| `canada`                                                  |
 
 Dates are quoted strings so that YAML does not hand the collection schema a `Date` where it expects
-a string. Minimum source counts: ≥ 2 registry ids for a regulatory or rights page that makes
-external claims, ≥ 1 for an explanatory guide that does.
+a string.
+
+**Minimum source counts.** Two primary registry ids for a regulatory or rights page that makes
+external claims, one for an explanatory guide that does — with one deliberate exception: where the
+registry holds only one primary record for that jurisdiction, one is the honest maximum and the
+entry says so in its `## Sources` section. A `contextSources` entry never counts toward the minimum.
+The rule exists to stop a page resting on a single fragile citation; it must never become a reason
+to promote a press release to an authority in order to reach a number.
 
 ### 3.1 Body structure, every entry
 
@@ -188,6 +195,15 @@ awc-data-api  flightaware-aeroapi  faa-nas-status  bts-airlines-airports  icao-m
 cf-static-assets  cf-workflows  cf-queues  cf-d1-migrations  cf-workers-best-practices
 google-software-app-sd  google-spam-policies  google-adsense-placement  stripe-docs
 ```
+
+**Evidence class decides what a record can carry.** `data/rights/sources/registry.json` marks each
+record `primary` or `secondary` and sets `citableForRuleValues`. A `secondary` record — a press
+release, for instance — goes in `contextSources`, supports a status note and nothing else, and is
+never the source behind an amount, a threshold, an effective date, or any other rule value. Where a
+claim needs a primary record the registry does not yet hold, the claim is listed in the claim map as
+`unsourced` with what it needs, and the sentence around it stays a rule slot that cannot resolve —
+so the page cannot be served. Naming the gap is the honest option; promoting a secondary record to
+fill it is not.
 
 Never cite, and never prefer over a regulator: a news summary, a law firm's blog, a claims company,
 an aggregator, a forum, another travel site, or this model's memory. No bare URLs in a body — the
@@ -269,27 +285,32 @@ new `lastVerifiedAt`, re-run the quality gate, and either refresh `reviewedAt` o
 
 ## 6. Language rules
 
-### 6.1 Forbidden, everywhere
+### 6.1 The forbidden list lives in one place
 
-From `AGENTS.md §1.3` and `DIRECTIVE.md §7`: "you are owed" · "guaranteed compensation" · "legally
-entitled" · "approved claim" · "we will win" · "the airline must pay" · "guaranteed connection" ·
-"your flight will be cancelled/canceled" · "we know the airline is at fault" · "claim now before it
-is too late" (absent an accurate, source-linked official deadline) · "AI-powered" as the value
-proposition · "best" or "most accurate" without substantiation.
+**`docs/VOICE.md §4` is the list.** It is owned by `ux-copy-steward`, it is one of the four files
+the forbidden-phrase lint allowlists, and this policy does not restate it — a rule written down in
+two places is a defect under `AGENTS.md §3.2`, and the copy that drifts is always the copy in the
+second place.
 
-Near-misses treated as violations because they carry the same meaning: "entitled", "entitlement",
-"owed", "due to you", "will be paid", "guarantee" in any form, "approved". Permitted phrasing is
-"may apply", "may be available", "may qualify", "can require".
+What this policy adds is the editorial consequence:
 
-Rights statuses are limited to the five in `AGENTS.md §1.3`: `likely_applies`, `may_apply`,
-`not_indicated`, `cannot_determine`, `future_rule_not_active`.
+- Every content entry passes the lint before it leaves `draft`:
+  `node apps/web/src/lib/copy/lint/cli.ts --only apps/web/src/content`. A hit is a rewrite, never an
+  allowlist entry (`docs/VOICE.md §7.3`).
+- Near misses count. The banned claim is the meaning, not the string, so a phrase that says the same
+  thing in different words is the same defect — see `docs/VOICE.md §4.2`.
+- Permitted phrasing for an outcome is "may apply", "may be available", "may qualify", "can require".
+- Rights statuses are limited to the five in `AGENTS.md §1.3`: `likely_applies`, `may_apply`,
+  `not_indicated`, `cannot_determine`, `future_rule_not_active`.
+- If you believe a phrase must be permitted, file the case and its source justification with
+  `ux-copy-steward`. They own the lint; authors do not.
 
-### 6.2 Booking-reference vocabulary
+### 6.2 Ticket-identifier vocabulary
 
-No body contains "booking reference", "booking code", "record locator", "PNR", or "confirmation
-code". `AGENTS.md §2` bars the field from the product entirely, and content does not teach a
-vocabulary the product refuses to accept. Where the point is that none is needed, say what _is_
-needed: a carrier, a flight number, and a date.
+`docs/VOICE.md §4.3` holds that list too, and `AGENTS.md §2` bars the field from the product
+entirely. The editorial rule is the consequence: content does not teach a vocabulary the product
+refuses to accept, so where the point is that none is needed, say what _is_ needed — a carrier, a
+flight number, and a date.
 
 ### 6.3 Cause language
 
@@ -379,8 +400,8 @@ What that disclosure commits us to:
 - No generated statistic, review, rating, testimonial, or user count.
 - Model output is a draft. The source-review and legal/factual-review gates are what make it
   publishable, and neither can be passed by the model that wrote the draft.
-- "AI-powered" is never the value proposition (`DIRECTIVE.md §7`). What is trustworthy here is the
-  sourcing discipline, not the drafting tool.
+- The drafting tool is never the value proposition. `DIRECTIVE.md §7` bans that phrasing outright,
+  and it is the wrong claim anyway: what is trustworthy here is the sourcing discipline.
 - Structured data reflects only what is visibly on the page. No `Article` author markup naming a
   person who does not exist; no ratings, reviews, prices or awards that were never earned
   (`DIRECTIVE.md §19`).
@@ -417,7 +438,7 @@ Floors: ≥ 400 body words **plus three real data fields** per entry.
 | Legal and trading name as text; IATA and ICAO codes                             | Any logo, wordmark, brand colour or trade dress (`AGENTS.md §1.4`)  |
 | Which jurisdictions' rules typically apply to its flights, as a structural test | Any claim about the airline's fault, reliability or claim behaviour |
 | Voluntary-commitment status, cited to `dot-dashboard` with a verified date      | A compensation promise of any kind                                  |
-| Links to the airline's own official pages; a reviewed date                      | A "best airlines" comparison with no cited methodology              |
+| Links to the airline's own official pages; a reviewed date                      | A superlative airline ranking with no cited methodology             |
 
 ### 10.3 Route entries
 

@@ -8,6 +8,7 @@ intent: 'Explain the structure of the EU framework in force today — coverage, 
 answerFirst: 'The EU framework in force today can require an airline to look after you, to reroute or reimburse you, and in defined circumstances to pay a fixed sum. Whether it reaches your flight depends on where you departed, where you arrived and who operated it, and whether it produces a payment depends on notice, arrival delay at your final destination and the cause. A reform adopted in 2026 has not taken effect and is applied to nothing.'
 sources:
   - eu-your-europe-air
+contextSources:
   - eu-council-2026-07-13
 ruleSetRefs:
   - jurisdiction: eu
@@ -78,9 +79,10 @@ An EU assessment usually stalls on: which carrier actually operated the flight, 
 
 ## Sources
 
-- `eu-your-europe-air` — the official EU summary of air passenger rights under the framework in force.
-- `eu-council-2026-07-13` — the Council's 2026 final-clearance release, cited only to establish that the reform is adopted and not yet effective.
+- `eu-your-europe-air` — the official EU summary of air passenger rights under the framework in force; the authority for every EU claim above.
 
-Every regulatory claim above is mapped to one of those two entries in `apps/web/src/content/claim-map.json`. Neither has been opened and verified in the build environment that produced this page, so it is held at source review and is not published.
+**Context source, not an authority.** `eu-council-2026-07-13`, the Council's 2026 final-clearance release, is a press release: the registry records it as secondary and not citable for a rule value. It supports the status note that the reform is adopted and not yet effective, and nothing else. No amount, threshold, or date on this page rests on it.
+
+Each regulatory claim above is mapped in `apps/web/src/content/claim-map.json`. Neither record has been opened and verified in the build environment that produced this page, so the page is held at source review and is not published.
 
 Informational estimate, not legal advice. Eligibility depends on the full facts, current law, and the airline or regulator's determination.

@@ -5,7 +5,7 @@ pageType: rights-explainer
 jurisdiction: canada
 status: source_review
 intent: 'Explain the APPR control categories and the large-versus-small carrier distinction, and show why the cause classification decides more in Canada than in any other framework DelayPilot models.'
-answerFirst: "Canadian rules sort every disruption into one of three categories: within the airline's control, within its control but required for safety, or outside its control. That classification decides what the airline owes you in communication, care, rebooking or refund, and whether a fixed sum can arise at all. Whether the airline is treated as large or small then changes the figures."
+answerFirst: "Canadian rules sort every disruption into one of three categories: within the airline's control, within its control but required for safety, or outside its control. That classification decides which communication, care, rebooking and refund duties may apply, and whether a fixed sum can arise at all. Whether the airline is treated as large or small then changes the figures."
 sources:
   - cta-delays-cancellations
   - cta-rebooking-refunds-compensation

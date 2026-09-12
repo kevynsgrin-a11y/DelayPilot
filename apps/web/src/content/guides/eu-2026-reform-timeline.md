@@ -6,8 +6,9 @@ status: source_review
 intent: 'Show the adopted and in-force EU rules side by side so a reader can see that a cleared reform changes nothing about a flight taken before its effective date.'
 answerFirst: 'The reform of the EU air passenger rules received final clearance from the Council in 2026, and clearance is not the same thing as being in effect. Its effective date is computed from the day it appears in the Official Journal, and DelayPilot has not verified that day. Until we have, the rule applied to your flight is the one already in force, and the reform is applied to nothing — not early, and not backwards.'
 sources:
-  - eu-council-2026-07-13
   - eu-your-europe-air
+contextSources:
+  - eu-council-2026-07-13
 ruleSetRefs:
   - jurisdiction: eu
     version: none-in-force
@@ -84,9 +85,10 @@ For a flight that has already happened, the reform changes nothing and you can s
 
 ## Sources
 
-- `eu-council-2026-07-13` — the Council's own release announcing final clearance; the primary record of adoption.
-- `eu-your-europe-air` — the official EU material describing the rules in force.
+- `eu-your-europe-air` — the official EU material describing the rules in force; the authority for the left-hand column.
 
-Each claim is mapped to one of those entries in `apps/web/src/content/claim-map.json`. Neither has been opened and verified in the build environment that produced this page, so it is held at source review and is not published. No date, threshold, or figure in either column above is written into this text.
+**Context source, not an authority.** `eu-council-2026-07-13`, the Council's own release announcing final clearance, is a press release: the registry records it as secondary and not citable for a rule value. It supports one sentence — that clearance happened — and nothing else. The publication date, the offset, the effective date and every cell in the right-hand column wait on an Official Journal citation that the registry does not yet hold, which is exactly why they are shown as unknown.
+
+Each claim is mapped in `apps/web/src/content/claim-map.json`. Neither record has been opened and verified in the build environment that produced this page, so it is held at source review and is not published. No date, threshold, or figure in either column is written into this text.
 
 Informational estimate, not legal advice. Eligibility depends on the full facts, current law, and the airline or regulator's determination.

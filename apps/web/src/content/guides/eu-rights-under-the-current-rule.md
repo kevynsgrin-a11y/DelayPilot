@@ -7,6 +7,7 @@ intent: 'Walk a traveller through establishing the five facts an EU assessment n
 answerFirst: 'An EU assessment is decided by five facts you can establish yourself: who actually operated the flight, whether your journey was one reservation, when the airline told you, when you really arrived at your final destination, and what the airline stated as the cause. Collect those five and the rest is arithmetic against a dated rule set. Collect none of them and no figure anyone quotes you means anything.'
 sources:
   - eu-your-europe-air
+contextSources:
   - eu-council-2026-07-13
 ruleSetRefs:
   - jurisdiction: eu
@@ -86,8 +87,9 @@ If any of the five facts is missing, say which one. An assessment that names its
 ## Sources
 
 - `eu-your-europe-air` — the official EU summary of air passenger rights under the framework in force.
-- `eu-council-2026-07-13` — the Council's 2026 clearance release, cited only for the adopted-not-effective status of the reform.
 
-Each claim is mapped to one of those entries in `apps/web/src/content/claim-map.json`. Neither has been opened and verified in the build environment that produced this page, so it is held at source review and is not published.
+**Context source, not an authority.** `eu-council-2026-07-13`, the Council's 2026 clearance release, is a press release: the registry records it as secondary and not citable for a rule value. It supports the status note that the reform is adopted and not yet effective, and nothing else.
+
+Each claim is mapped in `apps/web/src/content/claim-map.json`. Neither record has been opened and verified in the build environment that produced this page, so it is held at source review and is not published.
 
 Informational estimate, not legal advice. Eligibility depends on the full facts, current law, and the airline or regulator's determination.

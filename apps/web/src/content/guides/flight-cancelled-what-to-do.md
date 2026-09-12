@@ -68,7 +68,7 @@ The order below runs from reversible to irreversible. Do the early items even if
 
 **Leaving the airport without asking for care.** People assume that a weather cancellation removes every obligation. In several frameworks the care obligation is not conditional on fault, and a reasonable receipted expense is easier to recover than anything else on this page.
 
-**Accepting the first rebooking without asking what else exists.** The first option offered is the one the airline's system found fastest, not necessarily the one that is best for you. Asking about partner airlines and nearby airports costs one question.
+**Accepting the first rebooking without asking what else exists.** The first option offered is the one the airline's system found fastest, not necessarily the one that suits your onward plans. Asking about partner airlines and nearby airports costs one question.
 
 ## Sources
 

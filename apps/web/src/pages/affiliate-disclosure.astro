@@ -18,10 +18,23 @@
  * the copy module that owns them rather than retyped, and rendered from a constant so that
  * reformatting this file can never reflow them. They are not paraphrasable: AGENTS.md §7 requires
  * escalation rather than an edit if one reads badly.
+ *
+ * The `/terms/` cross-link near the foot of this page names that document by its title, "Terms of
+ * use", not by the footer's nav label "Terms" (`nav.footer.links['/terms/']`). Two registers, both
+ * deliberate; the reasoning is recorded in the header of `terms.astro`.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
 import { disclaimers } from '../lib/copy/disclaimers.ts'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Affiliate disclosure — DelayPilot'
 const description =
@@ -165,7 +178,7 @@ const categories = [
 
         <p>
           The ordering rule is absolute, and it applies on a phone exactly as it does on a desktop.
-          <strong>
+          {' '}<strong>
             Useful information and official passenger-rights guidance always come before any
             commercial suggestion.
           </strong> A commercial partner is never presented as the way to obtain a statutory right. If
@@ -211,14 +224,16 @@ const categories = [
           and the change is recorded with the date it took effect.
         </p>
 
-        <h2>Related policies</h2>
+        <h2>{pages.policy.relatedHeading}</h2>
 
         <ul>
           <li>
-            <a href="/advertising-policy/">Advertising policy</a> — where an ad may and may not run.
+            <a href="/advertising-policy/">{nav.footer.links['/advertising-policy/']}</a> — where an ad
+            may and may not run.
           </li>
           <li>
-            <a href="/editorial-policy/">Editorial policy</a> — how guidance is sourced and reviewed.
+            <a href="/editorial-policy/">{nav.footer.links['/editorial-policy/']}</a> — how guidance is
+            sourced and reviewed.
           </li>
           <li>
             <a href="/terms/">Terms of use</a> — what DelayPilot is, and what it never does for you.

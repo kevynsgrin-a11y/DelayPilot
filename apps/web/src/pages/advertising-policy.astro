@@ -31,6 +31,15 @@
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Advertising policy — DelayPilot'
 const description =
@@ -220,7 +229,7 @@ const forbidden = [
           sponsored, paid for, or reviewed by an advertiser, and no advertiser sees one before it is
           published. There are no advertisers today, which makes that easy to state and easy to
           check; the rule is published now so that it is already binding on the first one. How
-          guidance is actually sourced and reviewed is the
+          guidance is actually sourced and reviewed is the{' '}
           <a href="/editorial-policy/">editorial policy</a>.
         </p>
 
@@ -242,18 +251,20 @@ const forbidden = [
           runs on DelayPilot.
         </p>
 
-        <h2>Related policies</h2>
+        <h2>{pages.policy.relatedHeading}</h2>
 
         <ul>
           <li>
-            <a href="/affiliate-disclosure/">Affiliate disclosure</a> — commercial links and how they
-            are marked.
+            <a href="/affiliate-disclosure/">{nav.footer.links['/affiliate-disclosure/']}</a> — commercial
+            links and how they are marked.
           </li>
           <li>
-            <a href="/privacy/">Privacy</a> — what is collected today, and what never will be.
+            <a href="/privacy/">{nav.footer.links['/privacy/']}</a> — what is collected today, and what
+            never will be.
           </li>
           <li>
-            <a href="/editorial-policy/">Editorial policy</a> — why no advertiser can influence guidance.
+            <a href="/editorial-policy/">{nav.footer.links['/editorial-policy/']}</a> — why no advertiser
+            can influence guidance.
           </li>
         </ul>
       </article>

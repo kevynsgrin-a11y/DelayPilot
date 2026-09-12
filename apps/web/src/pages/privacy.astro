@@ -44,9 +44,22 @@
  * agreement, or a legal basis that nothing in the repository establishes. docs/PRIVACY.md (owner:
  * security-privacy-engineer) does not exist yet; when it does, this page renders it and any
  * sentence here that it does not support is a defect in this page, not in that document.
+ *
+ * The `/terms/` cross-link near the foot of this page names that document by its title, "Terms of
+ * use", not by the footer's nav label "Terms" (`nav.footer.links['/terms/']`). Two registers, both
+ * deliberate; the reasoning is recorded in the header of `terms.astro`.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Privacy — DelayPilot'
 const description =
@@ -97,8 +110,8 @@ const REVIEWED_AT = '2026-09-12'
           </li>
           <li>
             <strong>No advertising.</strong> No ad network, no ad script, no ad identifier. See the
-            <a href="/advertising-policy/">advertising policy</a> for the rules that will bind if that
-            ever changes.
+            {' '}<a href="/advertising-policy/">advertising policy</a> for the rules that will bind if
+            that ever changes.
           </li>
           <li>
             <strong>No third-party requests.</strong> No embedded video, no hosted font, no external image,
@@ -251,7 +264,7 @@ const REVIEWED_AT = '2026-09-12'
 
         <p>
           DelayPilot will eventually do things that require data: a saved trip, an email alert, a
-          purchase. Each of those brings a new section to this page, and each section is added
+          purchase. Each of those brings a new section to this page, and each section is added{' '}
           <strong>when the feature exists</strong> — never in advance, and never as a description of something
           that has not shipped. This page is rewritten rather than added to, so that it never becomes
           a history of intentions.
@@ -284,23 +297,23 @@ const REVIEWED_AT = '2026-09-12'
           page will name one on the day it exists.
         </p>
 
-        <h2>Related policies</h2>
+        <h2>{pages.policy.relatedHeading}</h2>
 
         <ul>
           <li>
             <a href="/terms/">Terms of use</a> — what DelayPilot is, and what it never does for you.
           </li>
           <li>
-            <a href="/advertising-policy/">Advertising policy</a> — including what is never sent to an
-            advertiser.
+            <a href="/advertising-policy/">{nav.footer.links['/advertising-policy/']}</a> — including
+            what is never sent to an advertiser.
           </li>
           <li>
-            <a href="/affiliate-disclosure/">Affiliate disclosure</a> — commercial links, and the absence
-            of them.
+            <a href="/affiliate-disclosure/">{nav.footer.links['/affiliate-disclosure/']}</a> — commercial
+            links, and the absence of them.
           </li>
           <li>
-            <a href="/data-sources/">Data sources</a> — which outside services DelayPilot is built to
-            read, and that none is connected here.
+            <a href="/data-sources/">{nav.footer.links['/data-sources/']}</a> — which outside services
+            DelayPilot is built to read, and that none is connected here.
           </li>
         </ul>
       </article>

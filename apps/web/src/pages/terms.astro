@@ -24,11 +24,27 @@
  * operator has not designated would be an invented fact (AGENTS.md §1.1), and a limitation of
  * liability that no lawyer has read is worth less than the honesty of saying so. Human legal review
  * of this page is Blocked (external).
+ *
+ * THE NAME OF THIS DOCUMENT. It is "Terms of use" — in the title, in the h1, and in every sentence
+ * on the five policy pages that names it. The footer calls the same route "Terms"
+ * (`nav.footer.links['/terms/']`), and that stays as it is. A dense column of nav labels and a
+ * sentence naming a document by its title are two registers, both correct, and this is a decision
+ * rather than an accident: every occurrence of the document title sits inside the five files this
+ * agent owns, so a retitle is one owner changing one carve-out, and the h1 below is its authority.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
 import { disclaimers } from '../lib/copy/disclaimers.ts'
 import { results } from '../lib/copy/results.ts'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Terms of use — DelayPilot'
 const description =
@@ -120,7 +136,7 @@ const DEMO_LABEL = results.demo
         <h2>Passenger-rights information is an estimate, not a decision</h2>
 
         <p>
-          Where DelayPilot describes passenger rights, it describes what published rules
+          Where DelayPilot describes passenger rights, it describes what published rules{' '}
           <strong>may</strong> mean for the facts you entered. Every assessment is tied to a named, dated
           rule-set version with links to the official source, and is limited to five outcomes: a rule
           likely applies, may apply, is not indicated, cannot be determined from what is known, or is
@@ -228,23 +244,25 @@ const DEMO_LABEL = results.demo
           matched the site.
         </p>
 
-        <h2>Related policies</h2>
+        <h2>{pages.policy.relatedHeading}</h2>
 
         <ul>
           <li>
-            <a href="/privacy/">Privacy</a> — what is collected today, and what never will be.
+            <a href="/privacy/">{nav.footer.links['/privacy/']}</a> — what is collected today, and what
+            never will be.
           </li>
           <li>
-            <a href="/editorial-policy/">Editorial policy</a> — how guidance is sourced, reviewed, and
-            corrected.
+            <a href="/editorial-policy/">{nav.footer.links['/editorial-policy/']}</a> — how guidance is
+            sourced, reviewed, and corrected.
           </li>
           <li>
-            <a href="/advertising-policy/">Advertising policy</a> and
-            <a href="/affiliate-disclosure/">affiliate disclosure</a> — how DelayPilot does and does not
-            make money.
+            <a href="/advertising-policy/">{nav.footer.links['/advertising-policy/']}</a> and{' '}
+            <a href="/affiliate-disclosure/">{nav.footer.links['/affiliate-disclosure/']}</a> — how DelayPilot
+            does and does not make money.
           </li>
           <li>
-            <a href="/methodology/">Methodology</a> — the rules above, shown running rather than described.
+            <a href="/methodology/">{nav.footer.links['/methodology/']}</a> — the rules above, shown running
+            rather than described.
           </li>
         </ul>
       </article>

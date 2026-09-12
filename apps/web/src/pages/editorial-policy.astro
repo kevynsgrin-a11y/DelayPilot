@@ -48,9 +48,22 @@
  * thirteen route shells and policy pages and no article; the five served guides and
  * /passenger-rights/ carry `<meta name="robots" content="noindex">` and the visible line
  * "Editorial status: awaiting final review".
+ *
+ * The `/terms/` cross-link near the foot of this page names that document by its title, "Terms of
+ * use", not by the footer's nav label "Terms" (`nav.footer.links['/terms/']`). Two registers, both
+ * deliberate; the reasoning is recorded in the header of `terms.astro`.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
 import PageHeader from '../components/PageHeader.astro'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Editorial policy — DelayPilot'
 const description =
@@ -148,7 +161,7 @@ const workflow = [
         <h3>The serving rule, in one place</h3>
 
         <p>
-          An entry is generated as a page only at <strong>publishable</strong> or
+          An entry is generated as a page only at <strong>publishable</strong> or{' '}
           <strong>published</strong>. It is indexable, and therefore eligible for a sitemap, only
           when it is <strong>published</strong> and marked indexable. In every other state no page is
           emitted at all, so there is nothing to find, nothing to link to, and nothing to accidentally
@@ -413,7 +426,7 @@ const workflow = [
             have acted on the wrong version, the note says so.
           </li>
           <li>
-            A claim that should never have been published and cannot be repaired is
+            A claim that should never have been published and cannot be repaired is{' '}
             <strong>retracted</strong>: the claim is removed, the address keeps a page that explains
             the removal, and a rewritten page is never left at an address that once said something
             materially different about a right.
@@ -497,20 +510,24 @@ const workflow = [
           for that to happen; the claim map is already the work order.
         </p>
 
-        <h2>Related policies</h2>
+        <h2>{pages.policy.relatedHeading}</h2>
 
         <ul>
           <li>
             <a href="/terms/">Terms of use</a> — why passenger-rights output is an estimate rather than
             a determination.
           </li>
-          <li><a href="/privacy/">Privacy</a> — what reading these pages collects about you.</li>
           <li>
-            <a href="/advertising-policy/">Advertising policy</a> — why no advertiser reaches the writing.
+            <a href="/privacy/">{nav.footer.links['/privacy/']}</a> — what reading these pages collects
+            about you.
           </li>
           <li>
-            <a href="/data-sources/">Data sources</a> — the registry these rules cite, and its current
-            state.
+            <a href="/advertising-policy/">{nav.footer.links['/advertising-policy/']}</a> — why no advertiser
+            reaches the writing.
+          </li>
+          <li>
+            <a href="/data-sources/">{nav.footer.links['/data-sources/']}</a> — the registry these rules
+            cite, and its current state.
           </li>
         </ul>
       </article>

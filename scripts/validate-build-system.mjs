@@ -67,12 +67,13 @@ const OVERCLAIM_ALLOWLIST = new Set([
 ])
 
 /**
- * Directories whose files exist to *contain* a violation: the forbidden-phrase lint's fixtures
- * (`apps/web/src/lib/copy/lint/`, ux-copy-steward). A lint with no proof it fires is not a lint,
- * so its seeded-violation fixture must carry the phrases — and must never be served or imported
- * by product code, which that lint's own tests assert.
+ * Directories whose files exist to *define or prove* the bans: the forbidden-phrase lint module
+ * (`apps/web/src/lib/copy/lint/`, ux-copy-steward) — its phrase list, its seeded-violation
+ * fixtures, and the test that asserts the lint fires on them. A lint with no proof it fires is not
+ * a lint, so those files must carry the phrases; none of them is served or imported by product
+ * code, which the lint's own tests assert. Nothing else under `apps/web/src/lib/copy/` is exempt.
  */
-const OVERCLAIM_ALLOWLIST_PREFIXES = ['apps/web/src/lib/copy/lint/fixtures/']
+const OVERCLAIM_ALLOWLIST_PREFIXES = ['apps/web/src/lib/copy/lint/']
 
 const errors = []
 const warnings = []

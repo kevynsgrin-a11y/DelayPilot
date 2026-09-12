@@ -13,7 +13,8 @@
   "scripts": {
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint .",
+    "lint": "eslint . && pnpm lint:copy",
+    "lint:copy": "node --experimental-strip-types apps/web/src/lib/copy/lint/cli.ts",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
     "test:workers": "node -e \"console.error('pnpm test:workers is not implemented yet. Owner: qa-test-architect, DIRECTIVE.md Phase 12. It will run Vitest under @cloudflare/vitest-pool-workers against apps/edge. Failing loudly rather than reporting a false green.'); process.exit(1)\"",

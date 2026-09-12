@@ -2,8 +2,8 @@
 
 **Status:** accepted · **Date:** 2026-09-11 · **Decider:** `build-orchestrator`, under repository-owner instruction · **Authored by:** `principal-architect`
 **Amends:** `DIRECTIVE.md §7`, `.claude/agents/brand-design-director.md`, `.claude/agents/frontend-ui-engineer.md`
-**Amended:** 2026-09-12 — rule 2c, to record how view transitions were actually implemented. Every
-other rule is unchanged.
+**Amended:** 2026-09-12 — rules 2c and 5, to record how view transitions were actually implemented.
+Every other rule is unchanged.
 
 ## Context
 
@@ -100,8 +100,9 @@ any motion that contributes to CLS.
 reveals are instant, ambient motifs render a single static frame, view transitions are off, the
 chronology shows the full list, depth layers are flat. The state change itself is never removed.
 
-**5. Budgets unchanged.** Everything in rule 2 is CSS; the only JavaScript it introduces is Astro's
-client router, counted inside the existing marketing-route budget — initial JS ≤ 30 KB gz,
+**5. Budgets unchanged.** Everything in rule 2 is CSS and introduces no JavaScript. A client router
+was the budgeted ceiling before the 2026-09-12 amendment and is not used; the budget it was counted
+inside is unchanged and unspent — initial JS ≤ 30 KB gz,
 CSS ≤ 25 KB gz, total ≤ 300 KB (`.claude/agents/performance-engineer.md:82`) — against
 LCP < 2.5 s p75, CLS < 0.1, INP < 200 ms (`DIRECTIVE.md:943-945`; `performance-engineer.md:74-77`).
 The demo cockpit island is a state-change island and follows the base rule, not this allowance.

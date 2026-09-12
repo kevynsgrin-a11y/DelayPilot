@@ -22,13 +22,14 @@ import {
   bandLabel,
   bandOrder,
   delayValueText,
+  requiredOfAvailableText,
   slackValueText,
   type Band,
 } from './bands.ts'
 import { chronology } from './chronology.ts'
 import { cockpit } from './cockpit.ts'
 import { demo } from './demo.ts'
-import { disclaimerPlacement, disclaimers } from './disclaimers.ts'
+import { disclaimerPlacement, disclaimers, type DisclaimerKey } from './disclaimers.ts'
 import { home } from './home.ts'
 import { scanText } from './lint/scan.ts'
 import { lookup } from './lookup.ts'
@@ -216,9 +217,33 @@ describe('DIRECTIVE.md §26 disclaimers are byte-exact', () => {
   })
 
   it('places every disclaimer beside at least one named surface', () => {
-    for (const key of Object.keys(disclaimers)) {
-      const surfaces = disclaimerPlacement[key as keyof typeof disclaimers]
+    // `labels` is the one member of `disclaimers` that is not a §26/§3.4/§20 sentence — it holds
+    // the accessible names of the notes. Every other member is fixed text and must have a surface.
+    const sentenceKeys = Object.keys(disclaimers).filter((key) => key !== 'labels')
+    expect(Object.keys(disclaimerPlacement).sort()).toEqual([...sentenceKeys].sort())
+    for (const key of sentenceKeys) {
+      const surfaces = disclaimerPlacement[key as DisclaimerKey]
       expect(surfaces.length, `no placement recorded for ${key}`).toBeGreaterThan(0)
+    }
+  })
+
+  it('names each role="note" disclaimer without restating or softening it', () => {
+    // packages/ui/src/patterns/atoms.tsx renders every §26 disclaimer inside `role="note"`, which
+    // needs an accessible name or a screen-reader user hears a qualifying sentence with nothing to
+    // attach it to. Four notes render in this release; the footer and the affiliate module do not.
+    expect(Object.keys(disclaimers.labels).sort()).toEqual([
+      'connection',
+      'flightData',
+      'prediction',
+      'rights',
+    ])
+    const names = Object.values(disclaimers.labels)
+    expect(new Set(names).size, 'two notes share an accessible name').toBe(names.length)
+    for (const [key, name] of Object.entries(disclaimers.labels)) {
+      // A name, not a copy of the sentence: it says WHAT the note is, the note says what it means.
+      expect(name).not.toBe(disclaimers[key as DisclaimerKey])
+      expect(name.length).toBeLessThan(disclaimers[key as DisclaimerKey].length)
+      expect(name.endsWith('.'), `${key} reads as a sentence, not a name`).toBe(false)
     }
   })
 
@@ -368,6 +393,10 @@ describe('band words and meter readings', () => {
       slackValueText(18, null),
       slackValueText(null, 45),
       slackValueText(18, 45),
+      requiredOfAvailableText(null, null),
+      requiredOfAvailableText(44, null),
+      requiredOfAvailableText(null, 51),
+      requiredOfAvailableText(44, 51),
       delayValueText(null),
       delayValueText(null, true),
       delayValueText(0),
@@ -391,6 +420,43 @@ describe('band words and meter readings', () => {
     expect(slackValueText(18, null)).not.toBe(slackValueText(null, 45))
     expect(slackValueText(18, 45)).toBe('18 of 45 minutes')
     expect(slackValueText(18, 1)).toBe('18 of 1 minute')
+  })
+
+  it('reads the meter in the direction the bar draws', () => {
+    // packages/ui/src/patterns/ConnectionCockpit.tsx fills the meter `value={required}` of
+    // `max={available}` — required OF available. The words have to name the same ratio in the same
+    // order, or the bar and the sentence beside it contradict each other: 44 minutes required
+    // inside a 51-minute window is a bar at 86 %, and "51 of 44 minutes" reads as its inverse.
+    const required = 44
+    const available = 51
+    expect(requiredOfAvailableText(required, available)).toBe('44 of 51 minutes')
+    // The same two facts through the other function, which reads available of required. It is the
+    // string the meter used to carry, and it is the inverse of the picture.
+    expect(slackValueText(available, required)).toBe('51 of 44 minutes')
+    expect(requiredOfAvailableText(required, available)).not.toBe(
+      slackValueText(available, required),
+    )
+    expect(requiredOfAvailableText(1, 51)).toBe('1 of 51 minutes')
+    expect(requiredOfAvailableText(44, 1)).toBe('44 of 1 minute')
+  })
+
+  it('keeps the three unknown branches naming the missing quantity, not the direction', () => {
+    // F24 again, on the new function: never the bare word, and never the wrong missing fact. The
+    // branches are NOT swapped with the arguments — which quantity is missing does not depend on
+    // which way the bar fills.
+    expect(requiredOfAvailableText(null, null)).toBe('Slack unknown')
+    expect(requiredOfAvailableText(null, 51)).toBe('Required transfer time unknown')
+    expect(requiredOfAvailableText(44, null)).toBe('Available connection time unknown')
+    for (const reading of [
+      requiredOfAvailableText(null, null),
+      requiredOfAvailableText(null, 51),
+      requiredOfAvailableText(44, null),
+    ]) {
+      expect(reading).not.toBe(bandLabel('unknown'))
+      expect(reading).not.toBe('Unknown')
+    }
+    // Each unknown branch names a different missing fact, so a reader can act on the right one.
+    expect(requiredOfAvailableText(null, 51)).not.toBe(requiredOfAvailableText(44, null))
   })
 
   it('separates "no delay reported" from "delay unknown"', () => {
@@ -740,6 +806,11 @@ describe('every state this release renders has a string', () => {
       'sourcesHeading',
       'sourcesIntro',
       'awaitingReview',
+      'notYetVerified',
+      'internalRefsHeading',
+      'contextHeading',
+      'contextIntro',
+      'contextNote',
     ] as const) {
       expect(pages.article[key].length).toBeGreaterThan(0)
     }
@@ -752,6 +823,50 @@ describe('every state this release renders has a string', () => {
       '/terms/',
     ] as const) {
       expect(nav.footer.links[route].length).toBeGreaterThan(0)
+    }
+  })
+
+  it('renders a null verification date as words, and context sources as context', () => {
+    // The article shell reads each registry record's authority, address and `lastVerifiedAt`. Every
+    // record in this build has a null date, and a citation with the date silently omitted reads as
+    // a verified citation — the fabrication in AGENTS.md §1.1. So the null renders as words.
+    expect(pages.article.notYetVerified).toMatch(/not yet verified/i)
+    expect(pages.article.notYetVerified).toContain('publisher')
+
+    // DIRECTIVE.md §3.5: a news summary never outranks the regulator. The context block says so in
+    // three places — the heading, the intro, and a note on every item — and never says "source"
+    // alone, which would read as an authority.
+    expect(pages.article.contextHeading).not.toBe(pages.article.sourcesHeading)
+    expect(pages.article.contextNote).toContain('not an authority')
+    expect(pages.article.contextIntro).toContain('reports on a rule without being the rule')
+    expect(pages.article.contextIntro).toMatch(/no rule value on this page comes from it/i)
+
+    // The repository's own documents are not sources and do not sit under the sources heading.
+    expect(pages.article.internalRefsHeading).not.toBe(pages.article.sourcesHeading)
+    expect(pages.article.internalRefsHeading).toContain('DelayPilot')
+  })
+
+  it('gives the weather and airspace panel an unavailable state that names the feed', () => {
+    // §18.5 conditions, with no feed connected. The missing fact is the FEED, not the weather:
+    // saying nothing would read as "conditions are fine" (AGENTS.md §1.1), and naming the weather
+    // would claim knowledge of it. One wording, single-sourced from unavailableReasons.
+    expect(cockpit.unknown.conditions).toBe(unavailableReasons.weatherNotConnected.fact)
+    expect(states.conditionsNotConnected.body).toContain(
+      unavailableReasons.weatherNotConnected.fact,
+    )
+    expect(states.conditionsNotConnected.action).toBe(
+      unavailableReasons.weatherNotConnected.nextStep,
+    )
+    expect(states.conditionsNotConnected.action).not.toBeNull()
+
+    // AGENTS.md §1.3: contextual evidence is never legal cause, and the panel is where a reader
+    // would otherwise draw that inference. The rule travels with the sentence, not with a footnote.
+    expect(states.conditionsNotConnected.body).toContain('never proof of a cause')
+
+    // Neither a blank, a dash, nor a zero — and it says what is missing before what to do.
+    expect(states.conditionsNotConnected.body).not.toMatch(/^[\s—–-]*$/)
+    for (const value of Object.values(states.conditionsNotConnected)) {
+      expect(value === null || value.trim().length > 0).toBe(true)
     }
   })
 

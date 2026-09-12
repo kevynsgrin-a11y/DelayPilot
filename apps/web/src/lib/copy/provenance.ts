@@ -77,6 +77,7 @@ export const unavailableReasons: Readonly<
     | 'estimateNotPublished'
     | 'causeNotVerified'
     | 'providerNotConnected'
+    | 'weatherNotConnected'
     | 'noRuleSetInForce'
     | 'noCalibratedModel'
     | 'topologyUnknown'
@@ -108,6 +109,10 @@ export const unavailableReasons: Readonly<
     fact: 'No licensed flight-data provider is connected in this deployment, so live flight status cannot be shown.',
     nextStep:
       'Open the demonstration itinerary to see how a result is presented, or check the flight with the operating airline.',
+  },
+  weatherNotConnected: {
+    fact: 'No weather or airspace feed is connected in this deployment, so operating conditions at the airports on this itinerary are unavailable.',
+    nextStep: 'Check the airport and the operating airline for conditions on the day you travel.',
   },
   noRuleSetInForce: {
     fact: 'No passenger-rights rule set is in force in this deployment, so no rule version can be applied to your facts.',

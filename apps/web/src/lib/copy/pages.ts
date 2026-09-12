@@ -420,6 +420,34 @@ export const pages = {
     sourcesIntro:
       'The registry entries this page is built on. Each one is checked against the publisher before any rule that depends on it is published.',
     /**
+     * A registry record whose `lastVerifiedAt` is null, rendered where the verified date would be.
+     *
+     * Every record in this build carries one, because no source could be opened this session. The
+     * null has to render as words: a citation with the date quietly omitted reads as a verified
+     * citation, which is the fabrication in `AGENTS.md §1.1`. It states the fact and stops — it
+     * does not apologize for the gap and does not promise when it will close.
+     */
+    notYetVerified: 'Not yet verified against the publisher',
+    /**
+     * `internalRefs` are this repository's own documents — `DIRECTIVE.md §15.2`, `AGENTS.md §1.3`.
+     * They get their own heading because listing them under "Sources" beside a regulator would
+     * imply the two carry the same weight (`DIRECTIVE.md §3.5`). Plain words, not "repository
+     * references": a reader who is not a developer still has to know what the list is.
+     */
+    internalRefsHeading: "DelayPilot's own documents",
+    /**
+     * The context block. A registry record whose `citableForRuleValues` is false reports ON a rule
+     * without being it — a press release, a news summary. `docs/EDITORIAL_POLICY.md §3` allows such
+     * a record to support a status note and nothing else: never an amount, a threshold, an
+     * effective date, or any other rule value. It is shown so a reader can follow the story, and
+     * labeled so nobody reads it as the instrument.
+     */
+    contextHeading: 'Context',
+    contextIntro:
+      'Material that reports on a rule without being the rule — a press release or a news summary. It is shown so you can follow the story. No rule value on this page comes from it.',
+    /** Rendered on each context entry, so the label travels with the item and not just the block. */
+    contextNote: 'Context source, not an authority',
+    /**
      * `DIRECTIVE.md §18.6` editorial workflow. An article that has not cleared review says so on
      * the page rather than only in a database column.
      */

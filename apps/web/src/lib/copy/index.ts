@@ -29,14 +29,21 @@
  * Voice, both lists, the placement map, and the lint's rules: `docs/VOICE.md`.
  */
 
-export { bandDescription, bandLabel, bandOrder, delayValueText, slackValueText } from './bands.ts'
+export {
+  bandDescription,
+  bandLabel,
+  bandOrder,
+  delayValueText,
+  requiredOfAvailableText,
+  slackValueText,
+} from './bands.ts'
 export type { Band } from './bands.ts'
 
 export { chronology } from './chronology.ts'
 export { cockpit } from './cockpit.ts'
 export { demo, demoAirportOrder } from './demo.ts'
 export { disclaimerPlacement, disclaimers } from './disclaimers.ts'
-export type { DisclaimerKey } from './disclaimers.ts'
+export type { DisclaimerKey, NotedDisclaimerKey } from './disclaimers.ts'
 
 export { home } from './home.ts'
 export { lookup } from './lookup.ts'

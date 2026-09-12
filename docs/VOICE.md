@@ -96,6 +96,17 @@ status:
 _airline-stated_ or _provider-stated_. Observed weather near an airport is context, never proof that
 a disruption was outside an airline's control.
 
+That rule travels with the sentence, not with a footnote. The weather-and-airspace panel has no feed
+behind it in this deployment, so it renders `states.conditionsNotConnected`, which names the missing
+fact — the feed, not the weather — and then states the rule in the panel itself:
+
+> No weather or airspace feed is connected in this deployment, so operating conditions at the
+> airports on this itinerary are unavailable. Conditions are context for a band and are never proof
+> of a cause.
+
+Saying nothing would read as "conditions are fine"; naming the weather would claim knowledge of it.
+The next step goes underneath, from `unavailableReasons.weatherNotConnected`.
+
 **Voluntary commitments are not rights.** US airline dashboard commitments render in their own
 module with the sentence that says they are voluntary and separate from anything a regulator
 requires.
@@ -327,6 +338,28 @@ Phase 10 copy review is checked against it.
 **The footer disclaimer does not substitute for any of the other six, and none of them substitutes
 for it.** `copy.test.ts` asserts that no `§26` disclaimer's placement mentions the footer.
 
+### 8.1 Every note has a name
+
+`packages/ui/src/patterns/atoms.tsx` renders each `§26` disclaimer inside `role="note"`. A note with
+no accessible name announces a qualifying sentence with nothing to attach it to: a screen-reader
+user hears "This is an estimate, not an airline decision or safety forecast" and cannot tell which
+estimate. `disclaimers.labels` supplies the name.
+
+| Note                 | Accessible name             |
+| -------------------- | --------------------------- |
+| `flightData` (`§26`) | Flight data disclaimer      |
+| `prediction` (`§26`) | Prediction disclaimer       |
+| `connection` (`§26`) | Connection disclaimer       |
+| `rights` (`§26`)     | Passenger rights disclaimer |
+
+Short noun phrases, distinct from one another — "Prediction disclaimer" and "Connection disclaimer"
+appear on the same page and must not sound alike heard once, at speed. They are **not** headings,
+they are not rendered visually, and they never restate or soften the sentence inside the note.
+
+Four, not seven: the independence disclaimer is footer content inside the already-named
+`contentinfo` landmark, and the two affiliate strings would be named by their module's own heading —
+no affiliate module ships in this release.
+
 In this release the surfaces are: the homepage source section and lookup (flight data), the
 delay-risk explainer and the demo assessment block (prediction), the connection cockpit and the
 connection-risk explainer (connection), the rights explainer and every rights card (rights), the
@@ -335,7 +368,7 @@ affiliate strings exist as constants and render nowhere.
 
 ---
 
-## 9. Two rules the accessibility review produced
+## 9. Three rules the reviews produced
 
 ### 9.1 F24 — a reading never equals its band
 
@@ -351,7 +384,7 @@ An unknown reading names the missing quantity; the band stays the band word:
 
 | State                     | `valueText`                         | `bandLabel` | Announced as                               |
 | ------------------------- | ----------------------------------- | ----------- | ------------------------------------------ |
-| slack known               | `18 of 45 minutes`                  | `Watch`     | 18 of 45 minutes, Watch                    |
+| both times known          | `44 of 51 minutes`                  | `Watch`     | 44 of 51 minutes, Watch                    |
 | both unknown              | `Slack unknown`                     | `Unknown`   | Slack unknown, Unknown                     |
 | required time unknown     | `Required transfer time unknown`    | `Unknown`   | Required transfer time unknown, Unknown    |
 | available time unknown    | `Available connection time unknown` | `Unknown`   | Available connection time unknown, Unknown |
@@ -375,6 +408,35 @@ F17). Every such link renders `nav.newTab` — **"opens in a new tab"** — in a
 
 Lower case, no leading capital, no full stop: it is a suffix to the link text, not a sentence. Never
 a sibling of the link, never a `title` attribute, never an icon alone.
+
+### 9.3 The reading names the quantity the bar draws, in the bar's direction
+
+Raised in the S3 copy follow-up, from the rendered demonstration cockpit.
+
+> **Rule: a meter's reading states the same ratio the bar fills, in the same order.**
+
+`packages/ui/src/patterns/ConnectionCockpit.tsx` fills its meter `value={requiredMinutes}` of
+`max={availableMinutes}` — how much of the window the transfer eats, so a nearly-full bar means
+nearly no room. The demonstration itinerary needs 44 minutes inside a 51-minute window: a bar at
+86 %. Read with the arguments the other way round, the words beside it said **"51 of 44 minutes"** —
+fifty-one minutes needed out of forty-four available, the exact inverse of the picture and of the
+seven minutes of slack in the row below it. A tired reader at a gate has no way to tell which of the
+two is wrong.
+
+| Bar fills             | Function                                       | Reading            |
+| --------------------- | ---------------------------------------------- | ------------------ |
+| required of available | `requiredOfAvailableText(required, available)` | `44 of 51 minutes` |
+| available of required | `slackValueText(available, required)`          | `18 of 45 minutes` |
+
+Both exist because both readings are correct **somewhere**: "18 of 45 minutes" is the right sentence
+for a connection that does not fit — eighteen of the forty-five you need. Nothing in this release
+draws a bar in that direction, so the connection cockpit takes `requiredOfAvailableText`. Neither
+function wraps the other with the arguments swapped: a swap is what produced the defect, and a swap
+is invisible at the call site.
+
+The three unknown branches are the same in both and are **not** swapped with the arguments. Which
+quantity is missing does not depend on which way the bar fills, so `Required transfer time unknown`
+stays `Required transfer time unknown`, and F24 still holds — no branch returns the bare word.
 
 ---
 
@@ -430,7 +492,7 @@ Marketing unsubscribe copy is separate from operational messages and never share
 | `disclaimers.ts` | The seven fixed disclaimers and the placement map                             |
 | `results.ts`     | `§27` microcopy; `freshness()` and `freshnessUnknown()`                       |
 | `provenance.ts`  | The six labels, their meanings, and the `unavailable` reasons                 |
-| `bands.ts`       | Band words, `slackValueText()`, `delayValueText()` — the F24 rule             |
+| `bands.ts`       | Band words, the two meter readings, `delayValueText()` — §9.1 and §9.3        |
 | `nav.ts`         | Header, footer, menus, skip link, `newTab`, theme, `copyright(year)`          |
 | `home.ts`        | The homepage in the `§18.3` order                                             |
 | `lookup.ts`      | The `§18.4` form, its validation, and its `§17` states                        |
@@ -444,3 +506,10 @@ Marketing unsubscribe copy is separate from operational messages and never share
 **No component, page, or layout holds a literal.** If a string is missing, it is requested by name
 in a handoff to `ux-copy-steward`, not invented in place. The slot renders the closest existing
 string until the real one lands.
+
+That is how `states.conditionsNotConnected`, `disclaimers.labels` and the `pages.article`
+source-block strings — `notYetVerified`, `internalRefsHeading`, `contextHeading`, `contextIntro`,
+`contextNote` — arrived: requested by name in `apps/web/src/components/copy-gaps.ts`, written here,
+and the interim file retired by `frontend-ui-engineer` once they landed. The request file carried a
+test asserting the copy module still lacked each export, so the gap could not quietly outlive the
+string that closed it.

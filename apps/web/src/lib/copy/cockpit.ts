@@ -358,6 +358,8 @@ export const cockpit = {
     airlineSize: unavailableReasons.airlineSizeUnknown.fact,
     ruleSet: unavailableReasons.noRuleSetInForce.fact,
     liveData: unavailableReasons.providerNotConnected.fact,
+    /** `§18.5` weather and airspace. The missing fact is the FEED, not the weather. */
+    conditions: unavailableReasons.weatherNotConnected.fact,
     /** `DIRECTIVE.md §27` Unknown, for the overall assessment. */
     assessment: results.unknown,
     /** `§17` connection: insufficient data. */

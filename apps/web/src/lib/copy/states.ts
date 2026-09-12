@@ -7,7 +7,13 @@
  * one says what is true, what it means for the information on screen, and what can be done next.
  *
  * None of them apologizes for an airline, performs empathy, or says "oops".
+ *
+ * The sentences that name a MISSING FACT come from `provenance.unavailableReasons`, so one fact has
+ * one wording wherever it appears — the cockpit's per-field unknown, this general state, and any
+ * future notification all say it the same way.
  */
+
+import { unavailableReasons } from './provenance.ts'
 
 export const states = {
   offline: {
@@ -81,6 +87,27 @@ export const states = {
     heading: 'No partner links are available',
     body: 'DelayPilot shows a partner link only where a real agreement exists and the merchant is named. None does, so none is shown.',
     action: null,
+  },
+
+  /**
+   * `DIRECTIVE.md §18.5` weather and airspace, when no feed is connected — the `§17` unavailable
+   * state for that panel.
+   *
+   * An unavailable state names the specific missing fact (`AGENTS.md §1.1`), and the fact here is
+   * the feed, not the weather: DelayPilot is not saying conditions are fine, it is saying it cannot
+   * see them. The second sentence is the `AGENTS.md §1.3` rule that travels with every mention of
+   * conditions — weather near an airport is context for a band, never proof of a cause — and it
+   * belongs in the panel rather than in a footnote, because the panel is where a reader would
+   * otherwise draw the inference.
+   *
+   * HOW TO RENDER IT. `body`, then `action`. The section already carries `cockpit.headings.conditions`
+   * as its title; `heading` is for a surface that shows this state without that section heading.
+   * Never a blank panel, never a dash, never a hidden section.
+   */
+  conditionsNotConnected: {
+    heading: 'Operating conditions are unavailable',
+    body: `${unavailableReasons.weatherNotConnected.fact} Conditions are context for a band and are never proof of a cause.`,
+    action: unavailableReasons.weatherNotConnected.nextStep,
   },
 
   /** `§17` billing: billing not configured. The honest state, with no price in it. */

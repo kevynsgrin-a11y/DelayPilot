@@ -3,230 +3,517 @@
  * Editorial policy.
  *
  * Owner: trust-compliance-officer (docs/agents/ROSTER.md §3). This page RENDERS editorial policy;
- * it does not author it. The workflow states are DIRECTIVE.md §18.6, the publication checks are
- * §19, and the rights-language discipline is AGENTS.md §1.3 and DIRECTIVE.md §3.5. Where
- * docs/EDITORIAL_POLICY.md (owner: content-editorial-lead) states something this page does not, the
- * page is wrong and gets changed — not the policy.
+ * it does not author it. `docs/EDITORIAL_POLICY.md` (owner: content-editorial-lead) is the source
+ * it summarises, and that document says so itself in its scope note. Where the two disagree, THIS
+ * PAGE is wrong and gets changed.
  *
- * Current-state claims verified against the repository at the reviewed date: the passenger-rights
- * collection in apps/web/src/content/ holds articles at status `source_review` and `publishable`
- * and none at `published`; the source registry at data/rights/sources/registry.json records its
- * publication gate as closed, with no source verified and every fetch attempt refused by the build
- * environment's network policy; the served sitemap lists only the routes that exist and no article.
- * The review intervals named below (30, 90, 180 days) are the intervals those files actually carry,
- * read from their reviewedAt and nextReviewDue fields, not a cadence invented here.
+ * S3 WAVE 2 — RECONCILED against docs/EDITORIAL_POLICY.md, which did not exist when this page was
+ * first written. Seven statements were corrected rather than kept:
+ *
+ *  1. `review_due` and `stale` are NOT served (§2 table). The previous revision said a review-due
+ *     article "stays visible", which was the opposite of the policy.
+ *  2. A sitemap entry needs `published` AND `indexable: true` (§2.6), not `published` alone.
+ *  3. `publishable` is served with `noindex` and a visible "awaiting final review" line, and ONLY A
+ *     HUMAN promotes it to `published` (§2.4, owner input I-6).
+ *  4. The cadence rationale is the §5 table — 30 days for the EU 2026 reform, the DOT notices page
+ *     or either CTA page; 90 days for any other external authority; 180 days for entries citing
+ *     only repository documents — plus the independent 180-day source-staleness demotion driven by
+ *     `review-register.json`. The previous revision invented a plausible rationale instead.
+ *  5. Corrections follow the §8 three-severity table. The previous revision's "treated as an
+ *     incident" rule appears nowhere in the policy and is gone.
+ *  6. AI disclosure (§9): authorship is attributed to a ROLE, never to a private individual. The
+ *     previous revision said the reviewer's NAME is recorded with the article.
+ *  7. Current state: 18 entries at source review, SIX product-internal entries at publishable
+ *     (§4.3 / §11), one at draft. The previous revision said "every one" was at source review and
+ *     that exactly one was publishable. Counted from the frontmatter this session: 25 entries
+ *     (20 guides + 5 rights explainers) = 18 + 6 + 1.
+ *
+ * ADDED, because the policy carries them and a reader needs them: the minimum source counts and the
+ * one deliberate relaxation (§3), the rule-slot mechanism (§4.4), product-internal entries and
+ * their repository references (§4.3), and the §11 session note that source verification is Blocked
+ * (external).
+ *
+ * THE FORBIDDEN LIST IS NOT RESTATED HERE. §6.1 is explicit that `docs/VOICE.md §4` is its single
+ * home and that a rule written down twice is the defect. This page names that home and states the
+ * editorial consequence only.
+ *
+ * THE LITERAL RULE-SLOT SYNTAX IS NOT PRINTED. The mechanism is described in words instead: the
+ * token is a doubled-brace template expression, and apps/web/scripts/verify-dist.mjs fails the
+ * build when one reaches a rendered page (AGENTS.md §1.6). A public policy page does not need the
+ * internal spelling to explain the rule, and printing it would trip the check that enforces it.
+ *
+ * CURRENT-STATE CLAIMS VERIFIED against the repository this session: every one of the 27 records in
+ * data/rights/sources/registry.json carries `status: "unreachable"` and `lastVerifiedAt: null`,
+ * with `verifiedSourceCount: 0` and the publication gate `closed`; apps/web/dist/sitemap.xml lists
+ * thirteen route shells and policy pages and no article; the five served guides and
+ * /passenger-rights/ carry `<meta name="robots" content="noindex">` and the visible line
+ * "Editorial status: awaiting final review".
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
 
 const title = 'Editorial policy — DelayPilot'
 const description =
-  'How DelayPilot writes, sources, reviews, and corrects guidance: seven workflow states, primary sources only, and why no article is published yet.'
+  'How DelayPilot writes, sources, reviews and corrects guidance: seven workflow states, primary sources only, no regulatory value written as prose, and why nothing is published yet.'
+
+const intro =
+  'Every DelayPilot article moves through seven states, and only one of them reaches a search engine. The states exist to stop a fluent, plausible sentence from becoming a published fact.'
+
+/** The reviewed date. BaseLayout renders it; this page does not print a second copy. */
+const REVIEWED_AT = '2026-09-12'
 
 /**
- * DIRECTIVE.md §18.6, in order. The gate text answers one question per state: what must be true
- * before an article may leave it.
+ * DIRECTIVE.md §18.6 and docs/EDITORIAL_POLICY.md §2, in order.
+ *
+ * `serving` is the §2 table's "Served?" and "Indexed?" columns stated as one sentence, because that
+ * pair is the thing readers most often assume wrongly. `gate` answers one question per state: what
+ * must be true before an entry may leave it.
  */
 const workflow = [
   {
     state: 'Draft',
-    gate: 'The article has a distinct question to answer, an answer-first opening that answers it in the first paragraph, and original explanation rather than a rewrite of a regulator page. Every factual claim is tagged with the source it will be checked against. A draft with a claim and no candidate source does not advance; the claim is cut.',
+    serving: 'Not served. There is no page at all.',
+    gate: 'Every external claim in the body is listed in the claim map against the primary source a reviewer must open to confirm it. No regulatory value is written as prose — each one is a rule slot. The frontmatter is complete: a unique title, a unique description, a one-sentence intent distinct from every other entry, a two-to-four-sentence answer that the page itself renders as the lead, the cited source ids, a reviewed date, a next-review date, and an author who is a role rather than a person. The word floor is met: 900 body words for a guide, 700 for a rights explainer, 400 plus three real data fields for an airport, airline, or route entry. The forbidden-phrase check is clean, and the body opens with the answer rather than a heading or a restatement of the title.',
   },
   {
     state: 'Source review',
-    gate: 'Every factual claim traces to a primary official source that has been opened and read, recorded in the source registry with the date it was verified. A rule value — a threshold, an amount, a deadline, an effective date — may only come from the rule set that cites those verified sources. A claim that cannot be sourced is removed, not softened into a vaguer version of itself.',
+    serving: 'Not served.',
+    gate: 'This state does not mean the claims are true. It means every one of them has a named place to be checked, and somebody other than the author now has to open it. To leave, a reviewer has opened each cited source, recorded the date it was verified, and confirmed or rejected every mapped claim. A rejected claim is deleted, not reworded: a claim that survives only as a hedge was never supported. Every rule slot in the entry resolves against a rule set in force for its jurisdiction, or the slot is removed along with the sentence around it.',
   },
   {
     state: 'Legal and factual review',
-    gate: 'The language is checked against the rules that keep guidance honest: only the five permitted rights statuses, outcomes phrased as what may apply, no statement that a payment is due or that an airline is required to pay, no future rule applied before its verified effective date, enforcement guidance never presented as a repeal, and context — nearby weather, an airline-stated reason, an airspace event — never rendered as a proven legal cause. The required disclaimers are present next to the thing they qualify.',
+    serving: 'Not served.',
+    gate: 'The sources are verified and the regulatory claims are awaiting sign-off. To leave, that sign-off is recorded, and the content-quality gate reports zero failures for the entry: word count, source references, a unique title, description, intent and opening, no placeholder token, no duplicate canonical address, freshness, indexable flag, and editorial status. Accessibility and voice review are added where the entry introduces a new component or a new pattern of wording.',
   },
   {
     state: 'Publishable',
-    gate: 'The article passes the publication checks: enough original content for its type, its sources cited and current, a unique title, description, and opening, a canonical URL, a reviewed date, no placeholder text, no private data, and no data shown under a licence that does not permit showing it. It is ready, and waiting for a human read.',
+    serving:
+      'Served, marked not to be indexed, and carrying a visible line that says it is awaiting final review.',
+    gate: 'It passes every gate and has not been released. Only a human promotes an entry out of this state — no automated process does, including the one that wrote it. That is why the page is readable by anyone sent the link, invisible to search engines, and honest on its face about which of those two it is.',
   },
   {
     state: 'Published',
-    gate: 'It is visible and in the sitemap. This is the only state that enters the sitemap; an article in any other state is not offered to search engines, however finished it looks.',
+    serving:
+      'Served. It is indexable, and may appear in a sitemap, only if it is also marked indexable in its own frontmatter.',
+    gate: 'Released. An entry leaves this state only by demotion, and demotion is automatic rather than argued.',
   },
   {
     state: 'Review due',
-    gate: 'Its next-review date has passed. The article stays visible — a correct article does not become wrong at midnight — but it is queued for re-verification against its sources, and re-verification means opening them again rather than trusting the last reading.',
+    serving: 'Not served. It leaves the sitemap in the same build.',
+    gate: 'A cited source has passed its review interval. The way back is the source gate again, not an appeal: open every cited source, confirm each claim still holds, record the new verification date, re-run the quality gate, and either refresh the reviewed date or demote further.',
   },
   {
     state: 'Stale',
-    gate: 'Re-verification did not happen in time, or a source moved materially and the article has not caught up. A stale article leaves the sitemap and stops being indexable until it has been through source review again.',
+    serving: 'Not served.',
+    gate: 'A cited source failed re-verification, or a rule set was superseded or withdrawn. Nobody argues a stale page back into the index; the route back is the same re-verification as the first time.',
   },
 ]
 ---
 
-<BaseLayout title={title} description={description}>
-  <article class="prose">
-    <h1>Editorial policy</h1>
+<BaseLayout
+  title={title}
+  description={description}
+  kind="policy"
+  reviewedAt={REVIEWED_AT}
+  nav="editorial-policy"
+>
+  <PageHeader slot="page-header" title="Editorial policy" intro={intro} />
 
-    <p>
-      <strong>
-        Every DelayPilot article moves through seven states, and only one of them — published —
-        reaches a search engine.
-      </strong> The states exist to stop a plausible sentence from becoming a published fact. Right now
-      no article has reached that last state, and the reason is on this page rather than hidden behind
-      it.
-    </p>
+  <div class="dpx-article__body">
+    <div class="dpx-shell">
+      <article class="prose">
+        <p>
+          A traveler reads DelayPilot standing at a gate, tired, minutes before an expensive and
+          irreversible decision. The failure that would destroy this product is not a missing
+          article. It is confident, fluent prose that states a right, a number, or a statistic no
+          regulator source supports. Everything below is a mechanism for making that particular
+          failure hard to commit by accident. Right now, no article has reached the last state, and
+          the reason is on this page rather than hidden behind it.
+        </p>
 
-    <p class="meta">Reviewed <time datetime="2026-09-12">12 September 2026</time>.</p>
+        <h2>The seven states</h2>
 
-    <h2>The seven states</h2>
+        {
+          workflow.map((step) => (
+            <>
+              <h3>{step.state}</h3>
+              <p>
+                <strong>{step.serving}</strong>
+              </p>
+              <p>{step.gate}</p>
+            </>
+          ))
+        }
 
-    {
-      workflow.map((step) => (
-        <>
-          <h3>{step.state}</h3>
-          <p>{step.gate}</p>
-        </>
-      ))
-    }
+        <h3>The serving rule, in one place</h3>
 
-    <h2>Primary sources, or nothing</h2>
+        <p>
+          An entry is generated as a page only at <strong>publishable</strong> or
+          <strong>published</strong>. It is indexable, and therefore eligible for a sitemap, only
+          when it is <strong>published</strong> and marked indexable. In every other state no page is
+          emitted at all, so there is nothing to find, nothing to link to, and nothing to accidentally
+          leave in a sitemap.
+        </p>
 
-    <p>
-      A rule value is only ever taken from the body that made the rule: the regulator, the official
-      journal, the legislative text, or the aviation authority's own published guidance. News
-      coverage, law-firm commentary, claims-company marketing, forum posts, and aggregator summaries
-      are never the authority for a threshold, an amount, a deadline, or an effective date. They are
-      often how a change is noticed; they are never how it is confirmed.
-    </p>
+        <h2>Primary sources, or nothing</h2>
 
-    <p>
-      Each source is recorded with its canonical URL, the date it was last opened, and the date it
-      is next due for review. An article cites the rule set, and the rule set cites the source, so a
-      correction at the source propagates to every page that depends on it instead of being fixed on
-      one page and missed on four others.
-    </p>
+        <p>
+          A rule value is only ever taken from the body that made the rule: the regulator, the
+          official journal, the legislative text, or the aviation authority's own published
+          guidance. News coverage, law-firm commentary, claims-company marketing, forum posts, and
+          aggregator summaries are never the authority for a threshold, an amount, a deadline, or an
+          effective date. They are often how a change is noticed; they are never how it is
+          confirmed.
+        </p>
 
-    <h2>No invented statistics</h2>
+        <p>
+          Each source is a record in a registry, carrying its authority, its canonical address, the
+          date it was last opened, and the date it is next due for review. An article cites the
+          record rather than pasting a link, and the rule set cites the record too — so a correction
+          at the source propagates to every page that depends on it instead of being fixed on one
+          page and missed on four others. A link that rots shows up as a rotten registry entry
+          rather than as a silently wrong sentence.
+        </p>
 
-    <p>
-      No percentage, average, success rate, accuracy figure, user count, review score, or savings
-      claim appears in DelayPilot's writing unless it comes from a named source or from a measured,
-      published method. Where a number would be convincing but unverified, the article says what is
-      not known instead. This applies to our own product claims as forcefully as to anyone else's:
-      DelayPilot makes no superlative claim about itself — no ranking, no accuracy boast, no
-      comparison it has not measured — and does not market intelligence it has not validated.
-    </p>
+        <p>
+          Each record also carries an <strong>evidence class</strong>. A secondary record — a press
+          release reporting on a reform, for instance — is filed as a context source. It can support
+          a status note and nothing else. It is never the authority behind an amount, a threshold,
+          an effective date, or any other rule value, and it is never listed beside a regulator as
+          though the two carried the same weight.
+        </p>
 
-    <h2>How rights are described</h2>
+        <h3>How many sources an entry needs</h3>
 
-    <p>
-      Passenger-rights writing reports which of five statuses a situation reaches under a dated rule
-      set: a rule likely applies, may apply, is not indicated, cannot be determined from what is
-      known, or is a future rule that is not yet in force. None of those means money is due. An
-      article never states that a payment is due to a traveler, never states that an airline is
-      required to pay, and never converts context into cause — nearby weather does not prove that a
-      disruption was outside an airline's control, and an airline's stated reason is reported as the
-      airline's statement, not as a finding.
-    </p>
+        <p>
+          A regulatory or rights page that makes external claims cites two primary records. An
+          explanatory guide that makes external claims cites one. A context source never counts
+          toward either number. The rule exists to stop a page resting on a single fragile citation.
+        </p>
 
-    <p>
-      Two consequences of that discipline are worth naming, because they are where most published
-      guidance goes wrong. A reform that has been adopted but has not taken effect is described as
-      adopted and not yet in force, with its timeline, and is never applied to a flight that
-      happened before its effective date. And a regulator's decision about where to direct its
-      enforcement attention is described as enforcement guidance, never as a repeal of the
-      underlying rule.
-    </p>
+        <p>
+          There is one deliberate relaxation, and it is deliberately narrow: where the registry
+          holds only one primary record for a jurisdiction, one is the honest maximum, and the entry
+          says so plainly in its own sources section. That is the position the EU explainer is in
+          today — one primary record, plus a press release filed as context and counted toward
+          nothing. The relaxation exists so that a page can be honest about a thin registry. It must
+          never become a reason to promote a press release to an authority in order to reach a
+          number.
+        </p>
 
-    <h2>Review cadence</h2>
+        <h2>No regulatory value is written as prose</h2>
 
-    <p>
-      Every article and every source carries a reviewed date and a next-review date. The interval is
-      30, 90, or 180 days, chosen by how fast the underlying material can change: 30 days where a
-      rule is actively moving or an enforcement position is live, 90 days for a settled regulatory
-      framework, 180 days for method and explanation that does not depend on a changing rule. When
-      the date passes, the article becomes review due; if the re-check does not happen, it becomes
-      stale and leaves the sitemap.
-    </p>
+        <p>
+          No compensation amount, distance band, delay threshold, notice period, claim deadline, or
+          regulatory effective date is typed into an article. A figure hardcoded into prose keeps
+          rendering confidently after the law changes, and no reader can tell.
+        </p>
 
-    <h2>Corrections and retractions</h2>
+        <p>
+          Instead the sentence is written around a <strong>rule slot</strong>: a placeholder naming
+          a jurisdiction and a path into that jurisdiction's rule set, which the page resolves at
+          build time. Three consequences follow, and all three are the point:
+        </p>
 
-    <ul>
-      <li>
-        <strong>A factual error is corrected as soon as it is verified</strong>, and the correction
-        is stated on the page: what was wrong, what it now says, and the date it changed. A silent
-        edit of a factual claim is not a correction.
-      </li>
-      <li>
-        <strong>A wrong rule value is fixed in the rule set first</strong>, not in the article. The
-        article re-derives from the corrected rule set, so every other page carrying that value is
-        fixed in the same change.
-      </li>
-      <li>
-        <strong>An article that cannot be corrected is retracted rather than deleted</strong>, with
-        the reason stated in its place, so that anyone who acted on it can see what changed.
-      </li>
-      <li>
-        <strong
-          >A correction that could have changed someone's decision is treated as an incident</strong
-        >, not as an edit: what shipped, who could have relied on it, and what prevents a repeat.
-      </li>
-    </ul>
+        <ul>
+          <li>
+            <strong>A value is never rendered without its version.</strong> The rule-set version and its
+            effective date are displayed beside the number, so a reader can see which edition of the rule
+            they are looking at.
+          </li>
+          <li>
+            <strong>An entry with a slot that cannot resolve is not served.</strong> It does not fall
+            back to a remembered figure and it does not render an empty space; the page simply does not
+            exist until the rule set does.
+          </li>
+          <li>
+            <strong>The concepts are still explained in words.</strong> Named frameworks and how they
+            are built — distance bands, notice periods, arrival delay at the final destination — are described
+            normally. It is the values that come from the rule set, not the ideas.
+          </li>
+        </ul>
 
-    <p>
-      DelayPilot publishes no contact address today, so there is currently no route for a reader to
-      report an error. That is a gap, it is stated rather than papered over, and this page will name
-      the address on the day one exists.
-    </p>
+        <h3>Entries that make no external claim</h3>
 
-    <h2>How this writing is produced</h2>
+        <p>
+          An entry whose every claim is about DelayPilot's own behaviour has no external authority
+          to cite, and cites the repository's own documents instead — named as plain text paths,
+          never dressed up as links. Such an entry can reach publishable without a single source
+          fetch, and two limits keep that from becoming a loophole. It may state only what the
+          product does today, or what a written invariant enforces; describing an unbuilt feature as
+          existing is a defect, not a style choice. And the moment it makes one external claim it is
+          not internal any more, and the whole entry goes back to source review.
+        </p>
 
-    <p>
-      DelayPilot's articles are drafted with automated assistance and then checked against primary
-      sources by a reviewer, whose name and review date are recorded with the article. No claim,
-      number, date, or citation enters an article because a language model produced it: a model can
-      draft a sentence, but only an opened primary source can make it publishable. DelayPilot does
-      not sell automation as its value proposition, and does not market the model behind a sentence,
-      because what matters to a traveler is whether the sentence is true.
-    </p>
+        <h2>How language is policed</h2>
 
-    <p>
-      No article is commissioned, sponsored, reviewed, or influenced by an advertiser or a
-      commercial partner. There are none today, and when there are, the separation is the point of
-      the{' '}
-      <a href="/advertising-policy/">advertising policy</a> and the{' '}
-      <a href="/affiliate-disclosure/">affiliate disclosure</a>.
-    </p>
+        <p>
+          The list of phrases this product refuses to publish is maintained in exactly one place —
+          <code>docs/VOICE.md §4</code>, owned by the team that owns the product's voice — and it is
+          deliberately not restated here. A rule written down twice is a rule that drifts, and the
+          copy that drifts is always the copy in the second place. What this policy adds is the
+          editorial consequence:
+        </p>
 
-    <h2>Where the content stands today</h2>
+        <ul>
+          <li>
+            Every entry passes the automated check before it leaves draft. A hit is a rewrite, never
+            an exemption.
+          </li>
+          <li>
+            <strong>Near misses count.</strong> What is banned is the claim, not the string, so a phrase
+            that says the same thing in different words is the same defect.
+          </li>
+          <li>
+            Outcomes are phrased as what <strong>may apply</strong>, may be available, may qualify,
+            or what a rule can require.
+          </li>
+          <li>
+            Rights statuses are limited to five: a rule likely applies, may apply, is not indicated,
+            cannot be determined from what is known, or is a future rule that is not yet in force.
+            None of those means money is due.
+          </li>
+          <li>
+            Content does not teach a vocabulary the product refuses to accept. DelayPilot never asks
+            for a booking reference, so its writing does not tell you to find one; it tells you what
+            is actually needed, which is a carrier, a flight number, and a date.
+          </li>
+        </ul>
 
-    <p>
-      The passenger-rights explainers and the launch guides are written, and every one of them is
-      held at source review. They are held there for a specific and checkable reason: <strong
-        >not one primary source has been opened</strong
-      >. The source registry lists the regulator pages each rule depends on, records the date each
-      fetch was attempted, and records that every attempt was refused by the network policy of the
-      environment this site is built in. Its publication gate is closed, so no rule value has a
-      verified citation behind it, and nothing that depends on one may be published.
-    </p>
+        <h3>Context is never cause</h3>
 
-    <p>
-      The one article at publishable makes no claim about any regulator's text — it explains how
-      DelayPilot itself reaches a rights status — which is why it can clear source review with no
-      external citations at all.
-    </p>
+        <p>
+          An airline's or a provider's stated reason for a disruption is reported as that airline's
+          or that provider's statement, never as a finding. Observed weather and airspace status are
+          context. Nearby weather never proves an extraordinary circumstance, a within-control
+          classification, or anything else about who is responsible. Only a verified authority
+          finding is a finding.
+        </p>
 
-    <p>
-      The consequence is visible rather than hidden: no article has reached published, none is
-      listed in the sitemap, and no rule set is in force. A page that has not been published is kept
-      out of the sitemap and marked not to be indexed, whatever state it is otherwise in. When the
-      sources can be opened and verified, the articles move through the remaining states in the
-      order above, and this page records the date that happened.
-    </p>
+        <h3>The four jurisdictions, and the mistakes each invites</h3>
 
-    <h2>Related policies</h2>
+        <ul>
+          <li>
+            <strong>United States.</strong> Five separate layers, written as five separate things: the
+            federal refund rule, voluntary dashboard commitments, denied-boarding rules, enforcement discretion,
+            and the contract of carriage. A general federal cash-compensation right for an ordinary delay
+            or cancellation is never stated or implied. The 2026 enforcement-discretion notice is written
+            as enforcement guidance with a defined scope and window — never as a repeal.
+          </li>
+          <li>
+            <strong>European Union.</strong> Only the framework currently in force is applied. Bands,
+            distance boundaries, the rerouting reduction, notice periods, and delay thresholds all render
+            from the rule set. Extraordinary circumstances is an airline's assertion, subject to determination.
+          </li>
+          <li>
+            <strong>The 2026 EU reform.</strong> Held as adopted and not yet effective until the official
+            publication date and the computed effective date are verified. It is described side by side
+            with the rule in force and applied to nothing — not early, not retroactively. Applying it
+            early is treated as a critical defect.
+          </li>
+          <li>
+            <strong>United Kingdom.</strong> Written from the UK regulator's own guidance, as a framework
+            separate from the EU one. A separate-ticket self-transfer is never described as a protected
+            through journey.
+          </li>
+          <li>
+            <strong>Canada.</strong> The three control categories, and the large-versus-small carrier
+            classification taken from the official source. Proposed reforms are not law and are never
+            written as law.
+          </li>
+        </ul>
 
-    <ul>
-      <li>
-        <a href="/terms/">Terms of use</a> — why passenger-rights output is an estimate rather than a
-        determination.
-      </li>
-      <li><a href="/privacy/">Privacy</a> — what reading these pages collects about you.</li>
-    </ul>
-  </article>
+        <h2>No invented statistics</h2>
+
+        <p>
+          No on-time percentage, average delay, "most delayed airport", passenger count, success
+          rate, claim-approval figure, satisfaction score, or savings claim appears in DelayPilot's
+          writing unless it comes from a cited primary source with a date, or from the product's own
+          smoothed estimator shown with its sample size and a note on whether that sample is
+          sufficient, suppressed or widened for small groups.
+        </p>
+
+        <p>
+          Specifically ruled out: a round number recalled from memory; a figure from a news summary
+          presented as a regulator's; a percentage from an uncalibrated model; a raw ratio over a
+          small sample; a "typical" or "average" figure with no measurement behind it; and any
+          number whose purpose is to look authoritative. Unknown is a designed state, not a gap to
+          fill — a sentence that needs a statistic it does not have is a sentence that gets deleted.
+          That applies to DelayPilot's claims about itself as forcefully as to anyone else's: no
+          ranking, no accuracy boast, no comparison it has not measured.
+        </p>
+
+        <h2>Review cadence</h2>
+
+        <p>
+          Every entry carries a reviewed date and a next-review date, and the interval is set by the
+          most volatile thing it cites:
+        </p>
+
+        <ul>
+          <li>
+            <strong>30 days</strong> — it cites the 2026 EU reform, the US Department of Transportation's
+            notices page, or either Canadian Transportation Agency page. These are the sources that move.
+          </li>
+          <li>
+            <strong>90 days</strong> — it cites any other regulatory or external-authority source.
+          </li>
+          <li>
+            <strong>180 days</strong> — it cites only repository documents, because its claims are about
+            DelayPilot rather than about the law.
+          </li>
+        </ul>
+
+        <p>
+          Independently of that date, a scheduled job reads the review register and demotes any
+          entry whose cited source has not been verified for 180 days. The register carries, per
+          entry, the slug, the route, the page type, the status, whether it is served, whether it
+          may enter a sitemap, both dates, the cited source ids, the repository references, the
+          rule-set references, the rule slots, and the claim count — so the demotion is mechanical
+          rather than a judgement call.
+        </p>
+
+        <p>
+          A review is not a glance. It is: open each cited source, confirm the claim still holds,
+          record the new verification date, re-run the quality gate, and then either refresh the
+          reviewed date or demote the entry.
+        </p>
+
+        <h2>Corrections and retractions</h2>
+
+        <p>Errors are fixed in public, and the procedure is the same whoever finds it.</p>
+
+        <ul>
+          <li>
+            <strong>Critical</strong> — a statement of a right, an obligation, an amount, a deadline,
+            or a threshold that is wrong; a future rule applied early; a general US cash-compensation
+            right implied. The entry is demoted to stale in the current build and leaves the sitemap immediately.
+            It is fixed, both review gates are re-run, and it returns with a dated correction note.
+          </li>
+          <li>
+            <strong>Material</strong> — a claim that overstates certainty, a missing condition, a mis-attributed
+            cause, a broken source mapping. The entry is demoted to review due, fixed, and put back through
+            the source gate, with a dated correction note on the entry.
+          </li>
+          <li>
+            <strong>Minor</strong> — typography, a broken internal link, an unclear sentence with no change
+            of meaning. Fixed in place and logged in the entry's history, with no correction note.
+          </li>
+        </ul>
+
+        <p>Four rules do not bend:</p>
+
+        <ul>
+          <li>
+            A correction note names what was wrong, what it now says, and the date. It does not
+            explain the error away.
+          </li>
+          <li>
+            Corrected text never silently replaces wrong text on a page about rights. If someone may
+            have acted on the wrong version, the note says so.
+          </li>
+          <li>
+            A claim that should never have been published and cannot be repaired is
+            <strong>retracted</strong>: the claim is removed, the address keeps a page that explains
+            the removal, and a rewritten page is never left at an address that once said something
+            materially different about a right.
+          </li>
+          <li>
+            A source that has changed underneath us is a correction trigger, not an invitation to
+            argue that the old wording was defensible.
+          </li>
+        </ul>
+
+        <p>
+          DelayPilot publishes no contact address today, so there is currently no route for a reader
+          to report an error. That is a gap, it is stated rather than papered over, and this page
+          will name the address on the day one exists.
+        </p>
+
+        <h2>How this writing is produced</h2>
+
+        <p>
+          <strong
+            >Stated plainly: DelayPilot's articles are drafted with large-language-model assistance
+            under a named editorial role, and every external claim is gated on a human-verifiable
+            primary source before publication.</strong
+          > Authorship is attributed to that role. It is never attributed to a private individual, and
+          never to an invented person with a biography to match.
+        </p>
+
+        <p>What that commits us to:</p>
+
+        <ul>
+          <li>No fabricated expert, byline, photograph, credential, or quotation.</li>
+          <li>No generated statistic, review, rating, testimonial, or user count.</li>
+          <li>
+            Model output is a draft. The source gate and the legal and factual gate are what make it
+            publishable, and neither can be passed by the model that wrote the draft.
+          </li>
+          <li>
+            The drafting tool is never the value proposition. What is trustworthy here is the
+            sourcing discipline, not the software that produced a first sentence.
+          </li>
+          <li>
+            Structured data reflects only what is visibly on the page: no author markup naming a
+            person who does not exist, and no ratings, reviews, prices, or awards that were never
+            earned.
+          </li>
+        </ul>
+
+        <h2>Where the content stands today</h2>
+
+        <p>
+          Twenty-five entries exist — twenty guides and five passenger-rights explainers. Eighteen
+          of them are held at source review for one checkable reason: <strong
+            >not one primary source has been opened.</strong
+          > The source registry holds twenty-seven records, every one of them marked unreachable with
+          no verification date, because every attempt to fetch a regulator page was refused by the network
+          policy of the environment this site is built in. Its publication gate is closed, no rule set
+          exists or can come into force, and nothing that depends on a rule value may be published.
+        </p>
+
+        <p>
+          Six entries have reached publishable. Every one of them makes no claim about any
+          regulator's text — they explain how DelayPilot itself estimates risk, assesses a
+          connection, labels freshness, and reaches a rights status — which is why they clear source
+          review with no external citations at all. They are served, marked not to be indexed, and
+          carry the line that says they are awaiting a final human read.
+        </p>
+
+        <p>
+          One entry stays at draft because it describes a feature that does not exist yet.
+          Describing an unbuilt feature as though it were built is the defect the draft state is
+          for.
+        </p>
+
+        <p>
+          The consequence is visible rather than hidden: no article has reached published, no
+          article appears in the sitemap, and no rule set is in force. What unblocks it is external
+          — the environment has to allow outbound access to the regulator hosts, or the verification
+          has to run somewhere that already does. Then each source is opened and verified, each
+          mapped claim is confirmed or rejected, the rule sets are published, and the entries move
+          through the remaining states in the order above. Nothing in the writing needs to change
+          for that to happen; the claim map is already the work order.
+        </p>
+
+        <h2>Related policies</h2>
+
+        <ul>
+          <li>
+            <a href="/terms/">Terms of use</a> — why passenger-rights output is an estimate rather than
+            a determination.
+          </li>
+          <li><a href="/privacy/">Privacy</a> — what reading these pages collects about you.</li>
+          <li>
+            <a href="/advertising-policy/">Advertising policy</a> — why no advertiser reaches the writing.
+          </li>
+          <li>
+            <a href="/data-sources/">Data sources</a> — the registry these rules cite, and its current
+            state.
+          </li>
+        </ul>
+      </article>
+    </div>
+  </div>
 </BaseLayout>

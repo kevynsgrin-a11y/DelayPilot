@@ -5,12 +5,14 @@
  * Owner: trust-compliance-officer (docs/agents/ROSTER.md §3). This page publishes the rules that
  * govern commercial links on DelayPilot, and the current state of them: there are none.
  *
- * Every sentence is checked against the repository at the reviewed date rather than against an
- * intention. Verified for this revision: no data/affiliates registry exists; no /go handler is
- * implemented in apps/edge/src/index.ts (the prefix is reserved in wrangler.jsonc and nothing
- * answers on it); AFFILIATE_* ids in .env.example are unset; no anchor anywhere in apps/web/src
- * points at a merchant. If any of that changes, this page is rewritten in the same change — a
- * disclosure that describes yesterday's state is worse than no disclosure.
+ * RE-VERIFIED IN THIS SESSION at the reviewed date, against the repository rather than an
+ * intention: `data/` contains only `rights/`, so no affiliate registry exists; no /go handler is
+ * implemented in apps/edge/src/index.ts (apps/edge/wrangler.jsonc:72 reserves the prefix in
+ * `run_worker_first` and nothing answers on it); AFFILIATE_* ids at .env.example:147–149 are unset;
+ * and a grep of every built page in apps/web/dist for an absolute http(s) `href` returns zero
+ * matches, so no anchor anywhere on this site points at a merchant. If any of that changes, this
+ * page is rewritten in the same change — a disclosure that describes yesterday's state is worse
+ * than no disclosure.
  *
  * The two disclosure strings are verbatim from DIRECTIVE.md §26 and §20. They are imported from
  * the copy module that owns them rather than retyped, and rendered from a constant so that
@@ -18,11 +20,18 @@
  * escalation rather than an edit if one reads badly.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
 import { disclaimers } from '../lib/copy/disclaimers.ts'
 
 const title = 'Affiliate disclosure — DelayPilot'
 const description =
   'DelayPilot has no affiliate partners and earns nothing from any link on this site. The rules that will govern partner links if that ever changes, stated in advance.'
+
+const intro =
+  'DelayPilot has no affiliate partners, and no link on this site earns it a commission. These are the rules that will govern partner links if that ever changes, published before there is any money to bend them.'
+
+/** The reviewed date. BaseLayout renders it; this page does not print a second copy. */
+const REVIEWED_AT = '2026-09-12'
 
 /**
  * The two disclosure strings are imported, never retyped.
@@ -53,156 +62,169 @@ const categories = [
 ]
 ---
 
-<BaseLayout title={title} description={description}>
-  <article class="prose">
-    <h1>Affiliate disclosure</h1>
+<BaseLayout
+  title={title}
+  description={description}
+  kind="policy"
+  reviewedAt={REVIEWED_AT}
+  nav="affiliate-disclosure"
+>
+  <PageHeader slot="page-header" title="Affiliate disclosure" intro={intro} />
 
-    <p>
-      <strong>DelayPilot has no affiliate partners.</strong> No link on this site earns DelayPilot a commission,
-      a referral fee, a bounty, or any other payment. There is no partner registry, no tracking redirect,
-      and no partner module in the product. Nothing on this page is a promise about revenue we already
-      take — it is the set of rules we are publishing before there is any money involved, so that the
-      rules cannot be written to fit the first payment.
-    </p>
+  <div class="dpx-article__body">
+    <div class="dpx-shell">
+      <article class="prose">
+        <p>
+          <strong>DelayPilot has no affiliate partners.</strong> No link on this site earns DelayPilot
+          a commission, a referral fee, a bounty, or any other payment. There is no partner registry,
+          no tracking redirect, and no partner module in the product. Nothing on this page is a promise
+          about revenue we already take — it is the set of rules we are publishing before there is any
+          money involved, so that the rules cannot be written to fit the first payment.
+        </p>
 
-    <p class="meta">Reviewed <time datetime="2026-09-12">12 September 2026</time>.</p>
+        <h2>The categories, and why every one is switched off</h2>
 
-    <h2>The categories, and why every one is switched off</h2>
+        <p>
+          DelayPilot reserves ten commercial categories. A category is not a partner: it is a slot
+          that stays empty until a real, signed agreement with a named merchant exists and the link
+          resolves to a real destination. All ten are disabled, which means no link is rendered, no
+          redirect resolves, and no identifier is configured.
+        </p>
 
-    <p>
-      DelayPilot reserves ten commercial categories. A category is not a partner: it is a slot that
-      stays empty until a real, signed agreement with a named merchant exists and the link resolves
-      to a real destination. All ten are disabled, which means no link is rendered, no redirect
-      resolves, and no identifier is configured.
-    </p>
+        <ul>
+          {
+            categories.map((category) => (
+              <li>
+                <strong>{category}</strong> — disabled.
+              </li>
+            ))
+          }
+        </ul>
 
-    <ul>
-      {
-        categories.map((category) => (
+        <p>
+          Travel credit cards carry one extra condition beyond an agreement: they are never enabled
+          without a completed compliance review, because consumer-credit promotion is regulated
+          advertising in most of the places DelayPilot is read.
+        </p>
+
+        <h2>The disclosure you will see, before you click</h2>
+
+        <p>
+          If a partner link ever appears, the disclosure appears with it — above the links, as
+          visible text, readable without hovering, expanding, or scrolling past the link it
+          describes. It is never a tooltip, never inside a collapsed section, and never below the
+          fold. Beside a single standalone link the text is:
+        </p>
+
+        <blockquote>
+          <p>{AFFILIATE_SHORT_DISCLOSURE}</p>
+        </blockquote>
+
+        <p>Inside a module that offers more than one partner, the fuller text is used:</p>
+
+        <blockquote>
+          <p>{AFFILIATE_MODULE_DISCLOSURE}</p>
+        </blockquote>
+
+        <p>
+          Both sentences say the same thing twice on purpose. The first half tells you that money
+          may change hands. The second half is the commitment that matters more: a commission never
+          changes what DelayPilot tells you about your flight, your connection, or the rules that
+          may apply to your disruption.
+        </p>
+
+        <h2>How partner links are marked</h2>
+
+        <ul>
           <li>
-            <strong>{category}</strong> — disabled.
+            Every partner link carries <code>rel="sponsored nofollow"</code>, which tells search
+            engines the link is commercial and must not pass ranking credit.
           </li>
-        ))
-      }
-    </ul>
+          <li>
+            The merchant is named in the link, and its destination host is visible before you click.
+            DelayPilot does not cloak, mask, or disguise where a link goes.
+          </li>
+          <li>
+            A partner is never described as official, approved, endorsed, or appointed — by
+            DelayPilot, by an airline, or by a regulator. A merchant is a merchant.
+          </li>
+          <li>
+            Partner links resolve through a redirect that reads only from the partner registry and
+            validates the destination against an allowlist. A destination that is not in the
+            registry does not redirect. No itinerary detail — no flight number, no route, no date,
+            no traveler name, and never a booking reference — is attached to a partner address or a
+            click record.
+          </li>
+          <li>
+            Today no such redirect is implemented. The path prefix is reserved in the edge server's
+            configuration and nothing answers on it.
+          </li>
+        </ul>
 
-    <p>
-      Travel credit cards carry one extra condition beyond an agreement: they are never enabled
-      without a completed compliance review, because consumer-credit promotion is regulated
-      advertising in most of the places DelayPilot is read.
-    </p>
+        <h2>Where a partner link may never appear</h2>
 
-    <h2>The disclosure you will see, before you click</h2>
+        <p>
+          The ordering rule is absolute, and it applies on a phone exactly as it does on a desktop.
+          <strong>
+            Useful information and official passenger-rights guidance always come before any
+            commercial suggestion.
+          </strong> A commercial partner is never presented as the way to obtain a statutory right. If
+          a rule may entitle you to a refund, rebooking, or care from the airline, the route to it is
+          the airline and the regulator, both named with their official source — not a checkout.
+        </p>
 
-    <p>
-      If a partner link ever appears, the disclosure appears with it — above the links, as visible
-      text, readable without hovering, expanding, or scrolling past the link it describes. It is
-      never a tooltip, never inside a collapsed section, and never below the fold. Beside a single
-      standalone link the text is:
-    </p>
+        <p>Specifically, a partner link is never placed:</p>
 
-    <blockquote>
-      <p>{AFFILIATE_SHORT_DISCLOSURE}</p>
-    </blockquote>
+        <ul>
+          <li>inside a passenger-rights card, or next to one;</li>
+          <li>inside an action checklist, or next to one;</li>
+          <li>
+            beside a "Contact airline", "Request refund", or "Save evidence" control, where a
+            mis-click costs a traveler time they do not have;
+          </li>
+          <li>between a warning about a disruption and the action that answers it;</li>
+          <li>
+            as a travel-insurance offer in a view where a disruption is already under way —
+            insurance bought after a delay starts does not cover that delay, and offering it there
+            would be selling a traveler something that cannot help them;
+          </li>
+          <li>as a credit-card promotion inside a crisis action card.</li>
+        </ul>
 
-    <p>Inside a module that offers more than one partner, the fuller text is used:</p>
+        <h2>How partners would be ordered</h2>
 
-    <blockquote>
-      <p>{AFFILIATE_MODULE_DISCLOSURE}</p>
-    </blockquote>
+        <p>
+          Partners are ordered by usefulness to the traveler in the situation on screen — proximity,
+          coverage, and whether the option can actually be acted on in the time available.
+          DelayPilot does not rank purely by commission. If commercial terms ever influence an
+          order, that fact is disclosed in the module itself, in the same visible text as the
+          disclosure above. Silent pay-for-position is not a thing this product does.
+        </p>
 
-    <p>
-      Both sentences say the same thing twice on purpose. The first half tells you that money may
-      change hands. The second half is the commitment that matters more: a commission never changes
-      what DelayPilot tells you about your flight, your connection, or the rules that may apply to
-      your disruption.
-    </p>
+        <h2>What DelayPilot earns today</h2>
 
-    <h2>How partner links are marked</h2>
+        <p>
+          Nothing. No advertising runs on this site, no affiliate link exists, no placement has been
+          sold, and no article, guide, or rights explanation has been paid for, sponsored, or
+          reviewed by a commercial partner. When that changes, it changes here first: this page is
+          rewritten in the same change that enables a partner, naming the category and the merchant,
+          and the change is recorded with the date it took effect.
+        </p>
 
-    <ul>
-      <li>
-        Every partner link carries <code>rel="sponsored nofollow"</code>, which tells search engines
-        the link is commercial and must not pass ranking credit.
-      </li>
-      <li>
-        The merchant is named in the link, and its destination host is visible before you click.
-        DelayPilot does not cloak, mask, or disguise where a link goes.
-      </li>
-      <li>
-        Partner links resolve through a redirect that reads only from the partner registry and
-        validates the destination against an allowlist. A destination that is not in the registry
-        does not redirect. No itinerary detail — no flight number, no route, no date, no traveler
-        name, and never a booking reference — is attached to a partner URL or a click record.
-      </li>
-      <li>
-        Today no such redirect is implemented. The path prefix is reserved in the edge Worker's
-        configuration and nothing answers on it.
-      </li>
-    </ul>
+        <h2>Related policies</h2>
 
-    <h2>Where a partner link may never appear</h2>
-
-    <p>
-      The ordering rule is absolute, and it applies on a phone exactly as it does on a desktop.
-      <strong>
-        Useful information and official passenger-rights guidance always come before any commercial
-        suggestion.
-      </strong> A commercial partner is never presented as the way to obtain a statutory right. If a rule
-      may entitle you to a refund, rebooking, or care from the airline, the route to it is the airline
-      and the regulator, both linked to their official source — not a checkout.
-    </p>
-
-    <p>Specifically, a partner link is never placed:</p>
-
-    <ul>
-      <li>inside a passenger-rights card, or next to one;</li>
-      <li>inside an action checklist, or next to one;</li>
-      <li>
-        beside a "Contact airline", "Request refund", or "Save evidence" control, where a mis-click
-        costs a traveler time they do not have;
-      </li>
-      <li>between a warning about a disruption and the action that answers it;</li>
-      <li>
-        as a travel-insurance offer in a view where a disruption is already under way — insurance
-        bought after a delay starts does not cover that delay, and offering it there would be
-        selling a traveler something that cannot help them;
-      </li>
-      <li>as a credit-card promotion inside a crisis action card.</li>
-    </ul>
-
-    <h2>How partners would be ordered</h2>
-
-    <p>
-      Partners are ordered by usefulness to the traveler in the situation on screen — proximity,
-      coverage, and whether the option can actually be acted on in the time available. DelayPilot
-      does not rank purely by commission. If commercial terms ever influence an order, that fact is
-      disclosed in the module itself, in the same visible text as the disclosure above. Silent
-      pay-for-position is not a thing this product does.
-    </p>
-
-    <h2>What DelayPilot earns today</h2>
-
-    <p>
-      Nothing. No advertising runs on this site, no affiliate link exists, no placement has been
-      sold, and no article, guide, or rights explanation has been paid for, sponsored, or reviewed
-      by a commercial partner. When that changes, it changes here first: this page is rewritten in
-      the same change that enables a partner, naming the category and the merchant, and the change
-      is recorded with the date it took effect.
-    </p>
-
-    <h2>Related policies</h2>
-
-    <ul>
-      <li>
-        <a href="/advertising-policy/">Advertising policy</a> — where an ad may and may not run.
-      </li>
-      <li>
-        <a href="/editorial-policy/">Editorial policy</a> — how guidance is sourced and reviewed.
-      </li>
-      <li>
-        <a href="/terms/">Terms of use</a> — what DelayPilot is, and what it never does for you.
-      </li>
-    </ul>
-  </article>
+        <ul>
+          <li>
+            <a href="/advertising-policy/">Advertising policy</a> — where an ad may and may not run.
+          </li>
+          <li>
+            <a href="/editorial-policy/">Editorial policy</a> — how guidance is sourced and reviewed.
+          </li>
+          <li>
+            <a href="/terms/">Terms of use</a> — what DelayPilot is, and what it never does for you.
+          </li>
+        </ul>
+      </article>
+    </div>
+  </div>
 </BaseLayout>

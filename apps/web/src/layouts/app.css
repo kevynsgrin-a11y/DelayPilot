@@ -1563,11 +1563,18 @@ html:has(.dpx-drawer[open]) {
   font-size: var(--font-size-14);
 }
 
-.dpp-connection__topology-note,
-.dpp-connection__self-transfer {
+.dpp-connection__topology-note {
   margin: 0;
 }
 
+/*
+ * The separate-ticket modifier, applied to the topology note itself.
+ *
+ * It used to style a SECOND paragraph holding the same `results.selfTransfer` sentence, which is
+ * how `/connection-risk/` printed it twice in a row (copy review F-23). The duplicate paragraph is
+ * gone; the emphasis it carried moved onto the one that survives, so a self-transfer still reads
+ * as a warning rather than as a caption.
+ */
 .dpp-connection__self-transfer {
   padding: var(--space-12);
   border-inline-start: var(--border-width-emphasis) solid var(--status-watch-border);
@@ -2071,17 +2078,51 @@ html:has(.dpx-drawer[open]) {
   font-size: var(--font-size-18);
 }
 
+/*
+ * The contact and accessibility-feedback address.
+ *
+ * A bare `mailto:` link measured 196 x 23 px at 375 — the only target below the 44 x 44 floor
+ * anywhere in the twenty-two pages, and the one a reader reaches for AFTER hitting a barrier
+ * (`DIRECTIVE.md §18.7`, `docs/ACCESSIBILITY.md` F41).
+ *
+ * PADDING, NOT A LAYOUT CHANGE. Vertical padding on an inline box enlarges its border box and its
+ * hit region without touching the line box, so the paragraph keeps its height and nothing below it
+ * reflows. `min-block-size: var(--target-min)` cannot do this: it has no effect on a non-replaced
+ * inline box. Nor can the padding be derived — the box being padded is the FONT'S content area
+ * (~23px at `--font-size-18`), and no CSS unit names it; `1lh` is the 1.55 line box, which is a
+ * different and larger number. So the value is a token step chosen to clear 44px with room for
+ * font-metric variation: 23 + 2 x 12 = 47px, measured back in the browser at 375.
+ */
+.dpx-mailto {
+  padding-block: var(--space-12);
+}
+
 /* --------------------------------------------------------------------------------------------- */
 /* 18. Print — the evidence packet is a record, not a screen.                                     */
+/*                                                                                                */
+/* THE FOOTER IS NOT CHROME. It carries the `DIRECTIVE.md §3.4` independence disclaimer, which     */
+/* `AGENTS.md §1.4` requires on every public page — and a printed evidence packet is the one copy  */
+/* of this site most likely to be handed to an airline or a regulator, which is exactly the reader */
+/* who has to be told that DelayPilot is not one. `display: none` on `.dpx-footer` dropped that    */
+/* sentence from every printed page while the five `§26` disclaimers survived (trust sweep F10).   */
+/* What goes is the NAVIGATION — a list of links nobody can follow on paper. The disclaimer and    */
+/* the copyright stay painted.                                                                     */
 /* --------------------------------------------------------------------------------------------- */
 
 @media print {
   .dpx-header,
-  .dpx-footer,
+  .dpx-footer__groups,
   .dpx-skip-link,
   .dpx-motif,
   .dpx-globe {
     display: none;
+  }
+
+  /* Kept, and quieter: no sunken panel, no 64px of leading space on a sheet of paper. */
+  .dpx-footer {
+    margin-block-start: var(--space-24);
+    padding-block: var(--space-16);
+    background: none;
   }
 
   .dpx-shell {

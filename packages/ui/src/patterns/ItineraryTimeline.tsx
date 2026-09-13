@@ -26,11 +26,21 @@ export interface ItineraryStop {
   readonly roleLabel: string
 }
 
+/**
+ * One flown leg.
+ *
+ * NO `statusLabel`. The field existed to fill `StatusPill`'s `detail`, and every caller passed
+ * `cockpit.segment.status` — the literal word "Status" — so both legs on `/` rendered and announced
+ * "Watch Status" and "Disrupted Status": the name of a field where its value belongs, and
+ * "Watch Status" read as an instruction (`docs/ACCESSIBILITY.md` F39, the same defect as F29 one
+ * component over). The pill's `label` is already the band WORD, which is the value; there is no
+ * `<dt>` on this list to carry a field name, so nothing is lost by removing the slot rather than
+ * leaving one a caller can misfill again.
+ */
 export interface ItineraryLeg {
   readonly id: string
   readonly flightNumber: string
   readonly airline: string
-  readonly statusLabel: string
   readonly band: Band
 }
 
@@ -68,11 +78,8 @@ export function ItineraryTimeline({
               <p className="dpp-itinerary__leg">
                 <span className="dpp-itinerary__leg-flight tnum">{leg.flightNumber}</span>
                 <span className="dpp-itinerary__leg-airline">{leg.airline}</span>
-                <StatusPill
-                  status={bandToStatusTone[leg.band]}
-                  label={copy.bandLabel(leg.band)}
-                  detail={leg.statusLabel}
-                />
+                {/* No `detail`: see `ItineraryLeg`. The band word IS the value (F39). */}
+                <StatusPill status={bandToStatusTone[leg.band]} label={copy.bandLabel(leg.band)} />
               </p>
             )}
           </li>

@@ -11,8 +11,16 @@
  * shows BOTH snapshots, names the newest high-quality source, and lowers confidence. It does not
  * silently pick a winner, because the winner it picked would be indistinguishable from a fact.
  *
- * Every panel carries its own provenance chip and the demo caption; the `§26` flight-data
- * disclaimer sits beside the panels it qualifies, not only in the footer.
+ * EVERY PANEL CARRIES ITS OWN PROVENANCE CHIP AND THE DEMO CAPTION — including the stale card,
+ * whose chip spends its one word on freshness and therefore says nothing about origin
+ * (`docs/VOICE.md §2.1`; the fixture declares itself with `Provenance.fixture`).
+ *
+ * AND EVERY CARD GROUP CARRIES THE `§26` FLIGHT-DATA DISCLAIMER. The unit on this page is the
+ * group, not the card: the confidence note already renders once per group, and the disclaimer is
+ * the same granularity for the same reason — `§26` asks for it "near the relevant result", which a
+ * reader has to be able to see without scrolling from the panel it qualifies. It rendered once,
+ * beside the first group; the three-card group and the result-states section carried none (copy
+ * re-check F-22).
  */
 import {
   SegmentCard,
@@ -89,6 +97,8 @@ const page = pages.flightStatus
     </div>
     {/* The same note for the second group: this stack is where confidence is LOWERED, and why. */}
     <p class="dpx-lookup__note" role="note">{cockpit.segment.confidenceNote}</p>
+    {/* `page.disclaimer` IS `disclaimers.flightData`; see pages.ts. One reference per page. */}
+    <Disclaimer label={disclaimers.labels.flightData}>{page.disclaimer}</Disclaimer>
   </Section>
 
   <Section heading={page.sections.today.heading}>
@@ -142,6 +152,15 @@ const page = pages.flightStatus
         <p>{lookup.states.rateLimited}</p>
       </StateBlock>
     </div>
+
+    {
+      /*
+       * The result states are flight data too: four of the six above render a status, a time or a
+       * reason for not having one, and a reader who meets this section first must meet the §26
+       * sentence with it (copy re-check F-22).
+       */
+    }
+    <Disclaimer label={disclaimers.labels.flightData}>{page.disclaimer}</Disclaimer>
 
     {/* `{' '}`: see LookupForm.astro. Astro drops the newline between the two nodes. */}
     <p class="dpx-lookup__no-code">

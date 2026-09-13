@@ -31,6 +31,7 @@ import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import type { InterimStatusTone } from '../tokens/interim-contracts.ts'
 import { DefinitionRow, MaybeValue, ZonedTimeView } from './atoms.tsx'
 import { crossesLocalDate } from './time.ts'
+import { isFixtureSourced } from './types.ts'
 import type { Confidence, Segment, SegmentStatus } from './types.ts'
 
 /** Status → tone. `unknown` is its own tone, never silently folded into `scheduled`. */
@@ -70,9 +71,12 @@ export interface SegmentCardCopy {
   readonly conflictBody: string
   /**
    * "Demo data — not a live flight." Required beside a `Demo` chip (`AGENTS.md §1.2`,
-   * `DIRECTIVE.md §28`). Passing it on a non-demo segment is harmless: the render gates on
-   * `provenance.kind`, exactly as `ConnectionCockpit`, `RightsCard`, `EvidencePacket`,
-   * `SourceFreshnessPanel`, `AlertTimeline` and `ProvenanceHeader` already do.
+   * `DIRECTIVE.md §28`) — and beside any OTHER chip over fixture data, which is the half that was
+   * missing: the `§17` stale card on `/flight-status/` is the same fixture segment wearing a
+   * `Stale` chip, and it shipped with no sentence in it at all (trust F12 / copy F-21).
+   *
+   * The render therefore gates on `isFixtureSourced`, not on the chip word. Passing the caption on
+   * a live segment stays harmless.
    */
   readonly demoCaption?: string
   readonly statusText: (status: SegmentStatus) => string
@@ -193,14 +197,20 @@ export function SegmentCard({
         </DefinitionRow>
       </dl>
 
-      <div className="dpp-segment__provenance">
+      {/* `data-fixture` marks the panel as fixture-backed independently of the chip word and
+          independently of whether the caption was supplied, so `apps/web/scripts/verify-dist.mjs`
+          fails a build in which one is present and the other is not (`docs/VOICE.md §2.1`). */}
+      <div
+        className="dpp-segment__provenance"
+        {...(isFixtureSourced(segment.provenance) ? { 'data-fixture': 'true' } : {})}
+      >
         <ProvenanceChip
           kind={segment.provenance.kind}
           {...(segment.provenance.freshness === undefined
             ? {}
             : { freshness: segment.provenance.freshness })}
         />
-        {segment.provenance.kind === 'demo' && copy.demoCaption !== undefined ? (
+        {isFixtureSourced(segment.provenance) && copy.demoCaption !== undefined ? (
           <p className="dpp-provenance__demo">{copy.demoCaption}</p>
         ) : null}
       </div>

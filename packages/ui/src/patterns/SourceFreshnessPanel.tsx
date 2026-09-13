@@ -27,6 +27,15 @@ export interface SourceFreshnessRow {
   readonly freshness: string
   /** One sentence explaining what the chip means here. Copy. */
   readonly meaning: string
+  /**
+   * This row's value came from a fixture, whatever word its chip carries.
+   *
+   * The row-level spelling of `Provenance.fixture` (`types.ts`) — this panel takes rows rather than
+   * a `Provenance`, and the demonstration's own row set proves why the flag has to be independent
+   * of `kind`: one row is `stale` and one is `heuristic`, both over the same fixture
+   * (`docs/VOICE.md §2.1`).
+   */
+  readonly fixture?: true
 }
 
 export interface SourceFreshnessPanelCopy {
@@ -56,6 +65,8 @@ export function SourceFreshnessPanel({
 }: SourceFreshnessPanelProps): JSX.Element {
   const Heading = HEADING_TAG[headingLevel]
   const headingId = `${idPrefix}-freshness-title`
+  /* Fixture-backed by the ROWS, never by whether a caption was passed. See `AlertTimeline`. */
+  const fixtureSourced = rows.some((row) => row.kind === 'demo' || row.fixture === true)
 
   return (
     <Card as="section" aria-labelledby={headingId} className={`dpp-freshness ${className ?? ''}`}>
@@ -74,9 +85,13 @@ export function SourceFreshnessPanel({
           </li>
         ))}
       </ul>
-      {copy.demoCaption === undefined ? null : (
-        <p className="dpp-provenance__demo">{copy.demoCaption}</p>
-      )}
+      {fixtureSourced ? (
+        <div className="dpp-freshness__provenance" data-fixture="true">
+          {copy.demoCaption === undefined ? null : (
+            <p className="dpp-provenance__demo">{copy.demoCaption}</p>
+          )}
+        </div>
+      ) : null}
     </Card>
   )
 }

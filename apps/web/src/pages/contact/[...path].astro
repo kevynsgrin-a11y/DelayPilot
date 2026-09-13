@@ -34,7 +34,8 @@ const page = contactPage(contactEmail ?? '')
 
   <Section heading={page.addressHeading}>
     <p class="dpx-section__intro">
-      <a href={`mailto:${page.address}`}>{page.address}</a>
+      {/* `dpx-mailto`: the 44px target every other control has (`ACCESSIBILITY.md` F41). */}
+      <a class="dpx-mailto" href={`mailto:${page.address}`}>{page.address}</a>
     </p>
     <p class="dpx-lookup__note">{page.responseTime}</p>
     <p class="dpx-lookup__note">{page.privacyNote}</p>

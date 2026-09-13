@@ -126,7 +126,10 @@ const feedback = accessibilityFeedback(contactEmail ?? null)
         feedback.address === null ? (
           feedback.body
         ) : (
-          <a href={`mailto:${feedback.address}`}>{feedback.address}</a>
+          /* `dpx-mailto`: the 44px target every other control has (`ACCESSIBILITY.md` F41). */
+          <a class="dpx-mailto" href={`mailto:${feedback.address}`}>
+            {feedback.address}
+          </a>
         )
       }
     </p>

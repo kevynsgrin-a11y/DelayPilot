@@ -191,8 +191,12 @@ export function connectionCopy(options: {
   return {
     heading: connectionHeading(key),
     topologyLabel,
+    /*
+     * `topologyNote.self_transfer` is `results.selfTransfer`, and it is the ONLY place that
+     * sentence reaches a connection cockpit. `selfTransferExplanation` was a second prop fed the
+     * same export, so the two rendered back to back on `/connection-risk/` (copy review F-23).
+     */
     topologyNote,
-    selfTransferExplanation: results.selfTransfer,
     gateInLabel: cockpit.connection.gateIn,
     gateCloseLabel: cockpit.connection.gateClose,
     gateCloseBufferLabel: cockpit.connection.gateCloseBuffer,

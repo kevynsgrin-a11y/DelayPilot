@@ -132,6 +132,14 @@ export interface LoadingBlockProps {
  * being the region's description — a spinner that says nothing is indistinguishable from a page
  * that has stopped working.
  *
+ * ONE ANNOUNCEMENT PER LOAD. The bones are removed from the accessibility tree with `aria-hidden`.
+ * `Skeleton` takes a required `label` and renders it in a `.dp-visually-hidden` span, so with the
+ * message already on screen as a `<p>` the tree read "Looking up this flight." twice, on every
+ * loading state in the product (`docs/ACCESSIBILITY.md` F42). The bones carry no information a
+ * reader needs — they reserve a box so nothing shifts — and hiding the subtree leaves the visible
+ * sentence announced exactly once while the primitive keeps its label required, which is
+ * `brand-design-director`'s call to change and not this pattern's.
+ *
  * `illustration` drops `aria-busy` for a page that is SHOWING this state rather than being in it.
  * See the prop's own note: the picture is the same, the claim is not made.
  */
@@ -151,8 +159,10 @@ export function LoadingBlock({
       {...(illustration ? {} : { 'aria-busy': 'true' })}
     >
       <p className="dpp-loading__message">{message}</p>
-      <div className="dpp-loading__bones">
-        {/* One placeholder, `lines` bones. `live` stays off: the region above carries aria-busy. */}
+      <div className="dpp-loading__bones" aria-hidden="true">
+        {/* One placeholder, `lines` bones. `live` stays off: the region above carries aria-busy.
+            `aria-hidden` on the wrapper: the visible `<p>` above already says this sentence, and
+            `Skeleton`'s required `label` repeated it into the tree (F42). */}
         <Skeleton variant="text-block" lines={lines} label={message} />
       </div>
     </div>

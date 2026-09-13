@@ -21,6 +21,7 @@ import { DataTable, type DataTableColumn } from '../primitives/DataTable.tsx'
 import { Link } from '../primitives/Link.tsx'
 import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import { Disclaimer, ZonedTimeView } from './atoms.tsx'
+import { isFixtureSourced } from './types.ts'
 import type { Provenance, RightsSourceLink, ZonedTime } from './types.ts'
 
 export interface EvidenceChronologyEntry {
@@ -130,7 +131,11 @@ export function EvidencePacket({
 
   return (
     <Card as="section" aria-labelledby={headingId} className={`dpp-evidence ${className ?? ''}`}>
-      <header className="dpp-evidence__header">
+      {/* `data-fixture`: see `SegmentCard`. */}
+      <header
+        className="dpp-evidence__header"
+        {...(isFixtureSourced(provenance) ? { 'data-fixture': 'true' } : {})}
+      >
         <Heading className="dpp-evidence__title" id={headingId}>
           {copy.heading}
         </Heading>
@@ -139,7 +144,7 @@ export function EvidencePacket({
           kind={provenance.kind}
           {...(provenance.freshness === undefined ? {} : { freshness: provenance.freshness })}
         />
-        {provenance.kind === 'demo' && copy.demoCaption !== undefined ? (
+        {isFixtureSourced(provenance) && copy.demoCaption !== undefined ? (
           <p className="dpp-provenance__demo">{copy.demoCaption}</p>
         ) : null}
       </header>

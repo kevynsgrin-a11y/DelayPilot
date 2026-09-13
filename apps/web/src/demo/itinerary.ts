@@ -50,10 +50,11 @@ import {
   type TransferComponent,
   type ZonedTime,
 } from '../../../../packages/ui/src/patterns/index.ts'
+import type { InterimSeverity } from '../../../../packages/ui/src/tokens/interim-contracts.ts'
 import { resolveSource } from '../components/source-registry.ts'
-import { cockpit } from '../lib/copy/cockpit.ts'
+import { cockpit, demoAlertBody, type DemoAlertId } from '../lib/copy/cockpit.ts'
 import { demo } from '../lib/copy/demo.ts'
-import { freshness, results } from '../lib/copy/results.ts'
+import { freshness } from '../lib/copy/results.ts'
 import { provenanceMeanings, unavailableReasons } from '../lib/copy/provenance.ts'
 
 /* ------------------------------------------------------------------------------------------- */
@@ -121,11 +122,23 @@ const DEMO_SECOND_SOURCE = 'Second demonstration fixture'
 export const demoProvenance = {
   kind: 'demo',
   freshness: freshness(DEMO_AGE_MINUTES, DEMO_SOURCE),
+  fixture: true,
 } as const
 
+/**
+ * The `§17` stale state, over the SAME fixture.
+ *
+ * `fixture: true` is the whole point of this constant. A chip carries one of six words and this
+ * panel spends its one word on `Stale` — a statement about freshness, which affirmatively asserts
+ * that a provider answered and the answer aged. Origin is a different question, and on
+ * `/flight-status/` this card answered it nowhere: no `results.demo` within 1205 px at 375
+ * (trust F12 / copy F-21, ruled in `docs/VOICE.md §2.1`). The flag makes the fixture say what it is
+ * independently of the label, and every pattern reads it through `isFixtureSourced`.
+ */
 const staleProvenance = {
   kind: 'stale',
   freshness: freshness(DEMO_STALE_AGE_MINUTES, DEMO_SOURCE),
+  fixture: true,
 } as const
 
 /* ------------------------------------------------------------------------------------------- */
@@ -408,10 +421,20 @@ export const demoConnectionSelfTransfer: ConnectionAssessment = {
   slackMinutes: known(AVAILABLE_MINUTES - SELF_TRANSFER_REQUIRED),
   components: selfTransferComponents,
   band: 'at_risk',
+  /*
+   * THE THIRD LINE IS AN ASSUMPTION, NOT A DETERMINATION (`AGENTS.md §1.3`).
+   *
+   * It used to state flatly that nobody carried responsibility for the onward flight when the
+   * first one ran late: a legal conclusion, in a fixture, with no rule set in force and no fact
+   * established. §1.3 bans the determination in EITHER direction, and the negative direction is
+   * the dangerous half here — a traveler who reads it has been told not to ask. The replacement
+   * says what this assessment actually did: treated the two tickets as separate journeys and
+   * assumed nothing about re-accommodation (copy review F-24, trust sweep's critical class).
+   */
   assumptions: [
     'The inbound flight arrives at the estimated gate-in time shown above.',
     "The bag is reclaimed at the belt and rechecked at the second airline's desk.",
-    'No airline is responsible for the onward flight if the first one arrives late.',
+    'The two tickets are assessed as separate journeys, so nothing here assumes the second airline will re-accommodate you.',
   ],
   missingData: [
     unavailableReasons.gateNotPublished.fact,
@@ -663,14 +686,27 @@ export const demoActions: readonly ActionItem[] = [
     jurisdiction: 'United States',
     sources: [sourceLink('dot-refunds', 'US Department of Transportation — refunds')],
   },
+  /*
+   * TWO CORRECTIONS, ONE STEP (copy review F-26).
+   *
+   * The deadline reason was `causeNotVerified`, which rendered "Deadline: The disruption cause has
+   * not been verified." — a true sentence answering a question nobody asked. WHY there is no
+   * deadline is the same reason as on the two steps below it: no rule set is in force, so no
+   * limit has a source. The cause is what this step exists to obtain; it is not why its deadline
+   * is unknown.
+   *
+   * And the source was the European Commission record, on a step whose two predecessors cite the
+   * DOT. A US-context checklist that sends a reader to an EU regulator for the same jurisdiction's
+   * question is a source link that does not support the step it sits under.
+   */
   {
     id: 'ask-reason',
     label: 'Ask the airline for the cancellation reason in writing',
     detail:
       'Which rules may apply often turns on the reason the airline gives. A screenshot of the app is not the same as a written statement.',
-    deadline: unknown(unavailableReasons.causeNotVerified.fact),
+    deadline: unknown(unavailableReasons.noRuleSetInForce.fact),
     reversible: true,
-    sources: [sourceLink('eu-your-europe-air', 'European Commission — air passenger rights')],
+    sources: [sourceLink('dot-refunds', 'US Department of Transportation — refunds')],
   },
   {
     id: 'keep-receipts',
@@ -687,47 +723,65 @@ export const demoActions: readonly ActionItem[] = [
 /* Alerts.                                                                                      */
 /* ------------------------------------------------------------------------------------------- */
 
+/**
+ * One demonstration alert, with its body DERIVED from its id.
+ *
+ * Three of the five used to carry the copy module's generic severity DEFINITION as their body —
+ * what the rung means in the abstract, rather than what happened — and the first contradicted its
+ * own title:
+ * "Monitoring started for this itinerary" followed by "A detail changed. Worth knowing, nothing to
+ * do." (copy re-check F-25). `DIRECTIVE.md §16` asks a message for what changed, what it means and
+ * the next useful action; a definition of a severity carries none of the three.
+ *
+ * The body is not a parameter. It is looked up from `id` through `demoAlertBody`, so a title and a
+ * body cannot be re-paired by inserting or reordering an alert, and `DemoAlertId` makes an id the
+ * copy module does not know a TYPE ERROR rather than a missing sentence at build time.
+ */
+const demoAlert = (
+  id: DemoAlertId,
+  severity: InterimSeverity,
+  title: string,
+  when: ZonedTime,
+): AlertEvent => ({
+  id,
+  severity,
+  title,
+  detail: demoAlertBody(id),
+  at: when,
+  provenance: demoProvenance,
+})
+
 export const demoAlerts: readonly AlertEvent[] = [
-  {
-    id: 'alert-monitoring',
-    severity: 'info',
-    title: 'Monitoring started for this itinerary',
-    detail: cockpit.alerts.severityMeanings.info,
-    at: at(INSTANTS.alertMonitoring, 'DM1'),
-    provenance: demoProvenance,
-  },
-  {
-    id: 'alert-inbound-delay',
-    severity: 'watch',
-    title: `${demo.flights.first} is now estimated to depart later than scheduled`,
-    detail: cockpit.alerts.severityMeanings.watch,
-    at: at(INSTANTS.alertInboundDelay, 'DM1'),
-    provenance: demoProvenance,
-  },
-  {
-    id: 'alert-connection-watch',
-    severity: 'watch',
-    title: 'Connection slack has narrowed toward the required transfer time',
-    detail: cockpit.connection.topology.protectedBody,
-    at: at(INSTANTS.alertConnectionWatch, 'DM2'),
-    provenance: demoProvenance,
-  },
-  {
-    id: 'alert-cancellation',
-    severity: 'urgent',
-    title: `${demo.flights.second} has been canceled`,
-    detail: cockpit.alerts.severityMeanings.urgent,
-    at: at(INSTANTS.alertCancellation, 'DM2'),
-    provenance: demoProvenance,
-  },
-  {
-    id: 'alert-rights',
-    severity: 'info',
-    title: 'The rights estimate has been updated with the new facts',
-    detail: results.rights,
-    at: at(INSTANTS.alertRights, 'DM2'),
-    provenance: demoProvenance,
-  },
+  demoAlert(
+    'alert-monitoring',
+    'info',
+    'Monitoring started for this itinerary',
+    at(INSTANTS.alertMonitoring, 'DM1'),
+  ),
+  demoAlert(
+    'alert-inbound-delay',
+    'watch',
+    `${demo.flights.first} is now estimated to depart later than scheduled`,
+    at(INSTANTS.alertInboundDelay, 'DM1'),
+  ),
+  demoAlert(
+    'alert-connection-watch',
+    'watch',
+    'Connection slack has narrowed toward the required transfer time',
+    at(INSTANTS.alertConnectionWatch, 'DM2'),
+  ),
+  demoAlert(
+    'alert-cancellation',
+    'urgent',
+    `${demo.flights.second} has been canceled`,
+    at(INSTANTS.alertCancellation, 'DM2'),
+  ),
+  demoAlert(
+    'alert-rights',
+    'info',
+    'The rights estimate has been updated with the new facts',
+    at(INSTANTS.alertRights, 'DM2'),
+  ),
 ]
 
 /* ------------------------------------------------------------------------------------------- */
@@ -812,6 +866,11 @@ export const demoEvidenceMissing: readonly string[] = [
 
 /* ------------------------------------------------------------------------------------------- */
 /* Source and freshness panel.                                                                  */
+/*                                                                                              */
+/* EVERY ROW CARRIES `fixture: true`, including the four that are not `demo`. The panel exists  */
+/* to show all six provenance labels at once, so four of its five rows spend their chip word on */
+/* something other than origin — `stale`, `heuristic`, `unavailable` twice — and every one of    */
+/* them is still this fixture (`docs/VOICE.md §2.1`).                                            */
 /* ------------------------------------------------------------------------------------------- */
 
 export const demoSourceRows: readonly SourceFreshnessRow[] = [
@@ -821,6 +880,7 @@ export const demoSourceRows: readonly SourceFreshnessRow[] = [
     source: DEMO_SOURCE,
     kind: 'demo',
     freshness: freshness(DEMO_AGE_MINUTES, DEMO_SOURCE),
+    fixture: true,
     meaning: provenanceMeanings.demo,
   },
   {
@@ -829,6 +889,7 @@ export const demoSourceRows: readonly SourceFreshnessRow[] = [
     source: DEMO_SECOND_SOURCE,
     kind: 'stale',
     freshness: freshness(DEMO_STALE_AGE_MINUTES, DEMO_SECOND_SOURCE),
+    fixture: true,
     meaning: provenanceMeanings.stale,
   },
   {
@@ -837,6 +898,7 @@ export const demoSourceRows: readonly SourceFreshnessRow[] = [
     source: DEMO_SOURCE,
     kind: 'heuristic',
     freshness: unavailableReasons.noCalibratedModel.fact,
+    fixture: true,
     meaning: provenanceMeanings.heuristic,
   },
   {
@@ -845,6 +907,7 @@ export const demoSourceRows: readonly SourceFreshnessRow[] = [
     source: DEMO_SOURCE,
     kind: 'unavailable',
     freshness: unavailableReasons.causeNotVerified.fact,
+    fixture: true,
     meaning: provenanceMeanings.unavailable,
   },
   {
@@ -853,6 +916,7 @@ export const demoSourceRows: readonly SourceFreshnessRow[] = [
     source: DEMO_SOURCE,
     kind: 'unavailable',
     freshness: unavailableReasons.noRuleSetInForce.fact,
+    fixture: true,
     meaning: provenanceMeanings.unavailable,
   },
 ]

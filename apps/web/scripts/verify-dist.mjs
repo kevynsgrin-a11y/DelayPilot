@@ -39,10 +39,15 @@
  *   a page with no web app manifest link       every page is BaseLayout's, and BaseLayout links it
  *   unreferenced JavaScript chunk              `dist` must not misstate what the site loads
  *   an ad slot in a forbidden POSITION         DIRECTIVE.md §20 — above the search, in a form,
- *                                              between a warning and its action, in or beside a
- *                                              rights card or an action checklist
+ *                                              between a warning and its action, inside a rights
+ *                                              card, or adjacent to "Contact airline" /
+ *                                              "Request refund" / "Save evidence" BY NAME; plus
+ *                                              AGENTS.md §4's "beside a rights card or an action
+ *                                              checklist"
  *   a bare `Demo` chip                         AGENTS.md §1.2, DIRECTIVE.md §28 — the label never
  *                                              travels without "Demo data — not a live flight."
+ *   a fixture panel with no §28 sentence       docs/VOICE.md §2.1 — the trigger is fixture DATA,
+ *                                              so a `Stale` chip over a fixture needs it too
  *   a drifted §26/§27 sentence                 fixed text is transcribed, never auto-corrected
  *   two runs of text joined with no space      Astro's JSX whitespace rule, in shipped prose
  *
@@ -471,16 +476,20 @@ function checkText(file, html, routes) {
 /**
  * `AGENTS.md §4` / `DIRECTIVE.md §20`, the POSITIONAL half.
  *
- * The route-prefix check above covers "on a forbidden surface". §20's first five forbidden clauses
- * are not about which page a slot is on — they are about WHERE ON THE PAGE it is, and every one of
- * them was unchecked (trust sweep F6):
+ * The route-prefix check above covers "on a forbidden surface". §20's five positional clauses are
+ * not about which page a slot is on — they are about WHERE ON THE PAGE it is, and every one of them
+ * was unchecked (trust sweep F6). In §20's own words:
  *
- *   above the primary search · inside a form · between a warning and its action ·
- *   inside a rights card · adjacent to a rights card or an action checklist
+ *   above the primary search · inside forms · between a warning and its action ·
+ *   inside a rights card · adjacent to "Contact airline"/"Request refund"/"Save evidence"
  *
- * Each is expressed here as a position in the emitted document, because that is the only place the
- * rule is actually true or false. A slot that satisfies every prefix rule and sits two hundred
- * bytes above the lookup form is the defect §20 is written about.
+ * CLAUSE 5 NAMES CONTROLS, NOT CONTAINERS, and this file used to paraphrase it as "adjacent to a
+ * rights card or an action checklist" (trust re-check F11). That paraphrase is a real rule —
+ * `AGENTS.md §4` forbids "inside or adjacent to a rights card or action checklist" — but it is a
+ * DIFFERENT rule, and it only catches clause 5 transitively: a "Request a refund" button that sits
+ * outside `.dpp-rights` and `.dpp-actions`, which is exactly where a next-best-action control or a
+ * support link ends up, is invisible to it. Both are checked now: the container rule by enclosure
+ * and adjacency, and clause 5 by the accessible NAME of every `<a>` and `<button>` near the slot.
  *
  * The scan is by byte offset rather than by parsing, which is exactly as much precision as the
  * question needs: "does this ad open before that form opens" is an ordering question, and the
@@ -493,6 +502,115 @@ const adOffsets = (html) =>
   [...html.matchAll(/<[a-zA-Z][^>]*(?:data-ad-placement|class="[^"]*\bdp-ad-slot\b)[^>]*>/g)].map(
     (match) => match.index,
   )
+
+/**
+ * The three controls `DIRECTIVE.md §20` names, matched on ACCESSIBLE NAME.
+ *
+ * §20 writes them as "Contact airline", "Request refund", "Save evidence" — the actions, not the
+ * button captions, because no product writes a button that way. `docs/VOICE.md` prefers the article
+ * ("Contact the airline", "Request a refund", "Save the evidence") and either wording is the same
+ * control, so the optional article is part of the pattern rather than a second entry. The match is
+ * deliberately not anchored: "Request a refund instead" is the same button.
+ */
+const NAMED_CONTROLS = [
+  { clause: 'Contact airline', pattern: /\bcontact\s+(?:the\s+)?airline\b/i },
+  { clause: 'Request refund', pattern: /\brequest\s+(?:a\s+|the\s+|your\s+)?refund\b/i },
+  { clause: 'Save evidence', pattern: /\bsave\s+(?:the\s+|your\s+)?evidence\b/i },
+]
+
+/**
+ * THE ADJACENCY RULE, STATED ONCE SO IT CAN BE ARGUED WITH.
+ *
+ * An ad slot is "adjacent to" a named control when BOTH hold, in either document direction:
+ *
+ *   1. no BLOCK BOUNDARY lies between them — no `<section>`, `<article>`, `<aside>`, `<main>`,
+ *      `<header>`, `<footer>`, `<form>` tag in either direction, no heading, no `<hr>`. Any of
+ *      those is a break a reader perceives, and §20's own permitted placement asks for "strong
+ *      separation", which is precisely a boundary of this kind; and
+ *   2. at most `ADJACENT_WINDOW` characters of markup separate them.
+ *
+ * Rule 1 alone is not enough: a cockpit panel is one long `<div>`, so without a cap an ad at the
+ * top of it would count as adjacent to a control five screens down, and the check would fire on
+ * placements nobody would call adjacent. Rule 2 alone is not enough either: 600 characters of
+ * markup is perhaps two short paragraphs, and a `</section><section>` between them settles the
+ * question whatever the byte count says. The previous/next-sibling case — nothing but whitespace or
+ * a comment between the two — falls inside both, so it needs no separate clause.
+ *
+ * 600 is the number because it is roughly one card's worth of emitted markup at this site's markup
+ * density, measured on the demonstration cockpit's own panels. It is a floor on separation, not a
+ * measurement of one: a slot further away than this still has to satisfy every other clause.
+ */
+const ADJACENT_WINDOW = 600
+
+const BLOCK_BOUNDARY =
+  /<\/?(?:section|article|aside|main|header|footer|form|h[1-6])\b[^>]*>|<hr\b[^>]*>/i
+
+/**
+ * The accessible name of the element opening at `start`: `aria-label`, else `aria-labelledby`
+ * resolved against the document, else the element's own visible text.
+ *
+ * Three sources, in the order the accessible-name computation uses them. `aria-labelledby` is
+ * resolved rather than skipped because a control labelled that way is exactly as recognisable to a
+ * reader as one labelled by its text, and a checker that could not see it would be a checker a
+ * refactor switches off by accident.
+ */
+function accessibleName(html, start, end, openTag) {
+  const label = /\baria-label="([^"]*)"/i.exec(openTag)?.[1]
+  if (label !== undefined) return collapse(decodeEntities(label))
+
+  const labelledBy = /\baria-labelledby="([^"]*)"/i.exec(openTag)?.[1]
+  if (labelledBy !== undefined) {
+    return collapse(
+      labelledBy
+        .split(/\s+/)
+        .filter(Boolean)
+        .map((id) => elementTextById(html, id))
+        .join(' '),
+    )
+  }
+
+  return collapse(decodeEntities(visibleText(html.slice(start, end))))
+}
+
+const collapse = (value) => value.replace(/\s+/g, ' ').trim()
+
+/** The visible text of the element carrying `id`, or an empty string if there is none. */
+function elementTextById(html, id) {
+  const open = new RegExp(`<([a-zA-Z][a-zA-Z0-9-]*)\\b[^>]*\\sid="${escapeForRegExp(id)}"[^>]*>`)
+  const match = open.exec(html)
+  if (match === null) return ''
+  const end = closingIndex(html, match.index, match[1])
+  return end === undefined ? '' : decodeEntities(visibleText(html.slice(match.index, end)))
+}
+
+const escapeForRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+/** Every `<a>` / `<button>` whose accessible name matches one of §20's three named controls. */
+function namedControlSpans(html) {
+  const out = []
+  for (const match of html.matchAll(/<(a|button)\b[^>]*>/gi)) {
+    const end = closingIndex(html, match.index, match[1]) ?? match.index + match[0].length
+    const name = accessibleName(html, match.index, end, match[0])
+    if (name === '') continue
+    const control = NAMED_CONTROLS.find((candidate) => candidate.pattern.test(name))
+    if (control !== undefined) out.push({ start: match.index, end, name, clause: control.clause })
+  }
+  return out
+}
+
+/** The first named control adjacent to the slot spanning `[start, end)`, by the rule above. */
+function adjacentNamedControl(html, start, end, controls) {
+  for (const control of controls) {
+    const gapStart = start < control.start ? end : control.end
+    const gapEnd = start < control.start ? control.start : start
+    if (gapEnd <= gapStart) return control
+    const gap = html.slice(gapStart, gapEnd)
+    if (gap.length > ADJACENT_WINDOW) continue
+    if (BLOCK_BOUNDARY.test(gap)) continue
+    return control
+  }
+  return undefined
+}
 
 /**
  * Offsets of the region each `openPattern` element spans, found by tag-depth counting.
@@ -558,6 +676,25 @@ export function findAdPositionViolations(html) {
     '<div\\b[^>]*class="dpp-state[^"]*"[^>]*>(?=[\\s\\S]{0,4000}?dp-callout__action)',
     'div',
   )
+
+  /* §20 clause 5, by NAME. Computed once per page; the loop below asks it per slot. */
+  const controls = namedControlSpans(html)
+
+  for (const offset of offsets) {
+    const tagName = /<([a-zA-Z][a-zA-Z0-9-]*)/.exec(html.slice(offset, offset + 40))?.[1]
+    const slotEnd =
+      (tagName === undefined ? undefined : closingIndex(html, offset, tagName)) ??
+      html.indexOf('>', offset) + 1
+    const control = adjacentNamedControl(html, offset, slotEnd, controls)
+    if (control !== undefined) {
+      out.push(
+        `an ad slot is adjacent to the "${control.clause}" control ("${control.name}") — ` +
+          'DIRECTIVE.md §20 forbids an ad adjacent to "Contact airline" / "Request refund" / ' +
+          '"Save evidence" by name, whatever container the control happens to sit in. This is the ' +
+          'placement where a mis-tap costs a traveler the statutory step they were taking.',
+      )
+    }
+  }
 
   for (const offset of offsets) {
     if (lookup !== -1 && offset < lookup) {
@@ -630,11 +767,45 @@ function adjacentTo(html, offset, spans) {
  * inside it: the alert timeline's five rows and the source-freshness rows share their panel's
  * caption. What fails is a chip whose nearest enclosing `article` or `section` carries no sentence.
  *
+ * TWO KEYS, BECAUSE THE TRIGGER IS FIXTURE DATA AND NOT THE WORD ON THE CHIP.
+ *
+ * `[data-provenance="demo"]` was the only key, and `docs/VOICE.md §2.1` records what it missed:
+ * `/flight-status/`'s `§17` stale card is the same fixture segment wearing a `Stale` chip, and it
+ * shipped with the sentence nowhere in it — 1205 px from the nearest one at 375 (trust F12 / copy
+ * F-21). A chip carries exactly one of six words; a panel that spends its word on freshness has
+ * said nothing about origin, and `Stale` affirmatively asserts that a provider answered.
+ *
+ * So the second key is `[data-fixture]`, which the patterns emit from `Provenance.fixture` through
+ * `isFixtureSourced` (`packages/ui/src/patterns/types.ts`). The mark depends on the DATA and the
+ * caption on the COPY, deliberately: a panel that emits the mark without the sentence fails here,
+ * which is the whole point — a mark that appeared only when the caption did would prove nothing.
+ *
  * The sentence comes from `results.demo`, never from a literal here.
  */
 function checkDemoCaptions(file, html) {
   const chip = /<([a-z]+)\b[^>]*\bdata-provenance="demo"[^>]*>/g
   const legends = spansOf(html, '<ul\\b[^>]*\\bdata-provenance-legend\\b[^>]*>', 'ul')
+
+  for (const match of html.matchAll(/<[a-z]+\b[^>]*\bdata-fixture="true"[^>]*>/g)) {
+    const panel = nearestPanel(html, match.index)
+    if (panel === undefined) {
+      fail(
+        file,
+        'a fixture-sourced panel (data-fixture) sits in no <article> or <section> at all, so ' +
+          `nothing bounds the panel it marks. DIRECTIVE.md §28 requires "${DEMO_SENTENCE}" in it.`,
+      )
+      continue
+    }
+    if (!panel.includes(DEMO_SENTENCE)) {
+      fail(
+        file,
+        `a fixture-sourced panel (data-fixture) whose nearest <article>/<section> does not ` +
+          `contain "${DEMO_SENTENCE}". DIRECTIVE.md §28 requires the sentence on every panel that ` +
+          'displays a demo operational value, whatever provenance word its chip carries — a ' +
+          '`Stale` chip over fixture data asserts that a provider answered (docs/VOICE.md §2.1).',
+      )
+    }
+  }
 
   for (const match of html.matchAll(chip)) {
     /*
@@ -826,16 +997,11 @@ function decodeEntities(text) {
 const INLINE_JOIN_TAGS = 'a|strong|em|code|abbr|time|span'
 
 /**
- * Classes proven `display: block` (or the equivalent) in an owned stylesheet, so the two runs of
- * text they separate are on different lines whatever the markup says.
+ * The opening tag matching the `</tagName>` that ends at `offset`, with its index.
  *
- *   .dpx-lookup__example        `display: block` — the example line under a field label
- *   .dpx-article__answer-label  `display: block` — the "Short answer" label above its paragraph
- *   .dpp-rights__source-note    a trailing note that follows an em dash, which is its own separator
- *   .dpp-time__*                the ZonedTimeView parts are a grid of block cells
- *   .dp-visually-hidden         not painted at all; it carries its own leading space where needed
+ * The INDEX is needed as well as the tag: the content-based exemptions below have to read the
+ * element's own text, and text starts where the opening tag ends.
  */
-/** The opening tag matching the `</tagName>` that ends at `offset`, by backwards depth counting. */
 function openingTagFor(html, offset, tagName) {
   const boundary = new RegExp(`<${tagName}\\b[^>]*>|</${tagName}>`, 'g')
   const stack = []
@@ -844,18 +1010,65 @@ function openingTagFor(html, offset, tagName) {
     // pop its own opening tag off the stack before we read it.
     if (step.index >= offset) break
     if (step[0].startsWith('</')) stack.pop()
-    else stack.push(step[0])
+    else stack.push({ tag: step[0], index: step.index })
   }
   return stack.at(-1)
 }
 
+/**
+ * Classes whose DISPLAY separates the two runs, so no markup space is needed.
+ *
+ *   .dpx-lookup__example        `display: block` — the example line under a field label
+ *   .dpx-article__answer-label  `display: block` — the "Short answer" label above its paragraph
+ *   .dpp-time__clock            flex items of `.dpp-time`, which is `display: inline-flex` with a
+ *   .dpp-time__zone             `gap` (app.css) — the gap is the separation, box by box
+ *   .dpp-time__date
+ *   .dpp-time__estimated
+ *   .dpp-time__code             flex items of `.dpp-time__zone`, itself `inline-flex` with a `gap`
+ *   .dpp-time__abbr
+ *   .dpp-time__iana
+ *
+ * THE TIME CLASSES ARE LISTED, NOT PREFIXED. `dpp-time__` as a prefix excused any future class
+ * spelled that way, and its stated reason — "a grid of block cells" — was not what the stylesheet
+ * does: nothing in `.dpp-time` is a grid and nothing in it is `display: block`. Each of the seven
+ * above was checked against `app.css` individually and is a flex item of a gapped inline-flex
+ * parent; a new `dpp-time__` class inherits no exemption (trust re-check F13).
+ */
 const BLOCK_CLASSES = [
   'dpx-lookup__example',
   'dpx-article__answer-label',
-  'dpp-rights__source-note',
-  'dpp-time__',
-  'dp-visually-hidden',
+  'dpp-time__clock',
+  'dpp-time__zone',
+  'dpp-time__code',
+  'dpp-time__abbr',
+  'dpp-time__iana',
+  'dpp-time__date',
+  'dpp-time__estimated',
 ]
+
+/**
+ * Classes whose own TEXT carries the separation — checked, not assumed.
+ *
+ *   .dpp-rights__source-note    written as " — <note>", so its text opens with a space
+ *   .dp-visually-hidden         carries its own leading space where one is needed
+ *
+ * Both used to sit in the display list above with a content-based excuse written beside them, which
+ * meant the excuse was never true or false of anything the script could see: a source note re-worded
+ * to drop its leading space, or a visually hidden label that never had one, kept the exemption
+ * (trust re-check F13). Neither claim is about display. `.dpp-rights__source-note` is
+ * `color: var(--text-secondary)` and nothing else, and `.dp-visually-hidden` IS present in the
+ * accessibility tree — "not painted" cannot excuse a join that is announced. So the claim is now
+ * tested: the element is skipped only when its own text supplies the space, on the side the join is
+ * on. For the opening form, which is the one this site actually produces, that is literally "the
+ * suppressed node's own text begins with whitespace".
+ */
+const SEPARATED_BY_OWN_TEXT = ['dpp-rights__source-note', 'dp-visually-hidden']
+
+/** Leading whitespace in the element's own text, allowing Astro's `<!-- -->` node separators. */
+const OWN_TEXT_OPENS_WITH_SPACE = /^(?:<!--[\s\S]*?-->)*\s/
+
+/** The same, at the end: a closing-side join is separated by a trailing space. */
+const OWN_TEXT_ENDS_WITH_SPACE = /\s(?:<!--[\s\S]*?-->)*$/
 
 function checkInlineJoins(file, html) {
   const opening = new RegExp(`([A-Za-z.,;:])<(?:${INLINE_JOIN_TAGS})\\b[^>]*>`, 'g')
@@ -864,10 +1077,20 @@ function checkInlineJoins(file, html) {
   for (const match of [...html.matchAll(opening), ...html.matchAll(closing)]) {
     // On a closing tag the class is on the OPENING one, so find that before deciding.
     const isClose = match[0].startsWith('</')
-    const tag = isClose
-      ? (openingTagFor(html, match.index, match[1]) ?? match[0])
-      : (/<[a-z]+\b[^>]*>/.exec(match[0])?.[0] ?? match[0])
+    const open = isClose
+      ? openingTagFor(html, match.index, match[1])
+      : { tag: /<[a-z]+\b[^>]*>/.exec(match[0])?.[0] ?? match[0], index: match.index + 1 }
+    const tag = open?.tag ?? match[0]
+
     if (BLOCK_CLASSES.some((name) => tag.includes(name))) continue
+    if (
+      open !== undefined &&
+      SEPARATED_BY_OWN_TEXT.some((name) => tag.includes(name)) &&
+      ownTextSeparates(html, open, isClose ? match.index : undefined)
+    ) {
+      continue
+    }
+
     fail(
       file,
       `two runs of text are joined with no space: ${JSON.stringify(
@@ -876,6 +1099,20 @@ function checkInlineJoins(file, html) {
         "explicit {' '} between them.",
     )
   }
+}
+
+/**
+ * Does this element's own text supply the space the markup does not?
+ *
+ * `closeIndex` is the offset of the closing tag on a closing-side join, and its absence means the
+ * join is on the opening side. The two sides ask different questions and only one of them is the
+ * one a re-worded string can silently stop answering.
+ */
+function ownTextSeparates(html, open, closeIndex) {
+  const start = open.index + open.tag.length
+  if (closeIndex === undefined) return OWN_TEXT_OPENS_WITH_SPACE.test(html.slice(start, start + 64))
+  if (closeIndex <= start) return false
+  return OWN_TEXT_ENDS_WITH_SPACE.test(html.slice(Math.max(start, closeIndex - 64), closeIndex))
 }
 
 function checkAdPlacement(file, route, html) {
@@ -932,6 +1169,12 @@ const WARNING =
   '<div class="dpp-state" data-state="provider_unavailable"><div class="dp-callout">' +
   '<p class="dp-callout__title">Provider unavailable</p>REPLACE' +
   '<div class="dp-callout__action"><a href="/">Retry</a></div></div></div>'
+
+/* §20 clause 5 by NAME, in the three spellings the site would actually emit. */
+const REFUND_BUTTON = '<button type="button">Request a refund</button>'
+const CONTACT_LINK = '<a href="/app/trip/x">Contact the airline</a>'
+const EVIDENCE_LABELLED =
+  '<span id="ev-1">Save the evidence</span><a href="/x" aria-labelledby="ev-1"></a>'
 
 const SELF_TESTS = [
   {
@@ -1054,6 +1297,136 @@ const SELF_TESTS = [
         ),
       ),
     expect: null,
+  },
+
+  /* trust re-check F11 — §20 clause 5, by the control's accessible NAME. */
+  {
+    name: 'ad adjacent to a "Request refund" control outside any rights card',
+    run: () => findAdPositionViolations(`${LOOKUP_FORM}<div>${REFUND_BUTTON}${AD}</div>`),
+    expect: /"Request refund" control/,
+  },
+  {
+    name: 'ad adjacent to a "Contact airline" link, the slot first',
+    run: () => findAdPositionViolations(`${LOOKUP_FORM}<div>${AD}\n  ${CONTACT_LINK}</div>`),
+    expect: /"Contact airline" control/,
+  },
+  {
+    name: 'ad adjacent to a "Save evidence" control named by aria-labelledby',
+    run: () => findAdPositionViolations(`${LOOKUP_FORM}<div>${EVIDENCE_LABELLED}${AD}</div>`),
+    expect: /"Save evidence" control/,
+  },
+  {
+    name: 'a named control separated from the slot by a section boundary produces no finding',
+    run: () =>
+      findAdPositionViolations(
+        `${LOOKUP_FORM}<section><h3>Your next steps</h3>${REFUND_BUTTON}</section>` +
+          `<section class="dpx-ad"><p>Advertisement</p>${AD}</section>`,
+      ),
+    expect: null,
+  },
+  {
+    name: 'a named control far down the same block produces no finding',
+    run: () =>
+      findAdPositionViolations(
+        `${LOOKUP_FORM}<div>${AD}${'<p>Filler prose that separates the two.</p>'.repeat(20)}` +
+          `${REFUND_BUTTON}</div>`,
+      ),
+    expect: null,
+  },
+  {
+    name: 'an unrelated control beside the slot produces no finding',
+    run: () =>
+      findAdPositionViolations(
+        `${LOOKUP_FORM}<div><a href="/methodology/">How DelayPilot works</a>${AD}</div>`,
+      ),
+    expect: null,
+  },
+
+  /* trust re-check F12 — the fixture panel whose chip is not the word Demo. */
+  {
+    name: 'a Stale chip over fixture data with no sentence in its panel',
+    run: () =>
+      collect((f) =>
+        checkDemoCaptions(
+          f,
+          '<article><h3>DEMO 101</h3><div data-fixture="true">' +
+            '<span data-provenance="stale">Stale</span></div></article>',
+        ),
+      ),
+    expect: /fixture-sourced panel/,
+  },
+  {
+    name: 'a Stale chip over fixture data whose panel carries the sentence',
+    run: () =>
+      collect((f) =>
+        checkDemoCaptions(
+          f,
+          '<article><h3>DEMO 101</h3><div data-fixture="true">' +
+            `<span data-provenance="stale">Stale</span><p>${DEMO_SENTENCE}</p></div></article>`,
+        ),
+      ),
+    expect: null,
+  },
+
+  /* trust re-check F13 — the content-based exemptions, tested as content. */
+  {
+    name: 'a source note whose own text opens with a space is separated',
+    run: () =>
+      collect((f) =>
+        checkInlineJoins(
+          f,
+          '<p>US Department of Transportation<span class="dpp-rights__source-note"> — ' +
+            'The official source could not be reached.</span></p>',
+        ),
+      ),
+    expect: null,
+  },
+  {
+    name: 'a source note whose own text lost its leading space is a join',
+    run: () =>
+      collect((f) =>
+        checkInlineJoins(
+          f,
+          '<p>US Department of Transportation<span class="dpp-rights__source-note">— ' +
+            'The official source could not be reached.</span></p>',
+        ),
+      ),
+    expect: /joined with no space/,
+  },
+  {
+    name: 'a visually hidden label with no leading space is a join',
+    run: () =>
+      collect((f) =>
+        // A digit before the tag is not a join (the pattern is letters and sentence punctuation),
+        // so the run before it ends in a letter, as the real markup this fires on does.
+        checkInlineJoins(
+          f,
+          '<p>Departs<span class="dp-visually-hidden">Airport and zone</span></p>',
+        ),
+      ),
+    expect: /joined with no space/,
+  },
+  {
+    name: 'a ZonedTimeView part is separated by its flex gap',
+    run: () =>
+      collect((f) =>
+        checkInlineJoins(
+          f,
+          '<span class="dpp-time">Departs<span class="dpp-time__zone">DM2</span></span>',
+        ),
+      ),
+    expect: null,
+  },
+  {
+    name: 'a new dpp-time__ class inherits no exemption',
+    run: () =>
+      collect((f) =>
+        checkInlineJoins(
+          f,
+          '<span class="dpp-time">Departs<span class="dpp-time__footnote">DM2</span></span>',
+        ),
+      ),
+    expect: /joined with no space/,
   },
 ]
 

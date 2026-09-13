@@ -13,6 +13,7 @@
 import type { JSX, ReactNode } from 'react'
 import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import { VisuallyHidden } from '../primitives/VisuallyHidden.tsx'
+import { isFixtureSourced } from './types.ts'
 import type { Maybe, Provenance, ZonedTime } from './types.ts'
 import { clockTime, localDate, zoneName } from './time.ts'
 
@@ -138,13 +139,17 @@ export function ProvenanceHeader({
   children,
 }: ProvenanceHeaderProps): JSX.Element {
   return (
-    <div className="dpp-provenance">
+    /* `data-fixture`: see `SegmentCard`. The chip word answers freshness; this answers origin. */
+    <div
+      className="dpp-provenance"
+      {...(isFixtureSourced(provenance) ? { 'data-fixture': 'true' } : {})}
+    >
       {children}
       <ProvenanceChip
         kind={provenance.kind}
         {...(provenance.freshness === undefined ? {} : { freshness: provenance.freshness })}
       />
-      {provenance.kind === 'demo' && demoCaption !== undefined ? (
+      {isFixtureSourced(provenance) && demoCaption !== undefined ? (
         <p className="dpp-provenance__demo">{demoCaption}</p>
       ) : null}
     </div>

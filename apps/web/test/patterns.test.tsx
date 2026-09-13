@@ -25,6 +25,7 @@ import { SegmentCard } from '../../../packages/ui/src/patterns/SegmentCard.tsx'
 import { SourceFreshnessPanel } from '../../../packages/ui/src/patterns/SourceFreshnessPanel.tsx'
 import { LoadingBlock, StateBlock } from '../../../packages/ui/src/patterns/StateBlock.tsx'
 import { bands, rightsStatuses } from '../../../packages/ui/src/patterns/types.ts'
+import type { Segment } from '../../../packages/ui/src/patterns/types.ts'
 
 import {
   actionChecklistCopy,
@@ -225,6 +226,25 @@ describe('ConnectionCockpit', () => {
     expect(visible).toContain(results.selfTransfer)
     expect(visible).toContain(cockpit.connection.topology.selfTransferLabel)
     expect(visible).not.toContain(cockpit.connection.topology.protectedLabel)
+    /*
+     * ONCE (copy review F-23). `topologyNote.self_transfer` and the deleted
+     * `selfTransferExplanation` prop were both `results.selfTransfer`, so the §27 sentence printed
+     * back to back with itself. The emphasis class moved onto the surviving paragraph, so the
+     * warning is still prominent — the assertion is on the count, not on the styling.
+     */
+    expect(visible.split(results.selfTransfer).length - 1).toBe(1)
+    expect(markup).toContain('dpp-connection__topology-note dpp-connection__self-transfer')
+  })
+
+  it('does not put the separate-ticket emphasis on a protected transfer', () => {
+    const markup = html(
+      <ConnectionCockpit
+        assessment={demoConnectionProtected}
+        copy={connectionProps(demoConnectionProtected)}
+      />,
+    )
+    expect(markup).not.toContain('dpp-connection__self-transfer')
+    expect(text(markup)).toContain(cockpit.connection.topology.protectedBody)
   })
 
   it('insufficient data: names the missing quantity rather than announcing "Unknown, Unknown"', () => {
@@ -547,7 +567,6 @@ describe('ItineraryTimeline', () => {
             id: 'l1',
             flightNumber: demoSegmentInbound.flightNumber,
             airline: demoSegmentInbound.airline,
-            statusLabel: cockpit.segment.status,
             band: 'watch',
           },
         ]}
@@ -559,6 +578,45 @@ describe('ItineraryTimeline', () => {
       markup.indexOf(demoAirports.DM2.code),
     )
     expect(text(markup)).toContain(bandLabel('watch'))
+  })
+
+  it('gives the leg pill the band word and no field name as its detail', () => {
+    /*
+     * `docs/ACCESSIBILITY.md` F39. The pill was passed `detail={leg.statusLabel}` and every caller
+     * filled that with `cockpit.segment.status` — the word "Status" — so the leg announced
+     * "Watch Status": a field name where its value belongs, which reads as an instruction.
+     */
+    const markup = html(
+      <ItineraryTimeline
+        stops={[
+          {
+            id: 's1',
+            code: demoAirports.DM1.code,
+            name: demoAirports.DM1.name,
+            time: demoSegmentInbound.origin.scheduled,
+            roleLabel: stopRoles.departure,
+          },
+          {
+            id: 's2',
+            code: demoAirports.DM2.code,
+            name: demoAirports.DM2.name,
+            time: demoSegmentInbound.destination.scheduled,
+            roleLabel: stopRoles.connection,
+          },
+        ]}
+        legs={[
+          {
+            id: 'l1',
+            flightNumber: demoSegmentInbound.flightNumber,
+            airline: demoSegmentInbound.airline,
+            band: 'watch',
+          },
+        ]}
+        copy={itineraryTimelineCopy}
+      />,
+    )
+    expect(markup).not.toContain('dp-status-pill__detail')
+    expect(text(markup)).not.toContain(`${bandLabel('watch')} ${cockpit.segment.status}`)
   })
 })
 
@@ -623,9 +681,29 @@ describe('the Demo label never travels alone (AGENTS.md §1.2, trust sweep F4)',
     expect(text(markup)).toContain(results.demo)
   })
 
-  it('does not render it on a segment that is not demo data', () => {
+  /*
+   * THE TRIGGER IS FIXTURE DATA, NOT THE WORD ON THE CHIP (`docs/VOICE.md §2.1`, trust F12 / copy
+   * F-21). This case used to assert the opposite — that a `Stale` chip suppressed the sentence —
+   * and that assertion is what shipped `/flight-status/`'s stale card with no `results.demo` in
+   * it. `Stale` says a provider answered and the answer aged, which is the one impression a fixture
+   * panel must not leave; the chip has one word and spent it on freshness, so the caption is the
+   * only thing left that can speak to origin.
+   */
+  it('renders it on a fixture segment whose chip carries another word', () => {
     const markup = html(<SegmentCard segment={demoSegmentStale} copy={segmentCardCopy} />)
     expect(markup).toContain('data-provenance="stale"')
+    expect(markup).toContain('data-fixture="true"')
+    expect(text(markup)).toContain(results.demo)
+  })
+
+  it('renders neither the mark nor the sentence on a segment that is not fixture data', () => {
+    const live: Segment = {
+      ...demoSegmentStale,
+      provenance: { kind: 'live', freshness: 'Updated 2 minutes ago from Example Provider.' },
+    }
+    const markup = html(<SegmentCard segment={live} copy={segmentCardCopy} />)
+    expect(markup).toContain('data-provenance="live"')
+    expect(markup).not.toContain('data-fixture')
     expect(text(markup)).not.toContain(results.demo)
   })
 

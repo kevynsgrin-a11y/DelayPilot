@@ -36,7 +36,12 @@ import { Link } from '../primitives/Link.tsx'
 import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import { StatusPill } from '../primitives/StatusPill.tsx'
 import { Disclaimer } from './atoms.tsx'
-import { rightsStatusTone, type RightsAssessment, type RightsStatus } from './types.ts'
+import {
+  isFixtureSourced,
+  rightsStatusTone,
+  type RightsAssessment,
+  type RightsStatus,
+} from './types.ts'
 
 export interface RightsCardCopy {
   readonly heading: string
@@ -92,7 +97,11 @@ export function RightsCard({
 
   return (
     <Card as="section" aria-labelledby={headingId} className={`dpp-rights ${className ?? ''}`}>
-      <header className="dpp-rights__header">
+      {/* `data-fixture`: see `SegmentCard`. */}
+      <header
+        className="dpp-rights__header"
+        {...(isFixtureSourced(assessment.provenance) ? { 'data-fixture': 'true' } : {})}
+      >
         <Heading className="dpp-rights__title" id={headingId}>
           {copy.heading}
         </Heading>
@@ -112,7 +121,7 @@ export function RightsCard({
             ? {}
             : { freshness: assessment.provenance.freshness })}
         />
-        {assessment.provenance.kind === 'demo' && copy.demoCaption !== undefined ? (
+        {isFixtureSourced(assessment.provenance) && copy.demoCaption !== undefined ? (
           <p className="dpp-provenance__demo">{copy.demoCaption}</p>
         ) : null}
       </header>

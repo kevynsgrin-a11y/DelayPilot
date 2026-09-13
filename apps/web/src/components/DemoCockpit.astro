@@ -134,19 +134,23 @@ const stops = [
   },
 ]
 
+/*
+ * The band word is the only status these pills carry, and it arrives through
+ * `itineraryTimelineCopy.bandLabel`. They used to be handed `cockpit.segment.status` as a `detail`
+ * — the word "Status" — so the diagram announced "Watch Status" and "Disrupted Status"
+ * (`docs/ACCESSIBILITY.md` F39). The slot is gone from `ItineraryLeg`, not just from these calls.
+ */
 const legs = [
   {
     id: 'leg-101',
     flightNumber: demoSegmentInbound.flightNumber,
     airline: demoSegmentInbound.airline,
-    statusLabel: cockpit.segment.status,
     band: 'watch' as const,
   },
   {
     id: 'leg-202',
     flightNumber: demoSegmentCanceled.flightNumber,
     airline: demoSegmentCanceled.airline,
-    statusLabel: cockpit.segment.status,
     band: 'disrupted' as const,
   },
 ]

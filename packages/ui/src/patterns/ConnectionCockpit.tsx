@@ -16,8 +16,11 @@
  *    as a BUFFER ESTIMATE with that word attached. Presenting an assumed cutoff as the airline's
  *    rule is a fabricated operational fact (`AGENTS.md §1.1`).
  * 3. **No "looks feasible, therefore protected".** `topology` is rendered verbatim. A self-transfer
- *    gets the baggage / immigration / recheck explanation prominently, above the component table,
- *    and is never described as protected.
+ *    gets the baggage / recheck explanation prominently, above the component table, and is never
+ *    described as protected. ONCE, not twice: `topologyNote.self_transfer` and the separate
+ *    `selfTransferExplanation` paragraph were both `results.selfTransfer`, so `/connection-risk/`
+ *    printed the `§27` sentence back to back with itself (copy review F-23). The prop is gone and
+ *    the surviving paragraph carries the emphasis the duplicate used to supply.
  *
  * Every one of the seven `T` terms is listed even when it contributes nothing, because "we did not
  * count immigration" and "immigration does not apply here" are different statements and only one of
@@ -35,6 +38,7 @@ import { DataTable, type DataTableColumn } from '../primitives/DataTable.tsx'
 import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import { BandMeter } from './BandMeter.tsx'
 import { Disclaimer, DefinitionRow, MaybeValue, ZonedTimeView } from './atoms.tsx'
+import { isFixtureSourced } from './types.ts'
 import type {
   Band,
   ConnectionAssessment,
@@ -46,10 +50,15 @@ import type {
 export interface ConnectionCockpitCopy {
   readonly heading: string
   readonly topologyLabel: Readonly<Record<ConnectionTopology, string>>
-  /** The §27 sentence for the topology: protected / self-transfer / topology missing. */
+  /**
+   * The §27 sentence for the topology: protected / self-transfer / topology missing.
+   *
+   * On a separate-ticket topology this IS the baggage-and-rebooking explanation, and it is the only
+   * place it is said. A second `selfTransferExplanation` prop used to render the same
+   * `results.selfTransfer` string immediately below this one (copy review F-23); it was removed
+   * rather than re-worded, because two slots for one idea is how the duplicate happened.
+   */
   readonly topologyNote: Readonly<Record<ConnectionTopology, string>>
-  /** Shown above the table when the topology is `self_transfer` or `mixed_ticket`. */
-  readonly selfTransferExplanation: string
   readonly gateInLabel: string
   readonly gateCloseLabel: string
   readonly gateCloseBufferLabel: string
@@ -147,7 +156,11 @@ export function ConnectionCockpit({
 
   return (
     <Card as="section" aria-labelledby={headingId} className={`dpp-connection ${className ?? ''}`}>
-      <header className="dpp-connection__header">
+      {/* `data-fixture`: see `SegmentCard`. The chip word is freshness; this is origin. */}
+      <header
+        className="dpp-connection__header"
+        {...(isFixtureSourced(assessment.provenance) ? { 'data-fixture': 'true' } : {})}
+      >
         <Heading className="dpp-connection__title" id={headingId}>
           {copy.heading}
         </Heading>
@@ -163,16 +176,23 @@ export function ConnectionCockpit({
             ? {}
             : { freshness: assessment.provenance.freshness })}
         />
-        {assessment.provenance.kind === 'demo' && copy.demoCaption !== undefined ? (
+        {isFixtureSourced(assessment.provenance) && copy.demoCaption !== undefined ? (
           <p className="dpp-provenance__demo">{copy.demoCaption}</p>
         ) : null}
       </header>
 
-      <p className="dpp-connection__topology-note">{copy.topologyNote[assessment.topology]}</p>
-
-      {separateTickets ? (
-        <p className="dpp-connection__self-transfer">{copy.selfTransferExplanation}</p>
-      ) : null}
+      {/* One paragraph, and on a separate-ticket topology it wears the emphasis the deleted
+          duplicate used to carry: the baggage-and-rebooking warning stays prominent above the
+          component table, it is simply no longer said twice (F-23). */}
+      <p
+        className={
+          separateTickets
+            ? 'dpp-connection__topology-note dpp-connection__self-transfer'
+            : 'dpp-connection__topology-note'
+        }
+      >
+        {copy.topologyNote[assessment.topology]}
+      </p>
 
       <BandMeter
         band={assessment.band}

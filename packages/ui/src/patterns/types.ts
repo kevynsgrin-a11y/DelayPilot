@@ -59,7 +59,35 @@ export interface Provenance {
   readonly kind: InterimProvenanceKind
   /** "Updated 6 minutes ago from [source]" — composed by the caller, never by a component. */
   readonly freshness?: string
+  /**
+   * The values behind this panel came from a fixture, WHATEVER label the chip carries.
+   *
+   * `kind` answers one question — how fresh, how trustworthy — and `docs/VOICE.md §2.1` rules that
+   * the `§28` sentence turns on a different one: origin. A panel illustrating the `§17` stale state
+   * over fixture data chooses `Stale` to say the response aged, which affirmatively asserts that a
+   * provider answered; the chip can only carry one of the six words, so the caption is the only
+   * thing left that can say there was no provider at all. `/flight-status/`'s stale card shipped
+   * with no sentence anywhere in it for exactly that reason (trust F12 / copy F-21).
+   *
+   * So the flag is on the DATA, beside the kind, not on any copy prop: the fixture declares itself
+   * once and every pattern reads the same field. `isFixtureSourced` below is the only test any
+   * pattern performs; a live provenance omits the flag and nothing changes for it.
+   *
+   * Typed `true` rather than `boolean`: `fixture: false` would be a second way to spell absence.
+   */
+  readonly fixture?: true
 }
+
+/**
+ * Does this datum come from a fixture — by its chip word, or by its own declaration?
+ *
+ * The one place the `§28` caption condition is written. Seven patterns gated on
+ * `provenance.kind === 'demo'`, which is the same test spelled seven times and wrong in the one
+ * case that mattered (`docs/VOICE.md §2.1`). `Demo` still implies it, because a `Demo` chip is by
+ * definition fixture data; `fixture` adds the panels that chose another word.
+ */
+export const isFixtureSourced = (provenance: Provenance): boolean =>
+  provenance.kind === 'demo' || provenance.fixture === true
 
 /* ------------------------------------------------------------------------------------------- */
 /* Time.                                                                                        */

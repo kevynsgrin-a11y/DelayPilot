@@ -29,6 +29,8 @@ import {
   sourceLink,
 } from '../src/demo/itinerary.ts'
 import { resolveSource } from '../src/components/source-registry.ts'
+import { unavailableReasons } from '../src/lib/copy/provenance.ts'
+import { cockpit, demoAlertBody, type DemoAlertId } from '../src/lib/copy/cockpit.ts'
 import { orderActionItems } from '../../../packages/ui/src/patterns/action-order.ts'
 import type { Segment } from '../../../packages/ui/src/patterns/types.ts'
 
@@ -294,6 +296,25 @@ describe('the action checklist ordering', () => {
       orderActionItems([...demoActions].reverse()).map((item) => item.id),
     )
   })
+
+  /*
+   * copy review F-26. `ask-reason` explained its unknown deadline with `causeNotVerified`, so the
+   * card read "Deadline: The disruption cause has not been verified." beside a step whose whole
+   * purpose is to obtain that cause. WHY no deadline can be stated is the same on all three: no
+   * rule set is in force, so no limit has a source.
+   */
+  it('explains an unknown deadline by the missing rule set, not by the missing cause', () => {
+    for (const item of demoActions) {
+      if (item.deadline.known) continue
+      expect(item.deadline.reason).toBe(unavailableReasons.noRuleSetInForce.fact)
+    }
+  })
+
+  /* The checklist is one jurisdiction's, so its source links are one regulator's (F-26). */
+  it('cites the same regulator record across the US steps', () => {
+    const ids = new Set(demoActions.flatMap((item) => item.sources.map((source) => source.id)))
+    expect([...ids]).toEqual(['dot-refunds'])
+  })
 })
 
 describe('the evidence schedule', () => {
@@ -393,6 +414,65 @@ describe('the operational detail list says what its labels name', () => {
         expect(value).not.toContain('is invented')
       }
     }
+  })
+})
+
+/**
+ * `AGENTS.md §1.3` bans the legal determination in EITHER direction, and the fixture had one of the
+ * negative kind: a self-transfer assumption stating flatly that no carrier bore responsibility for
+ * the onward flight (copy review F-24; the trust sweep rated this class critical). The negative
+ * half is the one a traveler acts on by NOT acting — they read it and do not ask.
+ *
+ * The patterns below are the class, not the one sentence: a rewrite that swaps "responsible" for
+ * "liable" is the same defect. The forbidden-phrase lint does not cover them yet — a handoff is
+ * filed with `ux-copy-steward` — so this holds the fixture to them meanwhile.
+ */
+describe('no flat legal determination, in either direction', () => {
+  it('states assumptions and facts, never who is or is not responsible', () => {
+    const determinations = [
+      /\bno\s+airline\s+is\s+responsible\b/i,
+      /\bowes?\s+you\s+nothing\b/i,
+      /\bis\s+not\s+liable\b/i,
+      /\bhas\s+no\s+obligation\b/i,
+      /\bcannot\s+claim\b/i,
+    ]
+    for (const pattern of determinations) {
+      expect(ALL_TEXT).not.toMatch(pattern)
+    }
+  })
+
+  it('keeps the self-transfer assumption about the assessment, not about liability', () => {
+    const [, , third] = demoConnectionSelfTransfer.assumptions
+    expect(third).toBe(
+      'The two tickets are assessed as separate journeys, so nothing here assumes the second ' +
+        'airline will re-accommodate you.',
+    )
+  })
+})
+
+/**
+ * copy re-check F-25. Three of the five bodies were the copy module's generic severity DEFINITION,
+ * and the first contradicted its own title: "Monitoring started for this itinerary" over "A detail
+ * changed. Worth knowing, nothing to do." `DIRECTIVE.md §16` asks for what changed, what it means,
+ * and the next useful action.
+ *
+ * The assertions are structural on purpose — the wording is `ux-copy-steward`'s and is asserted in
+ * `copy.test.ts`. What belongs here is that the fixture cannot drift from it: every id is one the
+ * copy module knows, every body is the one that id names, and no two alerts share a body.
+ */
+describe('the demonstration alert bodies', () => {
+  it('uses the five alert ids the copy module keys its bodies by, in timeline order', () => {
+    expect(demoAlerts.map((event) => event.id)).toEqual(Object.keys(cockpit.alerts.demoBodies))
+  })
+
+  it('takes every body from the copy module, keyed by its own id', () => {
+    for (const event of demoAlerts) {
+      expect(event.detail).toBe(demoAlertBody(event.id as DemoAlertId))
+    }
+  })
+
+  it('gives each alert a body of its own', () => {
+    expect(new Set(demoAlerts.map((event) => event.detail)).size).toBe(demoAlerts.length)
   })
 })
 

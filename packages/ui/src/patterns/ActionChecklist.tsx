@@ -25,6 +25,7 @@ import { Link } from '../primitives/Link.tsx'
 import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import { MaybeValue, ZonedTimeView } from './atoms.tsx'
 import { orderActionItems } from './action-order.ts'
+import { isFixtureSourced } from './types.ts'
 import type { ActionItem, Provenance } from './types.ts'
 
 export interface ActionChecklistCopy {
@@ -81,13 +82,17 @@ export function ActionChecklist({
         {copy.heading}
       </Heading>
 
+      {/* `data-fixture`: see `SegmentCard`. */}
       {provenance === undefined ? null : (
-        <div className="dpp-actions__provenance">
+        <div
+          className="dpp-actions__provenance"
+          {...(isFixtureSourced(provenance) ? { 'data-fixture': 'true' } : {})}
+        >
           <ProvenanceChip
             kind={provenance.kind}
             {...(provenance.freshness === undefined ? {} : { freshness: provenance.freshness })}
           />
-          {provenance.kind === 'demo' && copy.demoCaption !== undefined ? (
+          {isFixtureSourced(provenance) && copy.demoCaption !== undefined ? (
             <p className="dpp-provenance__demo">{copy.demoCaption}</p>
           ) : null}
         </div>

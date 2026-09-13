@@ -19,6 +19,7 @@ import { ProvenanceChip } from '../primitives/ProvenanceChip.tsx'
 import { StatusPill } from '../primitives/StatusPill.tsx'
 import { severityToStatusTone, type InterimSeverity } from '../tokens/interim-contracts.ts'
 import { ZonedTimeView } from './atoms.tsx'
+import { isFixtureSourced } from './types.ts'
 import type { AlertEvent } from './types.ts'
 
 export interface AlertTimelineCopy {
@@ -48,6 +49,14 @@ export function AlertTimeline({
 }: AlertTimelineProps): JSX.Element {
   const Heading = HEADING_TAG[headingLevel]
   const headingId = `${idPrefix}-alerts-title`
+  /*
+   * The panel is fixture-backed when its EVENTS are, not when the caller remembered to pass a
+   * caption. Written this way round on purpose: the `data-fixture` mark below depends on the data
+   * and the caption on the copy, so a fixture timeline rendered without a caption emits the mark
+   * with no sentence and `apps/web/scripts/verify-dist.mjs` fails the build (`docs/VOICE.md §2.1`).
+   * A caption gated on itself would prove nothing.
+   */
+  const fixtureSourced = events.some((event) => isFixtureSourced(event.provenance))
 
   return (
     <Card as="section" aria-labelledby={headingId} className={`dpp-alerts ${className ?? ''}`}>
@@ -81,9 +90,13 @@ export function AlertTimeline({
         </ol>
       )}
 
-      {copy.demoCaption === undefined ? null : (
-        <p className="dpp-provenance__demo">{copy.demoCaption}</p>
-      )}
+      {fixtureSourced ? (
+        <div className="dpp-alerts__provenance" data-fixture="true">
+          {copy.demoCaption === undefined ? null : (
+            <p className="dpp-provenance__demo">{copy.demoCaption}</p>
+          )}
+        </div>
+      ) : null}
     </Card>
   )
 }

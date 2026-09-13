@@ -78,7 +78,7 @@ export const pages = {
       },
       weather: {
         heading: 'Weather is context, never cause',
-        body: 'Conditions near an airport describe what operations are dealing with. They do not prove that any particular disruption was outside an airline control, and DelayPilot never presents them as if they did.',
+        body: "Conditions near an airport describe what operations are dealing with. They do not prove that any particular disruption was outside an airline's control, and DelayPilot never presents them as if they did.",
       },
     },
     disclaimer: disclaimers.prediction,
@@ -102,7 +102,23 @@ export const pages = {
       },
       topology: {
         heading: 'One ticket or two',
-        body: 'On a single protected itinerary, a missed connection is the airline problem to solve, and passenger-rights rules usually treat the journey as one. On separate tickets, rebooking and baggage recovery are usually yours, and the second airline owes you nothing for the first one being late. DelayPilot asks which it is, because everything downstream depends on the answer.',
+        /**
+         * BOTH HALVES ARE HEDGED THE SAME WAY, and neither states an outcome as settled.
+         *
+         * This sentence used to close by asserting, flatly, that the second carrier had no
+         * obligation to the traveler for the first flight being late — a legal determination,
+         * sitting one clause after a properly hedged "usually yours". It runs in the direction that
+         * under-promises rather than over-promises, which is why it survived three reviews, but
+         * `AGENTS.md §1.3` bans the determination, not its direction: the affirmative form of that
+         * claim is the near-miss rule `airline-debt-asserted` (`docs/VOICE.md §4.2`), and a ban a
+         * writer can evade by negating the claim is not a ban. Whether a second carrier owes a
+         * passenger anything turns on its conditions of carriage and on local consumer law,
+         * neither of which DelayPilot reads.
+         *
+         * So both clauses now say what the rules usually do — one journey against two — which is
+         * the contrast the section is about and the only thing this page can state.
+         */
+        body: "On a single protected itinerary, a missed connection is the airline's problem to solve, and passenger-rights rules usually treat the journey as one. On separate tickets, rebooking and baggage recovery are usually yours, and those rules usually treat the two flights as two journeys. DelayPilot asks which it is, because everything downstream depends on the answer.",
       },
       noGauge: {
         heading: 'Why there is no dial',
@@ -234,10 +250,18 @@ export const pages = {
      * which anything was checked. Every record in this build has a null `lastVerifiedAt`
      * (`pages.article.notYetVerified`), which makes the distinction load-bearing rather than
      * pedantic.
+     *
+     * AND THE NOTE SAYS THAT, RATHER THAN DESCRIBING A RENDERING THAT DOES NOT EXIST. It closed
+     * with "each source carries its own verified date, or says that it has none" — read as a claim
+     * about the eight entries listed directly above it, which carry a name and a use and nothing
+     * else. A sentence that tells a reader a verification date is on the page when it is not is the
+     * same overclaim as the token it was written to correct, one paragraph further down. The
+     * re-check found it in the built page; the note now states the deployment's real position, and
+     * if a record is ever verified this sentence changes with `data/rights/sources/registry.json`.
      */
     registryVersionLabel: 'Source registry revision',
     registryVersionNote:
-      'The revision of the registry this page is built from. It is a version identifier, not a date on which a source was checked: each source carries its own verified date, or says that it has none.',
+      'The revision of the registry this page is built from. It is a version identifier, not a date on which a source was checked: no record in this build has been re-verified against its publisher, so no source here carries a verified date, and every rights card and article that cites one says so beside the citation.',
   },
 
   about: {
@@ -362,48 +386,51 @@ export const pages = {
     statusHeading: 'Conformance status',
     status: 'Partially conformant',
     /**
-     * `§13.1` row 3. The old sentence gave a reason that has since become two-thirds false — the
-     * route-level and keyboard passes HAVE been run. The word "partially" is unchanged and the
-     * reason is now the true one and the stronger one: two Level AA failures are open on routes a
-     * reader can reach today. A status whose stated reason is out of date is a status a reader
-     * cannot use.
+     * `§13.1` row 3, revised twice.
+     *
+     * The first revision replaced a reason that had gone two-thirds false. THIS one replaces a
+     * reason that went the other way: it said "two Level AA failures are open on routes you can
+     * reach right now", which was true of the tree it was written against and is not true of this
+     * one. `docs/ACCESSIBILITY.md §15.15` closed both blockers by measurement and returned GREEN.
+     * Raised as F40 by `accessibility-lead` in the same re-review.
+     *
+     * A statement that lists a failure which has been fixed is not the safe direction to be wrong
+     * in. It is the same defect as an overclaim — a factual claim about a document that the
+     * document does not support — and it costs the reader the same thing: they cannot use it. So
+     * the word "partially" stays, because it is still true for a reason this sentence now names
+     * precisely: the screen-reader pass has not happened, and the release-level sweeps are Phase 12
+     * work that has not run. Neither is a failure; both are gaps in what has been checked, and a
+     * conformance claim rests on what was checked.
      */
     statusBody:
-      'Partially conformant means parts of this site do not yet conform. Two Level AA failures are open on routes you can reach right now, and they are listed below with everything else that is outstanding. The route-level and keyboard passes have been run; the screen-reader passes have not.',
+      'Partially conformant means parts of this site do not yet conform. No Level AA failure is open on any route you can reach today: the two that were are fixed, and the fix was confirmed by measuring the pages again rather than by accepting the report. What is still outstanding is a pass with a real screen reader, and the release-level checks that run before launch. Everything else the most recent review left open is listed below.',
     noClaim:
       'This statement does not say that DelayPilot is accessible, or that it meets every standard. An audit that has not been run cannot support that claim, and a statement you cannot rely on is worse than no statement.',
 
     knownIssuesHeading: 'Known issues',
     /**
-     * `§13.1` rows 8, 9 and 10. The list was four entries and two of them had stopped being true:
-     * the sharing-image finding is closed, and the dialog finding is not true of anything a reader
-     * of this site can open. Sixteen findings from the most recent review were missing.
+     * `§13.1` rows 8, 9 and 10, revised twice, and the second revision is the interesting one.
      *
-     * A known-issues list that is shorter than the review it claims to summarize is the failure
-     * `§13` item 3 names outright — "no issue may be omitted because it is embarrassing" — and it
-     * fails a reader in the one direction that matters, because they are reading it to decide
-     * whether to trust the thing they just hit.
+     * The first pass grew this list from four entries to eighteen, because a known-issues list
+     * shorter than the review it summarizes is the failure `§13` item 3 names outright — "no issue
+     * may be omitted because it is embarrassing".
+     *
+     * The re-review (`docs/ACCESSIBILITY.md §15.15`) closed thirteen of those, and the list did not
+     * shrink with them. Eighteen entries naming two blockers and eleven closed findings is the SAME
+     * defect as four entries naming none of them: in both cases the page states something about the
+     * review that the review does not say. Understating the product is not the safe error — a
+     * reader who checks this page against what they just experienced, and finds it describing
+     * problems that are not there, stops believing the entries that are. F40.
+     *
+     * SIX ENTRIES, and each is in `§15.15`'s own words: two are open by decision or by scope (F15,
+     * F23), one is re-owned to the editor (F31's caption), three are new in the re-review (F39,
+     * F41, F42). None is a Level AA failure. F17 is not listed because it is not reproducible on
+     * this build, and a known-issues list is for what is open, not for what was once suspected.
      */
     knownIssuesIntro:
-      'Everything still open from the most recent review, including the two failures that stop this site claiming more than it does. Each entry says what it affects, which rule it engages, and when it is expected to be fixed. Nothing has been left out for being awkward.',
+      'Everything the most recent review left open. None of these is a Level AA failure: two are held open by a decision recorded in the review, one waits on an editor, and three were found in the re-check. Each entry says what it affects, which rule it engages, and when it is expected to be fixed. Nothing has been left out for being awkward.',
     /** Digits: finding ids and success-criterion numbers. Identifiers, not measurements. */
     knownIssues: [
-      {
-        id: 'B8',
-        affected: 'The homepage and the connection-risk page, at the narrowest supported width',
-        criterion: 'SC 1.4.10 Reflow',
-        description:
-          'Both pages need sideways scrolling at the narrowest width the rule covers, because a minimum width inside the cockpit panels stops them narrowing far enough. Nothing is unreachable, but you have to scroll across to read it, and the same thing happens on a phone when text spacing is increased.',
-        expected: 'Being fixed now. This statement does not publish while it is open.',
-      },
-      {
-        id: 'B9',
-        affected: 'The band meter on the delay-risk page',
-        criterion: 'SC 2.4.6 Headings and Labels, SC 1.3.1 Info and Relationships',
-        description:
-          'The meter that shows the risk band carried the name of a different measurement, so a screen reader announced it as a connection transfer time. There is no connection on that page. A sighted reader saw an unnamed scale, so the two were told different things.',
-        expected: 'Being fixed now. This statement does not publish while it is open.',
-      },
       {
         id: 'F15',
         affected: 'Dialog and drawer components that no page uses yet',
@@ -421,116 +448,36 @@ export const pages = {
         expected: 'With the theme definitions in the current release.',
       },
       {
-        id: 'F25',
-        affected: 'Two panels on the homepage cockpit',
-        criterion: 'SC 1.3.1 Info and Relationships',
-        description:
-          'The weather-and-airspace panel and the Trip Pass panel render their titles as ordinary paragraphs rather than headings, so moving through the page heading by heading skips exactly the two panels that say something is unavailable.',
-        expected: 'With the callout work in the current release.',
-      },
-      {
-        id: 'F26',
-        affected: 'The connection-risk page',
-        criterion: 'Landmark uniqueness, SC 1.3.1 Info and Relationships',
-        description:
-          'The page shows three connection examples. Each is a region with the same name, and each contains a table region with the same name, so a landmark list offers six entries under two names and nothing tells the examples apart.',
-        expected: 'With the connection-risk work in the current release.',
-      },
-      {
-        id: 'F27',
-        affected: 'The risk-band meter on the homepage',
-        criterion: 'Accessible name quality',
-        description:
-          'The meter is named for the reading it gives, so it announces the same phrase twice in one breath before it gets to the band.',
-        expected: 'With the meter labels in the current release.',
-      },
-      {
-        id: 'F28',
-        affected: 'The loading example on the flight-status page',
-        criterion: 'SC 4.1.2 Name, Role, Value',
-        description:
-          'That page illustrates the loading state with a real loading block, so it permanently tells assistive technology that a region is busy when nothing is loading. Some software defers or skips a busy region.',
-        expected: 'With the flight-status examples in the current release.',
-      },
-      {
-        id: 'F29',
-        affected: 'Status pills on segment cards',
-        criterion: 'Accessible name quality',
-        description:
-          'Each status pill reads out the word "Status" after the status itself, because the name of the field was passed where a detail about the value belongs.',
-        expected: 'With the segment card in the current release.',
-      },
-      {
-        id: 'F30',
-        affected: 'The operational detail on the demonstration segments',
-        criterion: 'SC 1.3.1 Info and Relationships',
-        description:
-          'In that list the label "Status" is paired with the demonstration caption on one segment and with a real status sentence on another, so one label means two different things on one page.',
-        expected: 'With the demonstration fixture in the current release.',
-      },
-      {
         id: 'F31',
-        affected: 'The rights table on the passenger-rights page',
-        criterion: 'SC 1.3.1 Info and Relationships, SC 1.4.10 Reflow',
+        affected: 'The two tables inside articles',
+        criterion: 'Table caption quality, no success criterion is failing today',
         description:
-          'The table has no caption, its row headers are not marked as headers, and it has no scrollable container, so it forces sideways scrolling at the narrowest width and cannot be scrolled with a keyboard.',
-        expected: 'With the article table work in the current release.',
+          'Each table now scrolls inside its own named, keyboard-reachable box, its column headers are marked as headers, and its first column is marked as a row header. Neither has a caption of its own, so the name a screen reader reads out for the box is borrowed from the heading above it.',
+        expected: 'When the editor writes a caption for each table.',
       },
       {
-        id: 'F32',
-        affected: 'The error summary on the flight lookup',
-        criterion: 'SC 2.4.3 Focus Order, SC 4.1.2 Name, Role, Value',
+        id: 'F39',
+        affected: 'The route diagram on the homepage',
+        criterion: 'Accessible name quality',
         description:
-          'Focus moves to the summary correctly and its outline is drawn, but the summary itself has no role and no name, so what gets announced when you land on it is left to the browser rather than stated.',
-        expected: 'With the lookup form in the current release.',
+          'Each leg of the route shows its status and then the word "Status" after it, because the name of the field was passed where a detail about the value belongs. It is visible as well as announced, and on the first leg it reads as an instruction rather than a status.',
+        expected: 'With the route diagram in the current release.',
       },
       {
-        id: 'F33',
-        affected: 'The skip link and the main landmark',
-        criterion: 'SC 2.4.1 Bypass Blocks',
+        id: 'F41',
+        affected: 'The feedback address on this page and on the contact page',
+        criterion: 'Target size, no success criterion is failing today',
         description:
-          'The main landmark cannot take focus itself. The skip link was measured working in the browser used for this review; without that attribute, some browser and screen-reader pairs handle it less well.',
-        expected: 'With the layout work in the current release.',
+          'The address is a plain link rather than a button-sized target, so it is smaller than every other control on the site. It meets the rule through the spacing allowance, and that was measured. It is still the smallest thing to hit on the page a person reaches after hitting a barrier.',
+        expected: 'With the contact routes in the current release.',
       },
       {
-        id: 'F34',
-        affected: 'Informational callouts and toasts',
-        criterion: 'Non-color cue integrity',
+        id: 'F42',
+        affected: 'Every loading state in the product',
+        criterion: 'Announcement quality',
         description:
-          'An informational notice wears the same glyph as the unknown state, whose meaning on this site is specifically that fresh information is missing. A neutral glyph now exists and is not yet used.',
-        expected: 'With the icon work in the current release.',
-      },
-      {
-        id: 'F35',
-        affected: 'The homepage hero on wide screens',
-        criterion: 'Decoration rule, no success criterion is failing today',
-        description:
-          'A decorative background layer reaches behind the end of one line of the hero text. Both themes stay above the contrast floor, but the measured pair moves, and the rule here is that decoration never changes a measured pair.',
-        expected: 'With the hero layout in the current release.',
-      },
-      {
-        id: 'F36',
-        affected: 'This statement',
-        criterion: 'Statement contract',
-        description:
-          'This page has been rewritten against the most recent review and is waiting for the accessibility lead to check it again. A statement about conformance is a factual claim about the review, so it does not publish on the say-so of whoever wrote it.',
-        expected: 'Before this page is published.',
-      },
-      {
-        id: 'F37',
-        affected: 'The feedback section on this page',
-        criterion: 'Statement contract',
-        description:
-          'The section pointed at the address as being below a sentence that renders above it, and it did not say how long a reply takes. The wording is fixed; the order of the two is being fixed with it.',
-        expected: 'Before this page is published.',
-      },
-      {
-        id: 'F38',
-        affected: 'The inlined route illustration',
-        criterion: 'Markup hygiene',
-        description:
-          'The illustration emits two attributes twice, because the source file already carries what the inliner adds. Nothing is wrong for a reader today; a duplicate attribute is a parse error that a stricter validator will report as one.',
-        expected: 'With the asset pipeline in the current release.',
+          'A loading block shows its message and also hands the same sentence to the placeholder bones beside it, so a screen reader reads the sentence twice in a row. Nothing is missing; one thing is said once too often.',
+        expected: 'With the loading block in the current release.',
       },
     ],
 

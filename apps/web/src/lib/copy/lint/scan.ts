@@ -36,7 +36,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
-import { forbiddenPhrases, phraseText, type ForbiddenPhrase } from './forbidden-phrases.ts'
+import { forbiddenPhrases, GAP, phraseText, type ForbiddenPhrase } from './forbidden-phrases.ts'
 
 export interface Hit {
   /** Repository-relative, POSIX separators. */
@@ -306,10 +306,28 @@ const tokenPattern = (token: string): string =>
 
 const patternCache = new Map<string, RegExp>()
 
+/**
+ * An elastic join: up to two inserted words, each followed by the single space the normalizer
+ * leaves behind. Bounded at two, so the pattern cannot backtrack, and built only from word
+ * characters and single spaces, so it cannot cross a comma, a colon, a bracket or a quotation
+ * mark — none of which the normalizer folds away (`forbidden-phrases.ts`, `GAP`).
+ */
+const ELASTIC_JOIN = "(?:[a-z0-9']+ ){0,2}"
+
 function patternFor(phrase: ForbiddenPhrase): RegExp {
   const cached = patternCache.get(phrase.id)
   if (cached !== undefined) return cached
-  const body = phrase.tokens.map(tokenPattern).join(' ')
+  let body = ''
+  let elastic = false
+  for (const token of phrase.tokens) {
+    if (token === GAP) {
+      elastic = true
+      continue
+    }
+    if (body !== '') body += elastic ? ` ${ELASTIC_JOIN}` : ' '
+    body += tokenPattern(token)
+    elastic = false
+  }
   const built = new RegExp(`(?<![a-z0-9])${body}(?![a-z0-9])`, 'g')
   patternCache.set(phrase.id, built)
   return built

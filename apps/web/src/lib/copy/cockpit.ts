@@ -327,6 +327,60 @@ export const cockpit = {
         'A cancellation, a diversion, a likely missed connection, a major schedule change, or a step with a deadline.',
       resolved: 'The situation the earlier alerts described has ended.',
     },
+    /**
+     * The body of each alert in the `§28` demonstration timeline, keyed by the fixture's alert id.
+     *
+     * WHY THESE EXIST. `apps/web/src/demo/itinerary.ts` was passing `severityMeanings` as the body
+     * of three of the five alerts, so a specific event was explained by the generic definition of
+     * its rung — and the first one contradicted its own title outright: "Monitoring started for
+     * this itinerary" followed by "A detail changed. Worth knowing, nothing to do." `DIRECTIVE.md
+     * §16` requires a message to carry what changed, what it means, and the next useful action. A
+     * definition of a severity carries none of those. Raised as copy F-25 in the S3 re-check.
+     *
+     * AND `severityMeanings` IS LEFT WITH NO CALLER, WHICH IS A SECOND DEFECT, NOT A SIDE EFFECT.
+     * The alert-ladder explainer on the homepage — the one surface where "what does this rung mean"
+     * is the real question — does not use it: it renders `home.monitoring.severities[]`, which says
+     * the same four things in different words. Two wordings of one concept is a rule expressed in
+     * two places (`AGENTS.md §3.2`), and the copy that is one edit from disagreeing with itself is
+     * the copy that eventually does. Once `apps/web/src/demo/itinerary.ts` consumes `demoBodies`,
+     * `severityMeanings` has no call site at all and must be DELETED in the same change — an
+     * exported string with a plausible name and no caller is exactly how the generic definition got
+     * used as an alert body in the first place (`docs/VOICE.md §9.3`). It survives this commit only
+     * because deleting it here would break the fixture before the fixture is rewired.
+     *
+     * KEYED BY ALERT ID, NOT ORDERED. An ordered tuple re-pairs every title with the wrong body the
+     * first time somebody inserts an alert or reorders the timeline, silently, and a mismatched
+     * title and body is the exact defect this export was written to fix. An id that no longer
+     * exists is a type error; an id that is missing is a type error. Neither is a wrong sentence
+     * under a right heading.
+     *
+     * WHAT THEY MAY SAY. Only what is in the fixture. No figure of any kind — the minutes, the
+     * band, and the flight identifiers are already on the panels, carrying their provenance, and a
+     * number repeated in an alert body is a number that can disagree with the one it came from. No
+     * urgency beyond the rung: the `urgent` body is directive because the event is a confirmed
+     * cancellation with an irreversible decision attached, not because an adjective was available.
+     */
+    demoBodies: {
+      /** `info` — monitoring started. Nothing has happened yet, and the body must not pretend one has. */
+      'alert-monitoring':
+        'Both flights are now being watched, and so is the transfer between them. Nothing needs doing yet. This is the start of the record that every later change is measured against.',
+
+      /** `watch` — the inbound estimate moved later. */
+      'alert-inbound-delay':
+        'The estimate moved; the schedule did not. A later departure leaves less room for the transfer at the connecting airport. Open the connection panel to see which part of the transfer is tight.',
+
+      /** `watch` — slack narrowed toward the required transfer time. */
+      'alert-connection-watch':
+        'Slack is what is left once the transfer takes the time it needs, and there is less of it than before. The connection still works as scheduled. Read the transfer components to see which step to plan around.',
+
+      /** `urgent` — the onward flight is cancelled. Directive, and no further than the facts go. */
+      'alert-cancellation':
+        'The onward flight is off, so this itinerary no longer completes as booked. What you accept next can close an option you still have. Work the action checklist before you accept anything.',
+
+      /** `info` — the rights estimate was regenerated. Never upgrades a status. */
+      'alert-rights':
+        'The cancellation changed the facts, so the rights card was read again against the rule version shown on it. What may apply moves as facts arrive. Open the card to see what is still missing.',
+    },
     quietHours: {
       label: 'Quiet hours',
       body: 'Inside quiet hours, info and watch alerts wait until they end. Urgent alerts are sent through only if you have allowed them to.',
@@ -390,6 +444,20 @@ export const cockpit = {
     rights: 'A fact this rule turns on is missing, so no status can be reached for it yet.',
   },
 } as const
+
+/**
+ * The ids of the `§28` demonstration alerts, derived from the copy rather than restated.
+ *
+ * `apps/web/src/demo/itinerary.ts` types its `demoAlerts` entries against this, so the fixture and
+ * the bodies cannot drift apart: an id with no body, or a body with no alert, is a type error at
+ * the call site rather than a wrong sentence under a right heading in the built page.
+ */
+export type DemoAlertId = keyof typeof cockpit.alerts.demoBodies
+
+/** The body for one demonstration alert. Never `severityMeanings` (copy F-25). */
+export function demoAlertBody(id: DemoAlertId): string {
+  return cockpit.alerts.demoBodies[id]
+}
 
 /**
  * Which reservation structure a connection cockpit is showing. The copy module's own three cases —

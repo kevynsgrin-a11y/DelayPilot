@@ -55,3 +55,32 @@ Enter an airline, a flight number, and a date. Nothing printed on your ticket is
 DelayPilot shows the connection decomposition — available time, required transfer time, and the
 slack between them — with every component labeled by how it was derived. See issue #12 and section
 #3 of the methodology; a hex colour such as #1a2b3c is not a claim either.
+
+## 11. The same six situations, written the way DelayPilot writes them
+
+The mirror of section 11 opposite. Each of these contains the house adjective, the noun, or the verb
+that the elastic joins now reach across — and none of them makes the claim, so none may fire. A rule
+that flags this page is a rule somebody switches off inside a week.
+
+Flight information can change quickly. Confirm critical details with the operating airline and
+airport.
+
+The operating airline is the one whose aircraft you board. Name or code.
+
+On separate tickets, rebooking and baggage recovery are usually yours, and those rules usually treat
+the two flights as two journeys.
+
+Whether compensation may apply turns on the reason the airline gives in writing, and on the rule
+version shown.
+
+This connection is tight: walking, security, immigration, baggage, gate-close rules, and airline
+assistance can change the outcome.
+
+The flight was canceled by the airline and no replacement has been accepted, which is the situation
+a refund rule is written for.
+
+## 12. The hedge that must survive
+
+We cannot promise that the gate will not change, and we cannot say what the airline will decide.
+That is why the one bare-promise rule takes no elastic join: the honest sentence and the banned one
+differ by a single word, and only the reader can tell them apart.

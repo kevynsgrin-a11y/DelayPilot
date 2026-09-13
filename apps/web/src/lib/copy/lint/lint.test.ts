@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import { forbiddenPhrases } from './forbidden-phrases.ts'
+import { forbiddenPhrases, GAP } from './forbidden-phrases.ts'
 import {
   allowlist,
   isAllowlisted,
@@ -148,6 +148,82 @@ describe('the clean fixture', () => {
   })
 })
 
+/**
+ * `trust-compliance-officer` trust F9. One word inserted at a join defeated five of the eight §1.3
+ * rules — and the word that defeated two of them is this product's own house adjective for a
+ * carrier, fixed in the `§26` flight-data disclaimer, so the most likely spelling of the banned
+ * claim was the one the rule could not see.
+ *
+ * THE PROBES LIVE IN THE FIXTURE, NOT HERE. This file may not spell a banned literal (see its
+ * header), so the regression is pinned by LOCATION: the two sections added to the violating fixture
+ * hold one claim per line, and this asserts that every one of those lines fires, with the rule it
+ * must fire. Adding a probe line to the fixture without the rule to catch it fails the count.
+ */
+describe('a modifier at a join does not defeat a rule', () => {
+  const source = read(VIOLATING)
+  const hits = scanText(source, { file: VIOLATING })
+  const lines = source.split('\n')
+
+  /** The line numbers a section spans, from its heading to the next one. 1-based, inclusive. */
+  const sectionRange = (headingContains: string): readonly [number, number] => {
+    const start = lines.findIndex(
+      (line) => line.startsWith('## ') && line.includes(headingContains),
+    )
+    expect(start, `fixture section not found: ${headingContains}`).toBeGreaterThan(-1)
+    const after = lines.findIndex((line, index) => index > start && line.startsWith('## '))
+    return [start + 1, after === -1 ? lines.length : after]
+  }
+
+  const inSection = (headingContains: string): readonly Hit[] => {
+    const [from, to] = sectionRange(headingContains)
+    return hits.filter((hit) => hit.line >= from && hit.line <= to)
+  }
+
+  it('catches the six probes, one per line, with the rule each one defeated', () => {
+    const found = inSection('One word inserted')
+    expect(idsIn(found)).toEqual(
+      new Set([
+        'airline-debt-asserted',
+        'airline-obligation-to-pay',
+        'connection-guarantee',
+        'fault-asserted',
+        'predicted-cancellation-double-l',
+      ]),
+    )
+    // Six claim lines, six distinct lines with hits. A seventh probe with no rule fails here.
+    expect(new Set(found.map((hit) => hit.line)).size).toBe(6)
+  })
+
+  it('catches the sentence that actually shipped, on the first claim line of that section', () => {
+    // trust F8 / copy F-16: the `/connection-risk/` topology paragraph. It is the first line after
+    // the section's explanatory paragraph, and it is in the fixture so the regression is mechanical
+    // rather than remembered.
+    const found = inSection('One word inserted')
+    const firstClaimLine = Math.min(...found.map((hit) => hit.line))
+    expect(idsIn(found.filter((hit) => hit.line === firstClaimLine))).toContain(
+      'airline-debt-asserted',
+    )
+  })
+
+  it('catches the same claims negated, because a negation is the same determination', () => {
+    const found = inSection('The same claim, negated')
+    expect(idsIn(found)).toEqual(
+      new Set(['owed-as-settled', 'airline-debt-asserted', 'predicted-cancellation-double-l']),
+    )
+    expect(new Set(found.map((hit) => hit.line)).size).toBe(3)
+  })
+
+  it('stays quiet on the honest sentences that contain the same words', () => {
+    // The mirror sections of the clean fixture: the §26 disclaimer, the house adjective in a field
+    // hint, the hedged topology paragraph, and the bare-promise hedge the rigid rule protects.
+    // Covered by the clean-fixture test above; this names why those passages are there.
+    const clean = read(CLEAN)
+    expect(clean).toContain('## 11.')
+    expect(clean).toContain('## 12.')
+    expect(scanText(clean, { file: CLEAN })).toEqual([])
+  })
+})
+
 describe('the allowlist', () => {
   it('has exactly four entries, and they are the files that define the ban', () => {
     expect(allowlist.map((entry) => entry.path)).toEqual([
@@ -214,6 +290,32 @@ describe('phrase definitions', () => {
   it('uses unique ids', () => {
     const ids = forbiddenPhrases.map((phrase) => phrase.id)
     expect(new Set(ids).size).toBe(ids.length)
+  })
+
+  it('places every elastic join between two real tokens', () => {
+    // A `GAP` marks the join BEFORE the next token. First, last, or doubled, it marks nothing and
+    // `patternFor` would silently drop it — a rule that looks widened and is not.
+    for (const phrase of forbiddenPhrases) {
+      expect(phrase.tokens[0], `${phrase.id} opens with a gap`).not.toBe(GAP)
+      expect(phrase.tokens.at(-1), `${phrase.id} ends with a gap`).not.toBe(GAP)
+      phrase.tokens.forEach((token, index) => {
+        if (index === 0) return
+        expect(
+          token === GAP && phrase.tokens[index - 1] === GAP,
+          `${phrase.id} has two gaps in a row`,
+        ).toBe(false)
+      })
+      expect(phrase.tokens.filter((token) => token !== GAP).length).toBeGreaterThan(0)
+    }
+  })
+
+  it('leaves the bare-promise rule rigid, on purpose', () => {
+    // The one rule whose negated form is a sentence DelayPilot SHOULD write: the honest hedge that
+    // an outcome cannot be promised. An elastic join here would flag correct copy, and a rule that
+    // flags correct copy gets switched off. Recorded in `forbidden-phrases.ts` beside the rule.
+    const rigid = forbiddenPhrases.find((phrase) => phrase.id === 'bare-guarantee')
+    expect(rigid).toBeDefined()
+    expect(rigid?.tokens).not.toContain(GAP)
   })
 
   it('covers the AGENTS.md §1.3 list and the charter near-misses', () => {

@@ -102,6 +102,54 @@ The wallpaper concern is real and is answered by **placement and weight** — a 
 the chip it belongs to, not a stack of banners — never by omission. A sentence a reader can skim
 past costs nothing; a sentence that is not there costs them the assumption that the number is real.
 
+### 2.1 The trigger is fixture data, not the word on the chip — ruling, 2026-09-12
+
+Raised by the S3 copy re-check, on the built `/flight-status/`. Three of the four segment cards there
+carry a `Demo` chip and the sentence. The fourth illustrates the `§17` stale state: the same fixture
+segment, over "Demonstration fixture", with a **`Stale`** chip reading "Updated 96 minutes ago from
+Demonstration fixture." and no `results.demo` anywhere in its panel. Asked whether the rule above
+reaches it, or whether a `§17` state illustration with a synthetic identifier falls outside it:
+
+> **Ruling: it reaches it. The sentence is required on every panel that displays a demo operational
+> value, whatever provenance label that panel's chip carries.**
+
+Four reasons, in the order they settle it:
+
+1. **The rule above already says so, in its own words** — "every panel that displays a demo
+   operational value". It says value, not chip. The stale card displays a scheduled time, an
+   estimated time and a delay figure, all of them fixture values.
+2. **`DIRECTIVE.md §28` enumerates this exact panel as a demo panel.** The demonstration itinerary
+   must cover "a stale-provider state" and "a partial-data state", and the same paragraph then says
+   "Every demo panel says 'Demo data — not a live flight.'" A panel the directive lists among the
+   demo panels cannot be outside the sentence the directive requires of demo panels.
+3. **The label and the sentence answer different questions, so one cannot stand in for the other.**
+   `Stale` is a statement about freshness — how old the response is. `results.demo` is a statement
+   about origin — that there was no response, because there is no provider. A chip can only carry
+   one of the six words (`AGENTS.md §1.2`, and inventing a seventh or a compound is forbidden), so
+   the panel that chooses `Stale` to illustrate freshness has said nothing about origin, and the
+   caption is the only thing left that can.
+4. **This is the failure the withdrawn exemption was withdrawn for, made worse.** A bare `Demo` chip
+   at least contains the word "demo". `Stale` affirmatively asserts that a provider answered and the
+   answer aged — which is the one impression the panel must not leave. "Demonstration fixture" in the
+   source row is real mitigation and it is not enough: it asks a tired reader to already know that
+   the word is a fixture name rather than a provider name.
+
+**The synthetic identifier does not discharge it either.** `§28` offers "clearly synthetic
+identifiers **or** an explicit 'Demonstration itinerary' banner" — that clause governs how the
+itinerary is identified. The per-panel sentence is a separate, unconditional requirement in the same
+paragraph, and reading the "or" across it collapses two requirements into one.
+
+**The mechanical guard cannot see this case**, and that is worth stating so nobody reads a green
+build as a cleared surface. `apps/web/scripts/verify-dist.mjs` keys its check on
+`[data-provenance="demo"]`, so a fixture panel that chooses any other chip passes it silently. The
+check that would close the gap is a fixture-side one — a panel whose freshness names a demonstration
+source must carry the sentence — and it belongs to the script's owner, not to this file.
+
+**The trust re-check reached the same ruling independently**, reading `DIRECTIVE.md §28` rather than
+this section, and the orchestrator adopts the two together as the resolution: the stale card must
+carry the sentence, and the guard must key on whether a panel is fixture-sourced rather than on which
+word its chip happens to show. Two reviewers, two routes to the same answer, one rule.
+
 ---
 
 ## 3. Legal vocabulary
@@ -267,6 +315,14 @@ every exported string and fails on a digit.
 | `pages.accessibility.knownIssues[].id`        | `F15`, `F22`, `F23`, `F24`                  | Finding identifiers                            |
 | `pages.accessibility.knownIssues[].criterion` | success-criterion numbers                   | Identifiers of published criteria              |
 | `pages.accessibility.environments[].version`  | tool versions                               | Required by `§13` item 4                       |
+| `demo.flightNumberOnly`                       | the number part of `DEMO 101`               | The same identifier, with the designator cut   |
+
+The last row is the S3 re-check's, and it is a derivation rather than a seventh literal.
+`lookup.fields.flightNumber.example` showed the whole identifier under a field whose help reads
+"Digits only. The airline code belongs in the field above" and whose input is `pattern="[0-9]{1,4}"`
+— so the example modelled the one entry the field rejects, for the reader who is looking at an
+example precisely because they were unsure. `demo.flightNumberOnly` strips the designator from
+`demo.flights.first` at module load; nothing is typed twice and `copy.test.ts` pins the two together.
 
 **No percentage, anywhere, in any channel** while no calibrated model is deployed — including the
 accessible name of a meter, where a screen reader would otherwise compute one
@@ -301,6 +357,7 @@ Case-insensitive, whitespace-normalized, and tolerant of:
 | camelCase identifiers  | `guaranteedConnection`                    |
 | escape sequences       | `'Your flight will\nbe canceled'`         |
 | capitals               | `LEGALLY ENTITLED`                        |
+| an inserted modifier   | `the second airline owes you` (§7.1.1)    |
 
 **One character is not folded: `#` immediately before a digit.** It is a separator everywhere else,
 so markdown headings, blockquote markers and bullets still never break a phrase — but folding it
@@ -312,6 +369,51 @@ all four cases.
 
 Matching is anchored on non-alphanumeric boundaries, so `bestseller` and
 `unguaranteedcompensational` are not hits.
+
+#### 7.1.1 Elastic joins — one inserted word used to defeat five rules
+
+`trust-compliance-officer` trust F9, S3 re-check. The rules were exact token sequences, so a single
+modifier dropped into the middle of one silenced it. Five of the eight `§1.3` rules failed the probe:
+`airline-debt-asserted`, `airline-obligation-to-pay`, `connection-guarantee`, `fault-asserted`, and
+both `predicted-cancellation` spellings. **The word that defeated two of them is this product's own
+house adjective for a carrier**, fixed in the `§26` flight-data disclaimer and rendered on three
+surfaces — so the single most likely way for a real author to write the banned claim was the one
+spelling the rule could not see. A ban a modifier defeats is a ban on one sentence, not on a claim.
+
+> **Rule: a `GAP` marker in a token array makes the join before the next token elastic — up to two
+> inserted words are tolerated there.**
+
+Fourteen rules now carry at least one. Two structural changes went with it:
+
+- **`airline-debt-asserted` and `airline-obligation-to-pay` lost their leading article.** Anchoring
+  on the noun rather than on the determiner catches every determiner and every modifier in front of
+  it at once, which is strictly stronger than bounding a gap after a word that need not be there.
+- **A negation is not an escape.** Settling the question in the traveler's disfavour is the same
+  determination as settling it in their favour, and a prediction of non-cancellation is the same
+  fabricated prediction. Those forms fire, and the fixture asserts that they do.
+
+**Two words, and it cannot cross a clause.** Two covers an article, an adjective, an adverb or a pair
+of adjectives. It stays inside one clause by construction, not by hope: the normalizer folds hyphens,
+underscores, slashes and markdown markers to spaces but leaves a comma, a colon, a semicolon, a
+bracket and a quotation mark alone, and an elastic join matches only word characters and single
+spaces — so it stops at the first punctuation mark.
+
+**One rule is deliberately left rigid: `bare-guarantee`.** Its negated form is a sentence DelayPilot
+_should_ write — the honest hedge that an outcome cannot be promised — and an elastic join would fire
+on it. That was the test every other gap had to pass: does the modified or negated form read as
+something this product would honestly say? Where the answer is yes, the rule stays exact. A rule that
+flags correct copy is a rule somebody switches off inside a week, and that is a worse outcome than
+the evasion it was meant to catch.
+
+The six probes, the sentence that actually shipped (trust F8 / copy F-16), and the three negated
+forms are sections 11 and 12 of `lint/fixtures/violating/`. Their honest counterparts — including the
+`§26` disclaimer, the house adjective in a field hint and the bare-promise hedge — are sections 11 and
+12 of `lint/fixtures/clean/`, which must stay at zero. `lint.test.ts` pins the regression by location:
+one claim per line, and a probe added without a rule to catch it fails the line count.
+
+Repo-wide after the widening: `256 files scanned, 0 hit(s) in 0 file(s)`. No legitimate negation
+anywhere in the tree fires, and **no allowlist entry was added** — the allowlist is still the same
+four.
 
 ### 7.2 Scope
 
@@ -428,8 +530,21 @@ no affiliate module ships in this release.
 In this release the surfaces are: the homepage source section and lookup (flight data), the
 delay-risk explainer and the demo assessment block (prediction), the connection cockpit and the
 connection-risk explainer (connection), the rights explainer and every rights card (rights), the
-footer on every page (independence). No affiliate module ships — there is no agreement — so the two
-affiliate strings exist as constants and render nowhere.
+footer on every page (independence).
+
+No affiliate module ships — there is no agreement — so neither affiliate string qualifies a result
+anywhere. Both nonetheless **render**, on `/affiliate-disclosure/`, where the policy quotes them as
+the text a partner link will carry if one ever exists. That is the page publishing its own
+commitment, not a disclosure doing its job beside a link, and it is why both are imported there
+rather than transcribed (§12.1). The re-check corrected this paragraph, which had said they render
+nowhere.
+
+The four `role="note"` names above are the `§26` notes, and they are not the only notes on a page:
+`/flight-status/` and the homepage also mark `cockpit.segment.confidenceNote` as a `role="note"`
+beside each segment-card group, unnamed. That is not the F27 defect — the note opens with the noun
+it is about ("Confidence describes this answer, not the flight…"), so it names itself in its first
+three words, which is the thing "This is an estimate…" cannot do. A note whose own opening does not
+name what it qualifies takes a name from `disclaimers.labels`; one that does, does not need two.
 
 ---
 
@@ -580,11 +695,17 @@ least able to check it against the picture.
 `null` branch is worded identically to `requiredOfAvailableText(null, null)`, so the meter and the
 row beneath it name the same missing fact the same way; `copy.test.ts` asserts that identity.
 
-`minutesText(minutes)` is the duration phrase — **the only place in the repository where the words
-"minute" and "minutes" are written.** It replaces the `minutesWord` helper that
-`apps/web/src/components/pattern-copy.ts` was authoring: an adapter may compose copy exports, it may
-not write them (§12). A negative arriving there is a mis-routed signed value rather than a duration,
-so it renders "minus 18 minutes" — still speakable, still no glyph — as a floor, not a feature.
+`minutesText(minutes)` is the duration phrase. **`bands.ts` is the only file in the repository where
+the words "minute" and "minutes" are written**, and inside it they are written once, in the private
+`minutesPhrase` helper that `minutesText`, `slackMinutesText` and `delayValueText` all render
+through — so the pluralization rule has one implementation and the three readings cannot drift
+apart. (An earlier revision of this line credited `minutesText` with being the sole site; the
+re-check corrected it. The invariant is one module and one helper, not one exported function.)
+
+`minutesText` replaced the `minutesWord` helper that `apps/web/src/components/pattern-copy.ts` was
+authoring: an adapter may compose copy exports, it may not write them (§12). A negative arriving
+there is a mis-routed signed value rather than a duration, so it renders "minus 18 minutes" — still
+speakable, still no glyph — as a floor, not a feature.
 
 ### 9.5 A repeated surface is told apart by the fact that distinguishes it
 
@@ -632,6 +753,22 @@ closing. Never panicked, at any rung.
 
 **Every message carries:** the flight number and date · what changed · source freshness · the next
 useful action · a deep link · the uncertainty where it matters.
+
+**A severity definition is not a message body.** `cockpit.alerts.severityMeanings` answers "what does
+this rung mean" and belongs on the alert-ladder explainer. The `§28` demonstration timeline was using
+it as the body of three of its five alerts, so a specific event was explained by the generic
+definition of its rung — and the first one contradicted its own title outright, pairing "Monitoring
+started for this itinerary" with a sentence saying a detail had changed and there was nothing to do
+(copy F-25). The bodies are `cockpit.alerts.demoBodies`, **keyed by alert id, never ordered**: an
+ordered tuple re-pairs every title with the wrong body the first time somebody inserts an alert, in
+silence, and a mismatched title and body is the defect the export exists to fix. An id is a type
+error when it is wrong; a position is not.
+
+That leaves `severityMeanings` with **no caller at all** once the fixture is rewired — the homepage
+ladder renders `home.monitoring.severities[]`, which says the same four things in different words.
+Two wordings of one concept is a rule expressed in two places (`AGENTS.md §3.2`), and an exported
+string with a plausible name and no call site is how the generic definition got used as an alert body
+to begin with (§9.3). It is deleted in the same change that wires `demoBodies`, not later.
 
 **No message contains:** a ticket identifier · a full email address · payment information · receipt
 contents · a legal guarantee · alarming language the data does not support.
@@ -758,6 +895,30 @@ drift:
    `opens in a new tab` suffix, and any heading that appears on more than one of the five pages.
 
 A heading repeated verbatim across all five policy pages is chrome, not policy, and belongs here.
+
+**A nav label is chrome; a document's own title is not — ruling, 2026-09-12.** Item 5 closed the F-13
+gap: `pages.policy.relatedHeading` and every cross-link label under it now come from
+`nav.footer.links`. One link does not, and the re-check was asked to confirm or object. `/terms/` is
+linked from four of the five pages as **"Terms of use"**, while `nav.footer.links['/terms/']` is
+"Terms".
+
+> **Confirmed, and it is not an exception to item 5.** A nav label and a document title are two
+> registers, and item 5 governs the first.
+
+- The footer is a dense column where short labels are legible side by side; "Terms" belongs there.
+- The related-policies entries are **sentences** — "Terms of use — what DelayPilot is, and what it
+  never does for you." The link text is that sentence's subject, and naming a document by its title
+  is prose. Substituting the nav label yields "Terms — what DelayPilot is…", a fragment.
+- The `h1` is the title of record and it is policy body, which the carve-out assigns to
+  `trust-compliance-officer`. Routing a document's own name through this module would put an editor
+  between that owner and the words they are accountable for — the thing the carve-out exists to
+  prevent.
+- The drift risk is bounded and was checked: all five occurrences of the title sit inside the five
+  files that one owner holds, so a retitle is one owner, one change.
+
+The rule this records, so it is not re-litigated in either direction: **take the label from
+`nav.footer.links` wherever the string is a navigation label; use the document's own title wherever
+the string is the subject of a sentence. Never invent a third wording for either.**
 
 **And the fixed text must survive the renderer.** An article body that types a `§26` disclaimer into
 markdown gets it back with the apostrophes curled, which is no longer byte-exact. Fixed text is

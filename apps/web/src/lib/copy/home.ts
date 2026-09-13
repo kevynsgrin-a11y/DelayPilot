@@ -226,11 +226,21 @@ export const home = {
     },
   },
 
-  /** `§18.3`: selected guides. */
+  /**
+   * `§18.3`: selected guides.
+   *
+   * NO RANKING OF SITUATIONS BY COST. The intro read "the situations that cost travelers the most
+   * money" — a ranking over a population DelayPilot has never measured, which is the superlative
+   * clause of `DIRECTIVE.md §7` and `docs/EDITORIAL_POLICY.md §7.1`: an unmeasured superlative is a
+   * statistic with the number taken out. The S3 copy review raised exactly this class against the
+   * content tree as F-14 and 61 lines were reworded there; the re-check found the same claim still
+   * standing in this module, which is the tree the finding came from. It now says what the guides
+   * are about — decisions with money attached — and asserts no order among them.
+   */
   guidesStrip: {
     heading: 'Guides',
     intro:
-      'Plain-language explanations of the situations that cost travelers the most money, each one sourced and dated.',
+      'Plain-language explanations of the disruptions where a decision costs money, each one sourced and dated.',
     readMore: 'Read the guide',
   },
 } as const

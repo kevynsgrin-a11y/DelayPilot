@@ -35,7 +35,12 @@ export const lookup = {
     flightNumber: {
       label: 'Flight number',
       help: 'Digits only. The airline code belongs in the field above.',
-      example: demo.flights.first,
+      /*
+       * The NUMBER, not the whole identifier. `demo.flights.first` is "DEMO 101", which is the one
+       * thing the help line directly above it tells a reader not to type and the one thing the
+       * input's `pattern="[0-9]{1,4}"` rejects. See `demo.flightNumberOnly`.
+       */
+      example: demo.flightNumberOnly,
     },
     date: {
       label: 'Date of departure',

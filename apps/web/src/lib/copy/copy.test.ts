@@ -28,7 +28,12 @@ import {
   type Band,
 } from './bands.ts'
 import { chronology } from './chronology.ts'
-import { cockpit, connectionComponentsCaption, connectionHeading } from './cockpit.ts'
+import {
+  cockpit,
+  connectionComponentsCaption,
+  connectionHeading,
+  demoAlertBody,
+} from './cockpit.ts'
 import { demo } from './demo.ts'
 import { disclaimerPlacement, disclaimers, type DisclaimerKey } from './disclaimers.ts'
 import { home } from './home.ts'
@@ -626,6 +631,15 @@ const DIGIT_EXCEPTIONS: readonly { readonly pattern: RegExp; readonly reason: st
     pattern: /^pages\.accessibility\.environments\[\d+]\.version$/,
     reason: 'Tool version identifiers, pinned to the verification date. Required by §13 item 4.',
   },
+  {
+    pattern: /^(demo\.flightNumberOnly|lookup\.fields\.flightNumber\.example)$/,
+    reason:
+      'The number part of the synthetic identifier DEMO 101, derived from it rather than typed. ' +
+      'It is the same identifier the two entries above permit, with the designator removed so ' +
+      "that the lookup form's example is enterable in the field it sits under — that input is " +
+      'pattern="[0-9]{1,4}" and its help says "Digits only". Still an identifier, still not a ' +
+      'measurement, and the assertion below pins it to demo.flights.first so it cannot drift.',
+  },
 ]
 
 describe('no number is written into a string', () => {
@@ -644,6 +658,16 @@ describe('no number is written into a string', () => {
     expect(demo.flights.first).toBe('DEMO 101')
     expect(demo.flights.second).toBe('DEMO 202')
     expect(Object.keys(demo.airports)).toEqual(['DM1', 'DM2', 'DM3'])
+  })
+
+  it('derives the lookup example from the identifier instead of writing the digits twice', () => {
+    // The S3 re-check found the whole identifier under a field whose help says "Digits only" and
+    // whose input is pattern="[0-9]{1,4}": the example demonstrated the one form the field rejects.
+    expect(demo.flightNumberOnly).toBe(demo.flights.first.replace(/^\D+/, ''))
+    expect(demo.flightNumberOnly).not.toMatch(/[^0-9]/)
+    expect(lookup.fields.flightNumber.example).toBe(demo.flightNumberOnly)
+    // Four digits or fewer, because the field will not hold more than four.
+    expect(demo.flightNumberOnly.length).toBeLessThanOrEqual(4)
   })
 
   it('justifies every digit exception in writing', () => {
@@ -752,12 +776,17 @@ describe('the accessibility statement', () => {
 
   it('claims partial conformance and nothing stronger', () => {
     expect(page.status).toBe('Partially conformant')
-    // §13.1 row 3. The word does not change; the reason does. It used to be "the route-level,
-    // keyboard and screen-reader passes have not been run", which is now two-thirds false, and a
-    // status whose stated reason is out of date is a status a reader cannot use. The reason is now
-    // the true one and the stronger one: open Level AA failures on routes reachable today.
-    expect(page.statusBody).toContain('Level AA failures are open')
-    expect(page.statusBody).toContain('screen-reader passes have not')
+    // §13.1 row 3, revised twice. The word does not change; the reason does, and this time it
+    // moved in the unusual direction. It claimed two open Level AA failures, which was true of the
+    // tree it was written against; `docs/ACCESSIBILITY.md §15.15` closed both by measurement and
+    // returned GREEN (F40). A statement that reports a fixed failure as open is the same defect as
+    // an overclaim — a factual claim the document does not support — so the reason is now the gap
+    // that really remains: the screen-reader pass and the release-level checks.
+    expect(page.statusBody).toContain('No Level AA failure is open')
+    expect(page.statusBody).toContain('screen reader')
+    expect(page.statusBody).toMatch(/before launch/)
+    // The claim must not drift back to a blanket pass while the gap is still there.
+    expect(page.statusBody).not.toMatch(/fully conformant|no known issues/i)
     expect(page.noClaim).toContain('does not say that DelayPilot is accessible')
   })
 
@@ -768,29 +797,17 @@ describe('the accessibility statement', () => {
     expect(prose).not.toMatch(/fully conformant/i)
   })
 
-  it('lists every finding that ACCESSIBILITY.md leaves open', () => {
-    // docs/ACCESSIBILITY.md §15 — the two blockers and F25–F38, plus the two carried findings that
-    // are still open. F22 and F24 are closed (§15.2) and are gone from the list; F15 stays but is
-    // scoped to the components that are not rendered on any route.
+  it('lists exactly what ACCESSIBILITY.md leaves open, and nothing it has closed', () => {
+    // docs/ACCESSIBILITY.md §15.15, the re-review that returned GREEN: two blockers closed by
+    // measurement, eleven findings closed, F31 closed on three of four items with the caption
+    // re-owned to the editor, F15 and F23 open by scope and by decision, and F39/F41/F42 new.
     expect(page.knownIssues.map((issue) => issue.id)).toEqual([
-      'B8',
-      'B9',
       'F15',
       'F23',
-      'F25',
-      'F26',
-      'F27',
-      'F28',
-      'F29',
-      'F30',
       'F31',
-      'F32',
-      'F33',
-      'F34',
-      'F35',
-      'F36',
-      'F37',
-      'F38',
+      'F39',
+      'F41',
+      'F42',
     ])
     for (const issue of page.knownIssues) {
       expect(issue.affected.length).toBeGreaterThan(3)
@@ -798,9 +815,43 @@ describe('the accessibility statement', () => {
       expect(issue.description.length).toBeGreaterThan(60)
       expect(issue.expected.length).toBeGreaterThan(10)
     }
-    // A closed finding listed as open is as wrong as an open one left out, in the other direction.
-    for (const closed of ['F22', 'F24']) {
-      expect(page.knownIssues.map((issue) => issue.id)).not.toContain(closed)
+    // A closed finding listed as open is as wrong as an open one left out, in the other direction:
+    // a reader who checks this page against what they just experienced, and finds it describing
+    // problems that are not there, stops believing the entries that are (F40).
+    const listed = page.knownIssues.map((issue) => issue.id)
+    for (const closed of [
+      'B8',
+      'B9',
+      'F17',
+      'F22',
+      'F24',
+      'F25',
+      'F26',
+      'F27',
+      'F28',
+      'F29',
+      'F30',
+      'F32',
+      'F33',
+      'F34',
+      'F35',
+      'F36',
+      'F37',
+      'F38',
+    ]) {
+      expect(listed, `${closed} is closed and must not be listed as open`).not.toContain(closed)
+    }
+  })
+
+  it('claims no failing success criterion in any entry it lists', () => {
+    // The status paragraph says no Level AA failure is open. Every entry has to agree with it, or
+    // the page contradicts itself two paragraphs apart — which is how a reader decides the whole
+    // statement is decorative.
+    for (const issue of page.knownIssues) {
+      if (!issue.criterion.startsWith('SC ')) continue
+      // The one entry that names success criteria is F15, and it is scoped to components that no
+      // route renders. Its own text has to say so.
+      expect(issue.affected + issue.description).toMatch(/no page uses yet|not rendered|unreleased/)
     }
   })
 
@@ -819,7 +870,13 @@ describe('the accessibility statement', () => {
     expect(page.notTestedBody).toContain('screen reader')
     // §13.1 rows 3 and 4: these passes HAVE been run and the page may not claim they have not.
     expect(page.notTestedBody).not.toMatch(/keyboard[- ]only passes .* have not been run/)
-    expect(page.statusBody).toContain('have been run')
+    // The executed scope is carried by `lastVerifiedBody`, which enumerates it, rather than by the
+    // status paragraph — F40 moved the status paragraph onto what is OUTSTANDING. Understating what
+    // was checked is the overclaim rule running the other way, so it is pinned here either way.
+    for (const ran of ['keyboard operation', 'reflow', 'touch-target', 'automated rule checks']) {
+      expect(page.lastVerifiedBody, `the page must not omit that ${ran} was checked`).toContain(ran)
+    }
+    expect(page.statusBody).not.toMatch(/route[- ]level .*(have|has) not been run/)
   })
 
   it('states the standard, the date, and the method', () => {
@@ -872,6 +929,56 @@ describe('the accessibility statement', () => {
     expect(contact.title).toBe(pages.contact.title)
     // No address is baked into a constant: an address in copy is an address that goes stale.
     for (const entry of everyString) expect(entry.value).not.toContain('@')
+  })
+})
+
+// ── §28 demonstration alert bodies ───────────────────────────────────────────────────────────
+
+describe('a demonstration alert says what changed, not what its rung means', () => {
+  const bodies = Object.values(cockpit.alerts.demoBodies)
+  const meanings = Object.values(cockpit.alerts.severityMeanings)
+
+  it('has one body per alert in the fixture timeline', () => {
+    expect(Object.keys(cockpit.alerts.demoBodies)).toEqual([
+      'alert-monitoring',
+      'alert-inbound-delay',
+      'alert-connection-watch',
+      'alert-cancellation',
+      'alert-rights',
+    ])
+  })
+
+  it('never reuses a severity definition as a body — F-25', () => {
+    // The defect this export closes: `itinerary.ts` passed `severityMeanings` as three of the five
+    // bodies, so a specific event was explained by the generic definition of its rung, and the
+    // first one contradicted its own title. The two sets must stay disjoint.
+    for (const body of bodies) expect(meanings).not.toContain(body)
+    for (const meaning of meanings) expect(bodies).not.toContain(meaning)
+  })
+
+  it('says three things, in DIRECTIVE.md §16 order, in every body', () => {
+    for (const body of bodies) {
+      // What changed, what it means, what to do — three sentences is the shape, not a maximum.
+      expect(body.split('. ').length).toBeGreaterThanOrEqual(3)
+      expect(body.endsWith('.')).toBe(true)
+      expect(body).not.toMatch(/!/)
+      // No figure of any kind: the panels already carry the numbers with their provenance.
+      expect(body).not.toMatch(/\d/)
+    }
+  })
+
+  it('carries no urgency the data does not support, at any rung', () => {
+    for (const body of bodies) {
+      expect(body.toLowerCase()).not.toMatch(/\b(act now|hurry|immediately|right away|too late)\b/)
+    }
+  })
+
+  it('is distinct per alert, so no two timeline rows read alike', () => {
+    expect(new Set(bodies).size).toBe(bodies.length)
+  })
+
+  it('resolves through the accessor the fixture calls', () => {
+    expect(demoAlertBody('alert-monitoring')).toBe(cockpit.alerts.demoBodies['alert-monitoring'])
   })
 })
 

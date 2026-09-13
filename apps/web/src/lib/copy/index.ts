@@ -41,8 +41,13 @@ export {
 export type { Band } from './bands.ts'
 
 export { chronology } from './chronology.ts'
-export { cockpit, connectionComponentsCaption, connectionHeading } from './cockpit.ts'
-export type { ConnectionTopologyKey } from './cockpit.ts'
+export {
+  cockpit,
+  connectionComponentsCaption,
+  connectionHeading,
+  demoAlertBody,
+} from './cockpit.ts'
+export type { ConnectionTopologyKey, DemoAlertId } from './cockpit.ts'
 export { demo, demoAirportOrder } from './demo.ts'
 export { disclaimerPlacement, disclaimers } from './disclaimers.ts'
 export type { DisclaimerKey, NotedDisclaimerKey } from './disclaimers.ts'

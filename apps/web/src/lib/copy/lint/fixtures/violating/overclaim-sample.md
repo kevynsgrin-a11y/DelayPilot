@@ -52,3 +52,33 @@ Enter your booking reference and we'll get you paid.
 ## 10. A rank claim, as a numeral and in words
 
 DelayPilot is #1 for connection risk, and the number one choice of frequent flyers.
+
+## 11. One word inserted, and the rule used to go quiet
+
+Raised by `trust-compliance-officer` as trust F9. Each line below is the same banned claim as a rule
+above with a single modifier dropped in — an ordinal, an adjective, an adverb. Before the elastic
+join landed, every one of them passed. The first is not invented: it is the sentence that shipped on
+`/connection-risk/` and was filed as trust F8 and copy F-16.
+
+On separate tickets, the second airline owes you nothing for the first one being late.
+
+We checked, and the operating airline owes you nothing here.
+
+Under this rule the second airline must pay you for the hotel.
+
+Book it with confidence: this is a guaranteed tight connection.
+
+We know the operating airline is at fault, whatever it told you at the desk.
+
+Given the inbound delay, your flight will probably be cancelled.
+
+## 12. The same claim, negated
+
+A ban a writer can evade by negating the claim is not a ban. Each of these settles a question
+DelayPilot does not settle, or states a prediction as fact, so each must fire.
+
+Read the rule and relax: you are not owed anything for this one.
+
+On two tickets, no airline owes you a replacement seat.
+
+Do not worry — your flight will not be cancelled.

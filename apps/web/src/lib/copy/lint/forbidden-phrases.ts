@@ -25,6 +25,40 @@ export type Invariant =
   | 'AGENTS.md §2 — no ticket-identifier vocabulary in copy'
   | 'DIRECTIVE.md §7 — voice: the never list'
 
+/**
+ * AN ELASTIC JOIN: up to two inserted words are tolerated at this position in a token array.
+ *
+ * WHY IT EXISTS. `trust-compliance-officer`'s S3 re-check probed the §1.3 rules with ONE WORD
+ * INSERTED at a join and defeated five of eight: `airline-debt-asserted`,
+ * `airline-obligation-to-pay`, `connection-guarantee`, `fault-asserted` and both
+ * `predicted-cancellation` spellings all went quiet when an adjective was put in front of the noun
+ * or an adverb in front of the verb. Two of those are not hypothetical. The adjective this product
+ * itself puts in front of that noun is fixed in the `§26` flight-data disclaimer and appears on
+ * three shipped surfaces, so the single most likely way for a real author to write the banned claim
+ * was the one spelling the rule could not see. A ban a modifier defeats is a ban on one sentence,
+ * not on a claim. The six probes and their quiet counterparts are in the fixtures, where the
+ * literals belong.
+ *
+ * WHY TWO WORDS AND NOT MORE. Two covers every modifier an author reaches for — an article, an
+ * adjective, an adverb, or a pair of adjectives — and stops well short of spanning a clause. It is
+ * bounded, so the pattern cannot backtrack.
+ *
+ * WHY IT DOES NOT LEAK ACROSS A SENTENCE. The scanner folds hyphens, underscores, slashes, dots and
+ * markdown markers to spaces, but it does NOT fold a comma, a colon, a semicolon, a bracket, a
+ * quotation mark or a question mark — those survive normalization as ordinary characters and an
+ * elastic join, which matches only word characters and single spaces, cannot cross one. So a gap is
+ * confined to a single clause by construction rather than by hope.
+ *
+ * WHY A SENTINEL IN THE ARRAY RATHER THAN A LIST OF INDEXES. An index list rots the moment someone
+ * edits a token array; a marker sitting at the join it describes cannot. `*` is safe as the marker
+ * because the normalizer folds `*` to a space, so no real token can ever equal it.
+ *
+ * A GAP NEVER FIRES ON A NEGATION THAT IS LEGITIMATE COPY — but that has to be checked per rule, not
+ * assumed. Where a rule's negated form is a sentence DelayPilot would honestly write, the rule gets
+ * no gap: see `bare-guarantee` below, the one rule deliberately left rigid.
+ */
+export const GAP = '*'
+
 export interface ForbiddenPhrase {
   /** Stable id, used in tests and printed with each hit. Never spells the phrase it names. */
   readonly id: string
@@ -32,6 +66,10 @@ export interface ForbiddenPhrase {
    * The phrase as lowercase tokens. Matching joins them with a single space after the scanner has
    * normalized the source, so hyphens, underscores, line wraps, camelCase, markdown quote markers
    * and curly apostrophes all reduce to the same shape.
+   *
+   * A `GAP` entry is not a token: it marks the join before the next token as elastic, tolerating up
+   * to two inserted words there. It may not be the first or the last entry, and two may not sit
+   * next to each other; `lint.test.ts` asserts all three.
    */
   readonly tokens: readonly string[]
   readonly invariant: Invariant
@@ -90,13 +128,13 @@ export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
   // ── AGENTS.md §1.3, the enumerated list ────────────────────────────────────────────────────
   {
     id: 'owed-as-settled',
-    tokens: ['you', 'are', 'owed'],
+    tokens: ['you', 'are', GAP, 'owed'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'States an entitlement as settled. DelayPilot says "may apply" and names the rule version.',
   },
   {
     id: 'compensation-guarantee',
-    tokens: ['guaranteed', 'compensation'],
+    tokens: ['guaranteed', GAP, 'compensation'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'Nothing about compensation is certain: the airline or the regulator decides.',
   },
@@ -108,43 +146,53 @@ export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
   },
   {
     id: 'claim-approval',
-    tokens: ['approved', 'claim'],
+    tokens: ['approved', GAP, 'claim'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'DelayPilot never files a claim and never learns the outcome of one.',
   },
   {
     id: 'promise-to-win',
-    tokens: ['we', 'will', 'win'],
+    tokens: ['we', 'will', GAP, 'win'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'DelayPilot is not a claims company and represents nobody.',
   },
+  /**
+   * THE LEADING ARTICLE IS GONE FROM THIS RULE AND FROM `airline-debt-asserted`.
+   *
+   * Both used to open with the definite article, which made the whole ban evadable by naming WHICH
+   * carrier — an ordinal or the house adjective in front of the noun and the rule went quiet.
+   * Anchoring on the noun instead of on the determiner catches every determiner at once ("an",
+   * "that", "this", "each", "no") and every modifier in front of it, and the elastic join then
+   * covers a modifier on the verb. This is the shape the trust re-check asked for, and it is
+   * strictly stronger than bounding a gap after an article that need not be there at all.
+   */
   {
     id: 'airline-obligation-to-pay',
-    tokens: ['the', 'airline', 'must', 'pay'],
+    tokens: ['airline', GAP, 'must', 'pay'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'An obligation only a regulator or a court can state.',
   },
   {
     id: 'connection-guarantee',
-    tokens: ['guaranteed', 'connection'],
+    tokens: ['guaranteed', GAP, 'connection'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'No connection is certain. The product publishes slack and a band, not a promise.',
   },
   {
     id: 'predicted-cancellation-double-l',
-    tokens: ['your', 'flight', 'will', 'be', 'cancelled'],
+    tokens: ['your', 'flight', GAP, 'will', GAP, 'be', 'cancelled'],
     invariant: 'AGENTS.md §1.1 — never fabricate operational fact',
-    why: 'A prediction stated as fact about a named flight. Both spellings are banned.',
+    why: 'A prediction stated as fact about a named flight. Both spellings are banned, and a hedging adverb does not make it an estimate.',
   },
   {
     id: 'predicted-cancellation-single-l',
-    tokens: ['your', 'flight', 'will', 'be', 'canceled'],
+    tokens: ['your', 'flight', GAP, 'will', GAP, 'be', 'canceled'],
     invariant: 'AGENTS.md §1.1 — never fabricate operational fact',
-    why: 'A prediction stated as fact about a named flight. Both spellings are banned.',
+    why: 'A prediction stated as fact about a named flight. Both spellings are banned, and a hedging adverb does not make it an estimate.',
   },
   {
     id: 'fault-asserted',
-    tokens: ['we', 'know', 'the', 'airline', 'is', 'at', 'fault'],
+    tokens: ['we', 'know', GAP, 'airline', 'is', GAP, 'at', 'fault'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'Cause is airline-stated or provider-stated until an authority finds otherwise.',
   },
@@ -215,34 +263,48 @@ export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
   // ── Near misses. Same meaning, different words, banned for the same reason. ─────────────────
   {
     id: 'owed-contracted-spelling',
-    tokens: ["you're", 'owed'],
+    tokens: ["you're", GAP, 'owed'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'The contracted spelling of an entitlement stated as settled.',
   },
   {
     id: 'entitlement-to-compensation',
-    tokens: ['entitled', 'to', 'compensation'],
+    tokens: ['entitled', 'to', GAP, 'compensation'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'A determination. Say that compensation may apply, under which rule version.',
   },
   {
     id: 'payout-promise',
-    tokens: ["we'll", 'get', 'you', 'paid'],
+    tokens: ["we'll", 'get', 'you', GAP, 'paid'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'DelayPilot never acts on a traveler behalf and never handles a payout.',
   },
   {
     id: 'claim-outcome-asserted',
-    tokens: ['your', 'claim', 'is', 'approved'],
+    tokens: ['your', GAP, 'claim', 'is', GAP, 'approved'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
     why: 'DelayPilot does not file claims and cannot know their outcome.',
   },
   {
     id: 'airline-debt-asserted',
-    tokens: ['the', 'airline', 'owes', 'you'],
+    tokens: ['airline', GAP, 'owes', 'you'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
-    why: 'An obligation stated as established fact.',
+    why: 'An obligation stated as established fact, in either direction. Adding a negative object to this claim does not change what it is — it still settles a question only a regulator or a court settles — and a ban a writer can evade by negating the claim is not a ban.',
   },
+  /**
+   * THE ONE RULE DELIBERATELY LEFT RIGID, and the reason is the test every other gap had to pass.
+   *
+   * A sentence of the form "we cannot <this verb> that the gate will not change" is one DelayPilot
+   * SHOULD write: it is the honest hedge, in this product's own voice, and an elastic join here
+   * would fire on it. A rule that flags the correct sentence is a rule somebody switches off. The
+   * banned claim is the bare promise, and the bare promise has no modifier slot worth covering.
+   *
+   * Every other gap above was checked the same way: does the negated or modified form read as
+   * something this product would honestly say? For the three §1.3 claims whose negations a reviewer
+   * raised, the answer is no — each remains either a determination DelayPilot does not make or a
+   * prediction stated as fact, so firing on it is the rule working, not a false positive. The
+   * negated forms are written out in the fixtures, on the violating side, with their assertions.
+   */
   {
     id: 'bare-guarantee',
     tokens: ['we', 'guarantee'],

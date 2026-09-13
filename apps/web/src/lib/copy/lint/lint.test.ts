@@ -18,7 +18,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
-import { forbiddenPhrases, GAP } from './forbidden-phrases.ts'
+import { forbiddenPhrases, GAP, GAP_NO_NEGATION, isGap } from './forbidden-phrases.ts'
 import {
   allowlist,
   isAllowlisted,
@@ -159,7 +159,7 @@ describe('the clean fixture', () => {
  * hold one claim per line, and this asserts that every one of those lines fires, with the rule it
  * must fire. Adding a probe line to the fixture without the rule to catch it fails the count.
  */
-describe('a modifier at a join does not defeat a rule', () => {
+describe('the shapes a claim uses to get past an exact rule', () => {
   const source = read(VIOLATING)
   const hits = scanText(source, { file: VIOLATING })
   const lines = source.split('\n')
@@ -211,6 +211,45 @@ describe('a modifier at a join does not defeat a rule', () => {
       new Set(['owed-as-settled', 'airline-debt-asserted', 'predicted-cancellation-double-l']),
     )
     expect(new Set(found.map((hit) => hit.line)).size).toBe(3)
+  })
+
+  it('catches a determination pointing the reassuring way, in ten spellings', () => {
+    // docs/EDITORIAL_POLICY.md §6.5, copy F-27, rated critical by the trust review. Section 13 of
+    // the fixture holds one claim per line, and the first two are the sentences that actually
+    // shipped: one in a guide body, one as an assumption on the demonstration connection.
+    const found = inSection('A determination pointing the reassuring way')
+    expect(idsIn(found)).toEqual(
+      new Set([
+        'carrier-responsibility-determined',
+        'carrier-liability-determined',
+        'carrier-obligation-determined',
+        'carrier-problem-assigned',
+        'rebooking-outcome-denied',
+        'duty-detachment-determined',
+        'claim-possibility-denied',
+        'outcome-denied',
+        'entitlement-denied',
+        // The last line is both a denial and the affirmative near-miss it mirrors, which is the
+        // point: one claim, two rules, and neither of them is the negation word.
+        'entitlement-to-compensation',
+      ]),
+    )
+    expect(new Set(found.map((hit) => hit.line)).size).toBe(10)
+  })
+
+  it('catches a modal or an intensifier in front of the promise — F14', () => {
+    const found = inSection('A modal in front of the promise')
+    expect(idsIn(found)).toEqual(new Set(['bare-guarantee']))
+    expect(new Set(found.map((hit) => hit.line)).size).toBe(3)
+  })
+
+  it('does not assemble a claim out of two sentences — F15', () => {
+    // `.` folded to a space like every other separator, so the end of one sentence and the start of
+    // the next made a phrase. The violating line is one sentence; the clean line opposite is the
+    // same words with the full stop where the author put it, and it must stay quiet.
+    const found = inSection('Two sentences are not one sentence')
+    expect(idsIn(found)).toEqual(new Set(['airline-debt-asserted']))
+    expect(new Set(found.map((hit) => hit.line)).size).toBe(1)
   })
 
   it('stays quiet on the honest sentences that contain the same words', () => {
@@ -296,26 +335,124 @@ describe('phrase definitions', () => {
     // A `GAP` marks the join BEFORE the next token. First, last, or doubled, it marks nothing and
     // `patternFor` would silently drop it — a rule that looks widened and is not.
     for (const phrase of forbiddenPhrases) {
-      expect(phrase.tokens[0], `${phrase.id} opens with a gap`).not.toBe(GAP)
-      expect(phrase.tokens.at(-1), `${phrase.id} ends with a gap`).not.toBe(GAP)
+      expect(isGap(phrase.tokens[0] ?? ''), `${phrase.id} opens with a gap`).toBe(false)
+      expect(isGap(phrase.tokens.at(-1) ?? ''), `${phrase.id} ends with a gap`).toBe(false)
       phrase.tokens.forEach((token, index) => {
         if (index === 0) return
         expect(
-          token === GAP && phrase.tokens[index - 1] === GAP,
+          isGap(token) && isGap(phrase.tokens[index - 1] ?? ''),
           `${phrase.id} has two gaps in a row`,
         ).toBe(false)
       })
-      expect(phrase.tokens.filter((token) => token !== GAP).length).toBeGreaterThan(0)
+      expect(phrase.tokens.filter((token) => !isGap(token)).length).toBeGreaterThan(0)
     }
   })
 
-  it('leaves the bare-promise rule rigid, on purpose', () => {
-    // The one rule whose negated form is a sentence DelayPilot SHOULD write: the honest hedge that
-    // an outcome cannot be promised. An elastic join here would flag correct copy, and a rule that
-    // flags correct copy gets switched off. Recorded in `forbidden-phrases.ts` beside the rule.
+  it('scopes the negative-determination rules to the trees a reader is served from', () => {
+    // These bans a CLAIM, so by §4.3's own reasoning they would be unscoped. They carry a scope
+    // because this class differs in one measurable way: its canonical examples are published in
+    // full in three files whose job is to record that the claim is banned — the editorial policy
+    // that defines it, the build record that filed it, and a fixture test that asserts the sentence
+    // is absent. None makes the claim; all three would fire. The alternative was a fifth allowlist
+    // entry, which the charter forbids and which would not have worked anyway: the fixture test is
+    // another owner's to keep or retire.
+    // Named one by one rather than matched by prefix: a filter that misses a rule reports a
+    // smaller class than exists, which is the failure this whole test is about. `docs/VOICE.md
+    // §4.5` prints the same twelve in the same three groups.
+    const ids = [
+      'carrier-responsibility-determined',
+      'carrier-responsibility-determined-plural',
+      'carrier-liability-determined',
+      'carrier-liability-determined-plural',
+      'carrier-obligation-determined',
+      'carrier-obligation-determined-plural',
+      'carrier-problem-assigned',
+      'rebooking-outcome-denied',
+      'duty-detachment-determined',
+      'claim-possibility-denied',
+      'outcome-denied',
+      'entitlement-denied',
+    ]
+    const determinations = forbiddenPhrases.filter((phrase) => ids.includes(phrase.id))
+    expect(determinations.map((phrase) => phrase.id).sort()).toEqual([...ids].sort())
+    for (const phrase of determinations) {
+      expect(phrase.scope, `${phrase.id} must name the trees it applies to`).toBeDefined()
+      // The demonstration fixture is in scope: one of the two sentences that shipped was there.
+      expect(phrase.scope).toContain('apps/web/src/demo')
+      // The documents that record the ban are not, and neither is any test tree.
+      for (const exempt of ['docs', 'tests', 'apps/web/test', '.']) {
+        expect(phrase.scope).not.toContain(exempt)
+      }
+    }
+  })
+
+  it('reaches the trees Phase 5 and 6 will author this class into — F16', () => {
+    // Listed before they exist, on the same reasoning that put the notification templates there:
+    // the cheapest moment to have the rule in place is before the first line is written. A rights
+    // assessment, a risk band and a connection result are three surfaces whose whole job is to say
+    // what a rule does, which is one word away from saying what a rule decides.
+    const rule = forbiddenPhrases.find(
+      (phrase) => phrase.id === 'carrier-responsibility-determined',
+    )
+    for (const tree of [
+      'packages/rights-engine/src',
+      'packages/risk-engine/src',
+      'packages/connection-engine/src',
+      'data/rights/rulesets',
+      'packages/notifications/src/templates',
+    ]) {
+      expect(rule?.scope, `${tree} must be in scope before it is written into`).toContain(tree)
+    }
+  })
+
+  it('reaches the claim map, which is the decision and not an oversight', () => {
+    // docs/VOICE.md §4.5. The claim map holds the propositions a reviewer opens a source to confirm
+    // or reject, it never renders, and `docs/EDITORIAL_POLICY.md §6.5` says such a proposition stays
+    // flat. It is still IN scope, because it sits upstream of article prose rather than downstream:
+    // the F-27 sentence and the claim beside it said the same thing, and the article shipped. A
+    // proposition stays categorical by naming what a SOURCE says, which is verifiable and makes no
+    // determination in DelayPilot's voice. The map is clean today and this pins that it is scanned.
+    const rule = forbiddenPhrases.find((phrase) => phrase.id === 'carrier-obligation-determined')
+    expect(rule?.scope).toContain('apps/web/src/content')
+    const map = 'apps/web/src/content/claim-map.json'
+    expect(scanText(read(map), { file: map })).toEqual([])
+  })
+
+  it('applies a determination rule inside a voice tree and not in a document', () => {
+    // The sentence is LOCATED, never written: this file may not spell a banned literal, and it just
+    // proved why — an earlier draft of this test matched the line with a regular expression that
+    // spelled it, and the lint failed on this file. That is the same stopgap shape the fixture test
+    // uses, in a tree that is in scope. Take the line the rule itself reports instead.
+    const lines = read(VIOLATING).split('\n')
+    const reported = scanText(read(VIOLATING), { file: VIOLATING }).filter(
+      (hit) => hit.phraseId === 'carrier-responsibility-determined',
+    )
+    expect(reported.length).toBeGreaterThan(0)
+    const sentence = lines[(reported.at(-1)?.line ?? 1) - 1] ?? ''
+    expect(sentence.length).toBeGreaterThan(0)
+    expect(idsIn(scanText(sentence, { file: 'apps/web/src/demo/itinerary.ts' }))).toContain(
+      'carrier-responsibility-determined',
+    )
+    expect(idsIn(scanText(sentence, { file: 'apps/web/src/content/guides/example.md' }))).toContain(
+      'carrier-responsibility-determined',
+    )
+    expect(scanText(sentence, { file: 'docs/EDITORIAL_POLICY.md' })).toEqual([])
+    expect(scanText(sentence, { file: 'apps/web/test/demo-itinerary.test.ts' })).toEqual([])
+  })
+
+  it('gives the bare-promise rule the one slot that reads its filler', () => {
+    // trust F14. It shipped rigid because a plain gap would have flagged the honest hedge — the
+    // sentence DelayPilot SHOULD write. Rigid also left the modal and emphatic promises reachable,
+    // because the word that makes a promise emphatic sits in the slot that makes it a hedge. So the
+    // slot exists and is negation-aware: it is the only rule in the file with that marker.
     const rigid = forbiddenPhrases.find((phrase) => phrase.id === 'bare-guarantee')
     expect(rigid).toBeDefined()
+    expect(rigid?.tokens).toContain(GAP_NO_NEGATION)
     expect(rigid?.tokens).not.toContain(GAP)
+    const negationAware = forbiddenPhrases.filter((phrase) =>
+      phrase.tokens.includes(GAP_NO_NEGATION),
+    )
+    expect(negationAware.map((phrase) => phrase.id)).toEqual(['bare-guarantee'])
   })
 
   it('covers the AGENTS.md §1.3 list and the charter near-misses', () => {

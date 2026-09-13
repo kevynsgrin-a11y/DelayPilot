@@ -320,33 +320,26 @@ export const cockpit = {
       urgent: 'Urgent',
       resolved: 'Resolved',
     },
-    severityMeanings: {
-      info: 'A detail changed. Worth knowing, nothing to do.',
-      watch: 'A meaningful delay, or slack shrinking toward the required transfer time.',
-      urgent:
-        'A cancellation, a diversion, a likely missed connection, a major schedule change, or a step with a deadline.',
-      resolved: 'The situation the earlier alerts described has ended.',
-    },
     /**
      * The body of each alert in the `§28` demonstration timeline, keyed by the fixture's alert id.
      *
-     * WHY THESE EXIST. `apps/web/src/demo/itinerary.ts` was passing `severityMeanings` as the body
-     * of three of the five alerts, so a specific event was explained by the generic definition of
-     * its rung — and the first one contradicted its own title outright: "Monitoring started for
-     * this itinerary" followed by "A detail changed. Worth knowing, nothing to do." `DIRECTIVE.md
-     * §16` requires a message to carry what changed, what it means, and the next useful action. A
-     * definition of a severity carries none of those. Raised as copy F-25 in the S3 re-check.
+     * WHY THESE EXIST. `apps/web/src/demo/itinerary.ts` was passing a generic definition of each
+     * SEVERITY as the body of three of the five alerts, so a specific event was explained by the
+     * meaning of its rung — and the first one contradicted its own title outright, pairing
+     * "Monitoring started for this itinerary" with a sentence saying a detail had changed and there
+     * was nothing to do. `DIRECTIVE.md §16` requires a message to carry what changed, what it
+     * means, and the next useful action. A definition of a severity carries none of those. Raised
+     * as copy F-25 in the S3 re-check.
      *
-     * AND `severityMeanings` IS LEFT WITH NO CALLER, WHICH IS A SECOND DEFECT, NOT A SIDE EFFECT.
-     * The alert-ladder explainer on the homepage — the one surface where "what does this rung mean"
-     * is the real question — does not use it: it renders `home.monitoring.severities[]`, which says
-     * the same four things in different words. Two wordings of one concept is a rule expressed in
-     * two places (`AGENTS.md §3.2`), and the copy that is one edit from disagreeing with itself is
-     * the copy that eventually does. Once `apps/web/src/demo/itinerary.ts` consumes `demoBodies`,
-     * `severityMeanings` has no call site at all and must be DELETED in the same change — an
-     * exported string with a plausible name and no caller is exactly how the generic definition got
-     * used as an alert body in the first place (`docs/VOICE.md §9.3`). It survives this commit only
-     * because deleting it here would break the fixture before the fixture is rewired.
+     * THE DEFINITIONS THEMSELVES ARE GONE, and that is the other half of the fix. `severityMeanings`
+     * described the four rungs in a second wording, one the alert-ladder explainer on the homepage
+     * never used — that surface renders `home.monitoring.severities[]`, which is the one place the
+     * rungs are described. Two wordings of one concept is a rule expressed in two places
+     * (`AGENTS.md §3.2`), and an exported string with a plausible name and no call site is exactly
+     * how a rung definition ended up under an alert title in the first place (`docs/VOICE.md §9.3`).
+     * It was kept for one commit only, because deleting it before the fixture was rewired would
+     * have broken the fixture; the frontend removed the last three call sites in `af24302` and it
+     * is deleted here, as its own docblock undertook.
      *
      * KEYED BY ALERT ID, NOT ORDERED. An ordered tuple re-pairs every title with the wrong body the
      * first time somebody inserts an alert or reorders the timeline, silently, and a mismatched

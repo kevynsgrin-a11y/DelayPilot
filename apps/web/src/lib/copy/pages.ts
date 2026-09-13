@@ -117,8 +117,18 @@ export const pages = {
          *
          * So both clauses now say what the rules usually do — one journey against two — which is
          * the contrast the section is about and the only thing this page can state.
+         *
+         * AND THE FIRST CLAUSE WENT THE SAME WAY, one round later. It opened by asserting whose
+         * problem a missed connection is on a through ticket — the same determination as the one
+         * this note describes, pointing the other way, which `docs/EDITORIAL_POLICY.md §6.5` names
+         * as its fourth example and which the negative-determination lint rules now catch
+         * (`docs/VOICE.md §4.5`). It survived the first fix because the fix was aimed at the
+         * sentence a reviewer had quoted rather than at the class, and half a class is not a class.
+         * Found by the rule itself, on the run that landed it: one hit in the whole tree, in this
+         * file. The clause now states the final-destination test, which is the useful fact and is
+         * a statement about how the rules are applied rather than about who is answerable.
          */
-        body: "On a single protected itinerary, a missed connection is the airline's problem to solve, and passenger-rights rules usually treat the journey as one. On separate tickets, rebooking and baggage recovery are usually yours, and those rules usually treat the two flights as two journeys. DelayPilot asks which it is, because everything downstream depends on the answer.",
+        body: 'On a single protected itinerary, passenger-rights rules usually treat the journey as one, so a missed connection is usually assessed against the journey you booked rather than against the leg that broke. On separate tickets, rebooking and baggage recovery are usually yours, and those rules usually treat the two flights as two journeys. DelayPilot asks which it is, because everything downstream depends on the answer.',
       },
       noGauge: {
         heading: 'Why there is no dial',
@@ -373,8 +383,8 @@ export const pages = {
     standardBody:
       'DelayPilot is built to the Web Content Accessibility Guidelines at Level AA. Two rules are held tighter than the guidelines require: the reduced contrast allowance for large text is never used anywhere, and on the mobile layout every target that is not a link inside a sentence is larger than the guideline floor. On wider layouts some links are smaller than that and meet the criterion through its spacing exception instead.',
     lastVerifiedHeading: 'Last verified',
-    /** Digits: the date of the review recorded in `docs/ACCESSIBILITY.md`. */
-    lastVerified: '2026-09-12',
+    /** Digits: the date of the review recorded in `docs/ACCESSIBILITY.md` (§15.16). */
+    lastVerified: '2026-09-13',
     /**
      * `§13.1` rows 1 and 2. The date and the SCOPE move together: a date that points at a narrower
      * review than the one that happened understates coverage, which is the overclaim rule running
@@ -422,13 +432,16 @@ export const pages = {
      * reader who checks this page against what they just experienced, and finds it describing
      * problems that are not there, stops believing the entries that are. F40.
      *
-     * SIX ENTRIES, and each is in `§15.15`'s own words: two are open by decision or by scope (F15,
-     * F23), one is re-owned to the editor (F31's caption), three are new in the re-review (F39,
-     * F41, F42). None is a Level AA failure. F17 is not listed because it is not reproducible on
-     * this build, and a known-issues list is for what is open, not for what was once suspected.
+     * THREE ENTRIES, and each is in the review's own words: two are open by decision or by scope
+     * (F15, F23) and one is re-owned to the editor (F31's caption). None is a Level AA failure. The
+     * three findings the re-review raised were closed by measurement in `§15.16` and came straight
+     * back off this list, which is the same rule running that took the thirteen off before them: a
+     * closed finding listed as open is as wrong as an open one left out. F17 is not listed because
+     * it is not reproducible on this build, and a known-issues list is for what is open, not for
+     * what was once suspected.
      */
     knownIssuesIntro:
-      'Everything the most recent review left open. None of these is a Level AA failure: two are held open by a decision recorded in the review, one waits on an editor, and three were found in the re-check. Each entry says what it affects, which rule it engages, and when it is expected to be fixed. Nothing has been left out for being awkward.',
+      'Everything the most recent review left open. None of these is a Level AA failure: two are held open by a decision recorded in the review, and one waits on an editor. Each entry says what it affects, which rule it engages, and when it is expected to be fixed. Nothing has been left out for being awkward.',
     /** Digits: finding ids and success-criterion numbers. Identifiers, not measurements. */
     knownIssues: [
       {
@@ -454,30 +467,6 @@ export const pages = {
         description:
           'Each table now scrolls inside its own named, keyboard-reachable box, its column headers are marked as headers, and its first column is marked as a row header. Neither has a caption of its own, so the name a screen reader reads out for the box is borrowed from the heading above it.',
         expected: 'When the editor writes a caption for each table.',
-      },
-      {
-        id: 'F39',
-        affected: 'The route diagram on the homepage',
-        criterion: 'Accessible name quality',
-        description:
-          'Each leg of the route shows its status and then the word "Status" after it, because the name of the field was passed where a detail about the value belongs. It is visible as well as announced, and on the first leg it reads as an instruction rather than a status.',
-        expected: 'With the route diagram in the current release.',
-      },
-      {
-        id: 'F41',
-        affected: 'The feedback address on this page and on the contact page',
-        criterion: 'Target size, no success criterion is failing today',
-        description:
-          'The address is a plain link rather than a button-sized target, so it is smaller than every other control on the site. It meets the rule through the spacing allowance, and that was measured. It is still the smallest thing to hit on the page a person reaches after hitting a barrier.',
-        expected: 'With the contact routes in the current release.',
-      },
-      {
-        id: 'F42',
-        affected: 'Every loading state in the product',
-        criterion: 'Announcement quality',
-        description:
-          'A loading block shows its message and also hands the same sentence to the placeholder bones beside it, so a screen reader reads the sentence twice in a row. Nothing is missing; one thing is said once too often.',
-        expected: 'With the loading block in the current release.',
       },
     ],
 

@@ -84,3 +84,48 @@ a refund rule is written for.
 We cannot promise that the gate will not change, and we cannot say what the airline will decide.
 That is why the one bare-promise rule takes no elastic join: the honest sentence and the banned one
 differ by a single word, and only the reader can tell them apart.
+
+## 13. The same questions, left open
+
+The mirror of section 13 opposite, and the first three are the sentences that actually replaced the
+ones that shipped. `docs/EDITORIAL_POLICY.md §6.5` gives three patterns that carry this: "the rules
+usually treat…", "nothing assumes…", "may not carry across". None of them settles anything, and each
+still tells a reader what to expect.
+
+The rules usually treat separate tickets as separate journeys, so nothing assumes an airline will
+move you onward.
+
+The two tickets are assessed as separate journeys, so nothing here assumes the second airline will
+re-accommodate you.
+
+On a single protected itinerary, passenger-rights rules usually treat the journey as one, so a missed
+connection is usually assessed against the journey you booked rather than against the leg that broke.
+
+The waiting obligations may not carry across. Where your flights are separate journeys, a delay on
+the first is not generally treated as creating a duty on the second.
+
+Whether compensation may apply turns on the reason the airline gives in writing, on the rule version
+shown, and on a decision DelayPilot does not make.
+
+DelayPilot never marks a separate-ticket connection as protected, and asks you when the data does not
+make the answer clear. A statement about what this product does is a fact about the product, and
+hedging it would be the overclaim pointing the third way.
+
+## 14. The hedge the modal rule must not touch
+
+The mirror of section 14 opposite. Each of these puts a word in the same slot the banned forms use,
+and each is a sentence DelayPilot should be free to write: the slot takes an intensifier and stays
+the claim, or takes a negator and becomes the honest hedge.
+
+We cannot guarantee that the gate will not change.
+
+We do not guarantee an on-time arrival.
+
+We never guarantee a legal outcome.
+
+## 15. Two sentences that stay two sentences
+
+The mirror of section 15. The same words in the same order, with the sentence ending where the
+author put it, and nothing here asserts anything about what a carrier owes.
+
+Call the airline. Owes you nothing is not a sentence this product writes.

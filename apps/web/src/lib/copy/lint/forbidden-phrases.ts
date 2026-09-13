@@ -43,21 +43,53 @@ export type Invariant =
  * adjective, an adverb, or a pair of adjectives — and stops well short of spanning a clause. It is
  * bounded, so the pattern cannot backtrack.
  *
- * WHY IT DOES NOT LEAK ACROSS A SENTENCE. The scanner folds hyphens, underscores, slashes, dots and
- * markdown markers to spaces, but it does NOT fold a comma, a colon, a semicolon, a bracket, a
- * quotation mark or a question mark — those survive normalization as ordinary characters and an
- * elastic join, which matches only word characters and single spaces, cannot cross one. So a gap is
- * confined to a single clause by construction rather than by hope.
+ * WHY IT DOES NOT LEAK ACROSS A SENTENCE. A gap matches only word characters and single spaces, so
+ * it stops at the first character that is neither — and the normalizer leaves a comma, a colon, a
+ * semicolon, a bracket, a quotation mark, an exclamation mark and a question mark exactly where the
+ * author put them.
+ *
+ * The full stop was the exception, and it was a real one. `trust-compliance-officer` F15: `.` folded
+ * to a space like every other separator, so two sentences became one and a claim could be assembled
+ * from the end of one and the start of the next — a hit on a page saying the opposite of the claim.
+ * This docblock asserted a guarantee the code did not have. `scan.ts` now KEEPS a `.` that ends a
+ * sentence and folds every other one, so the guarantee is real and the dotted forms that are not
+ * sentence ends still fold. See `endsSentence`.
  *
  * WHY A SENTINEL IN THE ARRAY RATHER THAN A LIST OF INDEXES. An index list rots the moment someone
- * edits a token array; a marker sitting at the join it describes cannot. `*` is safe as the marker
- * because the normalizer folds `*` to a space, so no real token can ever equal it.
+ * edits a token array; a marker sitting at the join it describes cannot. `*` and `+` are safe as
+ * markers because the normalizer folds both to a space, so no real token can ever equal either.
  *
- * A GAP NEVER FIRES ON A NEGATION THAT IS LEGITIMATE COPY — but that has to be checked per rule, not
- * assumed. Where a rule's negated form is a sentence DelayPilot would honestly write, the rule gets
- * no gap: see `bare-guarantee` below, the one rule deliberately left rigid.
+ * A GAP MAY FIRE ON A NEGATION, AND WHETHER THAT IS RIGHT IS DECIDED PER RULE, never assumed. For
+ * every rule below except one, the negated form is still a determination or still a prediction
+ * stated as fact, so firing is the rule working. The exception is `bare-guarantee`, whose negated
+ * form is the honest hedge — it takes `GAP_NO_NEGATION` instead.
  */
 export const GAP = '*'
+
+/**
+ * An elastic join that a NEGATOR closes. Same two-word width as `GAP`, except that the match is
+ * abandoned if any inserted word is "not", "cannot", "never", "no", "neither", "nor", or anything
+ * ending in "n't".
+ *
+ * IT EXISTS BECAUSE ONE RULE'S SLOT CHANGES THE MEANING OF THE SENTENCE, and that is the whole
+ * discriminator between the two markers:
+ *
+ * | Marker             | What the slot takes                  | What the modified sentence is |
+ * | ------------------ | ------------------------------------ | ----------------------------- |
+ * | `GAP`              | an article, an adjective, an adverb  | still the banned claim        |
+ * | `GAP_NO_NEGATION`  | an intensifier — or a negator        | the claim, or the honest hedge |
+ *
+ * `bare-guarantee` was left rigid for exactly this reason: a plain gap would have caught the hedge
+ * this product SHOULD write. `trust-compliance-officer` F14 agreed with the reasoning and then
+ * showed what it was costing — the modal and emphatic forms of the promise were reachable, and the
+ * word that makes a promise emphatic sits in the same slot as the word that makes it a hedge. So
+ * the slot stays, and it is taught to tell them apart. That is a property of the phrase, not a
+ * favour done to a path: it applies identically in every file.
+ */
+export const GAP_NO_NEGATION = '+'
+
+/** Either elastic marker. Neither can collide with a real token: both fold to a space. */
+export const isGap = (token: string): boolean => token === GAP || token === GAP_NO_NEGATION
 
 export interface ForbiddenPhrase {
   /** Stable id, used in tests and printed with each hit. Never spells the phrase it names. */
@@ -67,9 +99,9 @@ export interface ForbiddenPhrase {
    * normalized the source, so hyphens, underscores, line wraps, camelCase, markdown quote markers
    * and curly apostrophes all reduce to the same shape.
    *
-   * A `GAP` entry is not a token: it marks the join before the next token as elastic, tolerating up
-   * to two inserted words there. It may not be the first or the last entry, and two may not sit
-   * next to each other; `lint.test.ts` asserts all three.
+   * A `GAP` or `GAP_NO_NEGATION` entry is not a token: it marks the join before the next token as
+   * elastic, tolerating up to two inserted words there. Neither may be first or last, and two may
+   * not sit next to each other; `lint.test.ts` asserts all three.
    */
   readonly tokens: readonly string[]
   readonly invariant: Invariant
@@ -111,6 +143,56 @@ const COPY_TREES: readonly string[] = [
   'apps/web/src/content',
   'packages/notifications/src/templates',
 ]
+
+/**
+ * Every tree a sentence a traveler reads can originate in. Wider than `COPY_TREES`, which is the
+ * product's authored voice: this adds the route shells, the pattern layer, the layouts and the `§28`
+ * fixture, because a rendered sentence has come out of each of them at least once.
+ *
+ * IT EXISTS FOR THE NEGATIVE-DETERMINATION RULES BELOW, AND THE REASON IS NOT THE ONE `COPY_TREES`
+ * HAS. `§4.3`'s scope is justified by the rule banning a WORD, which a privacy page must be able to
+ * name. These rules ban a CLAIM, and by that reasoning they should be unscoped like every other
+ * `§1.3` rule.
+ *
+ * They are scoped anyway, because this class differs from every other in one measurable way: its
+ * canonical examples are already published, in full, in files whose job is to record that the claim
+ * is banned. `docs/EDITORIAL_POLICY.md §6.5` tabulates four of them so an editor can recognize the
+ * shape; `docs/BUILD_PLAN.md` records the finding that produced the rules; and a fixture test
+ * asserts, by regular expression, that the sentence is absent from the demonstration itinerary.
+ * None of the three makes the claim. All three would fire.
+ *
+ * The alternative was a fifth allowlist entry, which the owning charter forbids outright and which
+ * would not even have worked: the fixture test is the frontend's to keep or retire at its own
+ * discretion, so an unscoped rule's cleanliness would depend on a choice this owner does not make.
+ * A rule that another agent can turn red by a legitimate decision is a rule that gets switched off.
+ *
+ * The scope is drawn where the harm is. A determination in any of these trees reaches a reader at a
+ * gate; a determination quoted in a policy document, a build record or a test is being exhibited so
+ * that it can be refused. `lint.test.ts` pins the list, so widening it is a visible edit.
+ */
+const VOICE_TREES: readonly string[] = [
+  'apps/web/src/lib/copy',
+  'apps/web/src/content',
+  'apps/web/src/components',
+  'apps/web/src/demo',
+  'apps/web/src/layouts',
+  'apps/web/src/pages',
+  'packages/ui/src/patterns',
+  // Not built yet, and listed anyway. A rights assessment, a risk band and a connection result are
+  // the three surfaces where this class is most likely to be authored, because each is a sentence
+  // about what a rule does — and the cheapest moment to have the rule in place is before the first
+  // line is written, not after a reviewer finds it in a rendered card
+  // (`trust-compliance-officer` F16). `packages/notifications/src/templates` was already here on
+  // exactly that reasoning.
+  'packages/connection-engine/src',
+  'packages/notifications/src/templates',
+  'packages/rights-engine/src',
+  'packages/risk-engine/src',
+  'data/rights/rulesets',
+]
+
+/** Shared by the negative-determination rules, so one class has one explanation. */
+const DETERMINATION_INVARIANT = 'AGENTS.md §1.3 — never overclaim legally' as const
 
 /**
  * Assembled rather than written, for the reason in the header: this file must not contain the
@@ -292,24 +374,140 @@ export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
     why: 'An obligation stated as established fact, in either direction. Adding a negative object to this claim does not change what it is — it still settles a question only a regulator or a court settles — and a ban a writer can evade by negating the claim is not a ban.',
   },
   /**
-   * THE ONE RULE DELIBERATELY LEFT RIGID, and the reason is the test every other gap had to pass.
+   * THE ONE RULE WHOSE SLOT DECIDES WHETHER THE SENTENCE IS A CLAIM OR A HEDGE.
    *
    * A sentence of the form "we cannot <this verb> that the gate will not change" is one DelayPilot
-   * SHOULD write: it is the honest hedge, in this product's own voice, and an elastic join here
-   * would fire on it. A rule that flags the correct sentence is a rule somebody switches off. The
-   * banned claim is the bare promise, and the bare promise has no modifier slot worth covering.
+   * SHOULD write: it is the honest hedge, in this product's own voice. A plain `GAP` fires on it,
+   * and a rule that flags the correct sentence is a rule somebody switches off. So this rule shipped
+   * rigid, with that reasoning recorded.
    *
-   * Every other gap above was checked the same way: does the negated or modified form read as
-   * something this product would honestly say? For the three §1.3 claims whose negations a reviewer
+   * `trust-compliance-officer` F14 agreed with the reasoning and priced it: rigid also left the
+   * modal and the emphatic forms of the promise reachable, because the word that makes a promise
+   * emphatic sits in the same slot as the word that makes it a hedge. The slot is now
+   * `GAP_NO_NEGATION`, which tells them apart — three banned forms hit, three honest hedges stay
+   * quiet, and all six are pinned in the fixtures.
+   *
+   * Every gap above was chosen by the same test: does the modified or negated form read as
+   * something this product would honestly say? For the §1.3 claims whose negations a reviewer
    * raised, the answer is no — each remains either a determination DelayPilot does not make or a
-   * prediction stated as fact, so firing on it is the rule working, not a false positive. The
-   * negated forms are written out in the fixtures, on the violating side, with their assertions.
+   * prediction stated as fact, so firing on those is the rule working. This is the one rule where
+   * the answer is yes, which is why it is the one rule with a negation-aware slot.
    */
   {
     id: 'bare-guarantee',
-    tokens: ['we', 'guarantee'],
+    tokens: ['we', GAP_NO_NEGATION, 'guarantee'],
     invariant: 'AGENTS.md §1.3 — never overclaim legally',
-    why: 'DelayPilot guarantees no operational and no legal outcome.',
+    why: 'DelayPilot guarantees no operational and no legal outcome. A modal or an intensifier in front of the verb is still the promise; a negator in the same slot is the honest hedge and is not a hit.',
+  },
+
+  /* ── A determination has no safe direction ──────────────────────────────────────────────────
+   *
+   * `docs/EDITORIAL_POLICY.md §6.5`, raised as copy F-27 and rated critical by
+   * `trust-compliance-officer`. Every rule above catches a claim that promises the reader
+   * something. This class catches the same claim settled the other way — and the other way is the
+   * one that passed `pnpm lint` for an entire wave, in two shipped surfaces at once, because it
+   * reads as caution rather than as a promise.
+   *
+   * The two sentences that shipped are in the violating fixture with their hedged replacements
+   * opposite. One told a reader which carrier was answerable for a missed connection and one told
+   * them that none was; a reviewer reading either stops asking, and the cost of that is the whole
+   * reason this product exists.
+   *
+   * THE ANCHOR IS THE SUBJECT, NOT THE NEGATION. Anchoring on "not" or "no" would catch the four
+   * examples and nothing else, because the negation is the most variable word in the sentence: it
+   * moves, it becomes a prefix, it becomes "nothing", it disappears into "cannot". Anchoring on the
+   * carrier or on the traveler and leaving the verb phrase elastic catches the claim in both
+   * directions with one rule each — which is the point, because `AGENTS.md §1.3` bans the
+   * determination and not its sign.
+   *
+   * A STATEMENT ABOUT DELAYPILOT'S OWN BEHAVIOUR IS NOT A DETERMINATION, and `§6.5` says so
+   * explicitly. Nothing here is anchored on this product's name, so "DelayPilot never marks a
+   * separate-ticket connection as protected" stays flat, as it should — hedging a fact about the
+   * product would be the overclaim, pointing the third way.
+   */
+  {
+    id: 'carrier-responsibility-determined',
+    tokens: ['airline', GAP, 'is', GAP, 'responsible'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'Settles who is answerable for a disruption. That is the airline or the regulator to decide, in either direction, and a negative answer is still an answer.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'carrier-responsibility-determined-plural',
+    tokens: ['airlines', GAP, 'are', GAP, 'responsible'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'The plural spelling of the same determination. A claim about carriers in general is a claim about the reader carrier.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'carrier-liability-determined',
+    tokens: ['airline', GAP, 'is', GAP, 'liable'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'Liability is a finding, not an assessment. DelayPilot reports which rules may apply and stops there.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'carrier-liability-determined-plural',
+    tokens: ['airlines', GAP, 'are', GAP, 'liable'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'The plural spelling of the same finding.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'carrier-obligation-determined',
+    tokens: ['airline', GAP, 'has', GAP, 'obligation'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'Whether a duty attaches turns on the full facts and on the framework. Say which rules may apply under the rule version shown.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'carrier-obligation-determined-plural',
+    tokens: ['airlines', GAP, 'have', GAP, 'obligation'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'The plural spelling of the same duty claim.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'carrier-problem-assigned',
+    tokens: ["airline's", 'problem'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'Assigns the disruption to a party. `docs/EDITORIAL_POLICY.md §6.5` names this shape as the same defect pointing the reassuring way, and it was live in this module when the rule landed.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'rebooking-outcome-denied',
+    tokens: ['nobody', GAP, 'rebooks', 'you'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'A determination written as a promise about the future. Say what the rules usually do and what nothing assumes.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'duty-detachment-determined',
+    tokens: ['obligations', GAP, 'do', 'not', 'attach'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'Applies a rule to facts DelayPilot has not seen. Which duties attach is the airline or the regulator to decide.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'claim-possibility-denied',
+    tokens: ['you', GAP, 'cannot', 'claim'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'Closes a route the reader may still have. Anchored on the traveler, so a statement about what DelayPilot itself cannot do stays flat.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'outcome-denied',
+    tokens: ['you', 'will', 'not', GAP, 'get'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'A prediction of a negative outcome stated as fact, which is the same fabrication as predicting a positive one.',
+    scope: VOICE_TREES,
+  },
+  {
+    id: 'entitlement-denied',
+    tokens: ['not', 'entitled', 'to'],
+    invariant: DETERMINATION_INVARIANT,
+    why: 'The mirror of the banned entitlement claim. Neither direction is DelayPilot to state; the permitted register is "may apply".',
+    scope: VOICE_TREES,
   },
 
   // ── AGENTS.md §2, ticket-identifier vocabulary, scoped to the copy trees ────────────────────
@@ -350,7 +548,13 @@ export const forbiddenPhrases: readonly ForbiddenPhrase[] = [
   },
 ]
 
-/** The phrase as a human reads it, for the CLI output. Built at call time, never stored. */
+/**
+ * The phrase as a human reads it, for the CLI output. Built at call time, never stored.
+ *
+ * An elastic join prints as `*`, and a negation-aware one as `*+`, so a reader of a hit can see
+ * which joins were allowed to stretch. The hit also carries the text as it really appears, which is
+ * the thing to read first; this line is the pattern, not the sentence.
+ */
 export function phraseText(phrase: ForbiddenPhrase): string {
-  return phrase.tokens.join(' ')
+  return phrase.tokens.map((token) => (token === GAP_NO_NEGATION ? '*+' : token)).join(' ')
 }

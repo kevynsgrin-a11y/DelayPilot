@@ -13,8 +13,10 @@
  *  - **Separators folded to a single space**: whitespace, hyphens, underscores, dots, slashes,
  *    pipes, list and quote markers, and the dashes. This is what makes the scanner tolerant of LINE
  *    WRAPPING (a phrase broken across two prose lines), of markdown blockquote and bullet
- *    continuations, and of the hyphen/space variants the charter names. The one exception is `#`
- *    immediately before a digit, which is kept: see the note at that branch.
+ *    continuations, and of the hyphen/space variants the charter names. Two are kept rather than
+ *    folded, each with its note at the branch that keeps it: `#` immediately before a digit, and a
+ *    `.` that ends a sentence. Everything the normalizer does NOT fold — a comma, a colon, a
+ *    semicolon, a bracket, a quotation mark, `!`, `?` — already stops a phrase where it stands.
  *  - **`\n`, `\r`, `\t` escape sequences folded to a space**, because a phrase split across a
  *    template literal is still a phrase.
  *  - **camelCase split**, so an identifier spells out the claim it encodes.
@@ -36,7 +38,13 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
 
-import { forbiddenPhrases, GAP, phraseText, type ForbiddenPhrase } from './forbidden-phrases.ts'
+import {
+  forbiddenPhrases,
+  GAP_NO_NEGATION,
+  isGap,
+  phraseText,
+  type ForbiddenPhrase,
+} from './forbidden-phrases.ts'
 
 export interface Hit {
   /** Repository-relative, POSIX separators. */
@@ -224,6 +232,40 @@ const isLower = (c: string): boolean => c >= 'a' && c <= 'z'
 const isDigit = (c: string): boolean => c >= '0' && c <= '9'
 const isUpper = (c: string): boolean => c >= 'A' && c <= 'Z'
 
+/**
+ * Does the `.` at `at` end a sentence? True when the next thing that is not whitespace is a capital
+ * letter, or when nothing follows it at all.
+ *
+ * DELIBERATELY NARROW, because the cost is asymmetric. Keeping a `.` blocks a match across it, so a
+ * rule that kept too many would start missing claims — and a missed claim costs a traveler money
+ * while a false positive costs a build. So the dotted forms that are NOT sentence ends still fold to
+ * a space and nothing that used to be caught stops being caught: `results.demo`, `AGENTS.md`, a hex
+ * value, a version, a file path, a `.` before a digit or a lower-case letter.
+ *
+ * An abbreviation followed by a capitalised word — "e.g. Two tickets…" — is read as a sentence end
+ * and blocks there. That costs nothing measurable: a phrase beginning after the abbreviation still
+ * matches from its own first word, and a phrase that spans an abbreviation and a capitalised word is
+ * not a phrase anyone writes. (The example this note first used spelled a banned phrase to make the
+ * point, and the lint caught this file. Its own rule, applied to its own comment.)
+ */
+function endsSentence(source: string, at: number): boolean {
+  for (let i = at + 1; i < source.length; i += 1) {
+    const c = source.charAt(i)
+    if (c === ' ' || c === '\t' || c === '\n' || c === '\r' || c === '\f' || c === '\v') continue
+    if (c === '\\') {
+      // An escaped newline inside a string literal is whitespace to a reader, so keep looking.
+      const next = source.charAt(i + 1)
+      if (next === 'n' || next === 'r' || next === 't') {
+        i += 1
+        continue
+      }
+      return false
+    }
+    return isUpper(c)
+  }
+  return true
+}
+
 /** Fold a source file into the matchable form, keeping a source index per character. */
 export function normalize(source: string): Normalized {
   const chars: string[] = []
@@ -274,6 +316,15 @@ export function normalize(source: string): Normalized {
         push(c, i)
         continue
       }
+      // A FULL STOP THAT ENDS A SENTENCE IS KEPT, so no phrase can be assembled across one.
+      // `trust-compliance-officer` F15: `.` folded to a space like every other separator, and
+      // "call the airline. Owes you nothing is not something we say." was a hit, because the fold
+      // turned two sentences into one. `!` and `?` were never separators and already blocked;
+      // this makes the third terminator behave like its siblings.
+      if (c === '.' && endsSentence(source, i)) {
+        push(c, i)
+        continue
+      }
       push(' ', i)
       continue
     }
@@ -314,19 +365,32 @@ const patternCache = new Map<string, RegExp>()
  */
 const ELASTIC_JOIN = "(?:[a-z0-9']+ ){0,2}"
 
+/**
+ * The words that turn a promise into a hedge. Anything ending in "n't" counts, with or without the
+ * apostrophe, because the normalizer keeps a straight one and an author may omit it.
+ */
+const NEGATORS = ['not', 'cannot', 'never', 'no', 'neither', 'nor', "[a-z]*n'?t"]
+
+/**
+ * `GAP_NO_NEGATION`: the same two-word width, with each inserted word required not to be a negator.
+ * The check is a lookahead at every repetition, so a negator in EITHER slot abandons the match — the
+ * two-word branch cannot slip one past by consuming it in the second position.
+ */
+const ELASTIC_JOIN_NO_NEGATION = `(?:(?!(?:${NEGATORS.join('|')}) )[a-z0-9']+ ){0,2}`
+
 function patternFor(phrase: ForbiddenPhrase): RegExp {
   const cached = patternCache.get(phrase.id)
   if (cached !== undefined) return cached
   let body = ''
-  let elastic = false
+  let elastic: string | null = null
   for (const token of phrase.tokens) {
-    if (token === GAP) {
-      elastic = true
+    if (isGap(token)) {
+      elastic = token === GAP_NO_NEGATION ? ELASTIC_JOIN_NO_NEGATION : ELASTIC_JOIN
       continue
     }
-    if (body !== '') body += elastic ? ` ${ELASTIC_JOIN}` : ' '
+    if (body !== '') body += elastic === null ? ' ' : ` ${elastic}`
     body += tokenPattern(token)
-    elastic = false
+    elastic = null
   }
   const built = new RegExp(`(?<![a-z0-9])${body}(?![a-z0-9])`, 'g')
   patternCache.set(phrase.id, built)

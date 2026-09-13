@@ -82,3 +82,53 @@ Read the rule and relax: you are not owed anything for this one.
 On two tickets, no airline owes you a replacement seat.
 
 Do not worry — your flight will not be cancelled.
+
+## 13. A determination pointing the reassuring way
+
+`docs/EDITORIAL_POLICY.md §6.5`, copy F-27, rated critical by the trust review. Every section above
+catches a claim that promises the reader something. These settle the same questions the other way,
+and that is the direction that reads as caution and passed the lint for a whole wave.
+
+The first two shipped. The first was in a guide body; the second was an assumption on the
+demonstration connection, under a heading that says these are the assumptions behind the estimate.
+
+Available time and required time are still useful, but no airline is responsible for moving you
+onward.
+
+No airline is responsible for the onward flight if the first one arrives late.
+
+Do not bother with the second carrier: no airline is liable for a delay on a ticket it did not sell.
+
+On two tickets the second airline has no obligation to you at all.
+
+On one reservation a missed connection is the airline's problem, not yours.
+
+If you miss it on separate tickets, nobody rebooks you.
+
+Where the journeys are separate, the waiting obligations do not attach.
+
+Weather was the cause, so you cannot claim anything here.
+
+Take the voucher, because you will not get cash for this one.
+
+You are not entitled to compensation when the delay is under the threshold.
+
+## 14. A modal in front of the promise
+
+`trust-compliance-officer` F14. The bare-promise rule shipped rigid on purpose, because a plain
+elastic join would have caught the honest hedge opposite. Rigid also left these three reachable, and
+the slot now tells the two apart.
+
+Book with us and we can guarantee your compensation.
+
+Unlike the others, we do guarantee your compensation.
+
+We absolutely guarantee your compensation on this route.
+
+## 15. Two sentences are not one sentence
+
+F15. A full stop folded to a space like every other separator, so a claim could be assembled from
+the end of one sentence and the start of the next. The line below is a hit and the line under it is
+not, and the only difference is where the sentence ends.
+
+Nobody at the desk will help you. The airline owes you a hotel and a meal.

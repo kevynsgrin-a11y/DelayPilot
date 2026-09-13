@@ -139,16 +139,18 @@ identifiers **or** an explicit 'Demonstration itinerary' banner" — that clause
 itinerary is identified. The per-panel sentence is a separate, unconditional requirement in the same
 paragraph, and reading the "or" across it collapses two requirements into one.
 
-**The mechanical guard cannot see this case**, and that is worth stating so nobody reads a green
-build as a cleared surface. `apps/web/scripts/verify-dist.mjs` keys its check on
-`[data-provenance="demo"]`, so a fixture panel that chooses any other chip passes it silently. The
-check that would close the gap is a fixture-side one — a panel whose freshness names a demonstration
-source must carry the sentence — and it belongs to the script's owner, not to this file.
-
 **The trust re-check reached the same ruling independently**, reading `DIRECTIVE.md §28` rather than
-this section, and the orchestrator adopts the two together as the resolution: the stale card must
+this section, and the orchestrator adopted the two together as the resolution: the stale card must
 carry the sentence, and the guard must key on whether a panel is fixture-sourced rather than on which
 word its chip happens to show. Two reviewers, two routes to the same answer, one rule.
+
+**And the guard now enforces it — this is no longer a gap.** When this ruling was written,
+`apps/web/scripts/verify-dist.mjs` keyed its check on `[data-provenance="demo"]`, so a fixture panel
+that chose any other chip passed silently and the ruling rested on review alone. The frontend built
+the fixture-side check in `af24302`: `Provenance.fixture` travels to the pixel as a `data-fixture`
+attribute and `checkDemoCaptions` keys on that instead, with two self-tests. A fixture panel wearing
+a `Stale`, `Cached` or `Unavailable` chip and no sentence is now a build failure, which is what the
+rule was always supposed to mean. Nothing here is waiting on anyone.
 
 ---
 
@@ -269,6 +271,98 @@ the five, and must, wherever the point of the sentence is that DelayPilot does n
 Forbidden regardless of wording: countdown pressure on a commercial upsell, an alarm tone in an
 `info` alert, a warning styled to look like a rights outcome, a commercial partner presented as the
 remedy for a statutory right, and any commercial urgency on a crisis surface.
+
+### 4.5 A determination has no safe direction
+
+`docs/EDITORIAL_POLICY.md §6.5`, raised as F-27 in the Phase 11 copy re-check and rated critical by
+`trust-compliance-officer`. Everything in §4.1 and §4.2 catches a claim that promises the reader
+something. **The same claim settled the other way is the one that gets through**, because it reads as
+caution rather than as a promise — and it did get through, in two shipped surfaces at once, past a
+lint that was green for a whole wave.
+
+> **Rule: DelayPilot does not settle a legal question in either direction. "No airline is
+> responsible" is the same defect as "the airline must pay", written by someone being careful.**
+
+A reader who takes the negative version at face value stops asking, and the cost of that is the whole
+reason this product exists.
+
+**The shapes to use instead** (`§6.5` gives three, and they are enough): "the rules usually treat…" ·
+"nothing assumes…" · "may not carry across".
+
+**A statement about DelayPilot's own behaviour is not a determination and stays flat.** "DelayPilot
+never marks a separate-ticket connection as protected" is a fact about the product; hedging it would
+be the overclaim pointing a third way. None of the rules is anchored on this product's name, so none
+of them touches that register.
+
+**Twelve rules enforce it**, anchored on the subject rather than on the negation — because the
+negation is the most variable word in the sentence: it moves, it becomes a prefix, it becomes
+"nothing", it disappears into "cannot". Anchoring on the carrier or on the traveler and leaving the
+verb phrase elastic catches the claim in both directions with one rule each, which is the point.
+
+| Anchored on  | Rules                                                                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| the carrier  | `carrier-responsibility-determined` (+ plural) · `carrier-liability-determined` (+ plural) · `carrier-obligation-determined` (+ plural) · `carrier-problem-assigned` |
+| the outcome  | `rebooking-outcome-denied` · `duty-detachment-determined`                                                                                                            |
+| the traveler | `claim-possibility-denied` · `outcome-denied` · `entitlement-denied`                                                                                                 |
+
+**These rules carry a `scope`, and it is the only scoped rule in this file that bans a claim rather
+than a word.** §4.3's justification does not apply, so here is the one that does: this class's
+canonical examples are already published, in full, in three files whose job is to record that the
+claim is banned — `docs/EDITORIAL_POLICY.md §6.5` tabulates four so an editor can recognize the
+shape, `docs/BUILD_PLAN.md` records the finding, and a fixture test asserts by regular expression
+that the sentence is absent. None of the three makes the claim. All three would fire.
+
+The alternative was a fifth allowlist entry, which the owning charter forbids outright and which
+**would not have worked**: the fixture test belongs to `frontend-ui-engineer` to keep or retire at
+its own discretion, so an unscoped rule's cleanliness would have depended on a decision this owner
+does not make. A rule another agent can turn red by a legitimate choice is a rule that gets switched
+off. So the scope is drawn where the harm is, listed as `VOICE_TREES` and pinned by `lint.test.ts`,
+so widening it is a visible edit.
+
+**Four of the twelve trees do not exist yet**, and that is deliberate (`trust-compliance-officer`
+F16). `packages/rights-engine/src`, `packages/risk-engine/src`, `packages/connection-engine/src` and
+`data/rights/rulesets` are where Phase 5 and Phase 6 will author this class, because each of those
+surfaces exists to say what a rule does — which is one word away from saying what a rule decides. The
+cheapest moment to have the rule in place is before the first line is written, not after a reviewer
+finds it in a rendered card. `packages/notifications/src/templates` was already on the list for
+exactly that reason.
+
+### 4.5.1 The claim map is in scope — ruling, 2026-09-13
+
+`apps/web/src/content/claim-map.json` holds the propositions a reviewer opens a source to confirm or
+reject. It never renders, and `docs/EDITORIAL_POLICY.md §6.5` already says such a proposition "stays
+flat: it is the proposition a reviewer opens a source to confirm or reject, not prose a reader sees".
+`trust-compliance-officer` recommended the rules stay blind to it. Asked to decide rather than
+discover:
+
+> **Ruling: the claim map stays in scope. The rules are not narrowed and no field is excluded; the
+> proposition wording stays lint-clean, and this steward owns keeping it that way.**
+
+Three reasons:
+
+1. **The claim map is upstream of article prose, not downstream of it.** The lint scans everything
+   because "a phrase that lives in a fixture gets copied into a component". A proposition is the text
+   a writer paraphrases into a guide, which is the copy-propagation path the ban exists to close —
+   and it is the path F-27 actually travelled. The claim and the shipped sentence said the same
+   thing. This is the last place to relax the rule, not the first.
+2. **A field exclusion is a favour done to a path.** §7.4 draws the line: a phrase-level exception
+   "applies identically in every file, which is what makes it a property of the phrase rather than a
+   favour done to a path". A rule that knows one file's JSON schema fails that test, and a
+   field-level carve-out is an allowlist entry wearing different clothes.
+3. **The objection answers itself.** A hedged proposition would be unverifiable, and that is a real
+   cost — but a proposition does not need to hedge. It needs to be **attributed**: categorical about
+   what a source says, not about what is true. "Article 9 attaches the care obligations to the
+   journey the carrier sold" is categorical, checkable against the source, and makes no determination
+   in DelayPilot's voice. That is the same move §3 already requires of a cause: airline-stated,
+   provider-stated, never a finding.
+
+The map scans clean today, so this ruling adds enforcement and no backlog, and `lint.test.ts` pins
+both halves — that the rules reach `apps/web/src/content`, and that the map is at zero.
+
+**It found a live one on the run that landed it.** One hit in the whole tree, in this module:
+`pages.connectionRisk.sections.topology.body` still opened by assigning a missed connection to a
+carrier — `§6.5`'s fourth example, the same determination pointing the reassuring way, in the clause
+next to the one an earlier round had already hedged. Half a class is not a class.
 
 ---
 
@@ -392,21 +486,42 @@ Fourteen rules now carry at least one. Two structural changes went with it:
   determination as settling it in their favour, and a prediction of non-cancellation is the same
   fabricated prediction. Those forms fire, and the fixture asserts that they do.
 
-**Two words, and it cannot cross a clause.** Two covers an article, an adjective, an adverb or a pair
-of adjectives. It stays inside one clause by construction, not by hope: the normalizer folds hyphens,
-underscores, slashes and markdown markers to spaces but leaves a comma, a colon, a semicolon, a
-bracket and a quotation mark alone, and an elastic join matches only word characters and single
-spaces — so it stops at the first punctuation mark.
+**Two words, and it cannot cross a sentence.** Two covers an article, an adjective, an adverb or a
+pair of adjectives. It stops at the first character that is neither a word character nor a single
+space, and the normalizer leaves a comma, a colon, a semicolon, a bracket, a quotation mark, an
+exclamation mark and a question mark where the author put them.
 
-**One rule is deliberately left rigid: `bare-guarantee`.** Its negated form is a sentence DelayPilot
-_should_ write — the honest hedge that an outcome cannot be promised — and an elastic join would fire
-on it. That was the test every other gap had to pass: does the modified or negated form read as
-something this product would honestly say? Where the answer is yes, the rule stays exact. A rule that
-flags correct copy is a rule somebody switches off inside a week, and that is a worse outcome than
-the evasion it was meant to catch.
+**The full stop was the exception, and the claim above used to be false.** `trust-compliance-officer`
+F15: `.` folded to a space like every other separator, so two sentences became one and a claim could
+be assembled from the end of one and the start of the next — "Call the airline. Owes you nothing…"
+was a hit on a page saying the opposite. `scan.ts` now **keeps a `.` that ends a sentence** — the
+next non-whitespace character is a capital, or there is none — and folds every other one, so
+`results.demo`, `AGENTS.md`, a version and a file path are unchanged and nothing that used to be
+caught stops being caught. Both lines are in the fixtures, one on each side.
 
-The six probes, the sentence that actually shipped (trust F8 / copy F-16), and the three negated
-forms are sections 11 and 12 of `lint/fixtures/violating/`. Their honest counterparts — including the
+**One rule's slot decides whether the sentence is a claim or a hedge, and it reads its filler.**
+That is the test every gap had to pass: does the modified or negated form read as something this
+product would honestly say? For every rule but one the answer is no, so the gap is plain. For
+`bare-guarantee` the answer is yes — "we cannot &lt;verb&gt; that the gate will not change" is the
+sentence DelayPilot _should_ write — so it shipped rigid.
+
+`trust-compliance-officer` F14 agreed with that reasoning and priced it: rigid also left the modal
+and the emphatic promise reachable, because **the word that makes a promise emphatic sits in the same
+slot as the word that makes it a hedge**. So the slot exists and is taught to tell them apart.
+
+| Marker            | The slot takes                      | The modified sentence is        |
+| ----------------- | ----------------------------------- | ------------------------------- |
+| `GAP`             | an article, an adjective, an adverb | still the banned claim          |
+| `GAP_NO_NEGATION` | an intensifier, or a negator        | the claim — or the honest hedge |
+
+`GAP_NO_NEGATION` closes on `not`, `cannot`, `never`, `no`, `neither`, `nor` and anything ending in
+"n't", in either slot. It is used by one rule and `lint.test.ts` asserts that it is used by one rule:
+it is a discriminator, not a softener, and a second user would need the same argument made again from
+scratch.
+
+The six probes, the sentence that actually shipped (trust F8 / copy F-16), the three negated forms,
+the three modal promises and the two-sentence case are sections 11, 12, 14 and 15 of
+`lint/fixtures/violating/`. Their honest counterparts — including the
 `§26` disclaimer, the house adjective in a field hint and the bare-promise hedge — are sections 11 and
 12 of `lint/fixtures/clean/`, which must stay at zero. `lint.test.ts` pins the regression by location:
 one claim per line, and a probe added without a rule to catch it fails the line count.
@@ -764,11 +879,14 @@ ordered tuple re-pairs every title with the wrong body the first time somebody i
 silence, and a mismatched title and body is the defect the export exists to fix. An id is a type
 error when it is wrong; a position is not.
 
-That leaves `severityMeanings` with **no caller at all** once the fixture is rewired — the homepage
-ladder renders `home.monitoring.severities[]`, which says the same four things in different words.
+**`cockpit.alerts.severityMeanings` is deleted**, and that was the other half of the fix. It
+described the four rungs in a second wording, one the homepage alert ladder never used — that surface
+renders `home.monitoring.severities[]`, **which is now the one place the four rungs are described**.
 Two wordings of one concept is a rule expressed in two places (`AGENTS.md §3.2`), and an exported
-string with a plausible name and no call site is how the generic definition got used as an alert body
-to begin with (§9.3). It is deleted in the same change that wires `demoBodies`, not later.
+string with a plausible name and no call site is how a rung definition ended up under an alert title
+to begin with (§9.3). It was kept for exactly one commit, because deleting it before the fixture was
+rewired would have broken the fixture. `cockpit.alerts.severityLabels` stays: a pill on a timeline is
+a label, not a description.
 
 **No message contains:** a ticket identifier · a full email address · payment information · receipt
 contents · a legal guarantee · alarming language the data does not support.

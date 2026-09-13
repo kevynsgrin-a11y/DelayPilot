@@ -798,17 +798,16 @@ describe('the accessibility statement', () => {
   })
 
   it('lists exactly what ACCESSIBILITY.md leaves open, and nothing it has closed', () => {
-    // docs/ACCESSIBILITY.md §15.15, the re-review that returned GREEN: two blockers closed by
-    // measurement, eleven findings closed, F31 closed on three of four items with the caption
-    // re-owned to the editor, F15 and F23 open by scope and by decision, and F39/F41/F42 new.
-    expect(page.knownIssues.map((issue) => issue.id)).toEqual([
-      'F15',
-      'F23',
-      'F31',
-      'F39',
-      'F41',
-      'F42',
-    ])
+    // docs/ACCESSIBILITY.md §15.16, which carries §15.15's GREEN forward: the two blockers and
+    // thirteen findings closed by measurement, then F39, F41 and F42 closed by measurement too.
+    // What is left is F15 (components no route renders), F23 (open by a brand decision) and F31's
+    // caption (re-owned to the editor).
+    expect(page.knownIssues.map((issue) => issue.id)).toEqual(['F15', 'F23', 'F31'])
+    // The intro counts the entries it introduces. It said "three were found in the re-check" while
+    // those three were on the list; with them closed it would have been a count of nothing.
+    expect(page.knownIssuesIntro).toContain('two are held open by a decision')
+    expect(page.knownIssuesIntro).toContain('one waits on an editor')
+    expect(page.knownIssuesIntro).not.toContain('re-check')
     for (const issue of page.knownIssues) {
       expect(issue.affected.length).toBeGreaterThan(3)
       expect(issue.criterion.length).toBeGreaterThan(3)
@@ -838,6 +837,9 @@ describe('the accessibility statement', () => {
       'F36',
       'F37',
       'F38',
+      'F39',
+      'F41',
+      'F42',
     ]) {
       expect(listed, `${closed} is closed and must not be listed as open`).not.toContain(closed)
     }
@@ -882,7 +884,9 @@ describe('the accessibility statement', () => {
   it('states the standard, the date, and the method', () => {
     expect(page.standard).toBe('WCAG 2.2 Level AA')
     // §13.1 row 1: the date of the most recent review, not of the one before it.
-    expect(page.lastVerified).toBe('2026-09-12')
+    // §15.16's date. The page's "Reviewed" line is driven by the same constant
+    // (`reviewedAt={page.lastVerified}`), so the two cannot disagree.
+    expect(page.lastVerified).toBe('2026-09-13')
     expect(page.method).toContain('Self-assessment')
   })
 
@@ -936,7 +940,6 @@ describe('the accessibility statement', () => {
 
 describe('a demonstration alert says what changed, not what its rung means', () => {
   const bodies = Object.values(cockpit.alerts.demoBodies)
-  const meanings = Object.values(cockpit.alerts.severityMeanings)
 
   it('has one body per alert in the fixture timeline', () => {
     expect(Object.keys(cockpit.alerts.demoBodies)).toEqual([
@@ -948,12 +951,20 @@ describe('a demonstration alert says what changed, not what its rung means', () 
     ])
   })
 
-  it('never reuses a severity definition as a body — F-25', () => {
-    // The defect this export closes: `itinerary.ts` passed `severityMeanings` as three of the five
-    // bodies, so a specific event was explained by the generic definition of its rung, and the
-    // first one contradicted its own title. The two sets must stay disjoint.
-    for (const body of bodies) expect(meanings).not.toContain(body)
-    for (const meaning of meanings) expect(bodies).not.toContain(meaning)
+  it('keeps the rung descriptions in exactly one place — F-25', () => {
+    // The defect this export closes: the fixture passed a generic definition of each SEVERITY as
+    // three of the five bodies, so a specific event was explained by the meaning of its rung and
+    // the first one contradicted its own title. The second wording that made that possible —
+    // `cockpit.alerts.severityMeanings` — is deleted; `home.monitoring.severities` is the one place
+    // the four rungs are described, and no alert body may equal one of them.
+    expect(cockpit.alerts).not.toHaveProperty('severityMeanings')
+    const rungs = home.monitoring.severities.map((severity) => severity.body)
+    for (const body of bodies) expect(rungs).not.toContain(body)
+    for (const rung of rungs) expect(bodies).not.toContain(rung)
+    // The four labels stay here, because a pill on a timeline is a label and not a description.
+    expect(Object.keys(cockpit.alerts.severityLabels)).toEqual(
+      home.monitoring.severities.map((severity) => severity.severity),
+    )
   })
 
   it('says three things, in DIRECTIVE.md §16 order, in every body', () => {

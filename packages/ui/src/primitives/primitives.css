@@ -12,6 +12,16 @@
  * `prefers-reduced-motion: reduce` the duration tokens collapse to 1ms in tokens.css and every one
  * of these transitions goes with them, without removing the state change itself.
  *
+ * Content-Security-Policy: apps/web/public/_headers serves `style-src 'self'` with no
+ * 'unsafe-inline', which governs the `style` ATTRIBUTE as well as the `<style>` element, and an
+ * attribute value cannot be allowed by hash because it changes per render. No primitive emits one
+ * (packages/ui/test/primitives.test.tsx renders every primitive across every documented prop value
+ * and fails on the string `style=`), so anything that used to be inline — a Stack gap, a grid
+ * template, a reserved placeholder or ad box — is a rule here, selected by a data attribute over a
+ * finite set that the TypeScript prop type keeps finite. The one extent that is genuinely
+ * continuous, the ProgressBar fill, is an SVG presentation attribute, which style-src does not
+ * govern.
+ *
  * Load order: apps/web/src/styles/tokens.css first, this second.
  */
 
@@ -40,58 +50,107 @@
 
 /* --------------------------------------------------------------------------------------------- */
 /* Stack and Grid                                                                                 */
+/*                                                                                                */
+/* Every layout choice below arrives as a DATA ATTRIBUTE over a finite set, never as an inline     */
+/* style. The site serves `style-src 'self'` with no 'unsafe-inline' (apps/web/public/_headers),   */
+/* so a style attribute is refused by the browser and the layout simply does not happen: before    */
+/* this, every Stack rendered with a zero gap and every equal Grid with one column. An attribute   */
+/* value cannot be allowed by hash either, because it changes per render — so the finite set is    */
+/* the only compliant form, and the type in Stack.tsx / Grid.tsx is what keeps it finite.          */
 /* --------------------------------------------------------------------------------------------- */
 .dp-stack {
   display: flex;
   min-inline-size: 0;
 }
 
-.dp-stack--column {
+.dp-stack[data-direction='column'] {
   flex-direction: column;
 }
 
-.dp-stack--row {
+.dp-stack[data-direction='row'] {
   flex-direction: row;
 }
 
-.dp-stack--wrap {
+.dp-stack[data-wrap='true'] {
   flex-wrap: wrap;
 }
 
-.dp-stack--align-start {
+.dp-stack[data-align='start'] {
   align-items: flex-start;
 }
 
-.dp-stack--align-center {
+.dp-stack[data-align='center'] {
   align-items: center;
 }
 
-.dp-stack--align-end {
+.dp-stack[data-align='end'] {
   align-items: flex-end;
 }
 
-.dp-stack--align-stretch {
+.dp-stack[data-align='stretch'] {
   align-items: stretch;
 }
 
-.dp-stack--align-baseline {
+.dp-stack[data-align='baseline'] {
   align-items: baseline;
 }
 
-.dp-stack--justify-start {
+.dp-stack[data-justify='start'] {
   justify-content: flex-start;
 }
 
-.dp-stack--justify-center {
+.dp-stack[data-justify='center'] {
   justify-content: center;
 }
 
-.dp-stack--justify-end {
+.dp-stack[data-justify='end'] {
   justify-content: flex-end;
 }
 
-.dp-stack--justify-between {
+.dp-stack[data-justify='between'] {
   justify-content: space-between;
+}
+
+/* One rule per step of the 4px scale, and no rule for anything else: a surface cannot invent a
+   13px rhythm because there is no selector that would answer to it. */
+.dp-stack[data-gap='2'] {
+  gap: var(--space-2);
+}
+
+.dp-stack[data-gap='4'] {
+  gap: var(--space-4);
+}
+
+.dp-stack[data-gap='8'] {
+  gap: var(--space-8);
+}
+
+.dp-stack[data-gap='12'] {
+  gap: var(--space-12);
+}
+
+.dp-stack[data-gap='16'] {
+  gap: var(--space-16);
+}
+
+.dp-stack[data-gap='24'] {
+  gap: var(--space-24);
+}
+
+.dp-stack[data-gap='32'] {
+  gap: var(--space-32);
+}
+
+.dp-stack[data-gap='48'] {
+  gap: var(--space-48);
+}
+
+.dp-stack[data-gap='64'] {
+  gap: var(--space-64);
+}
+
+.dp-stack[data-gap='96'] {
+  gap: var(--space-96);
 }
 
 .dp-grid {
@@ -100,36 +159,51 @@
   min-inline-size: 0;
 }
 
-.dp-grid--equal {
+.dp-grid[data-variant='equal'] {
   grid-template-columns: 1fr;
 }
 
 /* The cockpit is one column in source order below 1024px: on a phone the itinerary and the action
    must be read before the secondary panel (DIRECTIVE.md §18.7). */
-.dp-grid--cockpit {
+.dp-grid[data-variant='cockpit'] {
   grid-template-columns: 1fr;
 }
 
 .dp-grid__primary,
-.dp-grid__secondary {
+.dp-grid__secondary,
+.dp-grid__full {
   min-inline-size: 0;
 }
 
+/* A row that spans the whole grid at every width — a disruption callout belongs to the cockpit,
+   not to one of its columns. */
+.dp-grid > .dp-grid__full {
+  grid-column: 1 / -1;
+}
+
 @media (min-width: 1024px) {
-  .dp-grid--equal {
-    grid-template-columns: repeat(var(--dp-grid-columns, 2), minmax(0, 1fr));
+  .dp-grid[data-variant='equal'][data-columns='2'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .dp-grid[data-variant='equal'][data-columns='3'] {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dp-grid[data-variant='equal'][data-columns='4'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   /* 12 columns, 8 for action and itinerary, 4 for source, alerts and secondary. */
-  .dp-grid--cockpit {
+  .dp-grid[data-variant='cockpit'] {
     grid-template-columns: repeat(var(--grid-columns), minmax(0, 1fr));
   }
 
-  .dp-grid--cockpit > .dp-grid__primary {
+  .dp-grid[data-variant='cockpit'] > .dp-grid__primary {
     grid-column: span var(--grid-cockpit-primary);
   }
 
-  .dp-grid--cockpit > .dp-grid__secondary {
+  .dp-grid[data-variant='cockpit'] > .dp-grid__secondary {
     grid-column: span var(--grid-cockpit-secondary);
   }
 }
@@ -967,33 +1041,98 @@
 
 /* --------------------------------------------------------------------------------------------- */
 /* Skeleton — reserves the final dimensions. No shimmer: loops are forbidden here.                 */
+/*                                                                                                */
+/* The box is a finite set of variants, not width/height props written to an inline style: the     */
+/* served `style-src 'self'` discards that attribute, so the placeholder reserved nothing and       */
+/* became the layout shift it exists to prevent (DIRECTIVE.md §22, CLS < 0.1). Each variant holds  */
+/* the box its real content occupies, derived from the tokens that content is built from.          */
 /* --------------------------------------------------------------------------------------------- */
 /* --skeleton-bg, not --surface-sunken directly: this is the one fill in the system that genuinely
    identifies nothing, and it needs a name of its own so its exemption in pairs.ts cannot be read as
    covering a component that does carry information (ACCESSIBILITY.md B2). */
 .dp-skeleton {
-  display: inline-block;
+  display: block;
+  border-radius: var(--radius-control);
   background-color: var(--skeleton-bg);
 }
 
-.dp-skeleton--control {
-  border-radius: var(--radius-control);
+/* One line of body copy. */
+.dp-skeleton[data-variant='text-line'] {
+  inline-size: 100%;
+  block-size: calc(var(--font-size-16) * var(--line-height-body));
 }
 
-.dp-skeleton--card {
+/* A paragraph: the lines carry the fill, the container carries the rhythm. */
+.dp-skeleton[data-variant='text-block'] {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  inline-size: 100%;
+  background-color: transparent;
+}
+
+.dp-skeleton__line {
+  display: block;
+  block-size: calc(var(--font-size-16) * var(--line-height-body));
+  border-radius: var(--radius-control);
+  background-color: var(--skeleton-bg);
+}
+
+/* The last line of a paragraph is a short one; a full measure there reserves a block the real text
+   never fills. */
+.dp-skeleton__line:last-child {
+  inline-size: 60%;
+}
+
+/* One line at the h3 / cockpit-panel-title size. */
+.dp-skeleton[data-variant='heading'] {
+  inline-size: 100%;
+  block-size: calc(var(--font-size-24) * var(--line-height-heading));
+}
+
+/* A ProvenanceChip box: 12px text at the UI line height, chip padding, hairline border. */
+.dp-skeleton[data-variant='chip'] {
+  display: inline-block;
+  inline-size: 8rem;
+  block-size: calc(
+    var(--font-size-12) * var(--line-height-ui) + 2 * var(--space-4) + 2 *
+      var(--border-width-hairline)
+  );
+  border-radius: var(--radius-pill);
+}
+
+/* A card-shaped block. The height comes from the ratio, so a placeholder in a narrow column
+   reserves what a card in that column will actually occupy. */
+.dp-skeleton[data-variant='card'] {
+  inline-size: 100%;
+  aspect-ratio: 3 / 2;
   border-radius: var(--radius-card);
 }
 
-.dp-skeleton--pill {
+/* A ProgressBar box: readout line, grid gap, track. */
+.dp-skeleton[data-variant='meter'] {
+  inline-size: 100%;
+  block-size: calc(var(--font-size-14) * var(--line-height-ui) + var(--space-4) + var(--space-8));
+}
+
+/* A round, target-sized block. */
+.dp-skeleton[data-variant='avatar'] {
+  display: inline-block;
+  inline-size: var(--target-min);
+  aspect-ratio: 1 / 1;
   border-radius: var(--radius-pill);
 }
 
 /* --------------------------------------------------------------------------------------------- */
 /* ProgressBar — a linear meter. Never a gauge (DIRECTIVE.md §18.5).                               */
 /*                                                                                                */
-/* The fill is scaled, not resized: a value updating after a refresh is a permitted state change,  */
-/* but animating inline-size would animate a layout property, which is forbidden. Linear easing,   */
-/* because progress that eases is progress that is lying about its rate.                           */
+/* The extent is an SVG geometry attribute (`<rect width="40%">`), because the custom property it  */
+/* used to come from arrived in an inline style and the served `style-src 'self'` discarded it —   */
+/* so on the real site this meter rendered EMPTY at every reading, and the B2/B3 fixes were        */
+/* invisible. A presentation attribute is not governed by style-src, and it is not a CSS layout    */
+/* property either, so the extent still animates nothing. What transitions is the BAND colour,     */
+/* which is a state change (DIRECTIVE.md §7), eased linearly because a meter must not appear to    */
+/* ease.                                                                                          */
 /* --------------------------------------------------------------------------------------------- */
 .dp-progress {
   display: grid;
@@ -1052,21 +1191,25 @@
   overflow: hidden;
 }
 
-.dp-progress__fill {
+/* The drawing surface: exactly the track's content box, so a percentage on the rect below is a
+   percentage of the track. */
+.dp-progress__meter {
   display: block;
   inline-size: 100%;
   block-size: 100%;
-  transform-origin: 0 50%;
-  scale: var(--dp-progress-fraction, 0) 1;
-  transition: scale var(--motion-base) var(--motion-ease-linear);
 }
 
-[dir='rtl'] .dp-progress__fill {
-  transform-origin: 100% 50%;
+/* Mirrored, so the fill still grows from the inline start in a right-to-left document. */
+[dir='rtl'] .dp-progress__meter {
+  transform: scaleX(-1);
+}
+
+.dp-progress__fill {
+  transition: fill var(--motion-base) var(--motion-ease-linear);
 }
 
 .dp-progress--safe .dp-progress__fill {
-  background-color: var(--status-safe-fg);
+  fill: var(--status-safe-fg);
 }
 
 .dp-progress--safe .dp-progress__band {
@@ -1074,7 +1217,7 @@
 }
 
 .dp-progress--watch .dp-progress__fill {
-  background-color: var(--status-watch-fg);
+  fill: var(--status-watch-fg);
 }
 
 .dp-progress--watch .dp-progress__band {
@@ -1082,7 +1225,7 @@
 }
 
 .dp-progress--critical .dp-progress__fill {
-  background-color: var(--status-critical-fg);
+  fill: var(--status-critical-fg);
 }
 
 .dp-progress--critical .dp-progress__band {
@@ -1090,7 +1233,7 @@
 }
 
 .dp-progress--unknown .dp-progress__fill {
-  background-color: var(--status-unknown-fg);
+  fill: var(--status-unknown-fg);
 }
 
 .dp-progress--unknown .dp-progress__band {
@@ -1125,9 +1268,19 @@
   flex: 1 1 auto;
 }
 
+/* Callout's `headingLevel` changes the document outline, not the visual hierarchy: a title asked to
+   be an <h3> so a heading-list jump can reach it (ACCESSIBILITY.md F25) must still render exactly
+   as the <p> it replaces. The reset in tokens.css sizes h1-h4 and gives them heading line-height,
+   tight tracking and balanced wrapping, so all four are restated here at the body values the <p>
+   already had. A class beats an element selector, so the level costs nothing visually and the
+   measured pair (text-primary on the severity fill) keeps its `text` usage class at 4.5:1. */
 .dp-callout__title,
 .dp-toast__title {
   margin: 0;
+  font-size: inherit;
+  line-height: var(--line-height-body);
+  letter-spacing: normal;
+  text-wrap: pretty;
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
@@ -1185,6 +1338,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  max-inline-size: 100%;
   padding: var(--space-8);
   border: var(--border-width-hairline) dashed var(--border-hairline);
   border-radius: var(--radius-card);
@@ -1198,10 +1352,47 @@
   letter-spacing: 0.08em;
 }
 
+/* The reserved box is the IAB unit, held on the frame so the label sits above it and the outer
+   height is deterministic. Fixed dimensions, from a finite set, in the stylesheet: the width and
+   height used to arrive as props on an inline style, which `style-src 'self'` discards — an ad slot
+   that reserves nothing is a CLS defect (AGENTS.md §4, DIRECTIVE.md §20). A unit wider than its
+   column is a placement error rather than a rendering one, so the frame clips instead of pushing
+   the page sideways, and the reserved height is held either way. */
 .dp-ad-slot__frame {
   flex: 1 1 auto;
   min-block-size: 0;
+  max-inline-size: 100%;
   overflow: hidden;
+}
+
+.dp-ad-slot[data-size='300x250'] .dp-ad-slot__frame {
+  inline-size: 300px;
+  block-size: 250px;
+}
+
+.dp-ad-slot[data-size='336x280'] .dp-ad-slot__frame {
+  inline-size: 336px;
+  block-size: 280px;
+}
+
+.dp-ad-slot[data-size='728x90'] .dp-ad-slot__frame {
+  inline-size: 728px;
+  block-size: 90px;
+}
+
+.dp-ad-slot[data-size='320x100'] .dp-ad-slot__frame {
+  inline-size: 320px;
+  block-size: 100px;
+}
+
+.dp-ad-slot[data-size='320x50'] .dp-ad-slot__frame {
+  inline-size: 320px;
+  block-size: 50px;
+}
+
+.dp-ad-slot[data-size='970x250'] .dp-ad-slot__frame {
+  inline-size: 970px;
+  block-size: 250px;
 }
 
 /* --------------------------------------------------------------------------------------------- */

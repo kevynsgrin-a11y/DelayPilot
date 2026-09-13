@@ -1,0 +1,170 @@
+---
+/**
+ * `/flight-status/` — what a status card shows, what it refuses to say, and what it does today.
+ *
+ * This is an explanatory route, not a tool: the lookup lives on the homepage, where `§18.3` puts
+ * it. What this page adds is the thing a status page usually leaves out — the four `§17` states a
+ * real lookup reaches on a bad day, rendered as real panels rather than described in prose:
+ * on time, stale, partial data, and two providers disagreeing.
+ *
+ * THE CONFLICTING-PROVIDERS PANEL IS THE POINT OF THE PAGE. When two sources disagree, DelayPilot
+ * shows BOTH snapshots, names the newest high-quality source, and lowers confidence. It does not
+ * silently pick a winner, because the winner it picked would be indistinguishable from a fact.
+ *
+ * EVERY PANEL CARRIES ITS OWN PROVENANCE CHIP AND THE DEMO CAPTION — including the stale card,
+ * whose chip spends its one word on freshness and therefore says nothing about origin
+ * (`docs/VOICE.md §2.1`; the fixture declares itself with `Provenance.fixture`).
+ *
+ * AND EVERY CARD GROUP CARRIES THE `§26` FLIGHT-DATA DISCLAIMER. The unit on this page is the
+ * group, not the card: the confidence note already renders once per group, and the disclaimer is
+ * the same granularity for the same reason — `§26` asks for it "near the relevant result", which a
+ * reader has to be able to see without scrolling from the panel it qualifies. It rendered once,
+ * beside the first group; the three-card group and the result-states section carried none (copy
+ * re-check F-22).
+ */
+import {
+  SegmentCard,
+  StateBlock,
+  LoadingBlock,
+  Disclaimer,
+} from '../../../../packages/ui/src/patterns/index.ts'
+import { Card, ProvenanceChip } from '@delaypilot/ui'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+import { segmentCardCopy } from '../components/pattern-copy.ts'
+
+import { cockpit } from '../lib/copy/cockpit.ts'
+import { disclaimers } from '../lib/copy/disclaimers.ts'
+import { lookup } from '../lib/copy/lookup.ts'
+import { pages } from '../lib/copy/pages.ts'
+import { results } from '../lib/copy/results.ts'
+
+import {
+  demoSegmentConflicting,
+  demoSegmentOnward,
+  demoSegmentPartial,
+  demoSegmentStale,
+} from '../demo/itinerary.ts'
+
+const page = pages.flightStatus
+---
+
+<BaseLayout title={page.title} description={page.description} nav="flight-status">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.sections.whatYouSee.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whatYouSee.body}</p>
+    <div class="dpx-cockpit__stack">
+      <SegmentCard segment={demoSegmentOnward} copy={segmentCardCopy} headingLevel={3} />
+    </div>
+    {
+      /*
+       * What "Confidence: High" on the card above actually describes (copy review F-5).
+       *
+       * Beside a named flight and a clock time it reads as a forecast about the flight; it is a
+       * word about the ANSWER — how fresh the response is and whether the sources agree. Once per
+       * card GROUP, after the stack: inside every card it would be four repetitions of a sentence
+       * nobody reads the fourth time, and in the footer it would not be beside the value it
+       * qualifies.
+       */
+    }
+    <p class="dpx-lookup__note" role="note">{cockpit.segment.confidenceNote}</p>
+    <Disclaimer label={disclaimers.labels.flightData}>{page.disclaimer}</Disclaimer>
+  </Section>
+
+  <Section heading={page.sections.whatItDoesNotTell.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.whatItDoesNotTell.body}</p>
+    <p class="dpx-lookup__note">{cockpit.rights.causeNote}</p>
+  </Section>
+
+  <Section heading={page.sections.whenDataIsMissing.heading}>
+    <p class="dpx-section__intro">{page.sections.whenDataIsMissing.body}</p>
+
+    <div class="dpx-cockpit__stack">
+      {/* §17 stale: shown, and shown AS stale. Context, never confirmation. */}
+      <div>
+        <p class="dpx-lookup__note">{results.stale}</p>
+        <SegmentCard segment={demoSegmentStale} copy={segmentCardCopy} headingLevel={3} />
+      </div>
+
+      {/* §17 partial data: the fields that exist are shown, the rest name what is missing. */}
+      <SegmentCard segment={demoSegmentPartial} copy={segmentCardCopy} headingLevel={3} />
+
+      {/* §17 conflicting providers: both snapshots, the newest named, confidence lowered. */}
+      <SegmentCard segment={demoSegmentConflicting} copy={segmentCardCopy} headingLevel={3} />
+    </div>
+    {/* The same note for the second group: this stack is where confidence is LOWERED, and why. */}
+    <p class="dpx-lookup__note" role="note">{cockpit.segment.confidenceNote}</p>
+    {/* `page.disclaimer` IS `disclaimers.flightData`; see pages.ts. One reference per page. */}
+    <Disclaimer label={disclaimers.labels.flightData}>{page.disclaimer}</Disclaimer>
+  </Section>
+
+  <Section heading={page.sections.today.heading}>
+    <p class="dpx-section__intro">{page.sections.today.body}</p>
+
+    <div class="dpx-cockpit__stack">
+      {
+        /*
+         * §17 searching, ILLUSTRATED. `illustration` drops `aria-busy` and keeps everything else:
+         * this page shows a reader what a lookup looks like while it waits, and nothing here is
+         * waiting. A permanent `aria-busy="true"` told assistive technology otherwise, and
+         * technology that honours it may defer or skip the block (`docs/ACCESSIBILITY.md` F28).
+         */
+      }
+      <LoadingBlock
+        label={lookup.heading}
+        message={lookup.states.searching}
+        lines={3}
+        illustration
+      />
+
+      {/* §17 provider unavailable: the state every lookup reaches in this deployment. */}
+      <div class="dpp-state" data-state="provider_unavailable">
+        <Card>
+          <ProvenanceChip kind="unavailable" />
+          <p class="dpx-lookup__note">{lookup.states.providerUnavailable}</p>
+          <p class="dpx-lookup__note">{lookup.states.providerUnavailableNextStep}</p>
+          <p class="dpx-lookup__actions">
+            <a class="dp-button dp-button--secondary" href="/#demonstration">
+              {lookup.demoShortcut.label}
+            </a>
+          </p>
+        </Card>
+      </div>
+
+      {/* §17 no match and invalid flight: reachable from the homepage form's validation. */}
+      <StateBlock kind="no_match" severity="watch" title={lookup.heading}>
+        <p>{lookup.states.noMatch}</p>
+      </StateBlock>
+
+      <StateBlock kind="invalid_flight" severity="watch" title={lookup.heading}>
+        <p>{lookup.states.invalidFlight}</p>
+      </StateBlock>
+
+      {/* §17 multiple matches and rate limited. */}
+      <StateBlock kind="multiple_matches" severity="info" title={lookup.heading}>
+        <p>{lookup.states.multipleMatches}</p>
+      </StateBlock>
+
+      <StateBlock kind="rate_limited" severity="watch" title={lookup.heading}>
+        <p>{lookup.states.rateLimited}</p>
+      </StateBlock>
+    </div>
+
+    {
+      /*
+       * The result states are flight data too: four of the six above render a status, a time or a
+       * reason for not having one, and a reader who meets this section first must meet the §26
+       * sentence with it (copy re-check F-22).
+       */
+    }
+    <Disclaimer label={disclaimers.labels.flightData}>{page.disclaimer}</Disclaimer>
+
+    {/* `{' '}`: see LookupForm.astro. Astro drops the newline between the two nodes. */}
+    <p class="dpx-lookup__no-code">
+      <strong>{lookup.noBookingCode.line}</strong>{' '}{lookup.noBookingCode.why}
+    </p>
+  </Section>
+</BaseLayout>

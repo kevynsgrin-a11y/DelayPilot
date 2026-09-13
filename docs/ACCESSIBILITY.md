@@ -7,27 +7,46 @@ finding filed against another agent's path, never a patch (`AGENTS.md §3.5`).
 stricter than WCAG and are applied throughout: the 3:1 large-text allowance of SC 1.4.3 is never
 used, and the touch-target floor is 44 × 44 px, not the 24 × 24 px of SC 2.5.8 (`DIRECTIVE.md §18.7`).
 
-**Reviewed:** 2026-09-11, in three passes. **Branch:** `claude/intelligent-knuth-d3s8za`.
-**This revision describes the tree at `9dd1f75`.**
+**Reviewed:** 2026-09-11 (Phase 9, three passes), 2026-09-12 (Phase 10, two passes) and
+2026-09-13 (Phase 10 residue round).
+**Branch:** `claude/intelligent-knuth-d3s8za`. **This revision describes the product tree at
+`af24302`**, which is head `8a9d44a` less the build-plan commit.
 
-| Pass                        | Tree      | Verdict                                                           |
-| --------------------------- | --------- | ----------------------------------------------------------------- |
-| First                       | `159ef48` | BLOCKED — 6 blockers, 17 findings                                 |
-| Re-review after remediation | `63005a3` | BLOCKED — 1 blocker (B7, created by the fix for B3); B1–B6 closed |
-| B7 re-review                | `9dd1f75` | **GREEN**                                                         |
+| Pass                               | Phase | Tree      | Verdict                                                           |
+| ---------------------------------- | ----- | --------- | ----------------------------------------------------------------- |
+| First                              | 9     | `159ef48` | BLOCKED — 6 blockers, 17 findings                                 |
+| Re-review after remediation        | 9     | `63005a3` | BLOCKED — 1 blocker (B7, created by the fix for B3); B1–B6 closed |
+| B7 re-review                       | 9     | `9dd1f75` | GREEN                                                             |
+| Visual-overhaul session S3, routes | 10    | `d35f69c` | BLOCKED — 2 blockers (B8, B9), 14 findings (F25–F38)              |
+| Re-review after the S3 fix loop    | 10    | `692ad3f` | GREEN — B8 and B9 closed by measurement; F39–F42 raised           |
+| Residue round                      | 10    | `af24302` | **GREEN** — F39, F41, F42 closed; no new finding                  |
 
-The first pass read the artefacts from the working tree; they were committed during it as `4491ab6`
-(design system), `0977dc9` (mark and asset pipeline) and `159ef48` (concept boards), merged at
-`2053e95`, byte-identical before and after. `brand-design-director` then closed the six blockers and
-thirteen findings in `363bce7`, `visual-asset-director` closed one in `63005a3`, and B7 was closed in
-`9dd1f75`. Every claim made by those agents about their own fixes was re-verified here from the code,
-from rendered markup and by re-measuring the ratios; none was accepted on the strength of a report.
+**The current verdict is §15.16**, which carries §15.15's GREEN forward unchanged.
+§15.1–§15.14 are the record of the first Phase 10 pass and are
+left as written, so the two blockers can still be read as they were filed; §15.15 says what happened
+to every one of them. Sections 1–14 are the Phase 9 record, except §10.2 (the manual matrix, carrying
+the results Phase 10 measured, re-measured at the re-review) and §13 (the accessibility-statement
+contract, carrying both readings of the statement). Where §1 says "Phase 12" for a route-level check,
+read §15: those checks were brought forward and run.
 
-**Scope of this revision: DIRECTIVE.md Phase 9 only** — design tokens, measured contrast, the focus
-system, reduced motion, the accessible semantics of the `@delaypilot/ui` primitives as rendered
-markup, the brand mark's legibility, and the motif text-equivalent inventory. Route-level axe,
-per-route keyboard passes, screen-reader passes, 200 % zoom and text-spacing passes are **Phase 12**
-and are recorded below as `Not run` with the reason. Nothing in this document certifies a route.
+The Phase 9 passes read the artefacts from the working tree; they were committed during the first
+pass as `4491ab6` (design system), `0977dc9` (mark and asset pipeline) and `159ef48` (concept
+boards), merged at `2053e95`, byte-identical before and after. `brand-design-director` then closed
+the six blockers and thirteen findings in `363bce7`, `visual-asset-director` closed one in
+`63005a3`, and B7 was closed in `9dd1f75`. Every claim made by those agents about their own fixes
+was re-verified here from the code, from rendered markup and by re-measuring the ratios; none was
+accepted on the strength of a report. The same rule governed the Phase 10 pass: every claim in the
+`frontend-ui-engineer` handoff was re-run rather than believed, and two of them did not survive it.
+
+**Scope of the Phase 9 revision (§1–§9, §11, §12, §14): DIRECTIVE.md Phase 9 only** — design
+tokens, measured contrast, the focus system, reduced motion, the accessible semantics of the
+`@delaypilot/ui` primitives as rendered markup, the brand mark's legibility, and the motif
+text-equivalent inventory. **Scope of the Phase 10 revision (§15, §10.2, §13.1): the twenty served
+routes of visual-overhaul session S3 plus the two conditional routes** — route-level axe in both
+themes and both motion preferences, keyboard operation, focus visibility measured from rendered
+pixels, reduced motion, reflow and zoom, touch targets, screen-reader semantics read from the
+built markup, and the accessibility statement. No screen reader was run; §15.7 says so plainly and
+§10.2 records those cells as `Not run` with the reason.
 
 ---
 
@@ -897,40 +916,53 @@ blank cell is an untested cell pretending to be a tested one.
 | Motif text equivalents / decorative claims                                | **Passing**                            | §9                                                                                                              |
 | No canvas-only visualization                                              | **Passing**                            | §9                                                                                                              |
 
-### 10.2 Phase 12 scope — Not run, with the reason
+### 10.2 Route, keyboard, zoom and screen-reader scope — measured 2026-09-12
 
-Every cell below is `Not run`. The reason is the same for all of them and it is not a scheduling
-excuse: **no browser and no assistive technology exist in this environment**, and `pnpm test:a11y` is
-a deliberate exit-1 stub until Phase 12 (§11). A route-level result cannot be inferred from a token
-measurement, and this role does not certify a route it has not loaded.
+The 2026-09-11 revision recorded every cell below as `Not run`, with one reason: no browser and no
+assistive technology existed in that environment. A browser exists now. Each cell therefore carries
+the result this Phase 10 pass measured on the twenty served S3 routes (plus the two conditional
+routes, built with `PUBLIC_CONTACT_EMAIL` set in a scratch build that was discarded). The cells that
+are still `Not run` are the ones that need a screen reader or a surface that does not exist yet, and
+each says which.
 
-| Check                                                                                                                                                                                 | Result  | Why not, and what will satisfy it                                                                                                                        |
-| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| axe `wcag2a` `wcag2aa` `wcag21aa` `wcag22aa` on every `§18.1` public route, both themes                                                                                               | Not run | The routes do not exist yet — `pnpm build` emits 3 pages. Phase 10 builds them; the runner is `qa-test-architect`'s.                                     |
-| axe on every `§18.2` private route, both themes                                                                                                                                       | Not run | Routes do not exist.                                                                                                                                     |
-| axe across the `§17` state fixtures, including `provider unavailable` and `already missed`                                                                                            | Not run | Fixtures do not exist; `packages/contracts` is Phase 2.                                                                                                  |
-| Keyboard-only completion of the 20 `§22.6` journeys, with the exact key sequence recorded                                                                                             | Not run | No routes, no browser. `pnpm test:e2e` is a stub.                                                                                                        |
-| Skip link reaches `main`                                                                                                                                                              | Not run | `.skip-link` exists in `tokens.css` and is correctly `:focus`-triggered; whether it lands on `main` is a layout fact.                                    |
-| Combobox keyboard contract: arrows move, Enter commits, Escape closes, no trap                                                                                                        | Not run | The primitive ships no key handling (F16); there is nothing to test until the caller supplies it.                                                        |
-| Screen-reader pass — VoiceOver + Safari                                                                                                                                               | Not run | Not installed and not installable here.                                                                                                                  |
-| Screen-reader pass — NVDA + Firefox                                                                                                                                                   | Not run | as above                                                                                                                                                 |
-| Announced segment order: airline, flight number, origin/destination, scheduled time with airport code and zone, current time with code and zone, status, delay, provenance, freshness | Not run | No segment component exists. `AGENTS.md §3.3` makes a time without its zone a defect; that is a Phase 10 review item.                                    |
-| DOM order equals travel order; no `order`, `dense`, `row-reverse` or absolute positioning decoupling visual from DOM order                                                            | Not run | No itinerary component exists. The cockpit grid in `primitives.css` is source-ordered and single-column below 1024px, which is the right starting point. |
-| Landmarks: one `banner`, one `main`, one `contentinfo`; `nav` uniquely labelled                                                                                                       | Not run | Layouts are `frontend-ui-engineer`'s, Phase 10. F13 is a known future violation.                                                                         |
-| Heading structure: one `h1`, no skipped levels, `§18.5` order reproduced by a heading-list jump                                                                                       | Not run | No cockpit exists. F14 is a known future violation.                                                                                                      |
-| Error summary on submit: rendered at the top, focus moved to it, each entry linked to its field                                                                                       | Not run | No form flow exists. `Field` supplies the per-field half correctly.                                                                                      |
-| SC 3.3.7 Redundant Entry across the itinerary builder and checkout                                                                                                                    | Not run | Flows do not exist.                                                                                                                                      |
-| SC 3.2.6 Consistent Help                                                                                                                                                              | Not run | No support affordance exists.                                                                                                                            |
-| SC 3.3.8 Accessible Authentication, including the Turnstile alternative                                                                                                               | Not run | Auth is Phase 7; passwordless is compliant in principle, the challenge is the risk.                                                                      |
-| 200 % browser zoom at 375 and 1440                                                                                                                                                    | Not run | Needs a browser. The system is rem-based with no text container locked to a height, which is the precondition.                                           |
-| SC 1.4.10 Reflow at 320 CSS px                                                                                                                                                        | Not run | as above. F20 is a latent risk in the legacy layer.                                                                                                      |
-| SC 1.4.12 Text Spacing overrides (1.5× line height, 2× paragraph, 0.12em letter, 0.16em word)                                                                                         | Not run | as above. Shipped `--line-height-body` is 1.55, already above the 1.5 the SC applies.                                                                    |
-| SC 1.4.13 dismissible / hoverable / persistent, in a browser                                                                                                                          | Not run | Determined by code inspection to fail — B5. A browser pass will confirm the fix.                                                                         |
-| Touch targets measured on real renders: checklist checkboxes, segment chevrons, alert toggles, ad dismiss, sticky bottom bar                                                          | Not run | Only the primitives' declared minimums could be checked (§3). The composed patterns do not exist.                                                        |
-| SC 2.4.11 Focus Not Obscured against sticky headers and the mobile bottom bar                                                                                                         | Not run | No sticky element exists yet.                                                                                                                            |
-| Ad iframe `title`, "Advertisement" association, no focus trap                                                                                                                         | Not run | No ad unit is wired. F13 is the structural finding available today.                                                                                      |
-| Consent banner: keyboard reachable, no focus trap, does not obscure focused content                                                                                                   | Not run | No banner exists.                                                                                                                                        |
-| Lighthouse accessibility 100, public and app                                                                                                                                          | Not run | `pnpm quality` cannot complete; five of its steps are stubs (§11).                                                                                       |
+| Check                                                                                           | Result                                            | Evidence                                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| axe `wcag2a` `wcag2aa` `wcag21a` `wcag21aa` `wcag22aa`, every served `§18.1` route, both themes | **Passing** — 0 violations in 80 runs, twice      | §15.3, re-run §15.15                                                                                                                                               |
+| axe on the two conditional routes, both themes                                                  | **Passing** — 0 violations in 8 runs, twice       | §15.3, re-run §15.15                                                                                                                                               |
+| axe with `prefers-reduced-motion: reduce`, every route, both themes                             | **Passing** — included in the 88 runs             | §15.3                                                                                                                                                              |
+| axe on every `§18.2` private route                                                              | Not run                                           | No `§18.2` route exists in this build; they are Phases 5–8.                                                                                                        |
+| axe across the `§17` state fixtures rendered by S3                                              | **Passing** — 17 states reached, 0 violations     | §15.3. The states S3 does not render are listed there with the phase that adds them.                                                                               |
+| Keyboard-only completion of the S3 journeys, with the key sequence recorded                     | **Passing** — 6 journeys                          | §15.6                                                                                                                                                              |
+| Keyboard-only completion of the 20 `§22.6` journeys                                             | Not run                                           | Fourteen of the twenty need routes or a provider that do not exist yet. The six reachable ones are in §15.6.                                                       |
+| Skip link reaches `main`                                                                        | **Passing**                                       | §15.6. Measured at 375 and 1440: first tab stop, becomes visible, `#main`, next Tab lands inside `main`. F33 is a hardening request, not a failure.                |
+| Combobox keyboard contract: arrows move, Enter commits, Escape closes, no trap                  | Not run                                           | The airline listbox has no options (Phase 3 reference data), so it never opens. No trap: measured, §15.6.                                                          |
+| Screen-reader pass — VoiceOver + Safari                                                         | Not run                                           | Not installed and not installable here. §15.7 reads the accessibility tree instead and says what that cannot replace.                                              |
+| Screen-reader pass — NVDA + Firefox                                                             | Not run                                           | as above                                                                                                                                                           |
+| Announced segment order, with airport code and zone on every time                               | **Passing**                                       | §15.7                                                                                                                                                              |
+| DOM order equals travel order; no `order`, `dense`, `row-reverse` or absolute decoupling        | **Passing**                                       | §15.7                                                                                                                                                              |
+| Landmarks: one `banner`, one `main`, one `contentinfo`; `nav` uniquely labelled                 | **Passing**                                       | §15.7                                                                                                                                                              |
+| Landmark names unique within a page                                                             | **Passing** — F26 closed at the re-review         | §15.15. 0 `landmark-unique` results in 88 runs.                                                                                                                    |
+| Heading structure: one `h1`, no skipped levels                                                  | **Passing** — 20 of 20 pages                      | §15.7                                                                                                                                                              |
+| `§18.5` cockpit order reproduced by a heading-list jump                                         | **Passing** — 14 of 14 at the re-review           | §15.15. F25 closed.                                                                                                                                                |
+| Error summary on submit: rendered at the top, focus moved to it, each entry linked to its field | **Passing**                                       | §15.6                                                                                                                                                              |
+| `aria-invalid` and `aria-describedby` set per invalid field                                     | **Passing**                                       | §15.6                                                                                                                                                              |
+| SC 3.3.7 Redundant Entry                                                                        | Not run                                           | No multi-step flow and no checkout exists.                                                                                                                         |
+| SC 3.2.6 Consistent Help                                                                        | **Passing** in the conditional build              | `/contact/` is reachable from the footer of every page and sits in the same place on each. Without `PUBLIC_CONTACT_EMAIL` no support affordance is emitted at all. |
+| SC 3.3.8 Accessible Authentication                                                              | Not run                                           | Auth is Phase 7. No challenge and no login exists.                                                                                                                 |
+| 200 % browser zoom at 375 and 1440                                                              | **Passing**                                       | §15.10                                                                                                                                                             |
+| SC 1.4.10 Reflow at 320 CSS px                                                                  | **Passing** — 20 of 20 exact at the re-review     | §15.15. B8 and F31's reflow half closed.                                                                                                                           |
+| SC 1.4.12 Text Spacing overrides                                                                | **Passing** at 1440, 375 and 320 at the re-review | §15.15                                                                                                                                                             |
+| SC 1.4.13 dismissible / hoverable / persistent                                                  | Not applicable                                    | No tooltip, no hover card and no `title` attribute is rendered on any served route. Measured, §15.7.                                                               |
+| Touch targets at 375: every non-inline target ≥ 44 × 44 px                                      | **Passing** — 22 of 22 routes, 0 below floor      | §15.16. F41 closed: the feedback address measures 196 × 47.                                                                                                        |
+| SC 2.5.8 at 1440, including the spacing exception                                               | **Passing** — measured                            | §15.10                                                                                                                                                             |
+| SC 2.4.11 Focus Not Obscured                                                                    | **Passing**                                       | §15.6. No sticky or fixed element exists on any served route; measured, not assumed.                                                                               |
+| Focus indicator measured from rendered pixels against both neighbours, both themes              | **Passing** — tightest 3.52:1                     | §15.6                                                                                                                                                              |
+| Contrast unchanged under the ambient motifs                                                     | **Passing**, with F35                             | §15.9                                                                                                                                                              |
+| Reduced motion collapses every permitted item (ADR 0003 rule 4)                                 | **Passing**                                       | §15.8                                                                                                                                                              |
+| Ad iframe `title`, "Advertisement" association, no focus trap                                   | Not applicable                                    | No ad unit and no iframe is rendered on any served route. Measured, §15.7.                                                                                         |
+| Consent banner: keyboard reachable, no focus trap, does not obscure focused content             | Not applicable                                    | No banner exists.                                                                                                                                                  |
+| Dialog: focus in, trapped, restored, Escape, `aria-modal`, background inert                     | **Passing** on the one shipped modal              | §15.6. F15 is closed on every shipped surface and stays open against the two unrendered primitives.                                                                |
+| Lighthouse accessibility 100, public and app                                                    | Not run                                           | `pnpm quality` exits non-zero at `pnpm test:workers`, which is a deliberate Phase 12 stub, before any Lighthouse step. §15.12.                                     |
 
 ---
 
@@ -1006,6 +1038,32 @@ carrying: focus order, reading order, meaningful live-region use, accessible-nam
 traps in a custom combobox, whether a time carries its airport code and zone, and whether the
 announced itinerary makes sense to a person standing at a gate.
 
+**Executed 2026-09-12**, ahead of Phase 12, against the twenty served S3 routes. The runner was
+written for this review and lives in the session scratchpad, outside the repository; `qa-test-architect`
+still owns the CI implementation. Parameters actually used: axe-core 4.13.0, Chromium 1194 through
+Playwright, viewport 1440 × 900, tags `wcag2a` `wcag2aa` `wcag21a` `wcag21aa` `wcag22aa`, and the
+matrix `{light, dark} × {no-preference, reduce}` — four runs per route rather than two, because ADR
+0003 rule 4 makes reduced motion a state the page can be wrong in. axe was served from a same-origin
+URL through request interception rather than injected inline, so the page's real
+`script-src 'self'` policy stayed enforced for the whole run; injecting it inline disables the CSP
+under test and the first attempt failed loudly, which is the behaviour to keep. Results: §15.3, and
+the identical re-run against the fix loop in §15.15.
+
+**Five regression assertions beyond axe**, specified here because each one is a defect axe returned
+clean on, and each has now been fixed once. `qa-test-architect` owns the implementation.
+
+1. `document.scrollingElement.scrollWidth === window.innerWidth` at a 320 px viewport, on every
+   route. B8 was two routes scrolling sideways with zero axe violations.
+2. Every `role="progressbar"` on every route: `aria-label`, the first clause of `aria-valuetext`,
+   and the band word are three different strings (`docs/VOICE.md §9.1`). B9 and F27 were both this
+   rule, in different slots.
+3. Every `<table>` in prose is inside an element with `role="region"`, `tabindex="0"` and a resolving
+   `aria-labelledby`; every `<th>` carries a `scope`. F31.
+4. No `aria-busy` attribute survives on a page that is not loading, and no `aria-live` attribute
+   exists on a served route at all. F28, and the live-region rule in §15.7.
+5. No element's accessible name ends with the word its own `<dt>` uses as a label — the
+   "Delayed Status" shape. F29, and F39 which is the same defect one component over.
+
 ---
 
 ## 13. The accessibility statement page — contract
@@ -1014,7 +1072,9 @@ A public accessibility statement is required at Phase 11 and is not written yet.
 for whoever builds it, so it cannot be filled with a claim nobody measured.
 
 **Route.** `/accessibility/`, linked from the footer of every public page, alongside the
-`DIRECTIVE.md §35` independence disclaimer.
+`DIRECTIVE.md §3.4` independence disclaimer. (The 2026-09-11 revision cited `§35` for that
+disclaimer. That was wrong: `§3.4` is the section `AGENTS.md §1.4` points at, and it is corrected
+here rather than left to be copied into the page.)
 
 **Owner.** Page shell `frontend-ui-engineer`; prose `ux-copy-steward`; every factual claim in it must
 come from this document and must be reviewed by `accessibility-lead` before publication.
@@ -1038,6 +1098,81 @@ come from this document and must be reviewed by `accessibility-lead` before publ
    expensive: a traveler who trusts an inaccurate statement and cannot complete a booking-critical
    task has been misled.
 
+### 13.1 Review of the statement as drafted — 2026-09-12
+
+`ux-copy-steward` has written the prose (`apps/web/src/lib/copy/pages.ts`, `pages.accessibility`) and
+`frontend-ui-engineer` the shell (`apps/web/src/pages/accessibility/`). Both are emitted only when
+`PUBLIC_CONTACT_EMAIL` is set, so nothing is published today. I built the page with that variable set
+to a review-only value, read the rendered result, and checked every factual claim against this
+document.
+
+**The shape is right and the tone is right.** All seven required contents are present, in their own
+headed sections, with one `h1` and no skipped levels. "Partially conformant" is the honest word and
+it is given in plain language with a reason. The `noClaim` sentence — "This statement does not say
+that DelayPilot is accessible, or that it meets every standard" — is exactly §13.7 and is better
+written than the contract that asked for it. The known-issues list gives each finding an id, an
+affected surface, a criterion and an expected fix. The method section names self-assessment and the
+independence of the reviewer. axe reports zero violations on the page in all four run combinations.
+
+**It may not publish as written.** Every sentence below states something that this review has now
+made untrue, or that was never measured. This is the ordinary consequence of a statement written
+before the review it describes; it is listed sentence by sentence so nothing has to be guessed.
+
+| #   | Field                   | The sentence as drafted                                                                                                                                                                  | Why it must change                                                                                                                                                                                                                                                  |
+| --- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `lastVerified`          | `2026-09-11`                                                                                                                                                                             | The most recent review is 2026-09-12 (§15). A date that is one day stale is a small thing; a date that points at a review with a narrower scope than the one that has happened is a statement about coverage, and it understates it.                                |
+| 2   | `lastVerifiedBody`      | "It covers the design system: the color tokens, the focus system, reduced motion, and the accessible semantics of the shared components."                                                | No longer the scope. §15 covers twenty-two routes, keyboard operation, focus measured from pixels, zoom, reflow, text spacing and touch targets.                                                                                                                    |
+| 3   | `statusBody`            | "The route-level checks, the keyboard passes, and the screen-reader passes have not been run, so no stronger word would be true."                                                        | Two-thirds false. Route-level checks and keyboard passes have been run. Only the screen-reader passes have not. "Partially conformant" remains the right word, for a better reason: two AA failures are open (B8, B9), and that is what the sentence should say.    |
+| 4   | `notTestedBody`         | "Automated checks on each route, keyboard-only passes of the main journeys, screen-reader passes, browser zoom, reflow at a narrow width, and text-spacing overrides have not been run." | Five of the six have been run. Only the screen-reader pass has not. Leaving this sentence up would understate the product to a reader who is deciding whether to trust it.                                                                                          |
+| 5   | `environmentsIntro`     | "The checks that have been run were run without a browser"                                                                                                                               | False. Chromium 1194 through Playwright ran every route-level check. Add Chromium and axe-core 4.13.0 to the `environments` list with their versions, as §13.4 requires.                                                                                            |
+| 6   | `environmentsNotTested` | "No browser and no screen reader has been used."                                                                                                                                         | Half false. Keep the screen-reader half exactly as written — "no Safari with VoiceOver result here, no Firefox with NVDA result, and none is implied by anything above" states the limit precisely and must survive the edit.                                       |
+| 7   | `standardBody`          | "the minimum touch target is larger than the guideline floor"                                                                                                                            | True at 375 px, where every non-inline target measures ≥ 44 × 44. Not true at 1440 px, where five guide-card title links measure 343 × 23 and pass SC 2.5.8 only through its spacing exception (§15.10). Scope the sentence to the mobile layout, or fix the links. |
+| 8   | `knownIssues` F22       | listed as open                                                                                                                                                                           | Closed. Measured in a `PUBLIC_SITE_URL` build: `og:image:alt` is "DelayPilot — Stay ahead of flight disruptions." and `twitter:card` is `summary_large_image`, on 20 of 20 pages (§15.2). Remove it, or move it to a closed list.                                   |
+| 9   | `knownIssues` F15       | "Content behind an open dialog is not made inert … a pointer or a stylus can still reach it."                                                                                            | Not true of anything a reader of this site can open. The only modal shipped is the native `<dialog>` in the header, and `showModal()` makes the background inert at the platform level — measured (§15.6). Scope it to the unreleased primitives or drop it.        |
+| 10  | `knownIssues`           | four entries                                                                                                                                                                             | Incomplete. B8, B9 and F25–F38 are open against served routes and belong here, with their criteria, before the page publishes.                                                                                                                                      |
+| 11  | `feedbackNoJavaScript`  | "This page and the address below work without JavaScript and without solving a puzzle."                                                                                                  | The address is rendered **above** that sentence, not below it. On a page whose argument is that it does not round anything up, a wrong spatial reference is the wrong kind of error to ship.                                                                        |
+| 12  | (missing)               | —                                                                                                                                                                                        | §13.5 requires a stated response time in the feedback section. "We aim to reply within five working days" exists only on `/contact/`, and `/accessibility/` neither states it nor links there. Add the response time, or link to `/contact/` in words.              |
+
+Owner of 1–11: `ux-copy-steward` (`apps/web/src/lib/copy/pages.ts`). Owner of 12: `ux-copy-steward`
+for the string, `frontend-ui-engineer` for the link if that is the route chosen. Owner of the
+address-ordering half of 11: `frontend-ui-engineer` (`apps/web/src/pages/accessibility/`), if the fix
+is to move the address rather than reword the sentence.
+
+**Re-review required.** The statement is a factual claim about this document, so it does not publish
+on the copy owner's say-so: send the revised prose back here and I will check it against §15 again.
+
+### 13.2 Re-read of the revised statement — 2026-09-12, second pass
+
+`ux-copy-steward` revised `pages.accessibility` and `frontend-ui-engineer` reordered the feedback
+section. I rebuilt both conditional routes with `PUBLIC_CONTACT_EMAIL=review@example.invalid` — a
+scratch value, never committed, in a scratch `outDir` — and read the rendered page against the twelve
+rows above, one at a time.
+
+**All twelve are addressed.** Row by row: `lastVerified` is `2026-09-12` (1); the scope sentence now
+names routes, states, keyboard, focus, zoom, reflow, text spacing and targets (2); the status
+sentence says two AA failures are open and that route-level and keyboard passes have run while the
+screen-reader pass has not (3, 4); the environments section names Chromium 1194, axe-core 4.13.0,
+Node 22.22.2, Vitest 4.1.10 and React DOM 19.3.0 with versions (5) and keeps the screen-reader
+sentence — "There is no Safari with VoiceOver result here, no Firefox with NVDA result, and none is
+implied by anything above" — intact, with "One browser engine was used, not several" added, which is
+a limit I had not asked for and should have (6); the target sentence is scoped to the mobile layout
+and names the spacing exception on wider ones (7); F22 is gone (8); F15 is scoped to the two
+unreleased primitives and says the shipped drawer's inertness was measured (9); the known-issues list
+carries B8, B9, F15, F23 and F25–F38 (10); the no-JavaScript sentence reads "This page and the email
+address on it work without JavaScript and without solving a puzzle." and renders **above** the
+address, so nothing points the wrong way (11); and "We aim to reply within five working days."
+renders on the page (12). **F36 and F37 close.**
+
+**And it is now out of date in the other direction, which is F40.** This re-review closed B8, B9 and
+eleven of the fourteen findings, so a page that lists them as open overstates what is wrong, and the
+sentence "Two Level AA failures are open on routes you can reach right now" is no longer true. That
+is not a drafting error; it is the lag a conformance statement always has against the review it
+describes, and it is exactly why §13 says the page does not publish on the copy owner's say-so.
+Nothing false is published today: neither route is emitted unless `PUBLIC_CONTACT_EMAIL` is set, and
+it is not set in the gate build. What F40 needs is in §15.15.
+
+**One measurement the page failed.** The feedback address is a 196 × 23 px link at 375 px — F41.
+
 ---
 
 ## 14. Reproducing this review
@@ -1060,10 +1195,841 @@ Nothing here requires trusting this document.
 
 ---
 
-## 15. Revision history
+## 15. Phase 10 review — S3 routes
 
-| Date       | Phase                                   | Verdict                      | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ---------- | --------------------------------------- | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-11 | Phase 9 (visual-overhaul session S2)    | **BLOCKED — 6 blockers**     | First revision. Tokens, contrast, focus, reduced motion, primitive semantics, mark legibility, motif inventory. Route-level, keyboard, screen-reader, zoom and Lighthouse results are Phase 12 and are recorded as Not run.                                                                                                                                                                                                                                                                                                                                                                              |
-| 2026-09-11 | Phase 9 re-review, tree `63005a3`       | **BLOCKED — 1 blocker (B7)** | B1–B6 verified closed and B7 raised: the fix for B3 put the band word inside a `role="progressbar"`, whose children are presentational, so `bandLabel` reaches the eye and not the accessibility tree (SC 1.3.1). Thirteen of the seventeen findings closed; F15, F22 and F23 remain with their original owners. Contrast re-measured: 101 unique rendered pairs, 202 measurements, zero below floor. Mark decision unchanged — the artwork is byte-identical. Phase 12 cells still Not run, for the same reason.                                                                                        |
-| 2026-09-11 | Phase 9 B7 re-review, tree at `9dd1f75` | **GREEN**                    | B7 closed: `aria-valuetext` carries the reading and the band, verified from three rendered fixture states, with the visible readout intact. The `aria-describedby` alternative I had offered is recorded as rejected, correctly — it would have forced either a doubled announcement or a screen-reader-computed percentage, which is a published-precision defect. No token changed, so the contrast result is unchanged. F24 raised (copy, `ux-copy-steward`). Phase 9 has no open blocker; F15, F22, F23 and F24 remain with their owners for Phases 10–11, and every Phase 12 cell is still Not run. |
+> **VERDICT OF THE FIRST PASS: BLOCKED.** Two blockers, B8 and B9, both AA failures on served
+> routes. Fourteen findings, F25–F38, none of them blocking. F22 and F24 are closed by measurement;
+> F15 is closed on every surface this release actually ships; F17 and F23 are unchanged and
+> unexercised.
+>
+> **This verdict has been superseded. §15.15 is the current one, and it is GREEN.** Everything from
+> here to §15.14 is left exactly as it was filed, so the blockers can be read as they were written
+> and the fix can be checked against the wording it was given.
+
+This is not a conditional pass and it is not a near miss. B8 makes two routes scroll sideways at the
+width a reader using 400 % zoom gets, and B9 tells a screen-reader user that a meter measures
+something it does not measure. Both are small fixes. Neither is small in effect.
+
+Everything else held up. Eighty-eight axe runs across twenty-two routes in both themes and both
+motion preferences returned zero violations at any impact level. Every interactive element on every
+route is reachable and operable from the keyboard, with a focus indicator I measured from rendered
+pixels rather than from a token, at 3.52:1 or better against both of its neighbours in both themes.
+Reduced motion collapses every permitted item to a static frame. Every time carries its airport code
+and its zone. The connection cockpit publishes the whole of `T` — all seven terms, including the four
+that do not apply — beside `W` and `S`, as a real table. Nothing is announced that should be silent:
+there is not one `aria-live` region on any served route, and the lookup moves focus instead.
+
+### 15.1 What was reviewed
+
+The twenty routes served by the S3 build, plus the two that are emitted only when
+`PUBLIC_CONTACT_EMAIL` is set:
+
+`/` · `/flight-status/` · `/delay-risk/` · `/connection-risk/` · `/passenger-rights/` · `/guides/` ·
+the five guide articles · `/methodology/` · `/data-sources/` · `/about/` · `/privacy/` · `/terms/` ·
+`/editorial-policy/` · `/advertising-policy/` · `/affiliate-disclosure/` · `/404.html`; conditionally
+`/accessibility/` and `/contact/`.
+
+Not reviewed, because they do not exist in this build: every `DIRECTIVE.md §18.2` private route,
+`/pricing/`, `/status/`, and the `airlines` / `airports` / `routes` families. A route family is never
+certified by a sibling, and a route that is not built is not certified at all (`AGENTS.md §6`).
+
+`§17` states reached and exercised: `initial`, `searching`, `no match`, `invalid flight`,
+`multiple matches`, `provider unavailable`, `rate limited`, `stale`, `partial data`,
+`conflicting providers`, `demo`, `empty`, `unknown`, `billing not configured`, and the connection
+states `protected`, `self-transfer` and `insufficient data`. States that need a contract, a provider
+or a trip — `already missed`, `offline`, `error boundary`, `maintenance`, `consent required`,
+`ad blocked`, everything under Trip, Billing beyond not-configured, and Notifications — are not
+reachable and are not claimed.
+
+**Environment.** Node 22.22.2, Chromium 1194 through Playwright, axe-core 4.13.0, the built `dist`
+served by a static server that applies the real `apps/web/public/_headers` policy, so every run was
+held to `default-src 'self'; script-src 'self'; style-src 'self'` with no `unsafe-inline`. No screen
+reader: none is installed here and none is installable. Every harness was written to the session
+scratchpad, outside the repository.
+
+**The tree under review is the committed tree `d35f69c`, and it is not the working tree.** Other
+agents were editing in this workspace while the review ran: `git status` went from one modified file
+at the start to forty-five at the end, among them `apps/web/src/lib/copy/pages.ts` (modified after my
+last build) and `apps/web/src/lib/copy/bands.ts`. Every measurement in this section is of the build
+of `d35f69c`, verified by the `dist` hash above. I re-read the two copy files afterwards to check
+whether their changes touched anything I had just reviewed: `pages.ts` adds 38 lines to a source
+docblock and does not touch `pages.accessibility`, so §13.1 stands as written; `bands.ts` moves a
+minutes helper and does not change any string that reaches a meter, so F24's closure — which was
+verified from the built HTML, not from the source — stands. **Nothing else in those forty-five files
+is reviewed here.** A route whose copy or markup changes after this pass needs the pass again.
+
+**Two scratch builds were made and discarded.** One with `PUBLIC_SITE_URL=https://example.invalid`
+to check F22, one with `PUBLIC_CONTACT_EMAIL=review@example.invalid` to reach the two conditional
+routes. Neither value was committed. `apps/web/dist` was rebuilt from the committed tree afterwards
+and the md5 of the md5s of all its files is identical to the one taken before the scratch builds
+(`f54c6cfb03c5a2e0ab60d2a9902ee1d6`), so the tree under review is the tree that was reviewed.
+
+### 15.2 Status of the four carried findings, and of B8–B9
+
+Statuses in this table are as of the first pass. B8 and B9 have since been closed by measurement and
+the carried findings re-checked; §15.15 carries the current status of every one of them.
+
+| #   | Status                                                                            | Verified how                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --- | --------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F15 | **Closed on every shipped surface**; stays open against the unrendered primitives | The one modal in the build is the header's native `<dialog>` opened with `showModal()`. Measured with the drawer open at 375: `:modal` true, `document.elementFromPoint` at the far corner of the viewport returns the dialog rather than the page behind it, `html` computes `overflow: hidden`, forty consecutive Tab presses produced nine stops and every one was inside the drawer, Escape closed it and returned focus to "Open menu" with `aria-expanded` back to `false`. `packages/ui/src/primitives/Dialog.tsx` and `Drawer.tsx` still lack `inert` and are rendered on no route — `dp-overlay` appears zero times in the built HTML — so the finding survives against them and cannot be hit by a reader. |
+| F17 | **Not reproducible in S3**; stays open                                            | Zero `target="_blank"` and zero off-site `href` in any of the twenty-two built pages, so no link opens a new tab and there is nothing for the string to announce. `nav.newTab` = `opens in a new tab` exists and is asserted by `copy.test.ts:961`. Re-check at the phase that adds official-source links.                                                                                                                                                                                                                                                                                                                                                                                                           |
+| F22 | **Closed 2026-09-12**                                                             | Built with `PUBLIC_SITE_URL` set. `og:image:alt` = `DelayPilot — Stay ahead of flight disruptions.` and `twitter:image:alt` the same, `twitter:card` = `summary_large_image`, on 20 of 20 pages. With the variable unset the image tags are omitted entirely and the card falls back to `summary`, which is the correct degradation: no image, no alt needed.                                                                                                                                                                                                                                                                                                                                                        |
+| F23 | **Open by decision; fallback confirmed**                                          | `--brand-mark-accent` is declared nowhere — not in `tokens.css`, not in the built stylesheet — so the advance dot renders its literal fallback `#087fbd` in both themes. I re-measured it against the header surface it sits on: **3.52:1 light** (`#dce8f2`) and **4.31:1 dark** (`#07111f`). No success criterion applies to a logotype, so nothing is failing; the guard stands as written. If `frontend-ui-engineer` ever declares the property it must be per theme and registered in `pairs.ts`.                                                                                                                                                                                                               |
+| F24 | **Closed 2026-09-12**                                                             | The string `Unknown, Unknown` appears zero times in the built HTML of all twenty-two pages. The unknown meter on `/connection-risk/` announces `aria-valuetext="Slack unknown, Unknown"` with `aria-valuenow` correctly omitted. `bands.ts` now states the rule as a rule — no `valueText` may equal its `bandLabel` — and `copy.test.ts` locks it across every band and every null combination, so it cannot come back by accident. See F27 for the one place the same class of stutter reappeared against the accessible _name_ instead of the band.                                                                                                                                                               |
+| B8  | Open at the first pass; **closed 2026-09-12**                                     | Filed in §15.4, closed in §15.15                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| B9  | Open at the first pass; **closed 2026-09-12**                                     | Filed in §15.4, closed in §15.15                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+
+### 15.3 axe — 88 runs, zero violations
+
+Run per §12: axe-core 4.13.0, tags `wcag2a` `wcag2aa` `wcag21a` `wcag21aa` `wcag22aa`, 1440 × 900,
+each route four times — `{light, dark} × {no-preference, reduce}`.
+
+```
+axe-core 4.13.0 | runs: 80 | WCAG A/AA violations: 0 | incomplete: 20 | best-practice: 4 | console errors: 0
+axe-core 4.13.0 | runs:  8 | WCAG A/AA violations: 0 | incomplete:  0 | best-practice: 0 | console errors: 0
+```
+
+The second line is the two conditional routes. Eighty-eight runs, **zero violations at any impact
+level**, zero CSP refusals and zero page errors with the real served policy in force.
+
+**The 20 incomplete results are all one rule and they are resolved, not waived.** Every one is
+`color-contrast` with the message "Element's background color could not be determined because it is
+overlapped by another element", on `/` (up to 63 nodes), `/flight-status/` (10), `/connection-risk/`
+(6), `/methodology/` (2) and `/data-sources/` (1). The overlapping element is the ambient motif layer
+at `z-index: -1`, which axe cannot see through. Waiving an `incomplete` because it is inconvenient is
+how a contrast failure ships, so I measured the same question directly from rendered pixels instead:
+§15.9 diffs each motif region with the motif painted and with it hidden, restricted to text bounding
+boxes, and reports the one text run that is actually affected and by how much. Result: no measured
+pair falls below floor in either theme.
+
+**Best practice, reported and not blocking.** One rule, four runs, on `/connection-risk/`:
+`landmark-unique`, two nodes, "The landmark must have a unique aria-label, aria-labelledby, or title
+to make landmarks distinguishable". That is F26 and it is a real navigation problem even though axe
+files it below the line. Every other route returned zero best-practice violations, including the
+homepage with its fifteen-section cockpit — F13 and F14, the two best-practice findings predicted by
+the Phase 9 review, do not occur, because `AdSlot` and `Dialog` are rendered nowhere.
+
+### 15.4 The blockers
+
+#### B8 — Two routes need horizontal scrolling at 320 CSS px
+
+|        |                                                                                                       |
+| ------ | ----------------------------------------------------------------------------------------------------- |
+| Files  | `apps/web/src/layouts/app.css:1204` (`.dpx-cockpit`) and `:1381` (`.dpp-segment, .dpp-connection, …`) |
+| Routes | `/` and `/connection-risk/`                                                                           |
+| SC     | 1.4.10 Reflow (AA)                                                                                    |
+| Owner  | `frontend-ui-engineer`                                                                                |
+
+**Observed.** At a 320 CSS px viewport — what a reader gets at 400 % zoom on a 1280 px screen, which
+is the width SC 1.4.10 names — the document scrolls sideways:
+
+| Route               | viewport | `document.scrollWidth` | overflow |
+| ------------------- | -------- | ---------------------- | -------- |
+| `/`                 | 320      | 357                    | 37 px    |
+| `/connection-risk/` | 320      | 376                    | 56 px    |
+| `/connection-risk/` | 375      | 376                    | 1 px     |
+
+The content pushed off-screen is ordinary text, not a data table: the demonstration banner, the
+cockpit section titles, and the definition rows that carry the travel date, the traveler count and
+the monitoring state. A reader at 400 % zoom has to scroll right to finish a sentence and left to
+start the next one.
+
+**Root cause, measured rather than guessed.** Walking the tree from `<body>` and comparing each
+child's right edge against its parent's content box puts the overflow at exactly one place:
+
+```
+INTRODUCED AT: SECTION.dp-card.dp-card--raised (w=341) inside DIV.dpx-cockpit (content right=304, w=288)
+INTRODUCED AT: DIV.dpp-connection__components (w=307) inside SECTION.dp-card (content right=288, w=256)
+```
+
+`.dpx-cockpit` and `.dpp-connection` are both `display: grid`. A grid item's automatic minimum size is
+its content-based minimum, and cloning each child into a `width: min-content` probe shows one item
+that cannot shrink: the connection card, min-content **341 px** on `/` where 288 px is available, and
+inside it `.dpp-connection__components`, min-content **307 px** where 256 px is available. Every other
+child measures between 62 px and 207 px and would fit.
+
+The intrinsic width comes from the transfer-component `<table>`, min-content 395 px on `/`. `.dp-table`
+is a scroll container (`packages/ui/src/primitives/primitives.css:992`, `overflow-x: auto`), and a
+scroll container's automatic minimum size **is** zero — but only when it is itself the flex or grid
+item. Here it is a block inside the plain, unstyled `div.dpp-connection__components`, so the
+intrinsic width propagates straight through to the grid item and the column grows to fit it.
+
+**Required.** Give the grid items a zero automatic minimum so the scroll container can do the job it
+was built for: `min-inline-size: 0` on `.dpp-connection__components` and on the grid items of
+`.dpx-cockpit` and the `.dpp-*` rule set at `app.css:1381`. Re-verify by measurement, not by eye:
+`document.scrollingElement.scrollWidth` must equal `window.innerWidth` at a 320 px viewport on `/`
+and `/connection-risk/`, and the component table must then scroll inside its own `role="region"` box,
+which is already keyboard reachable (Phase 9 B6).
+
+**Not in scope of this blocker but the same root cause:** the 1 px overflow on `/connection-risk/` at
+375 px, and the amplified failure under the SC 1.4.12 text-spacing overrides (§15.10). Fixing B8
+fixes all three.
+
+#### B9 — The `/delay-risk/` band meter is announced as a connection-slack measurement
+
+|         |                                                                                    |
+| ------- | ---------------------------------------------------------------------------------- |
+| File    | `apps/web/src/pages/delay-risk.astro:64` (`label={cockpit.connection.meterLabel}`) |
+| Strings | `apps/web/src/lib/copy/cockpit.ts:173`                                             |
+| SC      | 2.4.6 Headings and Labels (AA); 1.3.1 Info and Relationships (A)                   |
+| Owner   | `frontend-ui-engineer` for the prop, `ux-copy-steward` for the string it needs     |
+
+**Observed.** `/delay-risk/` is the page that explains why the product answers with a band rather than
+a number, and it renders a `BandMeter` to show the band scale. From the built HTML:
+
+```
+role="progressbar"
+aria-label="Connection slack against the required transfer time"
+aria-valuemin="0" aria-valuemax="100"
+aria-valuetext="Conditions are changing. Review the factors and keep alerts on., Watch"
+```
+
+The meter on this page shows neither connection slack nor a required transfer time. There is no
+connection on the page at all. `BandMeter` passes `label` to `ProgressBar`'s `aria-label` and renders
+it nowhere visible (`packages/ui/src/patterns/BandMeter.tsx:84`), so a sighted reader sees an unnamed
+band scale and a reader using a screen reader is told, with no way to check, that it measures the
+slack on a transfer. That asymmetry is the whole reason this role exists.
+
+The `valuetext` compounds it: a full sentence, then a full stop, then a comma, then the band —
+"Conditions are changing. Review the factors and keep alerts on., Watch". `DemoCockpit`'s own
+docblock already identified that shape as announcing badly and avoided it on the homepage; the same
+avoidance did not reach this page.
+
+**Required.** A label that names what this meter shows — the risk band on a five-stop scale — as a
+new string in `apps/web/src/lib/copy/`, and `delay-risk.astro` passing it instead of
+`cockpit.connection.meterLabel`. A reading that is a reading and not a paragraph, distinct from the
+band word per the F24 rule in `bands.ts`. While the string is being written: `cockpit.connection.meterLabel`
+itself still says "slack" while the meter it names fills required-of-available (`bands.ts` says so at
+length), so it is worth re-reading in the same pass.
+
+### 15.5 Findings F25–F38
+
+None of these blocks the gate. Each is a real defect with a named owner. **This table is the record
+of the first pass; §15.15 walks all fourteen and says what happened to each.**
+
+| #   | File                                                                                                   | SC / rule                                    | Observed                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Required                                                                                                                                                                                                                                                       | Owner                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| F25 | `packages/ui/src/primitives/Callout.tsx:44`; call sites in `apps/web/src/components/DemoCockpit.astro` | 1.3.1 Info and Relationships (A)             | `Callout` renders its `title` as `<p class="dp-callout__title">`. Two of the fifteen `§18.5` cockpit sections are `Callout`s — "Weather and airspace" and the upgrade prompt — so a heading-list jump reproduces 12 of the 14 section headings `cockpit.ts` declares, and skips exactly the two panels that say a thing is unavailable.                                                                                                                                                                                   | Give `Callout` an optional heading level (defaulting to the current `<p>`, so nothing else changes) and have `StateBlock` forward it; pass level 3 from the cockpit. The copy layer already declares both as headings.                                         | `brand-design-director` (primitive), `frontend-ui-engineer` (call sites)                       |
+| F26 | `apps/web/src/pages/connection-risk.astro`; `packages/ui/src/patterns/ConnectionCockpit.tsx`           | axe `landmark-unique` (best practice); 1.3.1 | `/connection-risk/` renders three cockpits. Each is a `region` named "Connection" and each contains a `region` named "Every component of the required transfer time". A landmark list therefore offers six entries under two names, and nothing distinguishes the protected case from the self-transfer case from the insufficient-data case.                                                                                                                                                                             | Give each instance a distinct heading and a distinct table caption — the topology is already the distinguishing fact. Three identically named landmarks are also how the same page will read once a real trip has two connections.                             | `frontend-ui-engineer`, with `ux-copy-steward` for the per-instance strings                    |
+| F27 | `apps/web/src/lib/copy/cockpit.ts` (`assessment.bandLabel`), used twice in `DemoCockpit.astro:214-215` | accessible-name quality                      | The homepage assessment meter has `aria-label="Risk band"` and `aria-valuetext="Risk band, Disrupted"`, so it announces "Risk band … Risk band, Disrupted". The F24 rule stops `valueText` colliding with `bandLabel`; this is the same stutter one field over, against the accessible name.                                                                                                                                                                                                                              | A reading that is not the control's own name. The panel already carries the `§27` sentence above it, so the meter needs only the band and whatever qualifies it.                                                                                               | `ux-copy-steward`                                                                              |
+| F28 | `apps/web/src/pages/flight-status.astro`; `packages/ui/src/patterns/StateBlock.tsx:96`                 | 4.1.2 Name, Role, Value (A)                  | `/flight-status/` illustrates the `searching` state with a live `LoadingBlock`, so the page permanently exposes `role="group" aria-label="Track a flight" aria-busy="true"` while nothing is loading. Assistive technology that honours `aria-busy` may defer or skip the whole illustrated block.                                                                                                                                                                                                                        | An illustration variant that keeps the visible skeleton and the message and drops `aria-busy`, or the same block rendered without the attribute on this page. A state that is not true must not be in the accessibility tree.                                  | `frontend-ui-engineer`                                                                         |
+| F29 | `packages/ui/src/patterns/SegmentCard.tsx:99`                                                          | accessible-name quality                      | The card passes `detail={copy.statusLabel}` into `StatusPill`, whose `detail` prop is documented as "a duration or a count". Every segment pill therefore reads "Delayed Status", "Canceled Status" — the field's label rendered where its value belongs, on the one control a traveler reads first.                                                                                                                                                                                                                      | Pass a real detail or nothing. The `<dt>Status</dt>` row already labels the value elsewhere on the card.                                                                                                                                                       | `frontend-ui-engineer`                                                                         |
+| F30 | `apps/web/src/demo/itinerary.ts:130`                                                                   | 1.3.1 Info and Relationships (A)             | The shared `operationalDetail` pairs the label "Status" with the demonstration caption, so the disclosure announces "Status: Every airline, flight number, and airport here is invented…". The cancelled segment pairs the same label with a real status sentence, so the same label means two things on one page.                                                                                                                                                                                                        | Give the demonstration caption its own label, or render it outside the definition list. A `<dt>`/`<dd>` pair is a programmatic assertion that the value is the thing the label names.                                                                          | `frontend-ui-engineer`                                                                         |
+| F31 | `apps/web/src/layouts/app.css:1869` (`.prose table`)                                                   | 1.3.1 (A); 1.4.10 (AA); Phase 9 B6           | The rights-status table on `/passenger-rights/` has no `<caption>`, no `scope` on its `<th>`, a first column of `<td>` where the status name is the row header, and no scroll container — so it contributes 18 px of page-level horizontal scroll at 320 CSS px and, unlike every `DataTable`, cannot be scrolled from the keyboard.                                                                                                                                                                                      | Wrap prose tables in the `role="region"` / `tabindex="0"` / `aria-labelledby` scroll container the `DataTable` primitive already uses, and give the table a caption, `scope` on its headers and a row-header column.                                           | `frontend-ui-engineer` (renderer), notify `content-editorial-lead` if the fix lands in content |
+| F32 | `apps/web/src/components/LookupForm.astro:55`                                                          | hardening (2.4.3, 4.1.2)                     | The error summary is a `<div hidden tabindex="-1">` with no role and no accessible name. Focus moves to it correctly and the visible outline is drawn, but what a screen reader says on arrival is left to the browser's heuristics rather than stated.                                                                                                                                                                                                                                                                   | `role="group"` (or `region`) plus `aria-labelledby` pointing at the callout title, so arriving announces the summary by name. The rest of the flow is right and should not change.                                                                             | `frontend-ui-engineer`                                                                         |
+| F33 | `apps/web/src/layouts/BaseLayout.astro:159`                                                            | hardening (2.4.1 Bypass Blocks)              | `<main class="dpx-main" id="main">` has no `tabindex="-1"`. In Chromium the skip link works fully — measured at 375 and 1440: the hash is set, the page scrolls, and the next Tab lands on the first control inside `main`. Without `tabindex="-1"` the landmark itself never takes focus, which some browser and screen-reader pairs handle less well.                                                                                                                                                                   | `tabindex="-1"` on `<main>`. One attribute, and it removes the dependence on a browser behaviour I can verify in exactly one browser.                                                                                                                          | `frontend-ui-engineer`                                                                         |
+| F34 | `packages/ui/src/primitives/Callout.tsx:23`, `Toast.tsx:18`                                            | non-colour cue integrity                     | Both map severity `info` to the `status-unknown` glyph, so an informational notice wears the mark whose meaning in this product is the specific one of "insufficient fresh information". `Callout`'s own docblock claims "Every severity carries its own icon shape"; today it does not. A neutral `info` glyph now exists at `Icon.tsx:96` and is used by nothing.                                                                                                                                                       | Rewire both to `info`. This is my answer to the question `brand-design-director` raised, and the reasoning is in §15.11. `severityToStatusTone` may keep mapping `info` to the neutral tone — the four-tone rule is sound; it is the shape that has to differ. | `brand-design-director`                                                                        |
+| F35 | `apps/web/src/layouts/app.css:701` (`.dpx-motif--grid`, `inset-inline: 45% 0`)                         | ADR 0003 rule 2b                             | At ≥ 1024 px the grid motif's left edge reaches into the hero's text column and paints behind the last run of one line — "Track a flight, understand connection risk". Measured by diffing the region with the motif painted and hidden: 40 background pixels in light, 26 in dark. The pair moves from **4.58:1 to 4.53:1** (light) and **5.54:1 to 5.46:1** (dark). Both stay above the 4.5:1 floor, so no SC fails; rule 2b says "never behind body text in a way that changes a measured pair", and 0.05 is a change. | Pull `inset-inline` in, or cap `.dpx-hero__support`'s `max-inline-size`, so no glyph sits over the grid. Whichever is chosen, the margin is currently 0.03 — worth closing before a copy edit lengthens the line.                                              | `frontend-ui-engineer`                                                                         |
+| F36 | `apps/web/src/lib/copy/pages.ts` (`pages.accessibility`)                                               | §13 contract; `AGENTS.md §1.3`               | Eleven sentences in the accessibility statement state something this review has made untrue, and one required element is missing. Listed one by one in §13.1.                                                                                                                                                                                                                                                                                                                                                             | Revise per §13.1 and send it back here. A statement about conformance is a factual claim about this document and does not publish on the copy owner's say-so.                                                                                                  | `ux-copy-steward`                                                                              |
+| F37 | `apps/web/src/pages/accessibility/`                                                                    | §13.5                                        | The feedback section renders the address and then the sentence "This page and the address below work without JavaScript…", so "below" points upwards; and the page states no response time and does not link to `/contact/`, which is where the five-working-day line lives.                                                                                                                                                                                                                                              | Move the address below the sentence or reword it, and state the response time on the page or link to it in words.                                                                                                                                              | `frontend-ui-engineer` for the order, `ux-copy-steward` for the string                         |
+| F38 | `apps/web/src/components/InlineSvg.astro`; `apps/web/public/brand/motifs/route-globe.svg`              | markup hygiene                               | The inlined globe emits `<svg aria-hidden="true" focusable="false" … aria-hidden="true" focusable="false">` — both attributes twice, because the source file already carries what the inliner adds. Parsers keep the first and drop the rest, so nothing is wrong today; a duplicate attribute is a parse error that a future validator will report as one.                                                                                                                                                               | Strip the attributes the inliner is about to add, or stop adding ones the source already has.                                                                                                                                                                  | `frontend-ui-engineer`, with `visual-asset-director` for the source file                       |
+
+### 15.6 Keyboard operation
+
+Every walk below was driven by real key presses, from the first Tab, with the accessible name, the
+bounding box, the computed focus indicator and an occlusion test captured at each stop.
+
+**Homepage, 1440 px, light.** 47 stops, then focus left the document — no trap, no cycle. Order:
+skip link → brand → Product disclosure → Passenger rights disclosure → Guides → Methodology → About
+→ theme radio group (one stop, roving, as a radio group should be) → hero's two calls to action →
+the five lookup fields → submit → demo shortcut → the demo cockpit's disclosures and both table
+regions → link strip → five guide cards → thirteen footer links. DOM order matched visual order at
+every stop: the hero's buttons at y=350 precede the lookup at y=366, and the lookup's five fields run
+left-to-right, top-to-bottom in the order they are laid out.
+
+**Homepage, 375 px.** 42 stops, no trap. The header nav is `display: none` and does not appear in the
+sequence — it is not merely hidden from view — and its place is taken by the "Open menu" button.
+
+**The drawer.** Tab ×3 → Enter opens it. `:modal` true, focus lands on "Close menu" inside the
+dialog, `aria-expanded="true"` on the invoker, `html` computes `overflow: hidden`. Forty consecutive
+Tab presses never reached a control outside the dialog. `document.elementFromPoint(20, 690)` returns
+the dialog, not the page behind it. Escape closed it, `aria-expanded` returned to `false`, and focus
+returned to "Open menu". This is F15 closed on the shipped surface, and it is closed by choosing a
+platform modal over a hand-written trap, which is the right way to close it.
+
+**The disclosures.** Enter opens (`aria-expanded="true"`, panel unhidden), Escape closes and returns
+focus to the trigger it was opened from, and moving focus out of the group closes it behind you.
+Segment and evidence disclosures are native `<details>`/`<summary>`.
+
+**The theme control.** Two `<fieldset>` groups with distinct `name` attributes — `dp-theme-header`
+and `dp-theme-drawer` — exposed as `group "Theme"`, with exactly one in the accessibility tree at any
+width because the other is inside `display: none` or a closed `<dialog>`. Native radios, so arrow
+keys, the roving tab stop and the "2 of 3" announcement come from the platform. The 1 × 1 clipped
+input keeps the ring: it is redrawn on the visible pill through `:has()`, and I measured it there.
+
+**The lookup, keyboard only, both paths.** Invalid submit: the summary appears at the top of the
+form, focus moves to it, it carries the title "Check these details before searching" and three links
+whose targets all resolve, each field gets `aria-invalid="true"` and an `aria-describedby` that
+carries its hint **and** its error, and Tab-then-Enter on the first link moves focus to the airline
+field. Valid submit: the `searching` region is shown with `aria-busy="true"`, then the
+provider-unavailable result is shown and **focus moves to it** — there is no `aria-live` region on
+the page at all, and there should not be. Both optional fields were left untouched by the validator.
+
+**Focus indicator, measured from rendered pixels.** Not from tokens. For each surface I focused the
+control by keyboard, screenshotted the region and scanned a column of pixels up through the ring:
+
+| Surface                        | light: outer / ring / halo        | ratio vs outer | vs halo | dark: outer / ring / halo         | vs outer | vs halo |
+| ------------------------------ | --------------------------------- | -------------: | ------: | --------------------------------- | -------: | ------: |
+| skip link, on the header       | `#dce8f2` / `#087fbd` / `#ffffff` |         3.52:1 |  4.39:1 | `#07111f` / `#31c5ff` / `#050b16` |   9.52:1 |  9.90:1 |
+| brand link, on the header      | `#dce8f2` / `#087fbd` / `#ffffff` |         3.52:1 |  4.39:1 | `#07111f` / `#31c5ff` / `#050b16` |   9.52:1 |  9.90:1 |
+| nav disclosure, on the header  | `#dce8f2` / `#087fbd` / `#ffffff` |         3.52:1 |  4.39:1 | `#07111f` / `#31c5ff` / `#050b16` |   9.52:1 |  9.90:1 |
+| theme pill (ring via `:has()`) | `#dce8f2` / `#087fbd` / `#dce8f2` |         3.52:1 |  3.52:1 | `#07111f` / `#31c5ff` / `#07111f` |   9.52:1 |  9.52:1 |
+| hero primary button, on base   | `#dce8f2` / `#087fbd` / `#ffffff` |         3.52:1 |  4.39:1 | `#07111f` / `#31c5ff` / `#050b16` |   9.52:1 |  9.90:1 |
+| combobox input, on a card      | `#ffffff` / `#087fbd` / `#ffffff` |         4.39:1 |  4.39:1 | `#0b1728` / `#31c5ff` / `#050b16` |   9.04:1 |  9.90:1 |
+| submit button, on a card       | `#ffffff` / `#087fbd` / `#ffffff` |         4.39:1 |  4.39:1 | `#0b1728` / `#31c5ff` / `#050b16` |   9.04:1 |  9.90:1 |
+| disclosure summary, on a card  | `#ffffff` / `#087fbd` / `#ffffff` |         4.39:1 |  4.39:1 | `#0b1728` / `#31c5ff` / `#050b16` |   9.04:1 |  9.90:1 |
+| table scroll region, on a card | `#ffffff` / `#087fbd` / `#ffffff` |         4.39:1 |  4.39:1 | `#0b1728` / `#31c5ff` / `#050b16` |   9.04:1 |  9.90:1 |
+| footer link, on the footer     | `#dce8f2` / `#087fbd` / `#ffffff` |         3.52:1 |  4.39:1 | `#07111f` / `#31c5ff` / `#050b16` |   9.52:1 |  9.90:1 |
+| link-strip link, on elevated   | `#eef5fb` / `#087fbd` / `#ffffff` |         3.99:1 |  4.39:1 | `#050b16` / `#31c5ff` / `#050b16` |   9.90:1 |  9.90:1 |
+
+Tightest measured pair: **3.52:1**, against the 3:1 floor of SC 1.4.11. The ring is 2 px at a 2 px
+offset with the gap filled, on every stop of every walk, in both themes — 0 stops with
+`outline-style: none` and no compensating indicator across six route walks. The one `outline: none`
+in the codebase (`primitives.css:704`) moves the ring to the visible box two rules later; it is not a
+removal.
+
+**SC 2.4.11 Focus Not Obscured.** Passing, and passing for a structural reason: there is no
+`position: sticky` and no `position: fixed` element on any served route except `.dp-overlay`, which is
+rendered nowhere. The occlusion test at every stop of every walk returned nothing obscured except the
+1 × 1 clipped radio input, whose indicator is drawn on the pill covering it.
+
+**Journeys completed keyboard only** (six of the `§22.6` twenty are reachable in S3; the other
+fourteen need routes or a provider that do not exist): skip to main content; open a nav disclosure
+and reach a destination; open the mobile drawer, change theme, close it and return; submit the lookup
+with nothing filled in and repair the first error from the summary; submit a valid lookup and read the
+provider-unavailable result; open a segment's operational detail and read the transfer-component
+table from inside its scroll region.
+
+### 15.7 Screen-reader semantics, read from the accessibility tree
+
+**Said plainly first: no screen reader was run.** What follows is the Chrome accessibility tree and
+the built markup, which is what a screen reader is given, not what it says. It catches a missing
+name, a wrong role, a broken order; it cannot catch how a sentence lands on someone standing at a
+gate. The VoiceOver and NVDA cells in §10.2 stay `Not run`.
+
+**Landmarks and headings.** All twenty pages: exactly one `<h1>`, exactly one `<main>`, exactly one
+`<footer>`, no skipped heading level anywhere. The nested `<header>` elements inside cards are scoped
+to sectioning content and are not `banner` landmarks — axe's duplicate-banner rule is silent on all
+twenty. Two `nav`s, "Primary" and "Footer", and the drawer's second "Primary" is inside a closed
+`<dialog>` and out of the tree. One landmark-name collision, F26.
+
+**The `§18.5` cockpit order.** The heading list on `/` reproduces the required reading path, in order:
+the trip title → Overall status → Route → Segments → Latest change → Next step → Delay and
+cancellation assessment → Connection → Passenger rights → Action checklist → Evidence → Alerts →
+Sources and freshness. Weather and airspace, and the upgrade prompt, are missing from that list — they
+are `Callout`s and their titles are paragraphs. That is F25, and it is the whole gap: 12 of 14.
+
+**A segment announces in the right order, with the right facts.** From the built markup of the stale
+inbound card: airline and flight number as the heading; status pill "Delayed"; route "DM1 Demo Origin
+→ DM2 Demo Hub" with the arrow `aria-hidden`; then `Departs · Scheduled` "08:20", a visually hidden
+"Airport and time zone", "DM1", "Pacific Daylight Time", "America/Los_Angeles", "Sat 14 Mar"; then
+`Departs · Estimated` with "Estimated" attached to the time itself; then Delay "Estimated delay 47
+minutes"; Gate "The gate has not been published yet."; Terminal likewise; Source; Confidence; then the
+provenance chip "Stale" with "Updated 96 minutes ago from Demonstration fixture." **Every displayed
+time carries its airport code and its zone** (`AGENTS.md §3.3`) — I checked every time on every route,
+not a sample. No blank, no dash, no zero stands in for a missing value.
+
+**Itinerary order is travel order.** One `<ol>`, three `<li>`, DOM order DM1 → DM2 → DM3. At 1440 the
+list becomes `grid-auto-flow: column` — not `dense` — and renders at x=200, x=551, x=901 on one row,
+left to right, in source order. There is no `order`, no `row-reverse`, no `grid-auto-flow: dense` and
+no absolute positioning anywhere in the stylesheet that could decouple the two.
+
+**Provenance and status never depend on colour.** 45 provenance chips across the build, every one
+with a glyph **and** a text label; the six label strings are exactly `Live`, `Cached`, `Demo`,
+`Heuristic risk band`, `Stale`, `Unavailable` — the `AGENTS.md §1.2` six, no synonym and no seventh.
+39 status pills, every one with a glyph and a text label. Zero icon-only instances of either. The four
+status silhouettes are distinct shapes — circle-and-check, triangle, octagon-and-cross,
+rounded-square-and-query — so they survive greyscale; the fifth shape, `info`, exists and is not yet
+wired (F34).
+
+**The graphics have text equivalents, and there is no canvas anywhere.** `<canvas>` appears zero times
+in the build. The connection cockpit publishes the whole decomposition as a captioned `<table>` with
+`scope` on every header: Leave the aircraft 12 minutes (Estimated), Walk between gates 14 (Airport-derived),
+Security re-screening 8 (Airport-derived), Border control "Not required on this transfer"
+(Airport-derived), Reclaim and recheck a bag "Not required on this transfer" (Policy-derived),
+Mobility assistance "Not required on this transfer" (Policy-derived), Uncertainty buffer 10
+(Estimated) — all seven terms of `T`, including the four that contribute nothing, beside Available
+time 51 minutes, Required transfer time 44 minutes and Slack 7 minutes. 12 + 14 + 8 + 10 = 44, and the
+table says so. The band meter carries a named stop list with a visually hidden "Current band" marker.
+The two ambient motifs and the route globe are `aria-hidden` decorations that carry no data; the globe
+sits in a `<figure>` whose visible `<figcaption>` says "Illustrative route lines — not live traffic.",
+which is the right call — there is no data to put in a text equivalent, and the sentence a reader needs
+is visible to everyone.
+
+**Live regions.** Zero. No `aria-live`, no `role="status"`, no `role="alert"` on any served route.
+Nothing here changes without a user acting, so nothing should announce, and the one state transition
+that exists moves focus instead. This is the correct answer and it is worth recording as one, because
+the cheap version of this page would have wrapped the lookup result in a polite region and called it
+accessible.
+
+**Tables.** The transfer-component breakdown and the status-change chronology are real `<table>`s with
+`<caption>` and `scope` on every header cell — 6 `scope="col"` and 11 `scope="row"` on `/`. The
+receipts and airline-message tables are not rendered: the demonstration passes empty arrays, so they
+are not certified here. The one content table on `/passenger-rights/` is F31.
+
+**Uppercase subheadings.** The DOM text is sentence case ("What may apply") and the uppercase is CSS
+`text-transform`, which is the correct implementation. Chrome's tree reports the transformed string;
+screen readers take the name from the API. No finding.
+
+**No hover-only content, no ads, no iframes, no `title` attributes** on any served route — measured,
+so SC 1.4.13 and the ad rules are Not applicable rather than assumed.
+
+### 15.8 Reduced motion — ADR 0003 rule 4
+
+ADR 0003 names `accessibility-lead` as the reviewer of rule 4, so this is measured from computed
+styles and the Web Animations API, not from a screenshot.
+
+With `prefers-reduced-motion: no-preference` on `/`: `--motion-reveal` `.24s`,
+`--motion-reveal-distance` `16px`, `--motion-ambient-cycle` `12s`, `--motion-view-transition` `.18s`;
+`document.getAnimations()` reports **4 running** — the radar sweep, the route packets and the globe
+draw-in — each at or under the 12 s ceiling, and the globe's at `iteration-count: 1`.
+
+With `prefers-reduced-motion: reduce`, same page, same measurement:
+
+```
+tokens: reveal 1ms, reveal-distance 0px, ambient-cycle 0s, view-transition 1ms
+document.getAnimations(): 0 running of 0 total
+.dpx-reveal            (7 nodes): animationName=none, opacity=1, transform=none
+.dpx-chronology__step  (5 nodes): animationName=none, opacity=1, transform=none
+.dpx-motif--radar #sweep (1):     animationName=none, opacity=1, transform=none
+.dpx-motif--routes .packet (3):   animationName=none, opacity=1, transform=none
+.dpx-globe #routes path (3):      animationName=none, opacity=1, transform=none
+```
+
+Rule 4 item by item: reveals are instant (and their un-animated DOM is already the final state —
+every `.dpx-reveal` computes `opacity: 1` in **both** modes, because the animation only exists inside
+`@supports (animation-timeline: view())`, so a browser without scroll timelines shows finished
+content rather than a blank waiting to fade); both motifs render a single static frame; the
+chronology shows the complete list — five `<li>`s, `opacity: 1`, `display: list-item`, 112 px each, in
+both modes; view transitions are off by `@view-transition { navigation: none }` inside the reduce
+block, declared in the stylesheet rather than delegated to a router. **Rule 4: met.** The state change
+itself is never removed, because there is no state change in any of these — they are decoration, and
+the data-bearing components carry no motion at all, which is rule 1.
+
+`pnpm test:a11y` runs axe under `reduce` on every route as part of the 88: a defect that exists only
+in the reduced-motion frame is still a defect. There were none.
+
+### 15.9 Contrast under the ambient motifs
+
+ADR 0003 rule 2b: a motif may never sit behind body text "in a way that changes a measured pair". The
+motifs are `z-index: -1` and axe cannot see through them (§15.3), so I measured it directly: for each
+motif layer, screenshot the region with the layer painted and again with it hidden, diff the two, and
+restrict the diff to the bounding boxes of text runs. Pixels that are not pure background in the
+hidden render are glyph antialiasing and are excluded — including them puts a glyph edge into the
+result and produces a frightening number that means nothing.
+
+| Layer                | 1440 light                                   | 1440 dark                                |
+| -------------------- | -------------------------------------------- | ---------------------------------------- |
+| `.dpx-motif--grid`   | 1 text run affected, 40 background px        | 1 text run affected, 26 background px    |
+| `.dpx-motif--radar`  | 11 text runs in region, **0 px changed**     | 11 text runs in region, **0 px changed** |
+| `.dpx-motif--routes` | 0 text runs in region                        | 0 text runs in region                    |
+| `.dpx-globe`         | 1 text run in region (the caption), **0 px** | 1 text run in region, **0 px**           |
+
+The one affected run is the hero's support line, "Track a flight, understand connection risk":
+
+| Theme | text colour | clean background | painted range       | clean ratio | worst painted ratio |
+| ----- | ----------- | ---------------- | ------------------- | ----------: | ------------------: |
+| light | `#58687b`   | `#dce8f2`        | `#dae7f1`–`#dbe7f1` |      4.58:1 |          **4.53:1** |
+| dark  | `#7a8da1`   | `#07111f`        | `#081220`–`#081321` |      5.54:1 |          **5.46:1** |
+
+**No measured pair falls below floor in either theme**, so nothing here fails SC 1.4.3 and no Phase 9
+measurement is invalidated. The pair does move, which is what rule 2b's wording forbids, and the light
+margin is now 0.03 above the floor — F35. Below 1024 px the whole motif layer is `display: none`
+rather than faded, which is the right call and is why there is nothing to measure at 375.
+
+### 15.10 Reflow, zoom, text spacing, targets
+
+| Condition                                  | Result                                                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 200 % zoom, 720 CSS px viewport, 16 routes | **Passing** — `scrollWidth == innerWidth` on all 16, zero overflowing elements, zero clipped containers                                                                                                                                                                                                                   |
+| Text size 200 % (root font 32 px) at 1440  | **Passing** — no text clipped anywhere. The hero's `overflow: clip` trims its own decorative motif; I enumerated every text rect inside the hero against its clip box and found none outside it                                                                                                                           |
+| 320 CSS px (400 % of 1280), 16 routes      | **Failing on 3** — `/` 37 px, `/connection-risk/` 56 px (B8), `/passenger-rights/` 18 px (F31). The other 13 are exact                                                                                                                                                                                                    |
+| 375 CSS px, 16 routes                      | **Passing on 15**; `/connection-risk/` overflows by 1 px, same root cause as B8                                                                                                                                                                                                                                           |
+| SC 1.4.12 text-spacing overrides at 1440   | **Passing** — 16 of 16, zero clipping, zero content lost                                                                                                                                                                                                                                                                  |
+| SC 1.4.12 text-spacing overrides at 375    | **Failing on 2** — `/` 25 px and `/connection-risk/` 51 px of horizontal scroll; the same grid minimum as B8, amplified                                                                                                                                                                                                   |
+| Touch targets at 375                       | **Passing** — 323 targets across 16 routes, 22 of them inline links inside sentences (SC 2.5.8 inline exception); of the remaining 301, **0 below 44 × 44**. Drawer links measure 319 × 44; the theme pills' hit area is the 44 × 44 `.dpx-theme__option`, not the 1 × 1 input                                            |
+| SC 2.5.8 at 1440                           | **Passing** — five guide-card title links measure 343 × 23 and similar. They pass through the spacing exception, measured: the nearest other target is 138 px away and a 24 px circle needs 24 px. Note that the product's own 44 × 44 floor is a `§18.7` **mobile** rule, and at 375 those same links measure 45 px tall |
+
+The overrides applied for 1.4.12 were the SC's own: line-height 1.5, letter-spacing 0.12em,
+word-spacing 0.16em, paragraph spacing 2em, injected through `CSSStyleSheet`/`adoptedStyleSheets`
+because the served `style-src 'self'` refuses an inline `<style>` — which is itself worth knowing: a
+reader's own user stylesheet is unaffected by CSP, but a bookmarklet-based test would have failed
+here for the wrong reason.
+
+### 15.11 The `info` glyph — decision
+
+`brand-design-director` added a neutral `info` glyph (`Icon.tsx:96`) and asked whether `Callout` and
+`Toast` should be rewired to it. **Yes. Rewire both.** F34.
+
+Three reasons, in the order they matter:
+
+1. **`status-unknown` has a specific meaning in this product** and it is not "here is some
+   information". It is the `AGENTS.md §1.1` designed state: we do not have enough fresh information.
+   Today an informational callout wears that mark, so the shape that is supposed to mean "we do not
+   know" also appears on a note that knows exactly what it is saying. On the homepage the upgrade
+   prompt carries it, and nothing about billing not being configured is unknown.
+2. **`Callout`'s own docblock is currently false.** It says "Every severity carries its own icon
+   shape, so the severity survives greyscale". Four severities, three shapes.
+3. **The non-colour strategy rests on shape.** `severityToStatusTone` maps `info` to the neutral tone
+   deliberately — four tones, never a fifth colour — and that is right. But once colour is shared, the
+   glyph is the only channel left, and it is shared too.
+
+Not a blocker, for one reason: `Callout` and `Toast` both require a visible `title`, so no information
+is lost today. Three `dp-callout--info` instances render in the build and each is named in words.
+
+### 15.12 Commands run
+
+All executed in this session on branch `claude/intelligent-knuth-d3s8za` at `d35f69c`. `AGENTS.md §6`
+vocabulary.
+
+| Command                                              | Result                                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm --filter @delaypilot/web build`                | **Passing** — `20 page(s) built`, `verify-dist: 20 page(s) and 4 chunk(s) checked, 0 findings`                                                                                                                                                                                                                                    |
+| `pnpm lint`                                          | **Passing** — eslint clean; `forbidden-phrases: 253 files scanned …, 0 hit(s) in 0 file(s)`                                                                                                                                                                                                                                       |
+| `pnpm lint:copy`                                     | **Passing** — `0 hit(s) in 0 file(s)`                                                                                                                                                                                                                                                                                             |
+| `pnpm typecheck`                                     | **Passing** — `66 files … 0 errors, 0 warnings, 0 hints`                                                                                                                                                                                                                                                                          |
+| `pnpm test`                                          | **Passing** — `Test Files 14 passed (14)`, `Tests 692 passed (692)`                                                                                                                                                                                                                                                               |
+| `pnpm test:a11y`                                     | **Failing (deliberate stub, exit 1)** — `pnpm test:a11y is not implemented yet. Owner: accessibility-lead, DIRECTIVE.md Phase 12.` A stub that fails is correct. The spec it will implement is §12, and §12 now records the parameters I actually ran, so `qa-test-architect` is not designing it from scratch.                   |
+| `pnpm quality`                                       | **Failing** — reaches `pnpm format:check`, `lint`, `typecheck`, `test`, `build` and `seo:verify` (all passing; `verify-sitemap: 20 page(s) … 13 indexable`) and then exits non-zero at `pnpm test:workers`, a Phase 12 stub. No Lighthouse step is reached, so **Lighthouse accessibility 100 is Not run** and cannot be claimed. |
+| axe sweep, 20 routes × 2 themes × 2 motion prefs     | **Passing** — `runs: 80 \| WCAG A/AA violations: 0 \| incomplete: 20 \| best-practice: 4 \| console errors: 0`                                                                                                                                                                                                                    |
+| axe sweep, 2 conditional routes × 2 × 2              | **Passing** — `runs: 8 \| WCAG A/AA violations: 0 \| incomplete: 0 \| best-practice: 0 \| console errors: 0`                                                                                                                                                                                                                      |
+| Keyboard walks (5 route/theme/width combinations)    | **Passing** — no trap, no missing indicator, no obscured control                                                                                                                                                                                                                                                                  |
+| Focus-ring pixel measurement, 11 surfaces × 2 themes | **Passing** — tightest 3.52:1                                                                                                                                                                                                                                                                                                     |
+| Reduced-motion computed-style measurement            | **Passing** — 0 running animations under `reduce`                                                                                                                                                                                                                                                                                 |
+| Motif-behind-text pixel diff, 4 layers × 2 themes    | **Passing** with F35 — worst painted pair 4.53:1 light, 5.46:1 dark                                                                                                                                                                                                                                                               |
+| Reflow / zoom / text-spacing / target sweeps         | **Failing** where §15.10 says so, **Passing** elsewhere                                                                                                                                                                                                                                                                           |
+| Scratch build `PUBLIC_SITE_URL=…`                    | **Passing** — F22 confirmed closed; discarded, `dist` restored byte-identical                                                                                                                                                                                                                                                     |
+| Scratch build `PUBLIC_CONTACT_EMAIL=…`               | **Passing** — `22 page(s) … 0 findings`; the two conditional routes reviewed; discarded, `dist` restored byte-identical                                                                                                                                                                                                           |
+| `npx prettier --check docs/ACCESSIBILITY.md`         | **Passing**                                                                                                                                                                                                                                                                                                                       |
+
+**Files changed by this review: one** — `docs/ACCESSIBILITY.md`. Zero product files, in this pass and
+in all three Phase 9 passes. Every harness was written to the session scratchpad.
+
+### 15.13 Handoffs
+
+- **`frontend-ui-engineer`** — B8 (the grid minimum, `app.css`), B9 (the meter's `label` prop), F25
+  call sites, F26, F28, F29, F30, F31, F32, F33, F35, F37 ordering, F38.
+- **`brand-design-director`** — F25 (a heading level on `Callout`), F34 (rewire `info` to its own
+  glyph in `Callout` and `Toast`).
+- **`ux-copy-steward`** — B9's new meter label, F26's per-instance strings, F27, F36 (the eleven
+  statement sentences and the missing response time in §13.1), F37 wording.
+- **`qa-test-architect`** — lock §12 into CI with the parameters §12 now records: 88 runs, four per
+  route, both themes and both motion preferences, zero violations at any impact, plus a
+  `document.scrollingElement.scrollWidth === innerWidth` assertion at a 320 px viewport on `/` and
+  `/connection-risk/` so B8 cannot come back silently.
+- **`release-auditor`** — the verdict is BLOCKED. B8 and B9 are unresolved AA failures on served
+  routes and are critical accessibility defects for the rubric. F25–F38 are open and tracked.
+- **`trust-compliance-officer`** — nothing this pass. No ad slot, no iframe and no consent banner is
+  rendered on any served route, so there is no placement to review and no ad-adjacent barrier.
+
+### 15.14 What would make this GREEN
+
+Fix B8 and B9, then re-run: the 88-run axe sweep, the 320 px reflow measurement on `/` and
+`/connection-risk/`, and the `/delay-risk/` accessible name read back from the built HTML. Nothing
+else needs re-reviewing. I will not accept a report that they are fixed; send the tree.
+
+### 15.15 Re-review after the fix loop — 2026-09-12, tree `692ad3f`
+
+> **VERDICT: GREEN.** B8 and B9 are closed, each verified by the measurement the blocker named rather
+> than by the report that they were fixed. Eleven of the fourteen findings are closed, one is closed
+> on the three items its owner could fix and re-owned for the fourth, two are open by decision. Four
+> new findings are raised — F39, F40, F41, F42 — and none of them blocks: one is a route that is not
+> served, one is a statement that is not published, and two are name-quality defects where the word a
+> reader needs is present and a redundant one sits beside it.
+
+Nothing was accepted on report. Every claim in the three handoffs was re-run, and two of them came
+back different from what was claimed: F31 delivered three of its four items rather than four, and the
+"Status" defect F29 named turns out to exist in a second component that the first pass missed.
+
+**The tree under review is the tree that was sent, and I proved it rather than assumed it.** I built
+the committed tree into a scratch `outDir` and compared it to the `apps/web/dist` I was given:
+**all 20 HTML files and all 4 `_astro` assets are byte-identical**, the only difference being the
+unreferenced React client chunk that `prune-dist.mjs` removes from a real build. I then ran
+`node apps/web/scripts/verify-dist.mjs` against that `dist` myself — `20 page(s) and 4 chunk(s)
+checked, 0 findings` — so the gate build's own guard is a result I executed, not one I was told.
+
+**The working tree was clean while every measurement was taken, and it is not clean now.** All the
+builds, sweeps and walks below ran between 23:10 and 23:30; between 23:31 and 23:34 six files changed
+under me — `apps/web/src/lib/copy/{demo,home,lookup,pages}.ts`, `copy.test.ts` and `docs/VOICE.md`,
+all `ux-copy-steward`'s — from a copy re-check running in parallel. **This verdict is on the
+committed tree `692ad3f` and covers none of that work.** Two of those edits change strings that
+render on `/`: the flight-number example under the lookup field, and the guides intro. Neither
+touches a role, an accessible name, a landmark or a meter, and `pages.accessibility` is not in any of
+the hunks, so F40 stands exactly as filed — but the rule from §15.1 applies unchanged: **a route
+whose copy changes after this pass needs the pass again**, and those strings have not had it.
+
+#### The two blockers
+
+| #      | Verdict                | Fix, at file:line                                                                                                                                                                                                     | What I measured                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ------ | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **B8** | **Closed** — SC 1.4.10 | `apps/web/src/layouts/app.css:1258` (`.dpx-cockpit > *`), `:1453` (`.dpp-actions > *, .dpp-evidence > *, .dpp-alerts > *, .dpp-freshness > *`), `:1465` (`.dpp-connection__components`), `:1975` (`.dpx-prose-table`) | **20 of 20 routes exact at a 320 px viewport**: `document.scrollWidth == innerWidth == 320`, zero overflowing elements, zero clipped containers. `/` was 357 and `/connection-risk/` 376. Also exact at 375, and exact at both widths under the SC 1.4.12 overrides, where `/` was 25 px over and `/connection-risk/` 51 px.                                                                                                                                                      |
+| **B9** | **Closed** — SC 2.4.6  | `apps/web/src/pages/delay-risk.astro`, `apps/web/src/lib/copy/cockpit.ts`                                                                                                                                             | Read back from the built HTML of `/delay-risk/`: `aria-label="Delay and cancellation assessment"`, `aria-valuetext="Risk band, Watch"`, no `aria-valuenow` claimed. The connection meter is now `aria-label="Required transfer time within the available connection window"` with `aria-valuetext="44 of 51 minutes, Watch"` — the label names what the bar fills, which is what `bands.ts` said it always did. Confirmed in Chrome's accessibility tree, not only in the markup. |
+
+**B8's root cause is contained, not hidden, and I checked which.** Cloning each grid child into a
+`width: min-content` probe at 320: the connection card's own minimum has fallen from **341 px to
+195 px** against 288 px available, and every other child measures between 34 and 195. The table's
+intrinsic 307 px is still there — it now stops at `.dpp-connection__components`, which is where the
+zero minimum was added, and the `.dp-table` scroll container absorbs it. So the table scrolls
+instead of the page, which is the outcome the blocker asked for. I then checked that the container
+is genuinely operable rather than merely focusable: focus it, press ArrowRight, and `scrollLeft`
+goes 0 → 40 → 53 = `scrollWidth - clientWidth` on `/`, and 0 → 36 = its maximum on
+`/passenger-rights/`, while `window.scrollX` stays 0. Phase 9's B6 holds at 320 px.
+
+**On B9's three slots.** `docs/VOICE.md §9.1` now states the rule as name ≠ reading ≠ band. Read from
+the built pages: the homepage assessment meter is `"Delay and cancellation assessment"` /
+`"Risk band"` / `"Disrupted"`; `/delay-risk/` is the same with `"Watch"`; the connection meters are
+`"Required transfer time within the available connection window"` / `"44 of 51 minutes"` / `"Watch"`,
+`"69 of 51 minutes"` / `"At risk"`, and `"Slack unknown"` / `"Unknown"` with `aria-valuenow` correctly
+absent. Three slots, three registers, no collision in any state. **I considered and did not file** the
+one register mismatch left: the unknown instance is named for required-in-available and reads "Slack
+unknown". The visible readout says exactly the same words, so a screen-reader user and a sighted
+reader are told the same thing, and that symmetry is the test that matters here.
+
+#### F25–F38, one at a time
+
+| #   | Verdict                                              | Evidence, measured at this tree                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| --- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F25 | **Closed**                                           | Both cockpit `Callout`s render `<h3 class="dp-callout__title">` — "Weather and airspace" and "Trip Pass". The heading list on `/` now reproduces **14 of 14 `§18.5` sections in `§18.5` order**, with the upgrade prompt last: trip title → Overall status → Route → Segments → Latest change → Next step → Delay and cancellation assessment → Connection → Weather and airspace → Passenger rights → Action checklist → Evidence → Alerts → Sources and freshness → Trip Pass. Zero skipped heading levels on all 22 pages. |
+| F26 | **Closed**                                           | Three distinct captions on `/connection-risk/` — "…on one protected itinerary", "…on separate tickets", "…when the reservation is unknown" — and three distinct region names, confirmed as three distinct keyboard stops. **0 `landmark-unique` results in all 88 axe runs**, against 4 before. Zero duplicate region names on any of the 22 pages.                                                                                                                                                                           |
+| F27 | **Closed**                                           | `aria-label="Risk band"` is gone; the homepage meter announces "Delay and cancellation assessment, Risk band, Disrupted". The stutter closed as a consequence of B9's name, which is the right way for it to close.                                                                                                                                                                                                                                                                                                           |
+| F28 | **Closed**                                           | `aria-busy` appears **zero times** in the built `/flight-status/`, and the accessibility tree shows `group "Track a flight"` with no `busy` property. The skeleton, the reserved box and the message are all still there. The one `aria-busy="true"` left in the build is inside `<div data-dp-state="searching" hidden>` on `/`, which is the real state and is out of the tree until a search runs — correct, not a residue.                                                                                                |
+| F29 | **Closed on `SegmentCard`; see F39**                 | Segment pills now read "Delayed", "Canceled", "Scheduled", "Status unknown". The identical misuse survives in `ItineraryTimeline`, which the first pass did not reach; that is F39 and it is mine to have missed, not a regression.                                                                                                                                                                                                                                                                                           |
+| F30 | **Closed**                                           | The `<dt>Status</dt>` row now pairs with a real status sentence on every card — "No status has been reported for this segment yet." on the unknown segment — and the demonstration caption is out of the definition list. Every `<dl>` on `/` dumped and read pair by pair; no label means two things.                                                                                                                                                                                                                        |
+| F31 | **Closed on three of four; the caption is re-owned** | Both prose tables are now `<div class="dp-table dpx-prose-table" tabindex="0" role="region" aria-labelledby="…">` named by the preceding heading ("The five statuses", "The six labels"), with `scope="col"` on the head row and `scope="row"` on the first column — **0 `<th>` without a scope anywhere in the build**. `/passenger-rights/` is exact at 320 and the region scrolls from the keyboard. **No `<caption>`**: see below.                                                                                        |
+| F32 | **Closed**                                           | `<div class="dpx-errors" hidden tabindex="-1" role="group" aria-labelledby="lookup-errors-title">` with `id="lookup-errors-title"` on the `Callout` title, which resolves.                                                                                                                                                                                                                                                                                                                                                    |
+| F33 | **Closed**                                           | `<main class="dpx-main" id="main" tabindex="-1">` on **22 of 22 pages**.                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| F34 | **Closed**                                           | `SEVERITY_ICON.info` is `'info'` in both `Callout.tsx` and `Toast.tsx`. Four severities, four shapes; `severityToStatusTone` still maps `info` to the neutral tone, which was the right half to keep.                                                                                                                                                                                                                                                                                                                         |
+| F35 | **Closed**                                           | Re-measured by the same pixel diff, both themes: `.dpx-motif--grid` covers 30 text rects on `/` and changes **0 pixels** behind any of them; radar, routes and globe also 0. The hero support pair measures **4.58:1 light and 5.54:1 dark** painted, which is its clean value, because nothing is painted over it. (Brand reported 5.55 for the dark pair; the difference is rounding against this document's truncation rule.)                                                                                              |
+| F36 | **Closed**                                           | All twelve §13.1 rows addressed. Read sentence by sentence in §13.2. Superseded by F40, which is a different problem with the same file.                                                                                                                                                                                                                                                                                                                                                                                      |
+| F37 | **Closed**                                           | The no-JavaScript sentence renders above the address and is direction-free; "We aim to reply within five working days." renders on the page. §13.2.                                                                                                                                                                                                                                                                                                                                                                           |
+| F38 | **Closed**                                           | **7,507 tags parsed across the 20 built pages: zero with a duplicate attribute name.**                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| F15 | Unchanged — closed on every shipped surface          | Re-measured: the drawer is `:modal`, `html` computes `overflow: hidden`, the background hit test returns the dialog, every tab stop while open is inside it, Escape closes and returns focus to "Open menu" with `aria-expanded="false"`. The two primitives still render on no route.                                                                                                                                                                                                                                        |
+| F17 | Unchanged — not reproducible                         | Still zero `target="_blank"` and zero off-site `href` in the build.                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| F23 | Unchanged — open by decision                         | No token changed in the fix loop: `git diff` over `packages/ui/src/tokens/**` and `apps/web/src/styles/**` is empty, so the Phase 9 contrast registry is untouched and `--brand-mark-accent` is still undeclared.                                                                                                                                                                                                                                                                                                             |
+
+**On F31's missing `<caption>`, and why the finding does not stay open against the renderer.** The
+region is named by the heading immediately above it, so a reader entering it hears "The five
+statuses, region" before "table, 2 columns, 6 rows". The context a caption would have carried is
+carried, SC 1.3.1 is satisfied, and the reflow and keyboard halves of the finding are fixed. The
+caption text does not exist in the Markdown source and inventing one is a content decision, not a
+rendering one, so the remaining item is re-owned to `content-editorial-lead` — one line of prose per
+table in `apps/web/src/content/**`, after which the plugin can emit it.
+
+#### Four new findings
+
+| #   | File · line                                                                                                               | SC / rule               | Observed                                                                                                                                                                                                                                                                                                                                                                                                                                            | Required                                                                                                                                                                                                                                                                                                                          | Owner                                                                                |
+| --- | ------------------------------------------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| F39 | `packages/ui/src/patterns/ItineraryTimeline.tsx:74`; call site `apps/web/src/components/DemoCockpit.astro:142` and `:149` | accessible-name quality | The route diagram's per-leg pill is passed `detail={leg.statusLabel}`, and `leg.statusLabel` is `cockpit.segment.status` — the literal word "Status" (`apps/web/src/lib/copy/cockpit.ts:84`). Both legs on `/` therefore render and announce "**Watch Status**" and "**Disrupted Status**": the field's label where its value belongs, visible as well as announced, and "Watch Status" reads as an instruction. Present at `d35f69c`; I missed it. | Pass a real detail or none, exactly as `SegmentCard` now does. If the leg wants a second word it is the flight's status word, not the name of the field.                                                                                                                                                                          | `frontend-ui-engineer`                                                               |
+| F40 | `apps/web/src/lib/copy/pages.ts` (`pages.accessibility`)                                                                  | §13 contract            | The statement's known-issues list carries B8, B9 and eleven findings that this re-review has closed, and states "Two Level AA failures are open on routes you can reach right now". Neither route is emitted in the gate build, so nothing false is published — but the page cannot publish as written.                                                                                                                                             | Remove B8, B9, F25–F38 except F39–F42 and the F31 caption; keep F15, F23 and F17's owner; change the status paragraph to say that no AA failure is open on a served route and that the screen-reader pass is still outstanding; set `lastVerified` to the date of the pass that supports it. Then send it back here (§13, §13.2). | `ux-copy-steward`                                                                    |
+| F41 | `apps/web/src/pages/accessibility/[...path].astro`, `apps/web/src/pages/contact/[...path].astro`                          | `DIRECTIVE.md §18.7`    | The feedback address is a bare `mailto:` link measuring **196 × 23 px at 375**, the only target below the product's 44 × 44 floor anywhere in the 22 pages. SC 2.5.8 passes through the spacing exception and I measured it — the nearest other target is 240 px away — so no criterion fails. The affordance a person uses **after hitting a barrier** should not be the smallest control on the site.                                             | Give the address the 44 px target every other control has, on both routes.                                                                                                                                                                                                                                                        | `frontend-ui-engineer`, with `brand-design-director` if the fix lands in a primitive |
+| F42 | `packages/ui/src/patterns/StateBlock.tsx:156`                                                                             | announcement quality    | `LoadingBlock` renders the message as a visible `<p>` **and** passes it to `Skeleton`'s required `label`, which renders it again inside `.dp-visually-hidden`. Chrome's accessibility tree for `/flight-status/`: `group "Track a flight"` → `paragraph` → `StaticText "Looking up this flight."` → `StaticText "Looking up this flight."`. Every loading state in the product says its sentence twice.                                             | The bones carry no information — `aria-hidden` them, or make `Skeleton`'s `label` optional for the case where the region already renders the sentence. One announcement per load.                                                                                                                                                 | `frontend-ui-engineer`, with `brand-design-director` if `Skeleton`'s prop changes    |
+
+#### The Callout heading-size decision — my view, as asked
+
+`brand-design-director` kept `.dp-callout__title` at `font-size: inherit` and body line-height for
+every level (`packages/ui/src/primitives/primitives.css:1277`), so `headingLevel` changes the
+document outline and nothing visual. The reasoning given was that the level is structural, the tinted
+container already carries the visual weight, and sizing the upgrade prompt like the rights card would
+give a commercial prompt the type scale of rights content.
+
+**Accept, and the third reason is the strongest one.** No success criterion requires a heading to be
+visually larger; SC 1.3.1 runs the other way, and what it asks is that structure conveyed visually be
+available programmatically. Here the visual channel already says "this is a named panel" through the
+bordered, tinted box, the glyph and the semibold title, and the programmatic channel now says the
+same thing plus its level. The two agree. Type scale is the one place `AGENTS.md §4` is enforced by
+eye rather than by rule — "utility and official rights information always precede any commercial
+suggestion" is about order, and giving "Trip Pass" the same headline size as "Passenger rights" would
+undercut it in a channel the ordering rule does not reach.
+
+One condition, and it is already met. Decoupling size from level removes the visual cue that would
+otherwise catch a caller passing a level that does not fit the surrounding order. axe's
+`heading-order` rule is the substitute, it runs on all 88 runs, and it is clean on all 22 pages —
+so it must stay in the CI tag set, which §12 requires.
+
+#### What else I re-ran, because the pages changed under the fixes
+
+Forty-five product files moved between the two passes, so I did not re-check only the three things
+§15.14 asked for.
+
+| Re-run                                                                                                                                   | Result at `692ad3f`                                                                                                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| axe, 20 routes × {light, dark} × {no-preference, reduce}                                                                                 | **Passing** — `axe-core 4.13.0 \| runs: 80 \| WCAG A/AA violations: 0 \| incomplete: 20 \| best-practice: 0 \| console errors: 0`. Best-practice was 4 before; F26 took it to zero.                                                                                                                                                                                      |
+| axe, the 2 conditional routes × 2 × 2                                                                                                    | **Passing** — `runs: 8 \| WCAG A/AA violations: 0 \| incomplete: 0 \| best-practice: 0 \| console errors: 0`                                                                                                                                                                                                                                                             |
+| The 20 `incomplete` results                                                                                                              | Same rule and same cause as §15.3 — `color-contrast` "overlapped by another element", the `z-index: -1` motif layer. Resolved by the pixel diff above, which now reports zero changed pixels rather than 40.                                                                                                                                                             |
+| Reflow at 320, all 20 routes                                                                                                             | **Passing** — 20 of 20 exact, 0 overflowing elements, 0 clipped containers                                                                                                                                                                                                                                                                                               |
+| Reflow at 375, all 20 routes                                                                                                             | **Passing** — 20 of 20 exact                                                                                                                                                                                                                                                                                                                                             |
+| SC 1.4.12 overrides at 320, 375 and 1440                                                                                                 | **Passing** — 20 of 20 at each width. At 1440 the only boxes outside the viewport are the `aria-hidden` motif layer and the hero's own `overflow: clip` trimming it; walking every text run inside every clipping container on four routes in three modes found **one** clipped run, the 1 × 1 visually-hidden `<legend>Theme</legend>`, which is the technique working. |
+| 200 % text size (root 32 px) at a 720 px viewport                                                                                        | **Passing** — 20 of 20, no clipping                                                                                                                                                                                                                                                                                                                                      |
+| Touch targets at 375, 20 routes                                                                                                          | **Passing** — 0 below 44 × 44 and 0 below 24 × 24 among non-inline targets. Drawer open: 8 links and a close button, all ≥ 44, none below. Theme pills measure 57 × 44 and 44 × 44 at 1024 and 1440, taken from the `<label>` that is the real target rather than the 1 × 1 input.                                                                                       |
+| Keyboard walks — `/` at 1440 light and 375 dark, `/connection-risk/` at 375, `/passenger-rights/` at 320, `/flight-status/` at 1440 dark | **Passing** — 44 stops on `/`, 26 on `/flight-status/`; **0 stops without a focus indicator, 0 obscured, 0 traps**, focus leaves the document at the end of every walk. The four `/flight-status/` disclosures and the three `/connection-risk/` table regions are each separately reachable.                                                                            |
+| Focus indicator from rendered pixels, 12 surfaces × 2 themes                                                                             | **Passing** — 2 px ring; tightest **3.52:1 light** and **9.04:1 dark** against the outer neighbour, 4.39:1 and 9.9:1 against the inner. The new prose-table region carries it at 3.99:1 / 9.9:1.                                                                                                                                                                         |
+| Reduced motion, computed styles and Web Animations API                                                                                   | **Passing** — 4 running animations under `no-preference`, **0 of 0 under `reduce`**; reveals, chronology, both motifs and the globe all static, every `.dpx-reveal` at `opacity: 1` in both modes, chronology complete at 5 × 112 px.                                                                                                                                    |
+| Structure across all 22 pages                                                                                                            | **Passing** — one `<h1>` each, **0 skipped heading levels**, one `<main tabindex="-1">`, one `contentinfo`, **0 duplicate element ids**, **0 duplicate region names**.                                                                                                                                                                                                   |
+| Live regions                                                                                                                             | **Zero.** No `aria-live`, no `role="alert"`, no `role="status"` on any of the 22 pages. The seven `role="note"` elements are the `§26` disclaimers and the new confidence note — static, not announced.                                                                                                                                                                  |
+| Provenance vocabulary                                                                                                                    | **Passing** — 52 chips carrying exactly the `AGENTS.md §1.2` six: `Demo` 28, `Heuristic risk band` 10, `Unavailable` 6, `Stale` 4, `Live` 2, `Cached` 2. No synonym, no seventh, none icon-only.                                                                                                                                                                         |
+| Graphics                                                                                                                                 | **Passing** — `<canvas>` zero times. 247 SVGs: 227 `aria-hidden="true"`, 20 `role="img"` and every one of those is the logotype named "DelayPilot" through a resolving `aria-labelledby`. **Zero SVGs with neither.**                                                                                                                                                    |
+| Times                                                                                                                                    | **Passing** — every time on every card carries its airport code, its abbreviation and its IANA zone: "08:20 · DM1 · Pacific Daylight Time · America/Los_Angeles · Sat 14 Mar" (`AGENTS.md §3.3`).                                                                                                                                                                        |
+| Ads, iframes, `title` attributes, new tabs                                                                                               | **Not applicable, measured** — zero of each across the 22 pages.                                                                                                                                                                                                                                                                                                         |
+| `verify-dist` against the given `dist`                                                                                                   | **Passing** — `20 page(s) and 4 chunk(s) checked, 0 findings`, run by me                                                                                                                                                                                                                                                                                                 |
+
+**One thing I looked at and did not file as a WCAG defect.** The four alert rows on `/` each carry a
+`Demo` chip and "Updated 4 minutes ago from Demonstration fixture." but the "Demo data — not a live
+flight." sentence appears after them rather than before, in the alert-settings panel below. Provenance
+is announced as text on every row, which is what my charter asks, so there is nothing failing here —
+but whether a `Demo` label may reach a reader ahead of its sentence is an `AGENTS.md §1.2` question
+and it belongs to `trust-compliance-officer` and `ux-copy-steward`, not to me. Recorded so that it is
+not lost. 26 demo sentences against 28 demo chips across the build; the other gap is the provenance
+legend, which explains the label rather than labelling a datum, and is right as it is.
+
+#### Commands run — re-review
+
+Executed in this session, on branch `claude/intelligent-knuth-d3s8za`, head `9692818`, product tree
+`692ad3f`. `AGENTS.md §6` vocabulary.
+
+| Command                                                                                | Result                                                                                                                                                                                                                                      |
+| -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm exec astro build --outDir <scratch>` (no env)                                    | **Passing** — `20 page(s) built`; output byte-identical to the given `apps/web/dist` for all 20 pages and all 4 assets                                                                                                                      |
+| `PUBLIC_CONTACT_EMAIL=review@example.invalid pnpm exec astro build --outDir <scratch>` | **Passing** — `22 page(s) built`. A scratch address, never a real one, never committed, never inside the repository                                                                                                                         |
+| `node apps/web/scripts/verify-dist.mjs`                                                | **Passing** — `verify-dist: 20 page(s) and 4 chunk(s) checked, 0 findings.`                                                                                                                                                                 |
+| axe sweep, 20 routes × 2 themes × 2 motion preferences                                 | **Passing** — `runs: 80 \| WCAG A/AA violations: 0 \| incomplete: 20 \| best-practice: 0 \| console errors: 0`                                                                                                                              |
+| axe sweep, 2 conditional routes × 2 × 2                                                | **Passing** — `runs: 8 \| WCAG A/AA violations: 0 \| incomplete: 0 \| best-practice: 0 \| console errors: 0`                                                                                                                                |
+| Reflow / text-spacing / zoom sweeps, 20 routes × 6 conditions                          | **Passing** — every condition, every route                                                                                                                                                                                                  |
+| Keyboard walks, 5 route/width/theme combinations                                       | **Passing** — no trap, no missing indicator, no obscured control                                                                                                                                                                            |
+| Focus-ring pixel measurement, 12 surfaces × 2 themes                                   | **Passing** — tightest 3.52:1                                                                                                                                                                                                               |
+| Motif-behind-text pixel diff, 5 layers × 2 themes                                      | **Passing** — 0 changed pixels behind any text run                                                                                                                                                                                          |
+| Reduced-motion measurement                                                             | **Passing** — 0 running animations under `reduce`                                                                                                                                                                                           |
+| Drawer / dialog measurement at 375                                                     | **Passing** — modal, inert background, contained focus, Escape restores                                                                                                                                                                     |
+| Touch-target sweep, 22 routes at 375                                                   | **Passing** on the 20 served; **Failing** on the 2 conditional (F41)                                                                                                                                                                        |
+| `pnpm exec prettier --check docs/ACCESSIBILITY.md`                                     | **Passing**                                                                                                                                                                                                                                 |
+| `pnpm lint:copy`                                                                       | **Passing** — `0 hit(s) in 0 file(s)`                                                                                                                                                                                                       |
+| `pnpm test:a11y`                                                                       | **Failing (deliberate stub, exit 1)** — unchanged. The spec it will implement is §12, which now also carries five non-axe regression assertions.                                                                                            |
+| `pnpm quality`                                                                         | **Not run** in this pass. It was Failing at the first pass for a reason that has not changed — `pnpm test:workers` is a Phase 12 stub and exits before any Lighthouse step — so **Lighthouse accessibility 100 is still Not run**.          |
+| `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`                               | **Not run** by me in this pass. They belong to the build agents' gate, the working tree had to stay clean and untouched, and `astro sync` inside `pnpm lint` writes into the tree. The orchestrator's gate build is what I verified, above. |
+
+**Files changed by this review: one** — `docs/ACCESSIBILITY.md`. Zero product files, in this pass and
+in all four passes before it. Every harness was written to the session scratchpad, outside the
+repository; both scratch builds went to a scratch `outDir` and `apps/web/dist` was never rebuilt in
+place.
+
+#### Handoffs — re-review
+
+- **`frontend-ui-engineer`** — F39 (`ItineraryTimeline.tsx:74` and the two `DemoCockpit.astro` call
+  sites), F41 (the feedback address on both conditional routes), F42 (`StateBlock.tsx:156`).
+- **`ux-copy-steward`** — F40, the statement's known-issues list and status paragraph, per §13.2.
+  It comes back here before the page publishes.
+- **`content-editorial-lead`** — a `<caption>` line for the two prose tables in
+  `apps/web/src/content/**` (the last item of F31). The renderer is ready for it.
+- **`brand-design-director`** — nothing open. F34 and F25's primitive are closed, the heading-size
+  decision is accepted above, and no token moved, so the Phase 9 contrast result stands unchanged.
+- **`qa-test-architect`** — §12 as it now reads: 88 runs, four per route, both themes and both motion
+  preferences, zero violations at any impact, plus the five regression assertions §12 lists. Each of
+  the five is a defect axe returned clean on.
+- **`trust-compliance-officer`** — the alert-row `Demo` chips noted above. Not a WCAG finding; an
+  `AGENTS.md §1.2` judgement that is yours.
+- **`release-auditor`** — **the verdict is GREEN.** No unresolved AA failure exists on any served
+  route. Four findings are open and none is a critical accessibility defect. One release condition,
+  and it is a condition on a route that is not built rather than on this verdict: `/accessibility/`
+  and `/contact/` are emitted only when `PUBLIC_CONTACT_EMAIL` is set, and F40 and F41 must close
+  before that happens in a production build.
+- **Still outstanding for Phase 12, unchanged and not claimable here:** the screen-reader passes
+  (VoiceOver + Safari, NVDA + Firefox), the `§18.2` private routes, `/pricing/`, `/status/` and the
+  `airlines` / `airports` / `routes` families, the 14 unreachable `§22.6` journeys, and Lighthouse.
+
+### 15.16 Residue round — 2026-09-13, tree `af24302`
+
+> **VERDICT: GREEN, unchanged.** F39, F41 and F42 are closed, each by the measurement the finding
+> named. No blocker is open, no new finding is raised, and every check the residue could have moved
+> was re-run rather than assumed. **The accessibility statement may not publish as written** — its
+> known-issues list now describes three defects that do not exist on this tree, one of them on the
+> page itself — and the exact three-entry list it must carry is ruled below, so the next revision
+> does not need a fourth round trip.
+
+**Tree control.** I built into a scratch `outDir` and compared to the `apps/web/dist` I was given:
+**all 20 HTML files and all 4 `_astro` assets byte-identical**, only the unreferenced React chunk
+differing. `node apps/web/scripts/verify-dist.mjs --self-test` — `28 check(s) behave as specified`;
+the real pass — `20 page(s) and 4 chunk(s) checked, 0 findings`. One file was dirty in the working
+tree while I measured, `apps/web/src/lib/copy/cockpit.ts` (`ux-copy-steward`, deleting the now-unused
+`severityMeanings`); the byte-identical result is taken from a build of that working tree, so it also
+proves that edit changes no rendered byte.
+
+#### The three closures
+
+| #   | Verdict    | What I measured, on this tree                                                                                                                                                                                                                                                                                                                                                                        |
+| --- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| F39 | **Closed** | `statusLabel` is gone from `ItineraryLeg` (`packages/ui/src/patterns/ItineraryTimeline.tsx`), and the legs render "DEMO 101 Demo Airline **Watch**" and "DEMO 202 Demo Airline **Disrupted**". Swept wider than the finding: **39 status pills across the 20 pages, 0 ending in a field label, and 0 `dp-status-pill__detail` elements anywhere in the build.** The class is gone, not the instance. |
+| F41 | **Closed** | The feedback address measures **196 × 47 px** at 320, 375 and 1440 on both conditional routes (`padding: 12px 0`), and **0 targets are below 44 × 44 or below 24 × 24** on either. Width is a function of the address string, so the height is the load-bearing number and it clears the floor by 3 px at every width.                                                                               |
+| F42 | **Closed** | `.dpp-loading__bones` carries `aria-hidden="true"`, and Chrome's accessibility tree for `/flight-status/` now holds **exactly one** `StaticText "Looking up this flight."` inside `group "Track a flight"`, where it held two. Read from CDP, not inferred from the markup.                                                                                                                          |
+
+#### The statement — ruling under §13 and §13.2
+
+`pages.accessibility` was revised again and the shape is right: the status paragraph now says "No
+Level AA failure is open on any route you can reach today", names the re-measurement rather than the
+report, and keeps "Partially conformant" for the correct reason — the screen-reader pass and the
+release-level checks are still outstanding. The `noClaim` sentence, the environments list with
+versions, the screen-reader limit, the mobile-scoped target sentence, the method section and the
+feedback ordering all survive intact. F31's entry describes the tables accurately, including the
+third column the rights table gained this round. **Three entries of six are now untrue**, which is
+§13.1 row 8 again — a closed finding listed as open — and worse in kind, because F41 is a claim about
+the page a reader is standing on: "it is smaller than every other control on the site" is false at
+196 × 47.
+
+**On this tree the list is three entries: F15, F23, F31.** All three are stable — two are open by a
+decision recorded here and neither closes in a fix loop, the third waits on an editor — so this is
+the list the page keeps until something actually changes.
+
+**It may publish once I-3 lands, if it carries exactly these four edits and nothing else new.** I am
+ruling on the content now so that a fourth round trip is not needed:
+
+1. Remove the F39, F41 and F42 entries.
+2. The known-issues intro: two held open by a decision recorded in the review, one waiting on an
+   editor. Drop "three were found in the re-check".
+3. `lastVerified` and the "Reviewed" line: **2026-09-13**, the date of this pass.
+4. Nothing else changes. Any sentence that is not one of the above is new copy and needs a read.
+
+#### The residue's other DOM changes, and what else I re-ran
+
+The flight-data disclaimer now renders once per card group on `/flight-status/` — three
+`role="note"` disclaimers beside two confidence notes, five in all, none of them a live region. The
+stale card carries "Demo data — not a live flight." beside its `Stale` chip, which is more disclosure
+than `§1.2` asks for and is right. Each `§27` topology sentence renders **exactly once per instance**
+on `/connection-risk/`: protected 1, separate tickets 1, reservation unknown 1.
+
+| Re-run                                                                                                 | Result at `af24302`                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| axe, 20 routes × 2 themes × 2 motion preferences                                                       | **Passing** — `runs: 80 \| WCAG A/AA violations: 0 \| incomplete: 20 \| best-practice: 0 \| console errors: 0`                                                                                                 |
+| axe, 2 conditional routes × 2 × 2                                                                      | **Passing** — `runs: 8 \| violations: 0 \| incomplete: 0 \| best-practice: 0`                                                                                                                                  |
+| Reflow at 320, 20 routes                                                                               | **Passing** — 20 of 20 exact, 0 overflowing, 0 clipped; both conditional routes exact too                                                                                                                      |
+| SC 1.4.12 overrides at 320                                                                             | **Passing** — 20 of 20                                                                                                                                                                                         |
+| Touch targets at 375, 20 routes                                                                        | **Passing** — 0 below 44 × 44 on any                                                                                                                                                                           |
+| SC 2.5.8 at 1440                                                                                       | **Passing** — the five guide-card title links are still 23 px tall and still clear the spacing exception, nearest neighbour 138 px against 24 needed. The statement's sentence about wider layouts stays true. |
+| Keyboard walks — `/` 1440, `/flight-status/` 1440 dark, `/connection-risk/` 375, `/accessibility/` 375 | **Passing** — 44 / 26 / 19 / 19 stops, **0 without a focus indicator, 0 obscured, 0 traps**, focus leaves the document each time                                                                               |
+| Structure, all 22 pages                                                                                | **Passing** — one `<h1>`, 0 skipped levels, `<main tabindex="-1">`, one `contentinfo`, 0 duplicate ids, 0 duplicate region names, 0 `<th>` without a `scope`                                                   |
+| Live regions                                                                                           | **Zero**, unchanged. The one `aria-busy="true"` is inside the `hidden` `searching` state on `/`                                                                                                                |
+| `pnpm exec prettier --check docs/ACCESSIBILITY.md`                                                     | **Passing**                                                                                                                                                                                                    |
+| `pnpm lint:copy`                                                                                       | **Passing** — `0 hit(s) in 0 file(s)`                                                                                                                                                                          |
+
+**Files changed by this review: one** — `docs/ACCESSIBILITY.md`. Zero product files, in this pass and
+in all five before it.
+
+#### Handoffs — residue round
+
+- **`ux-copy-steward`** — the four edits above, and then `/accessibility/` is cleared to publish with
+  I-3. F40 stays open until they land; it is not a barrier and it is not on a served route.
+- **`frontend-ui-engineer`** — nothing open. F39, F41 and F42 are closed and verified.
+- **`content-editorial-lead`** — unchanged: a caption for each of the two article tables (F31).
+- **`release-auditor`** — GREEN, unchanged. No AA failure on any served route. Open: F15 and F23 by
+  decision, F31's caption, F40 until the statement is revised. The publication condition on
+  `/accessibility/` and `/contact/` is now F40 alone; F41 is closed.
+
+---
+
+## 16. Revision history
+
+| Date       | Phase                                                    | Verdict                                                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| ---------- | -------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-11 | Phase 9 (visual-overhaul session S2)                     | **BLOCKED — 6 blockers**                                 | First revision. Tokens, contrast, focus, reduced motion, primitive semantics, mark legibility, motif inventory. Route-level, keyboard, screen-reader, zoom and Lighthouse results are Phase 12 and are recorded as Not run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-09-11 | Phase 9 re-review, tree `63005a3`                        | **BLOCKED — 1 blocker (B7)**                             | B1–B6 verified closed and B7 raised: the fix for B3 put the band word inside a `role="progressbar"`, whose children are presentational, so `bandLabel` reaches the eye and not the accessibility tree (SC 1.3.1). Thirteen of the seventeen findings closed; F15, F22 and F23 remain with their original owners. Contrast re-measured: 101 unique rendered pairs, 202 measurements, zero below floor. Mark decision unchanged — the artwork is byte-identical. Phase 12 cells still Not run, for the same reason.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| 2026-09-11 | Phase 9 B7 re-review, tree at `9dd1f75`                  | **GREEN**                                                | B7 closed: `aria-valuetext` carries the reading and the band, verified from three rendered fixture states, with the visible readout intact. The `aria-describedby` alternative I had offered is recorded as rejected, correctly — it would have forced either a doubled announcement or a screen-reader-computed percentage, which is a published-precision defect. No token changed, so the contrast result is unchanged. F24 raised (copy, `ux-copy-steward`). Phase 9 has no open blocker; F15, F22, F23 and F24 remain with their owners for Phases 10–11, and every Phase 12 cell is still Not run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| 2026-09-12 | Phase 10 (visual-overhaul session S3), tree `d35f69c`    | **BLOCKED — 2 blockers (B8, B9), 14 findings (F25–F38)** | Route-level review of the twenty served S3 routes plus `/accessibility/` and `/contact/` from a scratch build. 88 axe runs, both themes and both motion preferences, zero violations. Keyboard walks, focus measured from rendered pixels, reduced motion measured from computed styles (ADR 0003 rule 4), reflow and zoom, touch targets, motif-behind-text pixel diff, and the accessibility statement reviewed sentence by sentence (§13.1). B8: SC 1.4.10 Reflow fails at 320 CSS px on `/` and `/connection-risk/`. B9: the `/delay-risk/` band meter is announced as a connection-slack measurement (SC 2.4.6). F22 and F24 closed by measurement; F15 closed on every shipped surface. §10.2 moved from `Not run` to measured results; §13 citation `§35` corrected to `§3.4`.                                                                                                                                                                                                                                                                                    |
+| 2026-09-12 | Phase 10 re-review after the S3 fix loop, tree `692ad3f` | **GREEN**                                                | B8 and B9 closed, each by the measurement the blocker named: reflow exact at 320 on 20 of 20 routes, and the `/delay-risk/` meter read back from the built HTML as `aria-label="Delay and cancellation assessment"` with `aria-valuetext="Risk band, Watch"`. Eleven of the fourteen findings closed; F31 closed on three of four items with the `<caption>` re-owned to `content-editorial-lead`; F17 and F23 unchanged. 88 axe runs again, zero violations and now zero best-practice. Four new findings: F39 the same "Status" detail one component over in `ItineraryTimeline`, F40 the accessibility statement now listing closed issues as open, F41 the 196 × 23 px feedback address, F42 the loading message announced twice. None blocks. The given `apps/web/dist` was proved byte-identical to a fresh build of the committed tree before anything was measured on it. §13.2 re-reads the statement against all twelve §13.1 rows. The Callout heading-size decision is accepted, with axe's `heading-order` named as the guard that replaces the visual cue. |
+| 2026-09-13 | Phase 10 residue round, tree `af24302`                   | **GREEN**                                                | F39, F41 and F42 closed by measurement: 0 `dp-status-pill__detail` elements and 0 of 39 pills ending in a field label anywhere in the build; the feedback address 196 × 47 px with 0 targets under 44 × 44 on either conditional route; one `StaticText "Looking up this flight."` in the CDP tree where there were two. No new finding. The given `apps/web/dist` proved byte-identical to a build of the working tree, which also showed the one dirty file (`cockpit.ts`, deleting a dead export) changes no rendered byte. 88 axe runs again, zero violations; reflow exact at 320 on 22 of 22 routes; keyboard walks clean. The accessibility statement was re-read and **may not publish as written** — three of its six known issues are now closed, one of them a claim about the page itself — and §15.16 rules the exact three-entry list (F15, F23, F31) and the date it must carry, so no further round trip is needed.                                                                                                                                      |

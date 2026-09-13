@@ -34,6 +34,7 @@ const KB = 1024
  * @property {number|null} height Intrinsic height in px.
  * @property {number[]} [sizes]   ICO member sizes.
  * @property {'any'|'maskable'|null} purpose  Web app manifest `purpose`, where applicable.
+ * @property {string} [identicalTo]  Another row this file must be a byte-for-byte copy of.
  * @property {number} bytes       Hard byte ceiling.
  * @property {string} note
  */
@@ -97,7 +98,7 @@ export const ASSETS = [
   },
   {
     path: 'apps/web/public/icons/favicon.ico',
-    url: '/favicon.ico',
+    url: '/icons/favicon.ico',
     kind: 'ico',
     mime: 'image/x-icon',
     width: 48,
@@ -105,7 +106,39 @@ export const ASSETS = [
     sizes: [16, 32, 48],
     purpose: null,
     bytes: 16 * KB,
-    note: 'PNG-in-ICO, three members. Must also be served from the site root for legacy user agents.',
+    note: 'PNG-in-ICO, three members. The file <link rel="icon" sizes="16x16 32x32 48x48"> points at. Emitted a second time at the site root, byte-identically, by the row below.',
+  },
+  /*
+   * THE ROOT COPY, AND WHY IT IS A FILE RATHER THAN A NOTE
+   * This row used to be a sentence on the row above — "must also be served from the site root for
+   * legacy user agents" — with a `url` of `/favicon.ico` that no file in `dist` answered. The note
+   * was right and the pipeline never implemented it, so the manifest documented a URL that 404ed:
+   * the worst of both, because the contract read as satisfied.
+   *
+   * The root file stays, rather than the note being deleted, because the user agents it serves are
+   * a different set from the ones the <link> serves. A browser reads the markup; a feed reader, a
+   * link-preview bot, a crawler, an older bookmark handler and anything that fetches an origin
+   * without parsing HTML ask for `/favicon.ico` unprompted and read nothing else. Without a file
+   * there, that request misses the ASSETS binding, falls through to the Worker's catch-all and
+   * returns a plain-text 404 (`not_found_handling: "none"` in apps/edge/wrangler.jsonc) — an
+   * error on every one of those agents' first contact with the origin, traded against 841 bytes.
+   *
+   * `build-assets.mjs` writes both paths from ONE encoded buffer in one run — not a post-build
+   * copy step — and `verify-assets.mjs` asserts the bytes are identical, so the two can never
+   * drift into two subtly different marks.
+   */
+  {
+    path: 'apps/web/public/favicon.ico',
+    url: '/favicon.ico',
+    kind: 'ico',
+    mime: 'image/x-icon',
+    width: 48,
+    height: 48,
+    sizes: [16, 32, 48],
+    purpose: null,
+    identicalTo: 'apps/web/public/icons/favicon.ico',
+    bytes: 16 * KB,
+    note: 'Byte-identical root copy of icons/favicon.ico, for user agents that request /favicon.ico without parsing <link rel="icon">. Not referenced by any markup, by design: nothing should link it, and nothing needs to.',
   },
   {
     path: 'apps/web/public/icons/icon-192.png',

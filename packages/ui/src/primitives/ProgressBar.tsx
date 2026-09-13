@@ -19,6 +19,15 @@
  * is no indeterminate variant: an indeterminate bar loops, and loops are forbidden inside
  * data-bearing components.
  *
+ * WHY THE FILL IS AN SVG RECT. The extent used to be an inline `style` setting a custom property,
+ * and the site serves `style-src 'self'` with no `'unsafe-inline'` (apps/web/public/_headers), so
+ * the browser discarded that declaration and the meter rendered EMPTY at every reading — the B2 and
+ * B3 fixes were invisible on the real site. `width` on an SVG `<rect>` is a presentation attribute,
+ * which `style-src` does not govern, so the extent survives the policy. The `<svg>` is inside the
+ * presentational subtree of `role="progressbar"` and is `aria-hidden` besides. Nothing about the
+ * reading is carried by it: the number a reader gets is `valueText`, in text (`DIRECTIVE.md §18.5`
+ * — no percentage is rendered anywhere on this meter, in any channel).
+ *
  * WHY `aria-valuetext` CARRIES BOTH STRINGS. `role="progressbar"` has presentational children in
  * WAI-ARIA 1.2: everything inside this element is dropped from the accessibility tree. The visible
  * readout is therefore for the eye only, and anything it says has to be said again in an attribute
@@ -32,9 +41,14 @@
  * point assistive technology computes and announces a PERCENTAGE from valuenow/valuemin/valuemax.
  * A spoken "40 percent" is the same published-precision defect as a dial, and this primitive exists
  * to refuse it (`DIRECTIVE.md §18.5`).
+ *
+ * AN UNKNOWN READING IS `value={null}`, not zero. `unknown` is a designed state (`AGENTS.md §1.1`)
+ * and "0 of 45 minutes" is a claim about the flight, so a meter with no fresh input renders no fill
+ * and omits `aria-valuenow` — WAI-ARIA 1.2's spelling of "the current value is not known". The
+ * track, the readout and `aria-valuetext` are unchanged, and the words in them are the caller's.
  */
 
-import type { CSSProperties, JSX } from 'react'
+import type { JSX } from 'react'
 import { cx } from './class-names.ts'
 import { Icon, type IconName } from './Icon.tsx'
 import type { InterimStatusTone } from '../tokens/interim-contracts.ts'
@@ -47,7 +61,8 @@ const BAND_ICON: Readonly<Record<InterimStatusTone, IconName>> = {
 }
 
 export interface ProgressBarProps {
-  readonly value: number
+  /** The reading, or `null` when there is no fresh input to read. */
+  readonly value: number | null
   readonly min?: number
   readonly max?: number
   /** Accessible name, e.g. "Connection slack used". */
@@ -78,8 +93,11 @@ export function ProgressBar({
   className,
 }: ProgressBarProps): JSX.Element {
   const span = max - min
-  const clamped = Math.min(Math.max(value, min), max)
-  const fraction = span <= 0 ? 0 : (clamped - min) / span
+  const reading = value === null ? null : Math.min(Math.max(value, min), max)
+  // Geometry for the SVG presentation attribute below, to one decimal place. It is never rendered
+  // as text and never announced; see the header on why this meter publishes no percentage.
+  const extent =
+    reading === null ? null : span <= 0 ? 0 : Math.round(((reading - min) / span) * 1000) / 10
   // Both caller strings, joined. Nothing is composed here beyond the separator: the words are the
   // caller's, because they are copy.
   const announced = `${valueText}, ${bandLabel}`
@@ -91,7 +109,7 @@ export function ProgressBar({
       aria-label={label}
       aria-valuemin={min}
       aria-valuemax={max}
-      aria-valuenow={clamped}
+      {...(reading === null ? {} : { 'aria-valuenow': reading })}
       aria-valuetext={announced}
     >
       <p className="dp-progress__readout">
@@ -102,10 +120,17 @@ export function ProgressBar({
         </span>
       </p>
       <span className="dp-progress__track">
-        <span
-          className="dp-progress__fill"
-          style={{ '--dp-progress-fraction': fraction } as CSSProperties}
-        />
+        <svg className="dp-progress__meter" aria-hidden="true" focusable="false">
+          {extent === null ? null : (
+            <rect
+              className="dp-progress__fill"
+              x="0"
+              y="0"
+              width={`${String(extent)}%`}
+              height="100%"
+            />
+          )}
+        </svg>
       </span>
     </div>
   )

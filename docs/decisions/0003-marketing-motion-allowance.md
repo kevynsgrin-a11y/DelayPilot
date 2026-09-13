@@ -2,6 +2,8 @@
 
 **Status:** accepted · **Date:** 2026-09-11 · **Decider:** `build-orchestrator`, under repository-owner instruction · **Authored by:** `principal-architect`
 **Amends:** `DIRECTIVE.md §7`, `.claude/agents/brand-design-director.md`, `.claude/agents/frontend-ui-engineer.md`
+**Amended:** 2026-09-12 — rules 2c and 5, to record how view transitions were actually implemented.
+Every other rule is unchanged.
 
 ## Context
 
@@ -48,9 +50,36 @@ b. **Ambient decorative motion, on original SVG/CSS art only** — the hero "ope
 `aria-hidden="true"`, carries no text and no data, at most two motifs per route, cycle at most 12 s,
 low amplitude, paused off-screen, never behind body text in a way that changes a measured pair.
 
-c. **Astro View Transitions** (`<ClientRouter />`) between public routes: a cross-fade of at most
-`--motion-base`, 180 ms (`.claude/agents/brand-design-director.md:146`), header persisted, with
-Astro's own reduced-motion behaviour applying on top of rule 4.
+c. **Cross-document view transitions** between public routes: a cross-fade of at most
+`--motion-base`, 180 ms (`.claude/agents/brand-design-director.md:146`), header persisted, off under
+`prefers-reduced-motion: reduce` per rule 4.
+
+_Amended 2026-09-12._ This rule first read "**Astro View Transitions** (`<ClientRouter />`) between
+public routes … with Astro's own reduced-motion behaviour applying on top of rule 4". What ships is
+the **native cross-document CSS View Transition API** and no router: `@view-transition { navigation:
+auto }` declared in the stylesheet, `::view-transition-old(root)` and `::view-transition-new(root)`
+bounded by `--motion-view-transition` — 180 ms, the same value as `--motion-base` — the header
+persisted through a `view-transition-name` declared in the stylesheet rather than by a `transition:*`
+directive, and `@view-transition { navigation: none }` inside the `prefers-reduced-motion: reduce`
+block, so rule 4's collapse is stated directly instead of delegated to a router
+(`apps/web/src/layouts/app.css` sections 19 and 20, `apps/web/src/styles/tokens.css:223`).
+
+`<ClientRouter />` is **not** used, for a reason narrower than preference. Astro 7.1.4's own
+configuration reference, read in the installed package, records the router as incompatible with
+Content-Security-Policy — "Astro's view transitions using the `<ClientRouter />` are not supported,
+but you can consider migrating to the browser native View Transition API instead", and
+"`unsafe-inline` directives are incompatible with Astro's CSP implementation"
+(`astro@7.1.4`, `astro/dist/types/public/config.d.ts:673` and `:675`). The policy this site serves —
+`script-src 'self'; style-src 'self'`, no `'unsafe-inline'` and no hashes
+(`apps/web/public/_headers:26`) — refuses the inline script and the per-page inline style that the
+router and the `transition:*` directives emit. The router would not merely cost more; it would be
+inert.
+
+The amendment is **narrower** than the text it replaces: the same 180 ms cross-fade, the same
+persisted header, the same reduced-motion collapse, with zero JavaScript where the original allowed
+a router. The Context's "where the two appear to differ, the narrower reading governs" clause
+resolves it, and rule 5's client-router line is a budget ceiling this implementation does not spend,
+not an instruction to use one.
 
 d. **A scroll-scrubbed demonstration chronology** — the `§28` demo itinerary
 (`DIRECTIVE.md:1018-1027`) advancing scheduled → delayed inbound → connection watch → cancellation →
@@ -71,8 +100,9 @@ any motion that contributes to CLS.
 reveals are instant, ambient motifs render a single static frame, view transitions are off, the
 chronology shows the full list, depth layers are flat. The state change itself is never removed.
 
-**5. Budgets unchanged.** Everything in rule 2 is CSS; the only JavaScript it introduces is Astro's
-client router, counted inside the existing marketing-route budget — initial JS ≤ 30 KB gz,
+**5. Budgets unchanged.** Everything in rule 2 is CSS and introduces no JavaScript. A client router
+was the budgeted ceiling before the 2026-09-12 amendment and is not used; the budget it was counted
+inside is unchanged and unspent — initial JS ≤ 30 KB gz,
 CSS ≤ 25 KB gz, total ≤ 300 KB (`.claude/agents/performance-engineer.md:82`) — against
 LCP < 2.5 s p75, CLS < 0.1, INP < 200 ms (`DIRECTIVE.md:943-945`; `performance-engineer.md:74-77`).
 The demo cockpit island is a state-change island and follows the base rule, not this allowance.

@@ -1,0 +1,44 @@
+---
+/**
+ * `/contact/` — emitted ONLY when `PUBLIC_CONTACT_EMAIL` is configured at build time.
+ *
+ * `getStaticPaths` returns nothing when it is not, so the route does not exist, the header and
+ * footer omit it, and no page links to it. That is the designed state, not a gap: owner input I-3
+ * (`docs/BUILD_PLAN.md §10`) has not supplied a real address, and a contact page that cannot reach
+ * a person is a dead control (`AGENTS.md §1.6`) — the exact thing a contact page must never be.
+ *
+ * There is no FORM. A form needs an endpoint, spam protection and a retention policy, and none of
+ * the three exists. One address, readable without JavaScript and without solving a puzzle
+ * (`docs/ACCESSIBILITY.md §13` item 5).
+ *
+ * HANDOFF FILED: `to: principal-architect` — add `PUBLIC_CONTACT_EMAIL=` to `.env.example` with the
+ * note that setting it emits `/contact/` and `/accessibility/`, and leaving it unset omits both.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro'
+import PageHeader from '../../components/PageHeader.astro'
+import Section from '../../components/Section.astro'
+import { contactEmail } from '../../components/routes.ts'
+
+import { contactPage } from '../../lib/copy/pages.ts'
+
+export function getStaticPaths() {
+  return contactEmail === undefined ? [] : [{ params: { path: undefined } }]
+}
+
+// Narrowed by getStaticPaths: this module only renders when an address exists.
+const page = contactPage(contactEmail ?? '')
+---
+
+<BaseLayout title={page.title} description={page.description} kind="utility" nav="contact">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.addressHeading}>
+    <p class="dpx-section__intro">
+      {/* `dpx-mailto`: the 44px target every other control has (`ACCESSIBILITY.md` F41). */}
+      <a class="dpx-mailto" href={`mailto:${page.address}`}>{page.address}</a>
+    </p>
+    <p class="dpx-lookup__note">{page.responseTime}</p>
+    <p class="dpx-lookup__note">{page.privacyNote}</p>
+    <p class="dpx-lookup__note">{page.notAnAirline}</p>
+  </Section>
+</BaseLayout>

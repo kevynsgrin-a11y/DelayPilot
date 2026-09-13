@@ -1,99 +1,322 @@
 ---
 /**
- * Privacy policy.
+ * Privacy.
  *
- * Every sentence here must be TRUE of the site as it exists today, not a boilerplate policy
- * describing a product that has not been built. Today the site is a set of static pages with no
- * account system, no forms, no analytics, no advertising and no third-party script of any kind.
- * Saying more than that would be a fabricated claim in the other direction (AGENTS.md section 1.1),
- * and a policy that overstates collection is as misleading as one that understates it.
+ * Owner: trust-compliance-officer (docs/agents/ROSTER.md §3).
  *
- * The commitments in "What this site will never collect" are not aspirational: they are binding
- * invariants from AGENTS.md section 2 that the build is held to.
+ * S3 WAVE 2. Two things changed under this page since it was written, and both had to be re-checked
+ * against the shipped code rather than assumed:
  *
- * This page must be rewritten — not appended to — the moment any account, alert, analytics or
- * advertising surface ships. docs/agents/ROSTER.md section 3 assigns the policy pages to
- * trust-compliance-officer; this is a pre-Phase-11 baseline added under direct owner instruction
- * because the site had no privacy page at all.
+ *  1. The site now ships FOUR external same-origin scripts where it previously shipped none, and
+ *     one of them WRITES to browser storage. The previous revision said "no localStorage key is
+ *     written anywhere in apps/** or packages/**" — true when written, false now. The claim is
+ *     restated as what the code does today and each script is named.
+ *  2. The homepage now carries a real flight-lookup FORM. The previous revision's "no form sends
+ *     anything to DelayPilot" is still true, but it was true because no form existed; it is now
+ *     true because the submit handler calls preventDefault() and resolves in the browser.
+ *
+ * EVIDENCE FOR EVERY CLAIM BELOW, verified in this session at the reviewed date:
+ *
+ *  · Browser storage — the ONLY key is `dp-theme`. Written at
+ *    apps/web/src/components/ThemeToggle.astro, at `const STORAGE_KEY = 'dp-theme'` and at
+ *    (`localStorage.setItem(STORAGE_KEY, target.value)`), inside a `change` listener, so nothing is
+ *    written until a reader picks an option. Read in the same file and at
+ *    apps/web/src/pages/theme-init.js.ts, which reads and never writes. A repository-wide grep for `localStorage`,
+ *    `sessionStorage`, `document.cookie`, `indexedDB`, `caches.` and `sendBeacon` over
+ *    apps/web/src/** and packages/ui/src/** returns those three call sites and nothing else.
+ *    Permitted values are exactly `system`, `light`, `dark` (ThemeToggle.astro:40–44).
+ *  · The lookup form makes NO network request. apps/web/src/components/LookupForm.astro declares
+ *    `<form data-dp-lookup … novalidate>` with no `action` and no `method`; the submit handler
+ *    calls `event.preventDefault()` and ends in `setTimeout(() => show('unavailable'), 0)`. There
+ *    is no `fetch(`, no `XMLHttpRequest` and no `sendBeacon` anywhere in apps/web/src. The chunk is
+ *    referenced only by dist/index.html.
+ *  · No cookie. No `document.cookie` in the repository, and apps/edge/wrangler.jsonc:72 runs the
+ *    Worker first only for /api/*, /auth/*, /webhooks/* and /go/* — no Worker is in the path of an
+ *    HTML response, so no Set-Cookie can be added to one.
+ *  · No third party. A grep of every built page for an absolute http(s) `href`, `src` or `action`
+ *    returns zero matches, as does a grep for `data:` URIs. apps/web/public/_headers serves
+ *    `default-src 'self'` with `img-src 'self'`, `connect-src 'self'` and no third-party origin.
+ *  · Four scripts, all same-origin: /theme-init.js and the three Astro modules emitted for
+ *    ThemeToggle, SiteHeader and LookupForm. Three of the four load on this page; the lookup script
+ *    is homepage-only.
+ *
+ * WHAT THIS PAGE MUST NEVER DO is state a retention period, a sub-processor, a data-processing
+ * agreement, or a legal basis that nothing in the repository establishes. docs/PRIVACY.md (owner:
+ * security-privacy-engineer) does not exist yet; when it does, this page renders it and any
+ * sentence here that it does not support is a defect in this page, not in that document.
+ *
+ * The `/terms/` cross-link near the foot of this page names that document by its title, "Terms of
+ * use", not by the footer's nav label "Terms" (`nav.footer.links['/terms/']`). Two registers, both
+ * deliberate; the reasoning is recorded in the header of `terms.astro`.
  */
 import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Privacy — DelayPilot'
 const description =
-  'What DelayPilot collects today (almost nothing), and what it is built never to collect.'
+  'DelayPilot sets no cookie, runs no analytics, and loads no third-party script. The only value stored in your browser is the theme you chose, and it never leaves your device.'
 
-const lastUpdated = '29 August 2026'
+const intro =
+  'DelayPilot collects nothing about you. No account, no cookie, no analytics, no advertising, and nothing loaded from another company. The only value stored in your browser is the light-or-dark theme you picked, and it never leaves your device.'
+
+/** The reviewed date. BaseLayout renders it; this page does not print a second copy. */
+const REVIEWED_AT = '2026-09-12'
 ---
 
-<BaseLayout title={title} description={description} nav="privacy">
-  <section class="hero">
-    <h1>Privacy</h1>
-    <p class="lede">
-      What this site collects today, stated plainly — and the things it is built never to collect.
-    </p>
-    <p class="meta">Last updated: {lastUpdated}</p>
-  </section>
+<BaseLayout
+  title={title}
+  description={description}
+  kind="policy"
+  reviewedAt={REVIEWED_AT}
+  nav="privacy"
+>
+  <PageHeader slot="page-header" title="Privacy" intro={intro} />
 
-  <section class="section">
-    <div class="prose">
-      <h2>What this site collects today</h2>
+  <div class="dpx-article__body">
+    <div class="dpx-shell">
+      <article class="prose">
+        <p>
+          Reading this site sends nothing to DelayPilot beyond the request your browser has to make
+          to fetch the page. There is no analytics call behind that request, no tracking pixel
+          inside the page, and no third-party resource the page reaches for afterwards. Everything
+          below was checked against the code this site is built from on the reviewed date, not
+          against a plan — where the product does not yet do something, this page says so rather
+          than describing it in advance.
+        </p>
 
-      <p>
-        <strong>No account. No forms. No tracking.</strong> As of the date above, DelayPilot is a set
-        of static informational pages. There is no sign-up, no login, no flight lookup, and no form of
-        any kind. The site sets no cookies, runs no analytics, serves no advertising, and loads no third-party
-        script.
-      </p>
+        <h2>What is collected today: nothing</h2>
 
-      <p>
-        The site is served through Cloudflare. Like any web host, Cloudflare records standard server
-        request logs — including IP address, user agent, requested path and timestamp — and retains
-        them under its own policy for security and reliability purposes. We do not add to those
-        logs, query them for analytics, or combine them with anything else.
-      </p>
+        <ul>
+          <li>
+            <strong>No account.</strong> There is no sign-up, no sign-in, no password, and no profile.
+          </li>
+          <li>
+            <strong>No cookies.</strong> DelayPilot sets none — not a session cookie, not a preference
+            cookie, not an analytics cookie. There is no consent banner because there is nothing to consent
+            to.
+          </li>
+          <li>
+            <strong>No analytics.</strong> No analytics product, tag manager, pixel, session recorder,
+            heatmap, or experiment framework is loaded. No page view is counted by DelayPilot.
+          </li>
+          <li>
+            <strong>No advertising.</strong> No ad network, no ad script, no ad identifier. See the
+            {' '}<a href="/advertising-policy/">advertising policy</a> for the rules that will bind if
+            that ever changes.
+          </li>
+          <li>
+            <strong>No third-party requests.</strong> No embedded video, no hosted font, no external image,
+            no social widget, no error-reporting service. The typeface these pages render in is served
+            from this site, so reading DelayPilot does not disclose your visit to a font provider.
+          </li>
+        </ul>
 
-      <h2>What this site will never collect</h2>
+        <h2>What is stored in your browser</h2>
 
-      <p>
-        These are binding rules on the product, not preferences. They hold as new features ship:
-      </p>
+        <p>
+          One value, and you have to ask for it. When you choose an appearance in the theme control
+          — <code>System</code>, <code>Light</code>, or <code>Dark</code> — that choice is saved in your
+          browser's local storage under the key <code>dp-theme</code>. It is the only key DelayPilot
+          writes anywhere.
+        </p>
 
-      <ul>
-        <li>
-          <strong>No booking reference.</strong> DelayPilot will never ask for a PNR or record locator.
-          It is not an input, not a database column, not a URL parameter, and not a log field.
-        </li>
-        <li>
-          <strong>No identity documents.</strong> Never a passport, government ID, Known Traveler Number,
-          redress number, card number, or airline account credential.
-        </li>
-        <li>
-          <strong>No access to your accounts.</strong> DelayPilot will never read your email inbox, sign
-          in to an airline on your behalf, or submit a claim, refund request, or rebooking for you.
-        </li>
-        <li>
-          <strong>No personal detail in logs or analytics.</strong> No email address, display name, itinerary
-          detail, receipt text, notification payload, or raw IP address is written into application logs,
-          analytics events, page titles, or URLs.
-        </li>
-      </ul>
+        <ul>
+          <li>
+            <strong>It is written only when you pick an option</strong>, never on page load. If you
+            never touch the control, nothing is stored at all and the pages simply follow the light
+            or dark preference your operating system already publishes to your browser.
+          </li>
+          <li>
+            <strong>It holds one of three words</strong> and nothing else. It is not an identifier, it
+            is not a cookie, it is never attached to a request, and no DelayPilot server can read it.
+          </li>
+          <li>
+            <strong>Clearing this site's data in your browser removes it</strong>, and that is the
+            whole of the clean-up.
+          </li>
+        </ul>
 
-      <h2>When this page changes</h2>
+        <h2>The scripts this site loads, and what each one does</h2>
 
-      <p>
-        This page will be rewritten before — not after — any feature that collects personal data
-        goes live. That rewrite will say exactly what is collected, why, how long it is kept, and
-        how to have it deleted. The date at the top is the record of when the description last
-        matched the site.
-      </p>
+        <p>
+          Four small scripts exist across the whole site. All four are served from this site's own
+          address, none is a library from another company, and none makes a network request, sets a
+          cookie, or measures anything. Named honestly, they are:
+        </p>
 
-      <h2>Contact</h2>
+        <ul>
+          <li>
+            <strong>The theme pre-load.</strong> Runs before the page paints, reads the saved theme, and
+            applies it, so a reader who chose dark does not get one bright frame first. It reads that
+            value; it never writes one.
+          </li>
+          <li>
+            <strong>The theme control.</strong> Keeps the appearance control in step with the saved choice
+            and writes your choice when you make one. This is the only code on the site that writes to
+            storage.
+          </li>
+          <li>
+            <strong>The navigation.</strong> Opens and closes the menus in the header and the menu drawer
+            on a phone.
+          </li>
+          <li>
+            <strong>The flight lookup</strong>, on the homepage only. Checks that what you typed
+            looks like an airline, a flight number, and a date, and then shows the result state.
+          </li>
+        </ul>
 
-      <p>
-        Questions about this page can be raised through the project's public repository. No contact
-        form is offered here, because a form that collects an email address would contradict the
-        section above.
-      </p>
+        <h2>Looking up a flight</h2>
+
+        <p>
+          DelayPilot never asks for a booking reference or record locator, and never will. A flight
+          is identified by airline and flight number and date, or by route and date — information
+          that is public on a departure board.
+        </p>
+
+        <p>
+          <strong>Submitting the lookup form sends nothing anywhere.</strong> The page has no address
+          to submit to: the form declares no destination, the script cancels the browser's own submission,
+          and the whole exchange happens inside the tab you are sitting in. No flight-data provider is
+          connected to this deployment, so the truthful answer is the labelled <strong
+            >Unavailable</strong
+          > state rather than an invented time — and that answer is produced locally, without a request
+          leaving your browser.
+        </p>
+
+        <h2>What your browser is allowed to load</h2>
+
+        <p>
+          The site sends security headers with every page that restrict what the page may do. They
+          are worth stating in plain words, because they are a check on us as much as on an
+          attacker:
+        </p>
+
+        <ul>
+          <li>
+            Scripts, styles, fonts, images, and network connections may come only from DelayPilot's
+            own address. A third-party tracker added by accident would be refused by your browser
+            rather than quietly run.
+          </li>
+          <li>
+            Plugin content is blocked outright, and the page may not be embedded in another site's
+            frame.
+          </li>
+          <li>
+            Your browser is told not to guess file types, and to trim the address it passes on when
+            you follow a link away from here.
+          </li>
+          <li>
+            Geolocation, camera, microphone, and payment interfaces are switched off for these
+            pages. DelayPilot never asks for your location.
+          </li>
+        </ul>
+
+        <h2>What DelayPilot is built never to collect</h2>
+
+        <p>
+          These are invariants the codebase is written and reviewed against, not preferences a later
+          release might quietly relax:
+        </p>
+
+        <ul>
+          <li>
+            <strong>No booking reference or record locator, anywhere.</strong> Not as an input, not as
+            a database column, not in a web address, not in a log line, not in an analytics event.
+          </li>
+          <li>
+            <strong>No identity documents.</strong> Never a passport, a government ID, a Known Traveler
+            Number, a redress number, a card number, or an airline account password.
+          </li>
+          <li>
+            <strong>No access to your accounts.</strong> DelayPilot never reads an email inbox, never
+            scrapes an airline account, and never signs in anywhere as you.
+          </li>
+          <li>
+            <strong>Nothing filed on your behalf.</strong> No claim, complaint, refund request, rebooking,
+            or purchase is ever submitted for you.
+          </li>
+          <li>
+            <strong>No personal content in technical records.</strong> Logs, analytics events, error reports,
+            page titles, social preview tags, and web addresses carry no email address, no name, no itinerary
+            detail, no receipt text, no notification content, and no raw IP address.
+          </li>
+        </ul>
+
+        <h2>What the hosting provider sees</h2>
+
+        <p>
+          These pages are static files served by a hosting provider, and that provider may keep
+          standard request logs under its own policy. DelayPilot does not receive, store, or analyse
+          them. No DelayPilot code sits in the path of a page request to add to them, and no
+          DelayPilot record of your visit exists anywhere.
+        </p>
+
+        <h2>What changes when the product does</h2>
+
+        <p>
+          DelayPilot will eventually do things that require data: a saved trip, an email alert, a
+          purchase. Each of those brings a new section to this page, and each section is added{' '}
+          <strong>when the feature exists</strong> — never in advance, and never as a description of something
+          that has not shipped. This page is rewritten rather than added to, so that it never becomes
+          a history of intentions.
+        </p>
+
+        <p>
+          No retention period appears on this page, because nothing is retained. Publishing a number
+          now would be inventing one. The rules already binding on that future work are these: an
+          email address is stored encrypted and matched by a keyed one-way fingerprint rather than
+          by the address itself; analytics, if enabled, records privacy-minimized events that never
+          include an email address, a name, a booking reference, an exact itinerary, receipt text,
+          claim content, or a raw IP address; operational alerts about your flight stay separate
+          from marketing messages, with a one-click unsubscribe for the latter; and export and
+          deletion routes ship with the account that makes them meaningful.
+        </p>
+
+        <h2>Your choices today</h2>
+
+        <p>
+          There is nothing to opt out of, nothing to export, and nothing to delete, because nothing
+          about you exists to act on. If you have set a theme, clearing this site's data in your
+          browser removes it. That is the whole list, and it is short on purpose.
+        </p>
+
+        <h2>Reaching us about this page</h2>
+
+        <p>
+          DelayPilot publishes no contact address today. Printing one that nobody monitors would be
+          worse than saying so: there is currently no address to write to about this page, and this
+          page will name one on the day it exists.
+        </p>
+
+        <h2>{pages.policy.relatedHeading}</h2>
+
+        <ul>
+          <li>
+            <a href="/terms/">Terms of use</a> — what DelayPilot is, and what it never does for you.
+          </li>
+          <li>
+            <a href="/advertising-policy/">{nav.footer.links['/advertising-policy/']}</a> — including
+            what is never sent to an advertiser.
+          </li>
+          <li>
+            <a href="/affiliate-disclosure/">{nav.footer.links['/affiliate-disclosure/']}</a> — commercial
+            links, and the absence of them.
+          </li>
+          <li>
+            <a href="/data-sources/">{nav.footer.links['/data-sources/']}</a> — which outside services
+            DelayPilot is built to read, and that none is connected here.
+          </li>
+        </ul>
+      </article>
     </div>
-  </section>
+  </div>
 </BaseLayout>

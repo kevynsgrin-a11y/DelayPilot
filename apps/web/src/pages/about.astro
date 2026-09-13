@@ -1,0 +1,30 @@
+---
+/**
+ * `/about/` — what DelayPilot is, what it is not, and what it never asks for.
+ *
+ * Five sections from the copy module, in order. The independence section is the one that matters
+ * most and it is the first: `AGENTS.md §1.4` is about more than logos, and a reader deciding
+ * whether to trust an assessment is entitled to know who is paid by whom. The footer disclaimer
+ * says the same thing in one sentence on every page; this says it at length, once.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+
+import { pages } from '../lib/copy/pages.ts'
+
+const page = pages.about
+const sections = Object.values(page.sections)
+---
+
+<BaseLayout title={page.title} description={page.description} nav="about">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  {
+    sections.map((section) => (
+      <Section heading={section.heading} reveal>
+        <p class="dpx-section__intro">{section.body}</p>
+      </Section>
+    ))
+  }
+</BaseLayout>

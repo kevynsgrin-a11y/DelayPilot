@@ -23,24 +23,39 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
 # CSP notes, so the next person does not loosen this by guesswork:
 #
-# - script-src 'self'  — the current build emits ZERO script tags (verified against the built
-#   apps/web/dist/*.html). 'self' is set rather than 'none' so the first Phase 10 React island
-#   does not require a simultaneous CSP change. Note this ALSO means no inline script: the
-#   conventional pre-paint theme-toggle script is therefore forbidden by our own policy, which
-#   is why apps/web/src/styles/tokens.css selects the dark theme with prefers-color-scheme and
-#   no JavaScript at all. A future toggle can still use an external same-origin <script src>
-#   without weakening anything here.
+# - script-src 'self' — NO 'unsafe-inline' and no hash sources. Every script this build emits is
+#   an EXTERNAL same-origin file: /theme-init.js (an endpoint, blocking, pre-paint) and the three
+#   bundled `<script type="module" src="/_astro/...">` chunks Astro emits for the header, the theme
+#   control and the lookup form. That is a property of the build, not an accident of size:
+#   apps/web/astro.config.mjs pins vite.build.assetsInlineLimit to 0, which is what stops Astro
+#   inlining a small script chunk into the HTML. Raise it and those scripts become inline elements
+#   this policy refuses, so the menus stop opening on the deployed site and nowhere else.
 # - style-src 'self' — NO 'unsafe-inline'. This is earned, not assumed: apps/web/astro.config.mjs
 #   pins build.inlineStylesheets to 'never', so the build cannot emit an inline <style>, and the
 #   built HTML is verified to contain none. If that setting ever returns to 'auto', every page
 #   renders unstyled until 'unsafe-inline' comes back here AND in apps/edge/src/index.ts.
-# - img-src data: — required by the empty-data-URI favicon (<link rel="icon" href="data:,">) in
-#   apps/web/src/layouts/BaseLayout.astro, which suppresses the default /favicon.ico request
-#   without claiming an icon that does not exist. Drop `data:` when visual-asset-director ships
-#   the real icon set in Phase 9.
+# - img-src 'self' — no `data:`. It carried `data:` only for the placeholder favicon link
+#   (<link rel="icon" href="data:,">) that BaseLayout used before an icon set existed. BaseLayout v2
+#   now links the real /icons/* files (scripts/assets/asset-manifest.mjs) and the placeholder is
+#   gone, and assetsInlineLimit: 0 additionally stops Vite emitting any small asset as a `data:`
+#   URI. Nothing in apps/web/dist requests a data: image, so the source was removed rather than
+#   left carried defensively. Restoring it would need a real asset that requires it and the same
+#   edit in apps/edge/src/index.ts.
 # - No frame-src / media-src / worker-src is listed: default-src 'self' already covers
 #   them, and enumerating directives the site does not use invites drift.
+#
+# HOW TO CHANGE THIS POLICY WITHOUT GUESSING. apps/web/scripts/verify-dist.mjs runs on every build,
+# refuses any inline <script>, inline <style> or style="..." attribute, and prints the exact
+# 'sha256-...' source the header would have to carry for the element it found. So a future inline
+# element fails the build with its own allowlist entry already computed: the policy is widened by
+# pasting a hash that was measured, or not at all. A `data:` or 'unsafe-inline' source added to
+# unblock a red build is the failure mode both this comment and that script exist to prevent.
+#
+# Whatever changes here must change identically in the SECURITY_HEADERS object of
+# apps/edge/src/index.ts: static pages never invoke the Worker and Worker responses never see this
+# file, so the same policy is written twice. node scripts/validate-security-headers.mjs compares
+# them and fails on any drift.

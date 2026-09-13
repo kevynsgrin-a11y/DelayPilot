@@ -1,0 +1,102 @@
+---
+/**
+ * `/passenger-rights/` and `/passenger-rights/<jurisdiction>/`.
+ *
+ * The index IS the `overview` entry — `jurisdiction: overview` maps to `/passenger-rights/`, never
+ * to `/passenger-rights/overview/`, so there is one canonical address for it and no duplicate.
+ * The index therefore renders the overview article in full and lists the jurisdictions whose own
+ * entries are served, under the shell chrome from `pages.passengerRightsIndex`.
+ *
+ * NOTHING IS EMITTED THAT THE EDITORIAL WORKFLOW HAS NOT RELEASED. `getStaticPaths` returns the
+ * index only when the overview entry is served and a jurisdiction path only for the entries that
+ * are. With none served the route family does not exist, and the header and footer omit it — a link
+ * to a rights page that was not built is the worst kind of dead control (`AGENTS.md §1.6`).
+ *
+ * THE RULE-SLOT GUARD APPLIES HERE MOST OF ALL. A jurisdiction body carries
+ * `{{rule:<jurisdiction>:<dotted.path>}}` tokens that resolve against a versioned rule set and
+ * render the value beside its version and effective date. No rule set is in force, so no slot can
+ * resolve, and a raw token on a page about a traveler's legal rights would be a placeholder in the
+ * worst possible place. The build fails closed rather than emitting it (`rule-slots.ts`).
+ */
+import { getEntry, render } from 'astro:content'
+
+import ArticleLayout from '../../layouts/ArticleLayout.astro'
+import {
+  entryRobots,
+  servedJurisdictions,
+  servedRights,
+  type RightsEntry,
+} from '../../components/routes.ts'
+import { assertNoUnresolvedRuleSlots } from '../../components/rule-slots.ts'
+
+import { pages } from '../../lib/copy/pages.ts'
+
+export async function getStaticPaths() {
+  const entries = await servedRights()
+  const overview = entries.find((entry) => entry.data.jurisdiction === 'overview')
+  const jurisdictions = entries.filter((entry) => entry.data.jurisdiction !== 'overview')
+
+  return [
+    ...(overview === undefined
+      ? []
+      : [{ params: { path: undefined }, props: { entry: overview, isIndex: true } }]),
+    ...jurisdictions.map((entry) => ({
+      params: { path: entry.data.jurisdiction },
+      props: { entry, isIndex: false },
+    })),
+  ]
+}
+
+interface Props {
+  entry: RightsEntry
+  isIndex: boolean
+}
+
+const { entry, isIndex } = Astro.props as Props
+
+const article = (await getEntry('passengerRights', entry.id)) ?? entry
+assertNoUnresolvedRuleSlots(`passenger-rights/${article.id}`, article.body ?? '')
+
+const { Content } = await render(article)
+
+const siblings = isIndex ? await servedJurisdictions() : []
+const index = pages.passengerRightsIndex
+---
+
+<ArticleLayout
+  title={isIndex ? index.title : `${article.data.title} — DelayPilot`}
+  description={isIndex ? index.description : article.data.description}
+  heading={isIndex ? index.h1 : article.data.title}
+  answerFirst={article.data.answerFirst}
+  status={article.data.status}
+  reviewedAt={article.data.reviewedAt}
+  robots={entryRobots(article)}
+  sources={article.data.sources}
+  contextSources={article.data.contextSources}
+  internalRefs={article.data.internalRefs}
+  nav={isIndex ? 'passenger-rights' : `passenger-rights-${article.data.jurisdiction}`}
+>
+  <Content />
+
+  {
+    isIndex && (
+      <Fragment>
+        <p>{index.estimateNote}</p>
+        {siblings.length > 0 && (
+          <Fragment>
+            <h2>{index.jurisdictionsHeading}</h2>
+            <ul>
+              {siblings.map((sibling) => (
+                <li>
+                  <a href={`/passenger-rights/${sibling.data.jurisdiction}/`}>
+                    {sibling.data.title}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Fragment>
+        )}
+      </Fragment>
+    )
+  }
+</ArticleLayout>

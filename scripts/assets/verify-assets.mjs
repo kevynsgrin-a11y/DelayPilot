@@ -7,6 +7,8 @@
  * WHAT IS CHECKED
  *   token drift       every hex the pipeline bakes is still declared by its primitive token
  *   presence          every row of asset-manifest.mjs exists on disk
+ *   served url        every row's `url` is the path that row's file is actually served from
+ *   byte identity     a row declaring `identicalTo` is a byte-for-byte copy of the row it names
  *   dimensions        exact intrinsic width/height, measured, not declared
  *   format            the encoder actually used
  *   byte budget       hard ceiling per file; over budget fails the build
@@ -406,6 +408,37 @@ export async function runChecks() {
       bytes <= record.bytes,
       `${bytes} > ${record.bytes}`,
     )
+
+    /*
+     * A row's `url` must be the location that row's file is genuinely served from. Everything
+     * under apps/web/public/ is copied verbatim into apps/web/dist/ and served by the ASSETS
+     * binding at its relative path, so the two are derivable from each other and any divergence
+     * is a documented URL that 404s. That is not hypothetical: the ICO row carried `/favicon.ico`
+     * while the pipeline wrote only `icons/favicon.ico`, so the manifest — the file seo-engineer
+     * and frontend-ui-engineer read when wiring <link> tags — named a URL no build ever emitted.
+     * Fixed by emitting the root copy; kept fixed by this check.
+     */
+    const servedFrom = `/${path.relative('apps/web/public', record.path)}`
+    check(
+      results,
+      `${record.path}: url ${record.url} is where the file is served from`,
+      record.url === servedFrom,
+      `manifest says ${record.url}; apps/web/public/ is served at the site root, so this file ` +
+        `is served from ${servedFrom}. Either emit a file at ${record.url} or correct the row.`,
+    )
+
+    if (record.identicalTo) {
+      const twinPresent = existsSync(abs(record.identicalTo))
+      check(
+        results,
+        `${record.path}: byte-identical to ${record.identicalTo}`,
+        twinPresent && readFileSync(abs(record.identicalTo)).equals(readFileSync(abs(record.path))),
+        twinPresent
+          ? `the two files differ. Both are written from one encoded buffer by ` +
+              `build-assets.mjs; a difference means one of them was edited or copied by hand.`
+          : `${record.identicalTo} is missing`,
+      )
+    }
 
     if (record.kind === 'svg') {
       svgHygiene(results, record)

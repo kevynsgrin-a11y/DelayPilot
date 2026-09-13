@@ -33,8 +33,14 @@ const app = new Hono<{ Bindings: Env }>()
  *
  * The CSP is deliberately identical to the static one so that a page and an API error
  * response cannot disagree about what is executable. Rationale for each directive, and the
- * conditions under which 'unsafe-inline' and `data:` should be dropped, are documented once
- * in apps/web/public/_headers rather than duplicated here.
+ * conditions under which 'unsafe-inline' would have to come back, are documented once in
+ * apps/web/public/_headers rather than duplicated here.
+ *
+ * `img-src` no longer permits `data:`. The empty-data-URI favicon placeholder is gone from
+ * apps/web/src/layouts/BaseLayout.astro and apps/web pins `assetsInlineLimit: 0`, so the
+ * build emits no data-URI asset for either policy to allow. Anything that reintroduces one
+ * has to change both policies in the same commit, or the parity check in
+ * scripts/validate-security-headers.mjs fails the build.
  *
  * Owner note: apps/edge/src/** is edge-api-engineer's in docs/agents/ROSTER.md §3, and the
  * full middleware stack (request id, CORS, CSRF, idempotency, problem responses) is Phase 7.
@@ -49,7 +55,7 @@ const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   'strict-transport-security': 'max-age=63072000; includeSubDomains; preload',
   'content-security-policy':
     "default-src 'self'; script-src 'self'; style-src 'self'; " +
-    "img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; " +
+    "img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; " +
     "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 }
 

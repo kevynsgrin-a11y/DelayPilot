@@ -358,7 +358,7 @@ action checklist, evidence packet, lookup result states, provenance chips, statu
 may use (a) pure-CSS scroll-driven entrance reveals that fire once per element and animate only
 `opacity`/`transform`, (b) at most two ambient decorative motifs per route, drawn as original
 SVG/CSS art, `aria-hidden`, carrying no text or data, cycling in ≤ 12 s and paused off-screen,
-(c) Astro View Transitions with a cross-fade of ≤ 180 ms, and (d) a scroll-scrubbed demonstration
+(c) cross-document CSS View Transitions with a cross-fade of ≤ 180 ms, and (d) a scroll-scrubbed demonstration
 chronology whose base DOM is a complete, readable, ordered list. Still forbidden everywhere:
 auto-advancing carousels, attention pulses on `watch`/`critical` states, motion on data poll or
 re-render, JavaScript scroll handlers for decoration, animated layout properties, and any motion a
@@ -668,8 +668,10 @@ Ship a public "current rules vs adopted reform" timeline that never applies the 
 **15.3 United Kingdom.** UK261 per current CAA guidance: scope by origin/destination/carrier, care
 thresholds, refund choice after a qualifying long delay, cancellation, protected missed connections,
 extraordinary circumstances, and fixed bands — £220 under 1,500 km; £350 for 1,500–3,500 km;
-£260 or £520 for longer flights depending on arrival delay. Verify before activation. A separate-
-ticket self-transfer is never a protected through journey.
+£260 or £520 for longer flights depending on arrival delay. Verify before activation. The rule set
+never models a separate-ticket self-transfer as a protected through journey; reader-facing prose
+states that the rules generally treat separate tickets as separate journeys, never a flat
+determination in either direction (`AGENTS.md §1.3`).
 
 **15.4 Canada.** APPR: within airline control · within control but required for safety · outside
 control; large vs small airline; notice timing; arrival delay; rebooking vs refund; claim deadline.
@@ -1111,6 +1113,17 @@ regulatory diff.
 20. Google — Spam policies · https://developers.google.com/search/docs/essentials/spam-policies
 21. Google AdSense — Ad placement policies · https://support.google.com/adsense/answer/1346295
 22. Stripe docs · https://docs.stripe.com/
+23. EU — Regulation (EC) No 261/2004, the instrument itself (EUR-Lex) · https://eur-lex.europa.eu/eli/reg/2004/261/oj
+24. UK — Regulation (EC) No 261/2004 as it applies in UK law (legislation.gov.uk) · https://www.legislation.gov.uk/eur/2004/261
+25. Canada — Air Passenger Protection Regulations, SOR/2019-150 (Justice Laws) · https://laws-lois.justice.gc.ca/eng/regulations/SOR-2019-150/
+26. US — 14 CFR Part 260, Refunds and Other Consumer Protections (eCFR) · https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-260
+27. US — 14 CFR Part 250, Oversales (eCFR) · https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-250
+
+Entries 1–22 are regulators' consumer explanations and platform documentation; entries 23–27 are the
+legal instruments themselves. A rule value, threshold, band, or effective date is published only
+when it is traced to an instrument-level entry (23–27, or the Official Journal citation of the EU
+reform once it exists) **and** the regulator explanation that interprets it — an explanation alone
+is not a source for a legal value (`regulatory-source-steward` finding R-1, 2026-09-12).
 
 Add registry placeholders for the current official developer documentation of any enabled Cirium or
 OAG adapter.

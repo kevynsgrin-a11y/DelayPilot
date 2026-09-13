@@ -56,7 +56,7 @@ For a traveler, without ever asking for a booking reference:
 8. Organize receipts and a factual disruption chronology into a printable evidence packet.
 
 It never files a claim, never books or rebooks, never reads your email, never stores your passport,
-and never tells you that you are owed money — only what **may** apply, under which rule version,
+and never states an entitlement as settled — only what **may** apply, under which rule version,
 based on which facts.
 
 ## Principles you will see enforced everywhere in this codebase

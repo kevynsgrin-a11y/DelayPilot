@@ -7,10 +7,11 @@
 
 import type { InputHTMLAttributes, JSX, ReactNode } from 'react'
 import { cx } from './class-names.ts'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
 export interface RadioProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
-  'className' | 'children' | 'type'
+  'className' | 'children' | 'type' | 'style'
 > {
   readonly children: ReactNode
   readonly className?: string
@@ -19,7 +20,7 @@ export interface RadioProps extends Omit<
 export function Radio({ children, className, ...rest }: RadioProps): JSX.Element {
   return (
     <label className={cx('dp-choice', 'dp-choice--radio', className)}>
-      <input type="radio" className="dp-choice__input" {...rest} />
+      <input type="radio" className="dp-choice__input" {...withoutInlineStyle(rest)} />
       <span className="dp-choice__box" aria-hidden="true">
         <span className="dp-choice__dial" />
       </span>

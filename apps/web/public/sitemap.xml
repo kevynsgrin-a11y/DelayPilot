@@ -1,24 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  DelayPilot sitemap - pre-Phase-11 baseline.
+  DelayPilot sitemap. Owner: seo-engineer (docs/agents/ROSTER.md section 3).
 
-  Contains exactly the routes that apps/web/src/pages builds today: index.astro, privacy.astro,
-  terms.astro. Nothing else may be listed here. A URL entry for a route that does not exist is a
-  dead reference (AGENTS.md section 1.6) and Search Console reports it as a fetch error.
+  WHAT IS LISTED. Exactly the pages apps/web/dist emits whose <meta name="robots"> does NOT say
+  noindex, minus 404.html. Thirteen of the twenty pages this build produces. A sitemap that
+  contradicts a page's own robots directive is not a stronger signal, it is a conflicting one, and
+  Search Console reports the page as "excluded by noindex tag" while still counting the submission.
 
-  Trailing slashes are mandatory: apps/web/astro.config.mjs sets trailingSlash: 'always' with
-  build.format: 'directory', so /privacy resolves only as /privacy/.
+  WHAT IS DELIBERATELY ABSENT, and why each is correct rather than missing:
 
-  No date, frequency, or ranking hints are emitted. These pages carry no reviewedAt date yet, and
-  stamping the build time would assert a content-change date that nothing established
-  (AGENTS.md section 1.1). Do not add a last-modified element until real content dates exist.
+  - The five served guides and /passenger-rights/. Those entries are editorial status
+    "publishable", not "published". apps/web/src/components/routes.ts entryRobots() serves them and
+    marks them noindex, which is the single source of that decision; this file follows it, it does
+    not second-guess it. They appear here in the same change that promotes them to "published",
+    never before.
+  - Every guide and rights entry at "draft", "source_review", "legal_review", "review_due" or
+    "stale". Those five produce no route at all (content.config.ts), so a URL entry for one would
+    be a dead reference (AGENTS.md section 1.6).
+  - 404.html. It is an error document, not an address a crawler should be asked to fetch.
+  - Everything the build does not emit: /pricing/, /airlines/**, /airports/**, /routes/**,
+    /status/, /contact/, /accessibility/. Listing a route ahead of its content is the doorway-page
+    pattern DIRECTIVE.md section 19 forbids outright.
+  - Every private prefix in AGENTS.md section 2. None is served today, and none is ever listed.
 
-  Phase 11 (DIRECTIVE.md section 19, seo-engineer) replaces this hand-maintained file with a
-  generated sitemap index plus per-page-type children gated on editorial status and the
-  content-quality gate.
+  WHY AN ABSOLUTE HOST IS WRITTEN HERE WHEN NO PAGE CARRIES A CANONICAL. The sitemap protocol
+  requires a full URL in <loc>; a relative path is not valid and no crawler resolves one. Owner
+  input I-4 keeps PUBLIC_SITE_URL unset, so BaseLayout omits the canonical and og:url rather than
+  guess an origin. This file is therefore the one place the domain is already committed, and it is
+  committed knowingly: https://delaypilot.app. scripts/seo/verify-sitemap.mjs pins that origin and
+  fails if this file or robots.txt disagrees with it. When PUBLIC_SITE_URL is configured in Phase
+  11, the resolver in apps/web/src/lib/seo/ becomes the single source and this file is generated
+  from it.
+
+  TRAILING SLASHES ARE MANDATORY. apps/web/astro.config.mjs sets trailingSlash: 'always' with
+  build.format: 'directory', so /privacy resolves only as /privacy/. A <loc> without one submits a
+  URL that redirects.
+
+  NO <lastmod>, NO <changefreq>, NO <priority>. Stamping the build time would assert a
+  content-change date that nothing established (AGENTS.md section 1.1), and none of the thirteen
+  pages below is a content entry with an editorial reviewedAt date: they are route shells and
+  policy pages. When an article page reaches "published" it arrives here with its own frontmatter
+  reviewedAt as <lastmod>, which is a date a person set on purpose. changefreq and priority are
+  hints no major engine uses; emitting them is theatre.
+
+  ADDING A ROUTE. Build, then run node scripts/seo/verify-sitemap.mjs. It fails when an indexable
+  page is missing from this file, when an entry here is absent from the build or is noindex, on a
+  missing trailing slash, and on a duplicate. It is the check, not this comment.
 -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://delaypilot.app/</loc></url>
+  <url><loc>https://delaypilot.app/about/</loc></url>
+  <url><loc>https://delaypilot.app/advertising-policy/</loc></url>
+  <url><loc>https://delaypilot.app/affiliate-disclosure/</loc></url>
+  <url><loc>https://delaypilot.app/connection-risk/</loc></url>
+  <url><loc>https://delaypilot.app/data-sources/</loc></url>
+  <url><loc>https://delaypilot.app/delay-risk/</loc></url>
+  <url><loc>https://delaypilot.app/editorial-policy/</loc></url>
+  <url><loc>https://delaypilot.app/flight-status/</loc></url>
+  <url><loc>https://delaypilot.app/guides/</loc></url>
+  <url><loc>https://delaypilot.app/methodology/</loc></url>
   <url><loc>https://delaypilot.app/privacy/</loc></url>
   <url><loc>https://delaypilot.app/terms/</loc></url>
 </urlset>

@@ -14,10 +14,12 @@
 
 import { useId, type ButtonHTMLAttributes, type JSX } from 'react'
 import { cx } from './class-names.ts'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
 export interface SwitchProps extends Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
   | 'className'
+  | 'style'
   | 'children'
   | 'type'
   | 'role'
@@ -56,7 +58,7 @@ export function Switch({
         onClick={() => {
           onCheckedChange(!checked)
         }}
-        {...rest}
+        {...withoutInlineStyle(rest)}
       >
         <span className="dp-switch__label" id={labelId}>
           {label}

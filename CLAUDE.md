@@ -37,7 +37,8 @@ the verification commands expected back.
    a licensed provider response, a labelled fixture, or user input. `unknown` is a designed state.
 2. **Dropping provenance.** Every displayed datum carries `Live` / `Cached` / `Stale` / `Demo` /
    `Unavailable` / `Heuristic risk band` plus its freshness, from adapter to pixel.
-3. **Legal overclaim.** "May apply", never "you are owed". Rights statuses are limited to
+3. **Legal overclaim.** "May apply", never an entitlement stated as settled (`AGENTS.md §1.3`).
+   Rights statuses are limited to
    `likely_applies`, `may_apply`, `not_indicated`, `cannot_determine`, `future_rule_not_active`.
    Weather near an airport is not proof of cause.
 4. **Applying a future rule early.** The EU 2026 reform is `adopted_not_effective` until its

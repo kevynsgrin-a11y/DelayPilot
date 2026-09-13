@@ -1,0 +1,23 @@
+---
+/**
+ * The hero "operations desk" backdrop — ADR 0003 rule 2b, motif one of at most two per route.
+ *
+ * Three original SVG layers, all decorative, all `aria-hidden`, none carrying a datum: the radar
+ * scope (a 12 s sweep), the route fan (three packets travelling their own authored paths), and the
+ * static operations grid, which never moves at all because a grid that moves while someone reads is
+ * the exact failure this allowance is fenced against.
+ *
+ * Each sits behind EMPTY SURFACE, never behind body text, so no contrast pair measured in
+ * `packages/ui/src/tokens/CONTRAST.md` is changed by it. Off-screen they stop: `content-visibility`
+ * lets the user agent skip rendering — and therefore animating — the layer entirely.
+ *
+ * Under `prefers-reduced-motion: reduce` each file renders the single static frame it ships with;
+ * the authoring of that frame is `visual-asset-director`'s, which is why nothing needs a JavaScript
+ * fallback here.
+ */
+import InlineSvg from './InlineSvg.astro'
+---
+
+<InlineSvg src="brand/motifs/grid.svg" class="dpx-motif dpx-motif--grid" decorative />
+<InlineSvg src="brand/motifs/radar-arc.svg" class="dpx-motif dpx-motif--radar" decorative />
+<InlineSvg src="brand/motifs/route-arcs.svg" class="dpx-motif dpx-motif--routes" decorative />

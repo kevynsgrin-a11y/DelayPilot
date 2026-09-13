@@ -6,15 +6,21 @@
   "description": "DelayPilot public site and authenticated app shell. Pre-rendered Astro; the build output is served by apps/edge through the ASSETS binding.",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "astro build && node scripts/prune-dist.mjs && node scripts/verify-dist.mjs --self-test && node scripts/verify-dist.mjs",
     "typecheck": "astro check",
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "7.1.4"
+    "@astrojs/react": "6.0.5",
+    "@delaypilot/ui": "workspace:*",
+    "astro": "7.1.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
     "typescript": "6.0.3"
   }
 }

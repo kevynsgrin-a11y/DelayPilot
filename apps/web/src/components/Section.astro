@@ -1,0 +1,38 @@
+---
+/**
+ * One page section: an optional eyebrow, a heading, an optional introduction, and the body.
+ *
+ * `reveal` opts the section into the ADR 0003 rule 2a scroll-driven entrance. It is opt-in rather
+ * than automatic because the rule scopes the allowance to marketing surfaces: a section containing
+ * a data-bearing component must not carry it, and a default-on wrapper would make that the easy
+ * mistake to make. The reveal is pure CSS, fires once, animates only `opacity` and `transform`, and
+ * the un-animated DOM is already the final state.
+ *
+ * `id` exists so the two homepage CTAs ("Track a flight", "Try the demo") have real fragment
+ * targets rather than JavaScript scroll handlers.
+ */
+interface Props {
+  heading: string
+  intro?: string | undefined
+  eyebrow?: string | undefined
+  id?: string | undefined
+  reveal?: boolean
+  headingLevel?: 2 | 3
+  labelledBy?: string | undefined
+}
+
+const { heading, intro, eyebrow, id, reveal = false, headingLevel = 2 } = Astro.props
+const headingId = id === undefined ? undefined : `${id}-title`
+const Heading = headingLevel === 2 ? 'h2' : 'h3'
+---
+
+<section class:list={['dpx-section', reveal && 'dpx-reveal']} id={id} aria-labelledby={headingId}>
+  <div class="dpx-shell">
+    <div class="dpx-section__head">
+      {eyebrow !== undefined && <p class="dpx-section__eyebrow">{eyebrow}</p>}
+      <Heading class="dpx-section__title" id={headingId}>{heading}</Heading>
+      {intro !== undefined && <p class="dpx-section__intro">{intro}</p>}
+    </div>
+    <slot />
+  </div>
+</section>

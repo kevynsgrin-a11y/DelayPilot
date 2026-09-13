@@ -1,0 +1,327 @@
+---
+/**
+ * Compact header and mega-nav — the first section of the `DIRECTIVE.md §18.3` homepage order, and
+ * the chrome of every other public page.
+ *
+ * TWO DISCLOSURE MENUS, AND A NO-JAVASCRIPT PATH THAT IS NOT A COMPROMISE. Each group renders two
+ * elements with identical inner markup: a plain LINK to the group's first item, visible by default,
+ * and a `hidden` disclosure BUTTON carrying `aria-expanded` and `aria-controls`. The module below
+ * swaps which of the two is hidden. With no JavaScript the link remains and every destination is
+ * still reachable; because the two boxes are identical, the swap shifts nothing.
+ *
+ * MOBILE USES A NATIVE `<dialog>`, opened with `showModal()`. That gives a focus trap, Escape to
+ * close, focus restored to the invoker, and — the reason it is preferred here to the `Drawer`
+ * primitive — real INERTNESS of the page behind it, from the platform rather than from a key
+ * handler. `docs/ACCESSIBILITY.md` F15 is closed on this surface by that choice. The scroll lock is
+ * CSS (`html:has(.dpx-drawer[open])`), so there is no class to forget to remove.
+ *
+ * NOTHING IS LINKED THAT IS NOT EMITTED. The jurisdiction items, the Guides group and the
+ * conditional routes all come from `./routes.ts`, which reads the served content collections and
+ * `PUBLIC_CONTACT_EMAIL`. A menu whose group has no served items is not rendered at all
+ * (`AGENTS.md §1.6`).
+ */
+import { Icon } from '@delaypilot/ui'
+import { nav } from '../lib/copy/nav.ts'
+import InlineSvg from './InlineSvg.astro'
+import ThemeToggle from './ThemeToggle.astro'
+import {
+  contactRoutesEnabled,
+  hasRightsOverview,
+  servedGuides,
+  servedJurisdictions,
+} from './routes.ts'
+
+interface Props {
+  /** Current-item key so exactly one link carries `aria-current="page"`. */
+  current?: string | undefined
+}
+
+const { current } = Astro.props
+
+const guides = await servedGuides()
+const jurisdictions = await servedJurisdictions()
+const rightsOverview = await hasRightsOverview()
+
+const productItems = [
+  { href: '/flight-status/', label: nav.menus.product['/flight-status/'], key: 'flight-status' },
+  { href: '/delay-risk/', label: nav.menus.product['/delay-risk/'], key: 'delay-risk' },
+  {
+    href: '/connection-risk/',
+    label: nav.menus.product['/connection-risk/'],
+    key: 'connection-risk',
+  },
+  { href: '/#demonstration', label: nav.menus.product['/#demonstration'], key: 'demo' },
+]
+
+const jurisdictionLabels: Record<string, string> = {
+  us: nav.menus.passengerRights['/passenger-rights/us/'],
+  eu: nav.menus.passengerRights['/passenger-rights/eu/'],
+  uk: nav.menus.passengerRights['/passenger-rights/uk/'],
+  canada: nav.menus.passengerRights['/passenger-rights/canada/'],
+}
+
+const rightsItems = [
+  ...(rightsOverview
+    ? [
+        {
+          href: '/passenger-rights/',
+          label: nav.menus.passengerRights['/passenger-rights/'],
+          key: 'passenger-rights',
+        },
+      ]
+    : []),
+  ...jurisdictions.map((entry) => ({
+    href: `/passenger-rights/${entry.data.jurisdiction}/`,
+    label: jurisdictionLabels[entry.data.jurisdiction] ?? entry.data.title,
+    key: `passenger-rights-${entry.data.jurisdiction}`,
+  })),
+]
+
+const simpleItems = [
+  ...(guides.length > 0
+    ? [{ href: '/guides/', label: nav.header.groups.guides, key: 'guides' }]
+    : []),
+  { href: '/methodology/', label: nav.header.groups.methodology, key: 'methodology' },
+  { href: '/about/', label: nav.header.groups.about, key: 'about' },
+]
+
+const menus = [
+  { id: 'product', label: nav.header.groups.product, items: productItems },
+  { id: 'passenger-rights', label: nav.header.groups.passengerRights, items: rightsItems },
+].filter((menu) => menu.items.length > 0)
+
+const drawerLinks = [
+  { label: nav.header.groups.product, items: productItems },
+  ...(rightsItems.length > 0
+    ? [{ label: nav.header.groups.passengerRights, items: rightsItems }]
+    : []),
+  { label: nav.footer.groups.about, items: simpleItems },
+]
+
+const contactVisible = contactRoutesEnabled
+---
+
+<header class="dpx-header">
+  <div class="dpx-shell dpx-header__inner">
+    <a class="dpx-brand" href="/">
+      <InlineSvg src="brand/logotype.svg" class="dpx-brand__lockup" />
+    </a>
+
+    <nav class="dpx-nav" aria-label={nav.primaryLabel}>
+      <ul class="dpx-nav__list">
+        {
+          menus.map((menu) => (
+            <li class="dpx-nav__item" data-dp-menu>
+              <a class="dpx-nav__link" href={menu.items[0]?.href} data-dp-menu-fallback>
+                {menu.label}
+                <Icon name="chevron-down" decorative className="dpx-nav__marker" />
+              </a>
+              <button
+                class="dpx-nav__trigger"
+                type="button"
+                aria-expanded="false"
+                aria-controls={`menu-${menu.id}`}
+                hidden
+                data-dp-menu-trigger
+              >
+                {menu.label}
+                <Icon name="chevron-down" decorative className="dpx-nav__marker" />
+              </button>
+              <ul class="dpx-nav__panel" id={`menu-${menu.id}`} hidden data-dp-menu-panel>
+                {menu.items.map((item) => (
+                  <li>
+                    <a
+                      class="dpx-nav__panel-link"
+                      href={item.href}
+                      aria-current={current === item.key ? 'page' : undefined}
+                    >
+                      {item.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+        {
+          simpleItems.map((item) => (
+            <li class="dpx-nav__item">
+              <a
+                class="dpx-nav__link"
+                href={item.href}
+                aria-current={current === item.key ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="dpx-header__actions">
+      <ThemeToggle placement="header" />
+      <button
+        class="dpx-menu-button"
+        type="button"
+        aria-controls="dpx-site-drawer"
+        aria-expanded="false"
+        data-dp-drawer-open
+      >
+        {nav.menuOpen}
+      </button>
+    </div>
+  </div>
+</header>
+
+<dialog class="dpx-drawer" id="dpx-site-drawer" aria-label={nav.primaryLabel}>
+  <div class="dpx-drawer__inner">
+    <div class="dpx-drawer__head">
+      <p class="dpx-drawer__title">{nav.brand}</p>
+      <button class="dpx-menu-button" type="button" data-dp-drawer-close>{nav.menuClose}</button>
+    </div>
+
+    <ThemeToggle placement="drawer" />
+    <nav aria-label={nav.primaryLabel}>
+      {
+        drawerLinks.map((group) => (
+          <Fragment>
+            <p class="dpx-drawer__group-label">{group.label}</p>
+            <ul class="dpx-drawer__group">
+              {group.items.map((item) => (
+                <li>
+                  <a
+                    class="dpx-drawer__link"
+                    href={item.href}
+                    aria-current={current === item.key ? 'page' : undefined}
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </Fragment>
+        ))
+      }
+      {
+        contactVisible && (
+          <Fragment>
+            <p class="dpx-drawer__group-label">{nav.footer.groups.legal}</p>
+            <ul class="dpx-drawer__group">
+              <li>
+                <a
+                  class="dpx-drawer__link"
+                  href="/accessibility/"
+                  aria-current={current === 'accessibility' ? 'page' : undefined}
+                >
+                  {nav.footer.links['/accessibility/']}
+                </a>
+              </li>
+              <li>
+                <a
+                  class="dpx-drawer__link"
+                  href="/contact/"
+                  aria-current={current === 'contact' ? 'page' : undefined}
+                >
+                  {nav.footer.links['/contact/']}
+                </a>
+              </li>
+            </ul>
+          </Fragment>
+        )
+      }
+    </nav>
+  </div>
+</dialog>
+
+<script>
+  /* ----------------------------------------------------------------------------------------- */
+  /* Mega-nav disclosures.                                                                      */
+  /* ----------------------------------------------------------------------------------------- */
+
+  const menus = Array.from(document.querySelectorAll<HTMLLIElement>('[data-dp-menu]'))
+
+  const closeMenu = (item: HTMLLIElement): void => {
+    const trigger = item.querySelector<HTMLButtonElement>('[data-dp-menu-trigger]')
+    const panel = item.querySelector<HTMLUListElement>('[data-dp-menu-panel]')
+    if (trigger === null || panel === null) return
+    trigger.setAttribute('aria-expanded', 'false')
+    panel.hidden = true
+  }
+
+  const closeAll = (): void => {
+    for (const item of menus) closeMenu(item)
+  }
+
+  for (const item of menus) {
+    const fallback = item.querySelector<HTMLAnchorElement>('[data-dp-menu-fallback]')
+    const trigger = item.querySelector<HTMLButtonElement>('[data-dp-menu-trigger]')
+    const panel = item.querySelector<HTMLUListElement>('[data-dp-menu-panel]')
+    if (fallback === null || trigger === null || panel === null) continue
+
+    // Enhance: the link steps aside, the disclosure takes its place. Identical boxes, no shift.
+    fallback.hidden = true
+    trigger.hidden = false
+
+    trigger.addEventListener('click', () => {
+      const open = trigger.getAttribute('aria-expanded') === 'true'
+      closeAll()
+      if (!open) {
+        trigger.setAttribute('aria-expanded', 'true')
+        panel.hidden = false
+      }
+    })
+
+    // Escape closes and returns focus to the trigger it was opened from.
+    item.addEventListener('keydown', (event) => {
+      if (event.key !== 'Escape') return
+      if (trigger.getAttribute('aria-expanded') !== 'true') return
+      event.stopPropagation()
+      closeMenu(item)
+      trigger.focus()
+    })
+
+    // Moving focus out of the group closes it, so a keyboard user never leaves a panel open
+    // behind them. `focusout` fires before the new element is focused, hence the microtask.
+    item.addEventListener('focusout', () => {
+      queueMicrotask(() => {
+        if (!item.contains(document.activeElement)) closeMenu(item)
+      })
+    })
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target
+    if (target instanceof Node && menus.some((item) => item.contains(target))) return
+    closeAll()
+  })
+
+  /* ----------------------------------------------------------------------------------------- */
+  /* Mobile drawer — a native modal <dialog>.                                                   */
+  /* ----------------------------------------------------------------------------------------- */
+
+  const drawer = document.querySelector<HTMLDialogElement>('#dpx-site-drawer')
+  const openButton = document.querySelector<HTMLButtonElement>('[data-dp-drawer-open]')
+  const closeButton = document.querySelector<HTMLButtonElement>('[data-dp-drawer-close]')
+
+  if (drawer !== null && openButton !== null && closeButton !== null) {
+    openButton.addEventListener('click', () => {
+      drawer.showModal()
+      openButton.setAttribute('aria-expanded', 'true')
+    })
+
+    closeButton.addEventListener('click', () => {
+      drawer.close()
+    })
+
+    // Clicking the backdrop closes it. The backdrop is the dialog's own box outside its content.
+    drawer.addEventListener('click', (event) => {
+      if (event.target === drawer) drawer.close()
+    })
+
+    drawer.addEventListener('close', () => {
+      openButton.setAttribute('aria-expanded', 'false')
+      openButton.focus()
+    })
+  }
+</script>

@@ -62,7 +62,7 @@ another agent's file yourself, even when the fix is obvious.
 
 ## Deliverables
 
-1. `data/rights/sources/**` seeded with all 22 §33 entries plus placeholders for the current official developer
+1. `data/rights/sources/**` seeded with all 27 §33 entries plus placeholders for the current official developer
    documentation of any enabled Cirium or OAG adapter, each carrying every §12 `source_registry` field.
 2. `docs/RIGHTS_SOURCE_REVIEW.md` — one dated review entry per source per cycle: URL, fetch outcome, the provision
    relied on (quoted), currency finding, checksum or review note, verdict, reviewer, next review due.
@@ -76,9 +76,12 @@ another agent's file yourself, even when the fix is obvious.
 
 **The registry record.** Every entry carries: `id` · `authority` · `jurisdiction` · `canonicalUrl` · `type`
 (`statute | regulation | regulator_guidance | enforcement_notice | voluntary_commitment | treaty | provider_docs |
-platform_docs`) · `publishedDate` · `effectiveDate` · `lastVerifiedAt` · `nextReviewDue` · `checksum` or `etag` ·
-`status` (`active | superseded | withdrawn | unreachable`) · `notes`. No rule value may cite an entry whose status is
-not `active` or whose `lastVerifiedAt` is past `nextReviewDue`.
+platform_docs | press_release`) · `evidenceClass` (`primary | secondary`) · `citableForRuleValues` (boolean) ·
+`publishedDate` · `effectiveDate` · `lastVerifiedAt` · `nextReviewDue` · `checksum` or `etag` ·
+`status` (`active | superseded | withdrawn | unreachable`) · `notes`. A `press_release` is always `secondary` and
+`citableForRuleValues: false` — it may support a status note ("adopted, not yet in force") and never a value,
+a threshold, or an effective date. No rule value may cite an entry whose status is not `active`, whose
+`lastVerifiedAt` is past `nextReviewDue`, or whose `citableForRuleValues` is false.
 
 **Verification procedure — run it on every source, every cycle.**
 
@@ -121,6 +124,15 @@ not `active` or whose `lastVerifiedAt` is past `nextReviewDue`.
 20. Google Spam policies · https://developers.google.com/search/docs/essentials/spam-policies
 21. Google AdSense ad placement policies · https://support.google.com/adsense/answer/1346295
 22. Stripe docs · https://docs.stripe.com/
+23. EU Regulation (EC) No 261/2004, the instrument (EUR-Lex) · https://eur-lex.europa.eu/eli/reg/2004/261/oj
+24. UK — Regulation (EC) No 261/2004 as it applies in UK law · https://www.legislation.gov.uk/eur/2004/261
+25. Canada APPR, SOR/2019-150 · https://laws-lois.justice.gc.ca/eng/regulations/SOR-2019-150/
+26. US 14 CFR Part 260, Refunds and Other Consumer Protections · https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-260
+27. US 14 CFR Part 250, Oversales · https://www.ecfr.gov/current/title-14/chapter-II/subchapter-A/part-250
+
+Entries 23–27 are the legal instruments (`evidenceClass: primary`, `citableForRuleValues: true`); entries 1–8 are
+the regulators' explanations of them. A legal value is published only when traced to an instrument entry **and** the
+explanation that interprets it (`DIRECTIVE.md §33`).
 
 Add registry placeholders for the current official developer documentation of any enabled Cirium or OAG adapter.
 
@@ -157,7 +169,7 @@ and required attribution, and confirm the licence denial path has a test before 
 
 ## Definition of done
 
-- All 22 §33 sources exist in `data/rights/sources/**`, each opened via WebFetch this cycle, each with
+- All 27 §33 sources exist in `data/rights/sources/**`, each opened via WebFetch this cycle, each with
   `last_verified_at`, a checksum or quoted review note, `next_review_due`, and a status. Cirium/OAG placeholders exist
   for any enabled adapter.
 - The EU reform is recorded `adopted_not_effective` with `effectiveFrom` null and the OJ dependency stated; no
@@ -170,7 +182,7 @@ and required attribution, and confirm the licence denial path has a test before 
 
 ## Verification
 
-- WebFetch each of the 22 canonical URLs; record every HTTP outcome. Report unreachable sources as **Blocked
+- WebFetch each of the 27 canonical URLs; record every HTTP outcome. Report unreachable sources as **Blocked
   (external)** naming the URL — never as verified.
 - `pnpm test --filter rights-engine` → the effective-window and future-rule property tests pass. You run them as
   reviewer and report; you do not fix the engine.

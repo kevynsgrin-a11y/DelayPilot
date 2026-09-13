@@ -1,0 +1,90 @@
+---
+/**
+ * Inline an SVG from `apps/web/public/**` into the document at build time.
+ *
+ * INLINE, NEVER `<img>`. `scripts/assets/asset-manifest.mjs` is explicit about why: inside an
+ * `<img>` there is no inherited `color` and no page custom properties, so `currentColor` falls back
+ * to the UA default (black) and the mark disappears on a dark surface, while every
+ * `var(--motif-*)` hook resolves to its literal fallback and the motif can no longer be themed or
+ * animated. It also costs a request on a route whose budget is LCP < 2.5 s p75.
+ * `apps/web/scripts/verify-dist.mjs` fails the build on an `<img src>` pointing at `/brand/`.
+ *
+ * The files are read through `import.meta.glob(..., { query: '?raw', eager: true })`, which Vite
+ * resolves at build time and inlines into the bundle. `readFileSync` with a path relative to
+ * `import.meta.url` was the obvious first attempt and is wrong: the component is bundled into
+ * `dist/.prerender/chunks/`, so the relative path resolves against the OUTPUT directory and the
+ * build fails with ENOENT. The glob has no runtime path resolution at all.
+ *
+ * Two transformations, both narrow:
+ *   · XML comments are stripped. The source files carry long provenance docblocks that belong in
+ *     the repository, not in every HTML response.
+ *   · `decorative` strips `role="img"`, `aria-labelledby` and the `<title>` element and adds
+ *     `aria-hidden="true" focusable="false"`, for the case where a named graphic is being reused as
+ *     texture. The motif files are already authored decorative, so the two attributes it adds are
+ *     first stripped from the root tag — otherwise each is emitted twice (`docs/ACCESSIBILITY.md`
+ *     F38). The source files stay `visual-asset-director`'s: they are correct as authored, and an
+ *     inliner that cannot be pointed at an already-correct file is the defect.
+ *
+ * IDS ARE NOT REWRITTEN. Every id in these files (`#sweep`, `#route-1`, `#routes`, `#grid-tile`) is
+ * a CSS or SVG reference hook named in `scripts/assets/MOTIFS.md`, and renaming them would break
+ * the documented contract. The consequence is that a file may be inlined AT MOST ONCE per page.
+ * `verify-dist.mjs` asserts that no id appears twice in any emitted page, so a second inline of the
+ * same file fails the build rather than shipping a duplicate id.
+ */
+const sources = import.meta.glob<string>('../../public/**/*.svg', {
+  query: '?raw',
+  import: 'default',
+  eager: true,
+})
+
+export interface Props {
+  /** Path under `apps/web/public/`, e.g. `brand/motifs/radar-arc.svg`. */
+  src: string
+  /** Strip the accessible name and hide it from assistive technology. */
+  decorative?: boolean
+  class?: string
+}
+
+const { src, decorative = false, class: className } = Astro.props as Props
+
+const raw = sources[`../../public/${src}`]
+
+if (raw === undefined) {
+  throw new Error(
+    `InlineSvg: apps/web/public/${src} does not exist. Add it to the asset manifest first.`,
+  )
+}
+
+let markup = raw.replace(/<!--[\s\S]*?-->/g, '').trim()
+
+if (decorative) {
+  markup = markup
+    .replace(/<title[^>]*>[\s\S]*?<\/title>/g, '')
+    .replace(/\srole="img"/g, '')
+    .replace(/\saria-labelledby="[^"]*"/g, '')
+    /*
+     * Strip what is about to be added, on the ROOT element only.
+     *
+     * `docs/ACCESSIBILITY.md` F38: the motif sources are already authored decorative, so the globe
+     * emitted `<svg aria-hidden="true" focusable="false" ... aria-hidden="true"
+     * focusable="false">` — both attributes twice. A parser keeps the first and drops the rest, so
+     * nothing renders wrong today; a duplicate attribute is a parse error, and a validator that
+     * starts reporting one is a validator whose output stops being worth reading.
+     *
+     * The replace is scoped to the opening `<svg …>` tag rather than the whole document, so a
+     * nested `<use aria-hidden="true">` inside an inlined file keeps its own attributes.
+     */
+    .replace(/^<svg\b[^>]*>/, (open) =>
+      open.replace(/\saria-hidden="[^"]*"/g, '').replace(/\sfocusable="[^"]*"/g, ''),
+    )
+    .replace(/<svg\b/, '<svg aria-hidden="true" focusable="false"')
+}
+---
+
+{
+  className === undefined ? (
+    <Fragment set:html={markup} />
+  ) : (
+    <span class={className} set:html={markup} />
+  )
+}

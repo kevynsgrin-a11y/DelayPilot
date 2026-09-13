@@ -63,7 +63,7 @@ Every finding leaves you as a handoff carrying the file, the line, the invariant
 
 ## How to work
 
-**The independence disclaimer, verbatim.** `AGENTS.md §1.4` cites it as `DIRECTIVE.md §35`; the text lives at §3.4 and that text
+**The independence disclaimer, verbatim.** `AGENTS.md §1.4` cites it as `DIRECTIVE.md §3.4`, where the text lives, and that text
 is authoritative:
 
 > DelayPilot is an independent travel-information tool. It is not an airline, airport, government agency,

@@ -149,7 +149,7 @@ transition, disclosure open, dialog enter, toast arrival, a value updating after
 public marketing routes only, ADR 0003 additionally permits pure-CSS scroll-driven entrance reveals
 (`animation-timeline: view()`, opacity plus ≤ 24 px translate, once per element, `transform`/`opacity`
 only), at most two ambient decorative motifs per route (original SVG/CSS art, `aria-hidden`, no text
-or data, ≤ 12 s cycle, paused off-screen), Astro View Transitions at `--motion-base`, and a
+or data, ≤ 12 s cycle, paused off-screen), cross-document CSS View Transitions at `--motion-base`, and a
 scroll-scrubbed demo chronology over a complete readable list. Publish `--motion-reveal`,
 `--motion-reveal-distance`, `--motion-ambient-cycle`, and the reduced-motion collapse as tokens so
 no page hand-rolls a value. Forbidden everywhere: looping or ambient motion inside a data-bearing

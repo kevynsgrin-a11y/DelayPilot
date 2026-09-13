@@ -1,42 +1,107 @@
 ---
 /**
- * Shared shell for every public page.
+ * BaseLayout v2 — the shell of every public page.
  *
- * Consolidates what was previously inlined in index.astro: the metadata block, the independence
- * disclaimer required by AGENTS.md section 1.4, and the header/footer chrome. Pages supply only
- * their own title, description and body.
+ * PROPS. `title` and `description` are required. Everything else is optional and defaults to the
+ * v1 behaviour, so the five policy pages that were written against v1 (`title` + `description`
+ * only, with their own "Reviewed <date>" line) keep working unchanged and adopt `kind="policy"` and
+ * `reviewedAt` when their owner is ready.
  *
- * The visual language is ported from design/v0-preview (Tailwind/Next.js, reference-only, never
- * shipped) into plain CSS in ../styles/tokens.css. Nothing here ships a flight number, gate, time,
- * airline, price, statistic or rights conclusion — the v0 homepage's demo content is generated
- * fiction (design/v0-preview/README.md) and none of it reaches a rendered surface.
+ * THE HEAD, AND WHY EACH TAG IS CONDITIONAL.
  *
- * Owner note: apps/web/src/** is frontend-ui-engineer's in docs/agents/ROSTER.md section 3, and the
- * full page set is Phase 10. This is a pre-Phase-10 shell added under direct owner instruction so
- * the site has a real visual identity before its domain is repointed to Cloudflare; Phase 10 should
- * absorb it rather than treat it as settled.
+ * · **Icons** come from `scripts/assets/asset-manifest.mjs` — the SVG favicon, the ICO for legacy
+ *   agents, and the 180px Apple touch icon. This replaces v1's `<link rel="icon" href="data:,">`
+ *   placeholder, which is what lets `seo-engineer` drop `img-src data:` from the CSP.
+ * · **The web app manifest** is linked because it now exists: `apps/web/public/manifest.webmanifest`
+ *   (`seo-engineer`), guarded by `node scripts/seo/verify-manifest.mjs`. It declares
+ *   `display: "browser"` — no service worker and no offline shell ship yet, so nothing here claims
+ *   an installed app that works offline. `manifest-src` is not enumerated in the served policy; it
+ *   falls back to `default-src 'self'`, which admits this same-origin file.
+ * · **Fonts** are preloaded, both faces, `crossorigin` — they are same-origin `woff2` and a preload
+ *   without `crossorigin` fetches the file twice.
+ * · **Open Graph needs an ABSOLUTE url.** `Astro.site` is undefined until `PUBLIC_SITE_URL` is
+ *   configured, and a site-relative `og:image` is not resolvable by a crawler. So with no site
+ *   configured, `og:image`, `og:image:alt`, the dimensions and `twitter:image` are OMITTED and
+ *   `twitter:card` stays `summary`; with one configured they are emitted absolute and the card
+ *   becomes `summary_large_image`. Canonical and `og:url` follow the same rule, for the stronger
+ *   reason that a canonical pointing at a guessed host is worse than no canonical at all.
+ * · **`og:image:alt`** carries both strings baked into the card artwork — `docs/ACCESSIBILITY.md`
+ *   F22. It is rendered here rather than by `seo-engineer` because this layout owns the head.
+ * · **`theme-color`** is per colour scheme, matching the two surfaces the stylesheet paints.
+ * · **`/theme-init.js`** is a blocking classic script, deliberately: see the endpoint's own
+ *   docblock. It is the only script in `<head>` and it is external, so `script-src 'self'` admits
+ *   it with no hash and no header change.
+ *
+ * MOTION AND ADS BY KIND. `policy` and `utility` pages get no ambient motif, no scroll reveal and
+ * no ad insertion point — ADR 0003 rule 1 excludes error, maintenance and status pages from the
+ * allowance, and `AGENTS.md §4` forbids an ad on a privacy or terms page outright. The `kind` prop
+ * is what a page declares that with; it is emitted as `data-page-kind` so the rule is inspectable
+ * in the built HTML and testable by `apps/web/scripts/verify-dist.mjs`.
  */
 import '../styles/tokens.css'
+import '@delaypilot/ui/primitives.css'
+import './app.css'
+
+import { home } from '../lib/copy/home.ts'
+import { nav } from '../lib/copy/nav.ts'
+import SiteFooter from '../components/SiteFooter.astro'
+import SiteHeader from '../components/SiteHeader.astro'
+import { pages } from '../lib/copy/pages.ts'
 
 interface Props {
   title: string
   description: string
-  /** Marks the current nav item so it can carry aria-current="page". */
-  nav?: 'home' | 'privacy' | 'terms'
+  /**
+   * Current nav item key so exactly one link carries `aria-current="page"`.
+   *
+   * `| undefined` is explicit because `exactOptionalPropertyTypes` is on (`AGENTS.md §3.1`): a page
+   * that forwards an optional value must be able to pass `undefined` through without a cast.
+   */
+  nav?: string | undefined
+  /** Marketing and article pages may carry ambient motion; policy and utility pages may not. */
+  kind?: 'marketing' | 'policy' | 'article' | 'utility' | undefined
+  robots?: 'index' | 'noindex' | undefined
+  /** ISO date. Rendered as "Reviewed <date>" for policy and article pages. */
+  reviewedAt?: string | undefined
 }
 
-const { title, description, nav } = Astro.props
+const {
+  title,
+  description,
+  nav: current,
+  kind = 'marketing',
+  robots = 'index',
+  reviewedAt,
+} = Astro.props
 
 /**
- * A canonical URL and an og:url need an absolute origin, which comes from PUBLIC_SITE_URL through
- * `site` in astro.config.mjs. That variable is deliberately undefined until a real domain is
- * configured, so both tags are omitted rather than emitted against a guessed origin: a canonical
- * pointing at the wrong host is worse than no canonical, and inventing one is the kind of
- * fabricated value AGENTS.md section 1.1 forbids.
+ * A canonical URL and an `og:url` need an absolute origin, which comes from `PUBLIC_SITE_URL`
+ * through `site` in `astro.config.mjs`. That variable is deliberately undefined until a real domain
+ * is configured, so both tags are omitted rather than emitted against a guessed origin: inventing
+ * one is exactly the fabricated value `AGENTS.md §1.1` forbids.
  */
 const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
+const ogImage = Astro.site ? new URL('/og/default-1200x630.png', Astro.site).href : undefined
 
-const year = 2026
+/**
+ * `docs/ACCESSIBILITY.md` F22: both strings baked into the card artwork, as text.
+ *
+ * COMPOSED FROM THE TWO EXPORTS, NOT RETYPED. It was a literal here that happened to equal
+ * `${nav.brand} — ${home.promise}` byte for byte, which is a rendered string living outside
+ * `lib/copy/**` and one edit away from contradicting the artwork it describes (copy review F-8).
+ * The joiner is the same unspaced em dash `DIRECTIVE.md §7` writes the support line with.
+ */
+const ogImageAlt = `${nav.brand} — ${home.promise}`
+
+const reviewedDate =
+  reviewedAt === undefined
+    ? undefined
+    : new Intl.DateTimeFormat('en-GB', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(`${reviewedAt}T00:00:00Z`))
 ---
 
 <html lang="en">
@@ -45,102 +110,88 @@ const year = 2026
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    {robots === 'noindex' && <meta name="robots" content="noindex" />}
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/geist-sans-latin-400.woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/geist-sans-latin-600.woff2"
+      crossorigin
+    />
+
+    <link rel="icon" href="/icons/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/favicon.ico" sizes="16x16 32x32 48x48" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon-180.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eef5fb" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#07111f" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="DelayPilot" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
-
     {
-      /* summary, not summary_large_image: no og:image ships until a real social card exists.
-        A card tag promising an image that 404s is a dead reference (AGENTS.md section 1.6). */
+      ogImage && (
+        <Fragment>
+          <meta property="og:image" content={ogImage} />
+          <meta property="og:image:alt" content={ogImageAlt} />
+          <meta property="og:image:width" content="1200" />
+          <meta property="og:image:height" content="630" />
+        </Fragment>
+      )
     }
-    <meta name="twitter:card" content="summary" />
+
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
+    {ogImage && <meta name="twitter:image:alt" content={ogImageAlt} />}
 
-    {
-      /* The brand mark ships as an inline SVG below rather than a favicon file: the icon set
-        (favicon, apple-touch, maskable) belongs to visual-asset-director in Phase 9, and shipping
-        a <link rel="icon"> pointing at a file that does not exist would be a dead reference
-        (AGENTS.md section 1.6). The empty data: URI suppresses the browser's default /favicon.ico
-        request without claiming an icon exists. */
-    }
-    <link rel="icon" href="data:," />
-
-    {/* theme-color follows the same system preference the stylesheet does. */}
-    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#eef5fb" />
-    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#050b16" />
+    <script is:inline src="/theme-init.js"></script>
   </head>
 
-  <body>
-    <a class="skip-link" href="#main">Skip to main content</a>
+  <body class="dpx-body" data-page-kind={kind}>
+    <a class="dpx-skip-link" href="#main">{nav.skipLink}</a>
 
-    <header class="site-header">
-      <div class="shell site-header__inner">
-        <a class="wordmark" href="/">
-          {
-            /* DelayPilot's own mark: a radar arc, a dashed route line and a heading marker.
-              No airline, airport, regulator or provider logo, wordmark or trade dress
-              (AGENTS.md section 1.4). Ported from design/v0-preview/components/logo.tsx. */
-          }
-          <svg
-            viewBox="0 0 32 32"
-            fill="none"
-            width="28"
-            height="28"
-            aria-hidden="true"
-            focusable="false"
-          >
-            <circle cx="16" cy="16" r="13" stroke="var(--border-strong)" stroke-width="1.5"
-            ></circle>
-            <path
-              d="M16 16 A13 13 0 0 1 27 9"
-              stroke="var(--accent)"
-              stroke-width="1.5"
-              stroke-linecap="round"></path>
-            <path
-              d="M6 22 L26 10"
-              stroke="var(--accent)"
-              stroke-width="1.5"
-              stroke-linecap="round"
-              stroke-dasharray="2 3"></path>
-            <path d="M22 9.5 L27 8 L25.5 13 Z" fill="var(--accent)"></path>
-            <circle cx="16" cy="16" r="2.5" fill="var(--accent)"></circle>
-          </svg>
-          <span>Delay<span class="wordmark__accent">Pilot</span></span>
-        </a>
+    <SiteHeader current={current} />
 
-        <nav class="site-nav" aria-label="Primary">
-          <a href="/" aria-current={nav === 'home' ? 'page' : undefined}>Home</a>
-          <a href="/privacy/" aria-current={nav === 'privacy' ? 'page' : undefined}>Privacy</a>
-          <a href="/terms/" aria-current={nav === 'terms' ? 'page' : undefined}>Terms</a>
-        </nav>
-      </div>
-    </header>
-
-    <main id="main" class="shell">
+    {
+      /*
+       * `tabindex="-1"` so the skip link's target takes focus itself.
+       *
+       * In Chromium the link already worked fully without it — measured at 375 and 1440: the hash
+       * is set, the page scrolls, and the next Tab lands on the first control inside `main`. That
+       * is a browser behaviour verifiable in exactly one browser; the attribute removes the
+       * dependence on it (`docs/ACCESSIBILITY.md` F33, SC 2.4.1).
+       */
+    }
+    <main class="dpx-main" id="main" tabindex="-1">
+      <slot name="page-header" />
+      {
+        reviewedDate !== undefined && (
+          <div class="dpx-shell">
+            <p class="dpx-article__meta">
+              <span>
+                {pages.article.reviewedLabel} <time datetime={reviewedAt}>{reviewedDate}</time>
+              </span>
+            </p>
+          </div>
+        )
+      }
       <slot />
     </main>
 
-    <footer class="site-footer">
-      <div class="shell">
-        <nav class="site-footer__nav" aria-label="Footer">
-          <a href="/">Home</a>
-          <a href="/privacy/">Privacy</a>
-          <a href="/terms/">Terms</a>
-        </nav>
-
-        <p class="disclaimer">
-          DelayPilot is an independent travel-information tool. It is not an airline, airport,
-          government agency, law firm, claims company, or flight-data provider. Guidance is
-          informational and may not reflect every fact in your case.
-        </p>
-
-        <p>&copy; {year} DelayPilot</p>
-      </div>
-    </footer>
+    <SiteFooter current={current} />
   </body>
 </html>

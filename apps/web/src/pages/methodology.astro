@@ -1,0 +1,43 @@
+---
+/**
+ * `/methodology/` — what the code does, stated so it can be checked.
+ *
+ * Eight sections, each one a rule the build enforces rather than an aspiration. Two of them render
+ * the thing they describe instead of describing it: the rights section shows a real rights card for
+ * the European Union, including the current-versus-future module where the 2026 reform appears as
+ * `Future rule, not active` — the one place a reform that has been adopted but is not in force may
+ * be shown, and never as something that applies (`DIRECTIVE.md §3.5`).
+ */
+import { RightsCard } from '../../../../packages/ui/src/patterns/index.ts'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+import { rightsCopy } from '../components/pattern-copy.ts'
+
+import { pages } from '../lib/copy/pages.ts'
+import { demoRightsEuropeanUnion } from '../demo/itinerary.ts'
+
+const page = pages.methodology
+const sections = Object.entries(page.sections)
+---
+
+<BaseLayout title={page.title} description={page.description} nav="methodology">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  {
+    sections.map(([key, section]) => (
+      <Section heading={section.heading} reveal>
+        <p class="dpx-section__intro">{section.body}</p>
+        {key === 'rights' && (
+          <RightsCard
+            assessment={demoRightsEuropeanUnion}
+            copy={rightsCopy({ demo: true })}
+            headingLevel={3}
+            idPrefix="methodology-eu"
+          />
+        )}
+      </Section>
+    ))
+  }
+</BaseLayout>

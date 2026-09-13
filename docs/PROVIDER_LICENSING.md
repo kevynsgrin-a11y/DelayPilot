@@ -73,11 +73,18 @@ Credential variable: `OAG_API_KEY`. No contract exists.
 
 **Status: no commercial licence required, but terms not yet verified by the owning agent.**
 
-This is a US government public data API requiring no key. `DIRECTIVE.md §11.1` and `.env.example`
-already require an identifying `AVIATIONWEATHER_USER_AGENT` contact string, and the service
-documents a request-rate expectation that the reliability layer must respect. Before enabling it in
-production, `regulatory-source-steward` must read the current terms-of-use and rate guidance at the
-canonical source and complete this section — public availability is not the same as verified terms.
+This is a US government public data API requiring no key. `.env.example` already requires an
+identifying `AVIATIONWEATHER_USER_AGENT` contact string, and `DIRECTIVE.md` Phase 4 requires 204
+handling, a product-appropriate TTL, a parser version, and a checksum for this adapter. Whatever
+rate guidance the service publishes must be read and respected by the reliability layer; it has not
+been read, so no rate figure is recorded here. Before enabling it in production,
+`regulatory-source-steward` must read the current terms of use and rate guidance at the canonical
+source and complete this section — public availability is not the same as verified terms.
+
+_Correction, 2026-09-12:_ the previous revision of this paragraph cited `DIRECTIVE.md §11.1` for the
+User-Agent requirement, as `.env.example:70` still does. That citation does not resolve —
+`DIRECTIVE.md` ends at §33 and has no §11.1. The requirement itself is real and lives in
+`.env.example`. Recorded as finding R-5 in `docs/RIGHTS_SOURCE_REVIEW.md`.
 
 ### 3.5 FAA NAS Status
 
@@ -106,3 +113,16 @@ gate as any paid provider.
 Removing or expiring a licence reverses this: the provider is disabled first, then the record is
 updated with the end date. A record is never deleted — an expired licence is part of the audit
 trail.
+
+## 5. Verification attempts
+
+A dated log of every attempt to complete a section above, successful or not, so that "not yet
+verified" can never be confused with "not yet attempted".
+
+| Date       | Sections attempted                                               | Outcome                                                                                                                                                                                                                                    |
+| ---------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-12 | §3.1 FlightAware AeroAPI, §3.4 AviationWeather.gov, §3.5 FAA NAS | **Blocked (external).** `WebFetch` to `www.flightaware.com`, `aviationweather.gov`, and `nasstatus.faa.gov` each returned `EGRESS_BLOCKED: Access to <host> is blocked by the network egress proxy.` Nothing was read; no section changed. |
+
+Detail, remedies, and the full 22-source cycle are in `docs/RIGHTS_SOURCE_REVIEW.md` (cycle
+2026-09-12). §3.1 would not have changed in any case: an executed agreement, not a vendor page, is
+what moves a provider to `licensed`.

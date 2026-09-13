@@ -8,10 +8,11 @@
 import type { JSX, ReactNode, SelectHTMLAttributes } from 'react'
 import { cx } from './class-names.ts'
 import { Icon } from './Icon.tsx'
+import { withoutInlineStyle } from './no-inline-style.ts'
 
 export interface SelectProps extends Omit<
   SelectHTMLAttributes<HTMLSelectElement>,
-  'className' | 'children'
+  'className' | 'children' | 'style'
 > {
   readonly children: ReactNode
   readonly className?: string
@@ -20,7 +21,7 @@ export interface SelectProps extends Omit<
 export function Select({ children, className, ...rest }: SelectProps): JSX.Element {
   return (
     <span className="dp-select">
-      <select className={cx('dp-select__control', className)} {...rest}>
+      <select className={cx('dp-select__control', className)} {...withoutInlineStyle(rest)}>
         {children}
       </select>
       <Icon name="chevron-down" decorative className="dp-select__chevron" />

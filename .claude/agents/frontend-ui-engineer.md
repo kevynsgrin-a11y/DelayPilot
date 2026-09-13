@@ -57,7 +57,7 @@ Carve-outs inside your tree that are **not** yours: `components/monetization/**`
   375/768/1024/1440, the 12-column cockpit grid, motion and reduced-motion behaviour. Motion on §18.1
   public routes outside a data-bearing component follows ADR 0003
   (`docs/decisions/0003-marketing-motion-allowance.md`): CSS-only reveals and ambient motifs from the
-  motion tokens, View Transitions via `<ClientRouter />`, never a JavaScript scroll handler.
+  motion tokens, cross-document CSS View Transitions (ADR 0003 rule 2c — no client router), never a JavaScript scroll handler.
 - `apps/web/src/lib/copy/**` (`ux-copy-steward`) — §27 result microcopy, §26 disclaimers;
   `apps/web/public/brand|icons|og/**` (`visual-asset-director`) — mark, favicons, PWA icons.
 - `/api/v1` (`edge-api-engineer`, §14) and `data/fixtures/**` (`integrations-provider-engineer`)

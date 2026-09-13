@@ -571,7 +571,16 @@ async function build() {
   for (const size of [16, 32, 48]) {
     icoMembers.push({ size, png: await png(faviconComposition(size), { opaque: true }) })
   }
-  writeOut('apps/web/public/icons/favicon.ico', encodeIco(icoMembers))
+  /*
+   * One encode, two paths. `/icons/favicon.ico` is the file BaseLayout's <link rel="icon"> names;
+   * `/favicon.ico` is the file a user agent that never parses the markup asks for unprompted
+   * (asset-manifest.mjs states the case at the root row). Writing the same buffer to both, in the
+   * same run, is what makes them byte-identical by construction rather than by a copy step that
+   * can be skipped, reordered, or quietly run against a stale source.
+   */
+  const ico = encodeIco(icoMembers)
+  writeOut('apps/web/public/icons/favicon.ico', ico)
+  writeOut('apps/web/public/favicon.ico', ico)
 
   const og = ogComposition()
   writeOut('apps/web/public/og/default-1200x630.png', await sharp(og).png(PNG_OPTIONS).toBuffer())

@@ -1,0 +1,131 @@
+# Clean fixture — the same ten passages, written the way DelayPilot writes
+
+Each section below is the corrected form of the matching section in
+`../violating/overclaim-sample.md`. The scanner must report zero hits here, with the allowlist
+disabled. A lint that only proves it fires has proved half of what matters; the other half is that
+it stays quiet on correct copy, because a rule that flags good writing gets switched off within a
+week.
+
+## 1. What may apply
+
+Based on the facts entered and the rule version shown below, a cash refund may apply.
+
+## 2. What the product does
+
+DelayPilot reads your facts against a dated, versioned rule set and shows what may apply, with a
+link to the official source.
+
+## 3. What is still unknown
+
+The disruption cause has not been verified. Ask the airline for its reason in writing — which
+rights may apply often turns on that answer.
+
+## 4. What changed, and what it means
+
+The inbound flight is running late, so the hotel and meal rules for this jurisdiction may apply.
+The airline or the regulator may reach a different conclusion.
+
+## 5. The same code, named for what it is
+
+```ts
+const connectionTopology = 'protected'
+const copy = 'A material disruption is confirmed. Start with the action checklist below.'
+```
+
+## 6. How a cause is rendered
+
+The reason shown is airline-stated. A reason given by an airline is what was said, not what was
+established.
+
+## 7. An estimate, stated as one
+
+Compensation may apply under the rule version shown. Eligibility depends on the full facts and on
+the airline or regulator determination.
+
+## 8. A claim with something behind it
+
+Every value carries the source it came from and how old that response is.
+
+## 9. No ticket identifier is requested
+
+Enter an airline, a flight number, and a date. Nothing printed on your ticket is required.
+
+## 10. No rank, because there is no ranking
+
+DelayPilot shows the connection decomposition — available time, required transfer time, and the
+slack between them — with every component labeled by how it was derived. See issue #12 and section
+#3 of the methodology; a hex colour such as #1a2b3c is not a claim either.
+
+## 11. The same six situations, written the way DelayPilot writes them
+
+The mirror of section 11 opposite. Each of these contains the house adjective, the noun, or the verb
+that the elastic joins now reach across — and none of them makes the claim, so none may fire. A rule
+that flags this page is a rule somebody switches off inside a week.
+
+Flight information can change quickly. Confirm critical details with the operating airline and
+airport.
+
+The operating airline is the one whose aircraft you board. Name or code.
+
+On separate tickets, rebooking and baggage recovery are usually yours, and those rules usually treat
+the two flights as two journeys.
+
+Whether compensation may apply turns on the reason the airline gives in writing, and on the rule
+version shown.
+
+This connection is tight: walking, security, immigration, baggage, gate-close rules, and airline
+assistance can change the outcome.
+
+The flight was canceled by the airline and no replacement has been accepted, which is the situation
+a refund rule is written for.
+
+## 12. The hedge that must survive
+
+We cannot promise that the gate will not change, and we cannot say what the airline will decide.
+That is why the one bare-promise rule takes no elastic join: the honest sentence and the banned one
+differ by a single word, and only the reader can tell them apart.
+
+## 13. The same questions, left open
+
+The mirror of section 13 opposite, and the first three are the sentences that actually replaced the
+ones that shipped. `docs/EDITORIAL_POLICY.md §6.5` gives three patterns that carry this: "the rules
+usually treat…", "nothing assumes…", "may not carry across". None of them settles anything, and each
+still tells a reader what to expect.
+
+The rules usually treat separate tickets as separate journeys, so nothing assumes an airline will
+move you onward.
+
+The two tickets are assessed as separate journeys, so nothing here assumes the second airline will
+re-accommodate you.
+
+On a single protected itinerary, passenger-rights rules usually treat the journey as one, so a missed
+connection is usually assessed against the journey you booked rather than against the leg that broke.
+
+The waiting obligations may not carry across. Where your flights are separate journeys, a delay on
+the first is not generally treated as creating a duty on the second.
+
+Whether compensation may apply turns on the reason the airline gives in writing, on the rule version
+shown, and on a decision DelayPilot does not make.
+
+DelayPilot never marks a separate-ticket connection as protected, and asks you when the data does not
+make the answer clear. A statement about what this product does is a fact about the product, and
+hedging it would be the overclaim pointing the third way.
+
+## 14. The hedge the modal rule must not touch
+
+The mirror of section 14 opposite. Each of these puts a word in the same slot the banned forms use,
+and each is a sentence DelayPilot should be free to write: the slot takes an intensifier and stays
+the claim, or takes a negator and becomes the honest hedge.
+
+We cannot guarantee that the gate will not change.
+
+We do not guarantee an on-time arrival.
+
+We never guarantee a legal outcome.
+
+## 15. Two sentences that stay two sentences
+
+The mirror of section 15. The same words in the same order, with the sentence ending where the
+author put it, and nothing here asserts anything about what a carrier owes.
+
+Call the airline. Owes you nothing is not a sentence this product writes.

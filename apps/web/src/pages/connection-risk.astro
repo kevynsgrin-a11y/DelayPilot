@@ -1,0 +1,96 @@
+---
+/**
+ * `/connection-risk/` — the same transfer, assessed three ways.
+ *
+ * The page renders three complete `ConnectionCockpit` panels rather than describing them:
+ *
+ *   · **Protected**, with seven minutes of slack — the `§28` tightening connection.
+ *   · **Separate tickets**, identical airport, identical walk, one component different: the bag has
+ *     to be reclaimed and rechecked. Slack goes negative. This is the comparison `§18.5` asks for,
+ *     and it is why a self-transfer is never described as protected because it "looks feasible".
+ *   · **Unknown topology**, where the reservation structure is not known: available time, required
+ *     time and slack all render their unknown sentence, the band is `Unknown`, and the meter draws
+ *     no fill rather than a zero.
+ *
+ * Every panel lists all seven `T` components with its derivation class, states its assumptions and
+ * what is missing, and carries the `§26` connection disclaimer beside the figures.
+ *
+ * EACH COCKPIT IS NAMED BY ITS TOPOLOGY. Three panels named "Connection", each containing a table
+ * region named "Every component of the required transfer time", put six entries under two names in
+ * a landmark list and told a reader nothing about which example was which
+ * (`docs/ACCESSIBILITY.md` F26). `connectionCopy({ topology })` takes the reservation structure —
+ * the fact the three examples differ by — and the copy module turns it into the name. The
+ * homepage's single cockpit passes nothing and keeps the plain `§18.5` heading: disambiguation
+ * exists to tell things apart, and there is nothing there to tell apart.
+ */
+import { ConnectionCockpit, type Maybe } from '../../../../packages/ui/src/patterns/index.ts'
+
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+import Section from '../components/Section.astro'
+import { connectionCopy } from '../components/pattern-copy.ts'
+
+import { pages } from '../lib/copy/pages.ts'
+import {
+  demoConnectionInsufficient,
+  demoConnectionProtected,
+  demoConnectionSelfTransfer,
+} from '../demo/itinerary.ts'
+
+const page = pages.connectionRisk
+
+/** `Maybe<number>` to the `number | null` the copy module's meter reading takes. */
+const minutesOf = (value: Maybe<number>): number | null => (value.known ? value.value : null)
+---
+
+<BaseLayout title={page.title} description={page.description} nav="connection-risk">
+  <PageHeader slot="page-header" title={page.h1} intro={page.intro} />
+
+  <Section heading={page.sections.decomposition.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.decomposition.body}</p>
+    <ConnectionCockpit
+      assessment={demoConnectionProtected}
+      copy={connectionCopy({
+        demo: true,
+        availableMinutes: minutesOf(demoConnectionProtected.availableMinutes),
+        requiredMinutes: minutesOf(demoConnectionProtected.requiredMinutes),
+        topology: demoConnectionProtected.topology,
+      })}
+      headingLevel={3}
+    />
+  </Section>
+
+  <Section heading={page.sections.components.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.components.body}</p>
+  </Section>
+
+  <Section heading={page.sections.topology.heading}>
+    <p class="dpx-section__intro">{page.sections.topology.body}</p>
+    <div class="dpx-cockpit__stack">
+      <ConnectionCockpit
+        assessment={demoConnectionSelfTransfer}
+        copy={connectionCopy({
+          demo: true,
+          availableMinutes: minutesOf(demoConnectionSelfTransfer.availableMinutes),
+          requiredMinutes: minutesOf(demoConnectionSelfTransfer.requiredMinutes),
+          topology: demoConnectionSelfTransfer.topology,
+        })}
+        headingLevel={3}
+      />
+      <ConnectionCockpit
+        assessment={demoConnectionInsufficient}
+        copy={connectionCopy({
+          demo: true,
+          availableMinutes: minutesOf(demoConnectionInsufficient.availableMinutes),
+          requiredMinutes: minutesOf(demoConnectionInsufficient.requiredMinutes),
+          topology: demoConnectionInsufficient.topology,
+        })}
+        headingLevel={3}
+      />
+    </div>
+  </Section>
+
+  <Section heading={page.sections.noGauge.heading} reveal>
+    <p class="dpx-section__intro">{page.sections.noGauge.body}</p>
+  </Section>
+</BaseLayout>

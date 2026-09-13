@@ -1,27 +1,44 @@
-# DelayPilot crawl policy.
+# DelayPilot crawl policy. Owner: seo-engineer (docs/agents/ROSTER.md section 3).
 #
-# The private prefixes below are the exact routes AGENTS.md section 2 requires to be
-# "noindex, nofollow, noarchive" with opaque identifiers. Disallowing them here is belt and
-# braces: the authoritative control is the per-response robots directive those routes will carry
-# when they ship in Phases 7-10. A Disallow line is a request, not an access control, so nothing
-# private depends on it.
+# WHAT THIS FILE DOES AND DOES NOT DO. A Disallow line is a request to well-behaved crawlers, not
+# an access control, so nothing private depends on one. The authoritative control for a private
+# route is the per-response "noindex, nofollow, noarchive" directive it carries, plus real
+# authorization. The four prefixes below are the AGENTS.md section 2 private trees; none of them is
+# served by this build yet, and they are listed in advance so that the day one of them ships it is
+# already excluded rather than excluded in a follow-up change nobody files.
 #
-# The Sitemap: line below now references a file that exists: sitemap.xml sits in this same
-# directory (apps/web/public/), is copied verbatim into the build output, and is served at the
-# site root. It lists exactly the three routes apps/web/src/pages builds today - /, /privacy/ and
-# /terms/ - with the trailing slashes apps/web/astro.config.mjs enforces. The line arrived with the
-# file it references rather than ahead of it, because pointing crawlers at a sitemap URL that
-# returns 404 would be a dead reference (AGENTS.md section 1.6) that Search Console reports as a
-# fetch error.
+# Note the interaction that is easy to get wrong: Disallow blocks the FETCH, and a page a crawler
+# may not fetch is a page whose noindex it can never read. So a route that must stay out of the
+# index on the strength of its own meta tag must remain crawlable. That is exactly the situation of
+# the five served guides and /passenger-rights/, which are editorial status "publishable" and carry
+# noindex from apps/web/src/components/routes.ts entryRobots(). They are intentionally NOT
+# disallowed here: the meta tag is the mechanism, and blocking the fetch would defeat it.
 #
-# Phase 11 (DIRECTIVE.md section 19, seo-engineer) replaces both this file and that hand-maintained
-# sitemap with a generated sitemap index and per-page-type children gated on editorial status and
-# the content-quality gate. Until then, any new public route must be added to sitemap.xml by hand
-# in the same change that creates it.
+# NO "Disallow: /" AND NO BLANKET BLOCK. Gating which pages are indexable is the job of the robots
+# meta tag on each page and of sitemap membership, both driven by editorial status. A blanket
+# disallow standing in for that work would hide the gate rather than implement it.
 #
-# Owner note: apps/web/public/robots.txt is seo-engineer's in docs/agents/ROSTER.md section 3.
-# This is a pre-Phase-11 baseline added under direct owner instruction after an external audit
-# found no robots.txt at all.
+# HOW A ROUTE BECOMES CRAWLABLE AND LISTED. There is no edit to make here for a new public route:
+# Allow: / already covers every path this build serves. What decides whether it is INDEXED is,
+# in order:
+#   1. apps/web/src/components/routes.ts — is the route emitted at all (editorial status,
+#      configuration, upstream dependencies)?
+#   2. entryRobots() for an article route, or the page's own `robots` prop for a shell — does the
+#      page emit <meta name="robots" content="noindex">?
+#   3. apps/web/public/sitemap.xml — a page that is indexable by (2) must be listed; a page that is
+#      not must not be.
+# node scripts/seo/verify-sitemap.mjs checks (2) against (3) over the built dist, and checks that
+# the Sitemap: line below uses the same origin as every <loc>. Run it after any route change.
+#
+# The Sitemap: line references a file that exists: sitemap.xml sits in this same directory
+# (apps/web/public/), is copied verbatim into the build output, and is served at the site root.
+# Pointing a crawler at a sitemap URL that 404s is a dead reference (AGENTS.md section 1.6) that
+# Search Console reports as a fetch error.
+#
+# The absolute origin below is the one place besides sitemap.xml where the domain is committed:
+# owner input I-4 leaves PUBLIC_SITE_URL unset, so no page carries a canonical yet, and the sitemap
+# protocol has no relative form. Phase 11 replaces both with the PUBLIC_SITE_URL resolver in
+# apps/web/src/lib/seo/ and generates this file from it.
 
 User-agent: *
 Allow: /

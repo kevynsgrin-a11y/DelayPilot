@@ -1,0 +1,273 @@
+---
+/**
+ * Advertising policy.
+ *
+ * Owner: trust-compliance-officer (docs/agents/ROSTER.md §3). The permitted and forbidden placement
+ * lists are DIRECTIVE.md §20 and AGENTS.md §4 rendered for readers; they are not authored here and
+ * must not drift from those files. If §20 changes, this page changes in the same session.
+ *
+ * RE-VERIFIED IN THIS SESSION at the reviewed date. No ad script, no ad network tag and no
+ * consent-management platform exists anywhere in apps/** or packages/**. There are now TWO
+ * advertising-shaped artifacts rather than one, and neither renders:
+ *
+ *  · packages/ui/src/primitives/AdSlot.tsx — a labelled container that reserves its dimensions and
+ *    makes no network call;
+ *  · packages/ui/src/patterns/AdSlotShell.tsx — the position-checked wrapper whose `placement` prop
+ *    is TYPED to the five §20 positions, with no escape hatch, and which returns null unless
+ *    `enabled` is true.
+ *
+ * No page passes `enabled`. The two permitted insertion points that exist on this build —
+ * the `AdSlotShell` mentions in apps/web/src/pages/index.astro and
+ * apps/web/src/components/DemoCockpit.astro — are
+ * COMMENTS marking the position for monetization-partnerships-engineer, not pre-wired containers.
+ * A grep of every built page in apps/web/dist for `dp-ad-slot`, `data-ad-placement` and `dpp-ad`
+ * returns zero matches, and apps/web/scripts/verify-dist.mjs fails the build if an ad node ever
+ * appears on a forbidden route — this page among them. apps/web/public/ads.txt does not exist, and
+ * the ADSENSE_SLOT_* and CMP_PROJECT_ID entries in .env.example:137–143 are unset.
+ *
+ * The AdSense publisher identifier in DIRECTIVE.md §20 is deliberately NOT printed here. Naming it
+ * on a public page would assert a live commercial relationship that no signed agreement in this
+ * repository establishes (AGENTS.md §1.1).
+ */
+import BaseLayout from '../layouts/BaseLayout.astro'
+import PageHeader from '../components/PageHeader.astro'
+/**
+ * Shared chrome, imported rather than transcribed (docs/VOICE.md §12.1; copy review finding F-13).
+ * The related-policies heading and the cross-link labels under it appear on more than one of the
+ * five policy pages, which makes them chrome rather than policy, and chrome has one owner. The
+ * one-line description after each link stays in this file: it says why that policy matters to this
+ * page, which is a judgment about this document.
+ */
+import { nav } from '../lib/copy/nav.ts'
+import { pages } from '../lib/copy/pages.ts'
+
+const title = 'Advertising policy — DelayPilot'
+const description =
+  'No advertising runs on DelayPilot today. The placement rules that will bind when it does: where an ad may appear, where it may never appear, and what is never sent to an advertiser.'
+
+const intro =
+  'No advertising runs on DelayPilot. These rules are published now, before any money is involved, because a placement policy written after the first advertiser arrives is a policy written to fit the advertiser.'
+
+/** The reviewed date. BaseLayout renders it; this page does not print a second copy. */
+const REVIEWED_AT = '2026-09-12'
+
+/** DIRECTIVE.md §20 — the complete permitted list. Nothing may be added to it locally. */
+const permitted = [
+  'On the homepage, after the complete demonstration and the first explanatory section.',
+  'In the middle of a guide, after a substantial amount of the article has been read.',
+  'At the end of a guide.',
+  'On an airport or airline page, after the main answer that page exists to give.',
+  'On a free trip result, only after the complete action checklist, with strong visual separation from it.',
+]
+
+/** DIRECTIVE.md §20 — the complete forbidden list. Nothing may be removed from it locally. */
+const forbidden = [
+  'Above the primary flight search.',
+  'Inside any form.',
+  'Between a warning and the action that answers it.',
+  'Inside a passenger-rights card.',
+  'Inside or next to an action checklist.',
+  'Next to a "Contact airline", "Request refund", or "Save evidence" control.',
+  'On sign-in, checkout, account, admin, privacy, terms, error, or status pages.',
+  'Anywhere in a paid, signed-in experience.',
+]
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  kind="policy"
+  reviewedAt={REVIEWED_AT}
+  nav="advertising-policy"
+>
+  <PageHeader slot="page-header" title="Advertising policy" intro={intro} />
+
+  <div class="dpx-article__body">
+    <div class="dpx-shell">
+      <article class="prose">
+        <p>
+          <strong>No advertising runs on DelayPilot.</strong> This site loads no ad script, calls no ad
+          network, and carries no consent-management platform. Nothing on any page is paid placement.
+          What follows is the standing rule set — the positions an ad may occupy, the positions it may
+          never occupy, and the information that never reaches an advertiser under any of them.
+        </p>
+
+        <h2>The one rule the rest of this page serves</h2>
+
+        <p>
+          An ad must never be confusable with a flight, a refund, a rebooking, a claim, a contact
+          control, or anything safety-related. A traveler reading this product is often tired, often
+          late, and often about to spend money they will not get back. A unit that borrows the look
+          of a control at that moment is not an ad — it is a trap, and no revenue justifies it.
+        </p>
+
+        <h2>Where an ad may appear</h2>
+
+        <p>
+          This list is complete. An ad may appear in these positions and nowhere else; a position
+          that is not on this list is forbidden even if nothing below explicitly names it.
+        </p>
+
+        <ul>
+          {permitted.map((placement) => <li>{placement}</li>)}
+        </ul>
+
+        <p>
+          A trip cockpit shows at most one ad, and only after the complete action area — the
+          checklist, the rights estimate, and the next useful step all come first. Advertising is
+          what happens after the product has finished being useful, never instead of it.
+        </p>
+
+        <h2>Where an ad may never appear</h2>
+
+        <ul>
+          {forbidden.map((placement) => <li>{placement}</li>)}
+        </ul>
+
+        <p>
+          The page you are reading is itself on that list, as are the privacy and terms pages. A
+          policy page carrying an ad would be advertising against the credibility of the policy.
+        </p>
+
+        <h2>How the rule is enforced, rather than just written down</h2>
+
+        <p>
+          A placement policy that lives only in prose is a policy that survives exactly until the
+          first hurried change. Two mechanisms hold this one in place:
+        </p>
+
+        <ul>
+          <li>
+            <strong>The position is part of the type.</strong> The design system's ad wrapper accepts
+            only the five permitted positions above. There is no free-text option and no escape hatch,
+            so a forbidden position cannot be expressed at all — it has to be added to the shared component
+            first, in a change a reviewer sees.
+          </li>
+          <li>
+            <strong>The build refuses the output.</strong> Every page is checked after it is generated,
+            and an ad container found on any forbidden route fails the build rather than shipping. On
+            this build there is no ad container on any page at all.
+          </li>
+        </ul>
+
+        <h2>Paid plans are ad-free</h2>
+
+        <p>
+          When paid plans exist, they are ad-free — not ad-reduced. A Trip Pass makes the trip it
+          covers ad-free for its whole monitoring window; Plus and Family are ad-free across the
+          entire signed-in experience. No paid surface carries an ad, a sponsored module, or a
+          partner link dressed as a feature. No plan exists to buy today: there is no billing
+          integration, no price is charged, and no purchase control is rendered anywhere on this
+          site.
+        </p>
+
+        <h2>Consent comes before the ad, not after</h2>
+
+        <p>
+          Where consent is required for advertising or for the tracking that funds it, no ad script
+          loads until that consent is recorded. Refusing is one action and no harder than accepting.
+          A refusal is remembered and not re-asked on every page. There is nothing to consent to
+          today, because no ad code and no consent platform exists — and a consent banner asking
+          permission for tracking that does not happen would be theatre.
+        </p>
+
+        <h2>What is never sent to an advertiser</h2>
+
+        <ul>
+          <li>
+            <strong>No itinerary detail, ever.</strong> Not a flight number, not a route, not an airport
+            pair, not a travel date, not a disruption state. Itinerary data never reaches ad targeting,
+            an ad request, or an affiliate parameter.
+          </li>
+          <li>
+            <strong>No booking reference.</strong> DelayPilot never asks for one, so there is none to
+            leak — not to an advertiser, not to a log, not to a web address.
+          </li>
+          <li>
+            <strong>No personal identifiers.</strong> No email address, no display name, no account identifier,
+            and no raw IP address is passed into an ad request or a targeting key.
+          </li>
+        </ul>
+
+        <p>
+          This is the reason DelayPilot will never run behavioral targeting built on trip data, even
+          though a flight-disruption audience is exactly what such a system would pay most for.
+        </p>
+
+        <h2>How a slot behaves</h2>
+
+        <ul>
+          <li>
+            <strong>Labelled.</strong> Every slot carries a visible label identifying it as advertising.
+          </li>
+          <li>
+            <strong>Dimensions reserved.</strong> A slot holds its width and height whether or not it
+            fills, so nothing on the page moves under your finger. The design system's slot container
+            already enforces this: both dimensions are required, and an unfilled slot stays reserved and
+            empty rather than collapsing.
+          </li>
+          <li>
+            <strong>No refresh on a timer</strong>, and no refresh when the page quietly re-checks
+            flight status in the background. An ad impression is never bought by re-rendering a
+            traveler's live status view.
+          </li>
+          <li>
+            <strong>Dropped from print.</strong> An evidence packet is a record of what happened to your
+            flight, not an inventory surface.
+          </li>
+          <li>
+            <strong>Off in local, test, screenshot, and demo-review modes</strong>, so that no
+            screenshot, test run, or demonstration ever shows an ad in a position review has not
+            approved.
+          </li>
+        </ul>
+
+        <h2>Advertising never reaches the writing</h2>
+
+        <p>
+          No article, guide, or passenger-rights explanation on this site is commissioned,
+          sponsored, paid for, or reviewed by an advertiser, and no advertiser sees one before it is
+          published. There are no advertisers today, which makes that easy to state and easy to
+          check; the rule is published now so that it is already binding on the first one. How
+          guidance is actually sourced and reviewed is the{' '}
+          <a href="/editorial-policy/">editorial policy</a>.
+        </p>
+
+        <h2>Why there is no ads.txt file</h2>
+
+        <p>
+          An <code>ads.txt</code> file names the companies that may sell advertising inventory on a domain.
+          Publishing one before any advertising integration exists would assert something about this site
+          that is not true. The file ships with the ad integration itself, together with the placement
+          tests that enforce everything on this page — not before it.
+        </p>
+
+        <h2>How this page changes</h2>
+
+        <p>
+          This page is rewritten, not appended to, in the same change that enables advertising. It
+          will then name the network, the slots that exist, the consent mechanism, and the date the
+          change took effect. Until then, the accurate summary is the first line: no advertising
+          runs on DelayPilot.
+        </p>
+
+        <h2>{pages.policy.relatedHeading}</h2>
+
+        <ul>
+          <li>
+            <a href="/affiliate-disclosure/">{nav.footer.links['/affiliate-disclosure/']}</a> — commercial
+            links and how they are marked.
+          </li>
+          <li>
+            <a href="/privacy/">{nav.footer.links['/privacy/']}</a> — what is collected today, and what
+            never will be.
+          </li>
+          <li>
+            <a href="/editorial-policy/">{nav.footer.links['/editorial-policy/']}</a> — why no advertiser
+            can influence guidance.
+          </li>
+        </ul>
+      </article>
+    </div>
+  </div>
+</BaseLayout>

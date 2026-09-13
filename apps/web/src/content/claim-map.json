@@ -1,0 +1,1288 @@
+{
+  "version": 2,
+  "owner": "content-editorial-lead",
+  "generatedAt": "2026-09-12",
+  "purpose": "Every external claim in a content entry, mapped to the source_registry id a reviewer must open to confirm or reject it. Consumed by regulatory-source-steward during the source-review gate.",
+  "evidenceClasses": {
+    "primary": "A regulator or authority page. The only class a rule value may rest on.",
+    "secondary": "A record the registry marks citableForRuleValues: false, such as a press release. Supports a status note and nothing else.",
+    "unsourced": "No registry record supports this claim yet. It is named here rather than published, and the sentence around it renders as an unresolvable rule slot so the page cannot be served."
+  },
+  "verificationState": "blocked-external",
+  "verificationNote": "No §33 host was reachable from the build environment in session S3 (HTTPS egress refused for every host except the npm registry). No claim below has been confirmed against its source. Every entry carrying an external claim is therefore held at source_review or draft and is not published.",
+  "unblockedBy": "Grant egress to the DIRECTIVE.md §33 hosts in the environment network policy, or run regulatory-source-steward on a host with access; then set verification and lastVerifiedAt per claim. The unsourced claims additionally need an Official Journal record added to the registry.",
+  "entries": [
+    {
+      "slug": "guides/canada-appr-delay-and-cancellation",
+      "status": "source_review",
+      "sources": ["cta-delays-cancellations", "cta-rebooking-refunds-compensation"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.4"],
+      "externalClaims": [
+        {
+          "claim": "The airline assigns the reason category and that assignment drives the obligations.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Airlines must keep passengers informed on a defined cadence.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Care obligations apply in the categories that call for them.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The Canadian Transportation Agency resolves disputes about the category.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Rebooking operates within defined windows, with refund conditions where they are not met.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Fixed sums depend on carrier class and are banded by arrival delay.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Carrier class is a defined classification taken from the official source.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "There is a time limit for making the request to the airline.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:canada:care.thresholds}}",
+        "{{rule:canada:carrierClass.definition}}",
+        "{{rule:canada:claim.deadline}}",
+        "{{rule:canada:communication.cadence}}",
+        "{{rule:canada:compensation.arrivalDelayBands}}",
+        "{{rule:canada:compensation.largeCarrier}}",
+        "{{rule:canada:compensation.smallCarrier}}",
+        "{{rule:canada:rebooking.windows}}",
+        "{{rule:canada:refund.conditions}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/controllable-vs-uncontrollable-us-disruption",
+      "status": "source_review",
+      "sources": ["dot-dashboard", "dot-refunds"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.1", "AGENTS.md §1.3"],
+      "externalClaims": [
+        {
+          "claim": "The controllable and uncontrollable distinction belongs to the published airline commitments layer.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Commitments cover care such as meals, hotels, ground transport and rebooking for controllable disruptions.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Airlines do not all draw the controllable line identically; the airline own published commitment is authoritative.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Commitments can change without a change in the law.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The commitments layer does not produce a cash payment for delay; the refund layer is separate.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": ["{{rule:us:dashboard.commitmentCategories}}"],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/data-freshness-and-provider-limits",
+      "status": "publishable",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "AGENTS.md §1.1",
+        "AGENTS.md §1.2",
+        "AGENTS.md §1.5",
+        "AGENTS.md §3.3",
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §16",
+        "DIRECTIVE.md §28",
+        "docs/PROVIDER_LICENSING.md"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "guides/eu-2026-reform-timeline",
+      "status": "source_review",
+      "sources": ["eu-your-europe-air"],
+      "contextSources": ["eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §3.5", "DIRECTIVE.md §15.2", "AGENTS.md §1.3"],
+      "externalClaims": [
+        {
+          "claim": "The reform received final Council clearance in 2026.",
+          "sourceId": "eu-council-2026-07-13",
+          "evidenceClass": "secondary",
+          "citableForRuleValues": false,
+          "supports": "status-note-only",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The rules currently in force continue to apply until the reform takes effect.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Entry into force is computed from Official Journal publication plus a defined offset.",
+          "sourceId": null,
+          "evidenceClass": null,
+          "verification": "unsourced",
+          "blocker": "no-official-journal-citation-in-registry",
+          "needs": "A primary Official Journal citation added to data/rights/sources/registry.json. Until then this claim renders as a rule slot that cannot resolve, so the page cannot be served.",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The instrument governs events from its entry into force, not before.",
+          "sourceId": null,
+          "evidenceClass": null,
+          "verification": "unsourced",
+          "blocker": "no-official-journal-citation-in-registry",
+          "needs": "A primary Official Journal citation added to data/rights/sources/registry.json. Until then this claim renders as a rule slot that cannot resolve, so the page cannot be served.",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The reform changes compensation structure, delay thresholds and care obligations relative to the rule in force.",
+          "sourceId": null,
+          "evidenceClass": null,
+          "verification": "unsourced",
+          "blocker": "no-official-journal-citation-in-registry",
+          "needs": "A primary Official Journal citation added to data/rights/sources/registry.json. Until then this claim renders as a rule slot that cannot resolve, so the page cannot be served.",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:compensation.bands}}",
+        "{{rule:eu:current.effectiveFrom}}",
+        "{{rule:eu:current.version}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:eu:reform.adoptedOn}}",
+        "{{rule:eu:reform.care.thresholds}}",
+        "{{rule:eu:reform.compensation.bands}}",
+        "{{rule:eu:reform.delay.compensationThreshold}}",
+        "{{rule:eu:reform.effectiveFrom}}",
+        "{{rule:eu:reform.entryIntoForceOffset}}",
+        "{{rule:eu:reform.officialJournalPublishedOn}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/eu-rights-under-the-current-rule",
+      "status": "source_review",
+      "sources": ["eu-your-europe-air"],
+      "contextSources": ["eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §15.2"],
+      "externalClaims": [
+        {
+          "claim": "Coverage turns on the operating carrier rather than the marketing carrier.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "One reservation is assessed to the final destination; separate tickets are separate journeys.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Cancellation notice bands change the analysis.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The qualifying delay is measured on arrival at the final destination.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Extraordinary circumstances is an airline assertion assessed by an enforcement body or a court.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Care is triggered by distance and waiting time regardless of fault.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Compensation is banded by distance and can be reduced on rerouting within a defined window.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The 2026 reform is adopted and not yet effective.",
+          "sourceId": "eu-council-2026-07-13",
+          "evidenceClass": "secondary",
+          "citableForRuleValues": false,
+          "supports": "status-note-only",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:cancellation.noticeBands}}",
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:compensation.bands}}",
+        "{{rule:eu:compensation.distanceBands}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:eu:rerouting.reduction}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/family-monitoring-without-sharing-a-password",
+      "status": "draft",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "AGENTS.md §2",
+        "DIRECTIVE.md §9",
+        "DIRECTIVE.md §16",
+        "DIRECTIVE.md §18.2",
+        "docs/BUILD_PLAN.md §10"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "guides/flight-cancelled-what-to-do",
+      "status": "source_review",
+      "sources": [
+        "dot-refunds",
+        "eu-your-europe-air",
+        "uk-caa-delays",
+        "cta-rebooking-refunds-compensation"
+      ],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15", "DIRECTIVE.md §26"],
+      "externalClaims": [
+        {
+          "claim": "Several frameworks frame a cancellation as a passenger choice, so accepting an alternative can close options.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A US refund question turns on the triggering event and on declining the alternative.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "UK care obligations do not depend on the cause of the disruption.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Canadian rules require rebooking or a refund depending on the category and the windows.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Coverage depends on departure point, arrival point and the operating carrier.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A separate-ticket connection is not treated as one protected journey.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/how-delaypilot-estimates-connection-risk",
+      "status": "publishable",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §18.5",
+        "DIRECTIVE.md §27",
+        "AGENTS.md §1.2",
+        "AGENTS.md §3.4"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "guides/how-delaypilot-estimates-disruption-risk",
+      "status": "publishable",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §27",
+        "AGENTS.md §1.1",
+        "AGENTS.md §1.2",
+        "docs/BUILD_PLAN.md"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "guides/metar-taf-terms",
+      "status": "source_review",
+      "sources": ["awc-data-api"],
+      "contextSources": [],
+      "internalRefs": ["AGENTS.md §1.3", "AGENTS.md §2", "DIRECTIVE.md §13"],
+      "externalClaims": [
+        {
+          "claim": "A METAR is an observation recorded at a station on a regular cycle with additional reports when conditions change.",
+          "sourceId": "awc-data-api",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A TAF is an airport forecast covering a defined period and amended as expectations change.",
+          "sourceId": "awc-data-api",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "TAFs use change groups to express persistent, gradual, temporary and probabilistic changes.",
+          "sourceId": "awc-data-api",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "METAR fields cover wind, visibility, present weather, cloud, temperature and dew point, pressure and remarks.",
+          "sourceId": "awc-data-api",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Abbreviations, units, cadence and change-group meanings are defined by the issuing authority.",
+          "sourceId": "awc-data-api",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/minimum-connection-time-vs-realistic-connection",
+      "status": "publishable",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §13",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §18.5",
+        "DIRECTIVE.md §27",
+        "docs/PROVIDER_LICENSING.md"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "guides/missed-connection-on-one-ticket",
+      "status": "source_review",
+      "sources": [
+        "eu-your-europe-air",
+        "uk-caa-delays",
+        "dot-refunds",
+        "cta-rebooking-refunds-compensation"
+      ],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15"],
+      "externalClaims": [
+        {
+          "claim": "On one reservation the operating carrier that delivered the passenger late is expected to rebook them onward.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Delay is measured at the final destination under the final-destination test.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Care applies at the transfer airport where the wait is long enough.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A rebooked missed connection does not by itself produce a US payment.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Canadian rebooking obligations apply to the onward journey.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Separate tickets are separate journeys and are not protected.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:uk:care.thresholds}}",
+        "{{rule:uk:delay.compensationThreshold}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/saving-receipts-and-evidence",
+      "status": "publishable",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §15",
+        "DIRECTIVE.md §18.5",
+        "DIRECTIVE.md §26",
+        "AGENTS.md §2"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "guides/self-transfer-risk",
+      "status": "source_review",
+      "sources": ["eu-your-europe-air", "uk-caa-delays"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §13", "DIRECTIVE.md §15.3", "DIRECTIVE.md §27"],
+      "externalClaims": [
+        {
+          "claim": "The care obligations attach to the journey the carrier sold, so a delay on a separate first ticket does not create an obligation on the second.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A separate-ticket connection is never a protected through journey however it was presented at sale.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The first ticket remains a journey in its own right with its own obligations.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": ["{{rule:eu:care.thresholds}}", "{{rule:uk:care.thresholds}}"],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/travel-insurance-timing-and-pre-existing-disruption",
+      "status": "source_review",
+      "sources": ["dot-refunds", "eu-your-europe-air"],
+      "contextSources": [],
+      "internalRefs": ["AGENTS.md §4", "DIRECTIVE.md §20", "DIRECTIVE.md §26"],
+      "externalClaims": [
+        {
+          "claim": "US statutory refund obligations exist independently of any insurance policy.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "EU care and reroute-or-reimburse obligations exist independently of any insurance policy.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/uk261-delay-and-cancellation",
+      "status": "source_review",
+      "sources": ["uk-caa-delays", "eu-your-europe-air"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.3"],
+      "externalClaims": [
+        {
+          "claim": "Care obligations are triggered by distance and waiting time and do not wait on the cause argument.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A long enough delay can open a refund choice.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A cancellation presents the reroute-or-refund choice.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Cancellation notice periods are a live test.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Fixed sums are banded by distance and, on the longest flights, by arrival delay.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Compensation is measured on arrival at the final destination.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A separate-ticket self-transfer is not a protected through journey.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Extraordinary circumstances is an assertion resolved by the regulator complaint route or a court.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The EU framework is separate material with its own scope.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:uk:cancellation.noticeBands}}",
+        "{{rule:uk:care.thresholds}}",
+        "{{rule:uk:compensation.bands}}",
+        "{{rule:uk:compensation.distanceBands}}",
+        "{{rule:uk:delay.compensationThreshold}}",
+        "{{rule:uk:delay.refundThreshold}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/us-automatic-refund-rules",
+      "status": "source_review",
+      "sources": ["dot-refunds", "dot-whats-new"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.1"],
+      "externalClaims": [
+        {
+          "claim": "The refund rule attaches to cancellation, significant change and significant delay.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Accepting the alternative generally ends the refund question.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The refund is the fare in the original form of payment, not a credit unless the passenger chose one.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Where conditions are met the airline is expected to act without the passenger filing a request.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The significance test can reach airports, added connections and cabin downgrade.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "There is no general US federal cash payment for an ordinary delay or cancellation.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The 2026 enforcement-discretion guidance covers certain renumbered flights for a defined window.",
+          "sourceId": "dot-whats-new",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.automaticConditions}}",
+        "{{rule:us:refund.form}}",
+        "{{rule:us:refund.significantChange}}",
+        "{{rule:us:refund.significantDelay}}",
+        "{{rule:us:refund.timing}}",
+        "{{rule:us:refund.triggers}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/voluntary-commitments-vs-legal-rights",
+      "status": "source_review",
+      "sources": ["dot-dashboard", "dot-refunds", "dot-whats-new"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.1"],
+      "externalClaims": [
+        {
+          "claim": "The customer-service dashboard publishes commitments chosen by each airline.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Commitments can be changed by the airline without a rulemaking.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The federal refund obligation is set by the regulator and changes through a public process.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "US obligations deliver refunds on defined events rather than a payment for inconvenience.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Enforcement discretion states where the regulator directs attention and is not a rule change.",
+          "sourceId": "dot-whats-new",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:us:dashboard.commitmentCategories}}",
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.triggers}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/what-an-faa-ground-stop-means",
+      "status": "source_review",
+      "sources": ["faa-nas-status", "awc-data-api"],
+      "contextSources": [],
+      "internalRefs": ["AGENTS.md §1.3", "DIRECTIVE.md §13"],
+      "externalClaims": [
+        {
+          "claim": "A ground stop holds aircraft bound for a particular airport at their departure points.",
+          "sourceId": "faa-nas-status",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A ground delay program meters arrivals and assigns later departure times.",
+          "sourceId": "faa-nas-status",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Airspace flow measures and reroutes move traffic around a constrained region.",
+          "sourceId": "faa-nas-status",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Current measures in effect are published by the national airspace status service.",
+          "sourceId": "faa-nas-status",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Observed conditions used as context come from the aviation weather data service.",
+          "sourceId": "awc-data-api",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "guides/when-a-schedule-change-may-qualify-for-a-refund",
+      "status": "source_review",
+      "sources": [
+        "dot-refunds",
+        "dot-whats-new",
+        "eu-your-europe-air",
+        "cta-rebooking-refunds-compensation"
+      ],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15"],
+      "externalClaims": [
+        {
+          "claim": "Whether a schedule change is significant enough to open a refund is a defined test.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Declining the change is what keeps the refund question live.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Cancellation notice bands matter under the EU framework.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Canadian refund conditions apply where rebooking does not meet the requirements.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The 2026 enforcement-discretion guidance covers certain flight-number-only changes for a defined window.",
+          "sourceId": "dot-whats-new",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:canada:refund.conditions}}",
+        "{{rule:eu:cancellation.noticeBands}}",
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.significantChange}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "passenger-rights/canada",
+      "status": "source_review",
+      "sources": ["cta-delays-cancellations", "cta-rebooking-refunds-compensation"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.4"],
+      "externalClaims": [
+        {
+          "claim": "APPR sorts a disruption into within the airline control, within control but required for safety, or outside control.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Obligations differ by category, and a fixed sum arises only in the within-control non-safety category.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The airline makes the initial category assignment; the Canadian Transportation Agency resolves disputes about it.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Airlines must keep passengers informed on a defined cadence during a disruption.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Care obligations are triggered by defined waiting thresholds in the relevant categories.",
+          "sourceId": "cta-delays-cancellations",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Rebooking obligations operate within defined windows, with refund conditions where they are not met.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Fixed sums depend on whether the carrier is classed as large or small, under a defined classification.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Fixed sums are banded by arrival delay at the destination.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "There is a time limit for making a compensation request to the airline.",
+          "sourceId": "cta-rebooking-refunds-compensation",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:canada:care.thresholds}}",
+        "{{rule:canada:carrierClass.definition}}",
+        "{{rule:canada:cause.categories}}",
+        "{{rule:canada:claim.deadline}}",
+        "{{rule:canada:communication.cadence}}",
+        "{{rule:canada:compensation.arrivalDelayBands}}",
+        "{{rule:canada:compensation.largeCarrier}}",
+        "{{rule:canada:compensation.smallCarrier}}",
+        "{{rule:canada:obligations.byCategory}}",
+        "{{rule:canada:rebooking.windows}}",
+        "{{rule:canada:refund.conditions}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "passenger-rights/eu",
+      "status": "source_review",
+      "sources": ["eu-your-europe-air"],
+      "contextSources": ["eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §15.2", "DIRECTIVE.md §3.5"],
+      "externalClaims": [
+        {
+          "claim": "EC 261 coverage turns on departure point, arrival point and whether the operating carrier is an EU carrier.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A journey on one reservation is assessed to the final destination.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Care obligations attach to waiting and are not conditional on the cause of the disruption.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A cancellation presents a choice between rerouting now, rerouting later, and reimbursement of the fare.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Compensation varies by distance band and can be reduced where rerouting arrives within a defined window.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Cancellation notice periods change the compensation analysis.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The qualifying delay for compensation is measured on arrival at the final destination.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Extraordinary circumstances is an airline defence assessed by a national enforcement body or a court, not established by weather.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The 2026 reform received final Council clearance.",
+          "sourceId": "eu-council-2026-07-13",
+          "evidenceClass": "secondary",
+          "citableForRuleValues": false,
+          "supports": "status-note-only",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The reform enters into force on a date computed from Official Journal publication.",
+          "sourceId": null,
+          "evidenceClass": null,
+          "verification": "unsourced",
+          "blocker": "no-official-journal-citation-in-registry",
+          "needs": "A primary Official Journal citation added to data/rights/sources/registry.json. Until then this claim renders as a rule slot that cannot resolve, so the page cannot be served.",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:eu:cancellation.noticeBands}}",
+        "{{rule:eu:care.thresholds}}",
+        "{{rule:eu:compensation.bands}}",
+        "{{rule:eu:compensation.distanceBands}}",
+        "{{rule:eu:coverage.tests}}",
+        "{{rule:eu:delay.compensationThreshold}}",
+        "{{rule:eu:delay.reimbursementThreshold}}",
+        "{{rule:eu:rerouting.reduction}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "passenger-rights/overview",
+      "status": "publishable",
+      "sources": [],
+      "contextSources": [],
+      "internalRefs": [
+        "DIRECTIVE.md §15",
+        "DIRECTIVE.md §17",
+        "DIRECTIVE.md §26",
+        "DIRECTIVE.md §27",
+        "AGENTS.md §1.3",
+        "docs/EDITORIAL_POLICY.md"
+      ],
+      "externalClaims": [],
+      "ruleSlots": [],
+      "blocker": null
+    },
+    {
+      "slug": "passenger-rights/uk",
+      "status": "source_review",
+      "sources": ["uk-caa-delays", "eu-your-europe-air", "icao-montreal"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.3", "DIRECTIVE.md §15.5"],
+      "externalClaims": [
+        {
+          "claim": "UK261 coverage turns on departure point, arrival point and the operating carrier under UK rules.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Care obligations are triggered by distance and waiting time and do not depend on establishing fault.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A cancellation presents a choice between rerouting at the earliest opportunity, rerouting later, and a refund.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A long enough delay can open a refund choice.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Fixed sums vary by distance band, and on the longest flights by the size of the arrival delay.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Cancellation notice periods change the analysis.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Distance is measured as great-circle distance between the airports.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A separate-ticket self-transfer is not a protected through journey.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Extraordinary circumstances is an airline assertion subject to determination.",
+          "sourceId": "uk-caa-delays",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The EU framework is separate material with its own scope; a change to one is not automatically a change to the other.",
+          "sourceId": "eu-your-europe-air",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Baggage liability is governed by the Montreal Convention, with its own limits and time limits, separate from UK261.",
+          "sourceId": "icao-montreal",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:uk:cancellation.noticeBands}}",
+        "{{rule:uk:care.thresholds}}",
+        "{{rule:uk:compensation.bands}}",
+        "{{rule:uk:compensation.distanceBands}}",
+        "{{rule:uk:coverage.tests}}",
+        "{{rule:uk:delay.compensationThreshold}}",
+        "{{rule:uk:delay.refundThreshold}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    },
+    {
+      "slug": "passenger-rights/us",
+      "status": "source_review",
+      "sources": ["dot-refunds", "dot-whats-new", "dot-dashboard"],
+      "contextSources": [],
+      "internalRefs": ["DIRECTIVE.md §15.1", "docs/EDITORIAL_POLICY.md"],
+      "externalClaims": [
+        {
+          "claim": "US federal rules can require a refund on defined triggering events.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Declining the airline alternative is what keeps the refund question live; accepting it generally ends it.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "A refund is the fare and associated taxes and fees returned in the original form of payment, within a stated time.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The significance test can reach departure and arrival times, changed airports, added connections and cabin downgrade.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "There is no general US federal cash-compensation right for an ordinary delay or cancellation.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Denied boarding is governed by separate rules with their own conditions and figures.",
+          "sourceId": "dot-refunds",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Airline customer-service commitments are voluntary, published by the airline and collected by the regulator.",
+          "sourceId": "dot-dashboard",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "The regulator issued enforcement-discretion guidance in 2026 for certain renumbered flights, with a defined scope and window.",
+          "sourceId": "dot-whats-new",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        },
+        {
+          "claim": "Enforcement discretion is guidance about enforcement attention, not a repeal of the underlying obligation.",
+          "sourceId": "dot-whats-new",
+          "evidenceClass": "primary",
+          "verification": "pending",
+          "lastVerifiedAt": null
+        }
+      ],
+      "ruleSlots": [
+        "{{rule:us:dashboard.commitmentCategories}}",
+        "{{rule:us:deniedBoarding.amounts}}",
+        "{{rule:us:deniedBoarding.conditions}}",
+        "{{rule:us:enforcementDiscretion.scope}}",
+        "{{rule:us:enforcementDiscretion.window}}",
+        "{{rule:us:refund.form}}",
+        "{{rule:us:refund.significantChange}}",
+        "{{rule:us:refund.significantDelay}}",
+        "{{rule:us:refund.timing}}",
+        "{{rule:us:refund.triggers}}"
+      ],
+      "blocker": "source-unreachable-no-egress"
+    }
+  ]
+}

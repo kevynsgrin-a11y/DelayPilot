@@ -11,12 +11,16 @@ import { describe, expect, it } from 'vitest'
 import {
   COMMITTED_ORIGIN,
   DEV_FALLBACK_ORIGIN,
+  PRODUCTION_SWITCH_VAR,
   REASONS,
+  SWITCH_OFF_VALUES,
+  SWITCH_ON_VALUES,
   SiteUrlConfigError,
   absoluteUrl,
   canonicalUrl,
   isProductionBuild,
   normalizeSiteUrl,
+  readProductionSwitch,
   resolveSiteUrl,
 } from './site-url.mjs'
 
@@ -101,6 +105,124 @@ describe('isProductionBuild', () => {
     expect(isProductionBuild({ SEO_REQUIRE_SITE_URL: '1' })).toBe(true)
     expect(isProductionBuild({ SEO_REQUIRE_SITE_URL: 'true' })).toBe(true)
     expect(isProductionBuild({ SEO_REQUIRE_SITE_URL: '0', VERCEL_ENV: 'production' })).toBe(false)
+  })
+})
+
+/**
+ * The full contract of the one switch, pinned row by row.
+ *
+ * Every case below is set on a GENUINE production build shape — `VERCEL_ENV=production` with no
+ * `PUBLIC_SITE_URL` — because that is the only environment where the switch's answer changes
+ * whether a site ships with canonical tags pointing at a host nobody owns. The table is exhaustive
+ * on purpose: this switch once read every unrecognized value, `yes` included, as OFF, which turned
+ * a typo into a silently unguarded production build. Pinning only the value that was fixed would
+ * leave the next reading of `on` or `Y` free to regress.
+ */
+describe(`the ${PRODUCTION_SWITCH_VAR} switch`, () => {
+  /** @returns the env a Vercel production build has, plus this switch value (or none). */
+  const productionEnvWith = (value: string | undefined): Record<string, string | undefined> =>
+    value === undefined
+      ? { VERCEL_ENV: 'production' }
+      : { VERCEL_ENV: 'production', SEO_REQUIRE_SITE_URL: value }
+
+  // `true` here means "the guard applies to this production build", which is the answer that
+  // makes a missing PUBLIC_SITE_URL fail.
+  const accepted: readonly [string | undefined, boolean][] = [
+    [undefined, true], // unset: VERCEL_ENV decides
+    ['', true], // empty is unset, and is the line shipped in .env.example
+    ['   ', true], // whitespace carries no token either
+    ['1', true],
+    ['true', true],
+    ['TRUE', true], // case-insensitive, and load-bearing
+    ['True', true],
+    [' 1 ', true], // a stray space in a dashboard field is not a typo
+    ['0', false], // deliberate opt-out
+    ['false', false],
+    ['FALSE', false],
+    [' 0 ', false],
+  ]
+
+  for (const [value, guardApplies] of accepted) {
+    it(`reads ${JSON.stringify(value)} as ${guardApplies ? 'guard ON' : 'guard OFF'}`, () => {
+      expect(isProductionBuild(productionEnvWith(value))).toBe(guardApplies)
+    })
+  }
+
+  it('returns the three states directly, so unset is distinguishable from off', () => {
+    expect(readProductionSwitch({})).toBeUndefined()
+    expect(readProductionSwitch({ SEO_REQUIRE_SITE_URL: '' })).toBeUndefined()
+    expect(readProductionSwitch({ SEO_REQUIRE_SITE_URL: '1' })).toBe(true)
+    expect(readProductionSwitch({ SEO_REQUIRE_SITE_URL: '0' })).toBe(false)
+  })
+
+  // Each of these once returned "not a production build" and skipped the guard in silence.
+  const refused = [
+    'yes',
+    'on',
+    'Y',
+    'y',
+    'enabled',
+    'enable',
+    'require',
+    'required',
+    'production',
+    'no',
+    'No',
+    'off',
+    'disabled',
+    'n',
+    '2',
+    '-1',
+    'null',
+    'undefined',
+    'tru',
+    '1.0',
+  ]
+
+  for (const value of refused) {
+    it(`refuses ${JSON.stringify(value)} instead of reading it as off`, () => {
+      let thrown: unknown
+      try {
+        isProductionBuild(productionEnvWith(value))
+      } catch (error: unknown) {
+        thrown = error
+      }
+
+      expect(thrown).toBeInstanceOf(SiteUrlConfigError)
+      const error = thrown as SiteUrlConfigError
+      expect(error.name).toBe('SiteUrlConfigError')
+      expect(error.code).toBe(REASONS.invalidSwitch)
+
+      // The message has one job: say which variable, what it received, and what to write instead.
+      expect(error.message).toContain(PRODUCTION_SWITCH_VAR)
+      expect(error.message).toContain(JSON.stringify(value))
+      for (const token of [...SWITCH_ON_VALUES, ...SWITCH_OFF_VALUES]) {
+        expect(error.message).toContain(`=${token}`)
+      }
+    })
+  }
+
+  it('does not quietly coerce an unrecognized value to ON either', () => {
+    // Forcing it on would fail builds whose author meant to exempt them. Neither reading is
+    // guessed: the build stops and says so.
+    expect(() => isProductionBuild({ SEO_REQUIRE_SITE_URL: 'yes' })).toThrow(SiteUrlConfigError)
+    expect(() => readProductionSwitch({ SEO_REQUIRE_SITE_URL: 'off' })).toThrow(SiteUrlConfigError)
+  })
+
+  it('validates the switch even when this build has a perfectly good origin', () => {
+    // Otherwise the typo survives until the day PUBLIC_SITE_URL goes missing — the one day the
+    // switch was supposed to be being read.
+    expect(() =>
+      resolveSiteUrl({
+        env: { PUBLIC_SITE_URL: COMMITTED_ORIGIN, SEO_REQUIRE_SITE_URL: 'yes' },
+      }),
+    ).toThrow(SiteUrlConfigError)
+  })
+
+  it('validates the switch in dev mode too, so one value means one thing everywhere', () => {
+    expect(() => resolveSiteUrl({ env: { SEO_REQUIRE_SITE_URL: 'on' }, mode: 'dev' })).toThrow(
+      SiteUrlConfigError,
+    )
   })
 })
 

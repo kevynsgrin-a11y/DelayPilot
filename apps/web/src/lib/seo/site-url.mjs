@@ -60,7 +60,15 @@ export const REASONS = Object.freeze({
   placeholderHost: 'placeholder-host',
   ipLiteral: 'ip-literal',
   noDot: 'no-dot',
+  invalidSwitch: 'invalid-switch',
 })
+
+/** The one variable that can force the production rule on or off, named once. */
+export const PRODUCTION_SWITCH_VAR = 'SEO_REQUIRE_SITE_URL'
+
+/** Everything that switch accepts. Compared trimmed and lower-cased; nothing else is a value. */
+export const SWITCH_ON_VALUES = Object.freeze(['1', 'true'])
+export const SWITCH_OFF_VALUES = Object.freeze(['0', 'false'])
 
 /**
  * Host labels that mean "nobody has filled this in yet".
@@ -190,6 +198,55 @@ export function normalizeSiteUrl(value) {
 }
 
 /**
+ * Read `SEO_REQUIRE_SITE_URL` as the three-state switch it is: on, off, or silent.
+ *
+ * WHY AN UNRECOGNIZED VALUE REFUSES THE BUILD RATHER THAN PICKING AN ANSWER. This switch has two
+ * readers with opposite interests. Someone writing `yes` is reaching for it to turn the guard ON;
+ * reading an unknown value as OFF hands them a production build with the guard silently skipped —
+ * exactly the build where silence is most expensive, since it can ship canonical tags pointing at
+ * a host nobody owns. Reading an unknown value as ON is no better: it fails the builds whose
+ * author wrote something like `exempt` meaning off. There is no reading of `yes` that is right for
+ * both, so neither is guessed. Refusing, by name, with the accepted values in the message, is the
+ * fail-closed answer (`AGENTS.md §1.5`) and the only one that tells the author what to write.
+ *
+ * WHAT IS STILL ACCEPTED, because each of these is load-bearing:
+ *
+ *  - case is ignored, so `TRUE` and `False` work;
+ *  - surrounding whitespace is ignored, as it is for `PUBLIC_SITE_URL` above — a value that is
+ *    only whitespace carries no token at all and is treated as blank, not as a typo;
+ *  - blank means unset, so `SEO_REQUIRE_SITE_URL=` (the line shipped in `.env.example`) defers to
+ *    `VERCEL_ENV` and the Cloudflare branch rather than forcing anything.
+ *
+ * @param {Record<string, string | undefined>} env
+ * @returns {boolean | undefined} `true` forces the guard on, `false` forces it off, `undefined`
+ *   means the variable says nothing and the platform signals decide.
+ * @throws {SiteUrlConfigError} with code `invalid-switch` on any value outside that vocabulary
+ */
+export function readProductionSwitch(env) {
+  const raw = env[PRODUCTION_SWITCH_VAR]
+  if (raw === undefined || raw === null) return undefined
+
+  const value = String(raw).trim().toLowerCase()
+  if (value === '') return undefined
+  if (SWITCH_ON_VALUES.includes(value)) return true
+  if (SWITCH_OFF_VALUES.includes(value)) return false
+
+  throw new SiteUrlConfigError(
+    REASONS.invalidSwitch,
+    `${PRODUCTION_SWITCH_VAR} is ${JSON.stringify(String(raw))}, which is not one of the values ` +
+      'this switch accepts, so the build stops instead of guessing which one was meant.\n' +
+      `Write ${PRODUCTION_SWITCH_VAR}=${SWITCH_ON_VALUES.join(' or =')} to REQUIRE ` +
+      `PUBLIC_SITE_URL (the production rule of DIRECTIVE.md §19), ` +
+      `=${SWITCH_OFF_VALUES.join(' or =')} to exempt this build from it, or leave the variable ` +
+      'unset or empty to let VERCEL_ENV and the Cloudflare branch decide. Case and surrounding ' +
+      'whitespace are ignored.\n' +
+      'It is refused rather than read as OFF because someone writing an unrecognized value is ' +
+      'far more likely to be turning the guard ON, and a guard that skips itself on a typo is ' +
+      'not a guard (AGENTS.md §1.5). See docs/SEO.md §10.1.',
+  )
+}
+
+/**
  * Is this build the one whose output is served at the public origin?
  *
  * WHAT IS DELIBERATELY NOT READ: `NODE_ENV`. Every optimized build sets it to `production`,
@@ -199,9 +256,12 @@ export function normalizeSiteUrl(value) {
  *
  * WHAT IS READ, in order:
  *
- *  1. `SEO_REQUIRE_SITE_URL` — the explicit switch. `1`/`true` forces the guard on, `0`/`false`
- *     forces it off. It exists so a platform this list has never heard of can still opt in with one
- *     variable, and so a deliberate production-shaped build in CI can be exercised.
+ *  1. `SEO_REQUIRE_SITE_URL` — the explicit switch, over a CLOSED vocabulary. `1`/`true` force the
+ *     guard on, `0`/`false` force it off, unset or blank says nothing and defers to the signals
+ *     below, and ANY OTHER VALUE throws `SiteUrlConfigError [invalid-switch]` instead of being
+ *     read as either answer (`readProductionSwitch`). It exists so a platform this list has never
+ *     heard of can still opt in with one variable, and so a deliberate production-shaped build in
+ *     CI can be exercised.
  *  2. `VERCEL_ENV` — Vercel's own system variable, whose documented values are `production`,
  *     `preview`, `development`, or a custom environment name. The site is deployed there today
  *     (`docs/decisions/0002-foundation-stack-and-versions.md`), and it is the only one of these
@@ -215,12 +275,11 @@ export function normalizeSiteUrl(value) {
  *
  * @param {Record<string, string | undefined>} env
  * @returns {boolean}
+ * @throws {SiteUrlConfigError} when `SEO_REQUIRE_SITE_URL` holds a value it does not accept
  */
 export function isProductionBuild(env) {
-  const explicit = env['SEO_REQUIRE_SITE_URL']
-  if (explicit !== undefined && explicit !== '') {
-    return explicit === '1' || explicit.toLowerCase() === 'true'
-  }
+  const explicit = readProductionSwitch(env)
+  if (explicit !== undefined) return explicit
 
   const vercel = env['VERCEL_ENV']
   if (vercel !== undefined && vercel !== '') return vercel === 'production'
@@ -239,10 +298,16 @@ export function isProductionBuild(env) {
  * @throws {SiteUrlConfigError} in a production build with no usable value
  */
 export function resolveSiteUrl({ env, mode = 'build' }) {
+  // First, and unconditionally: an unreadable SEO_REQUIRE_SITE_URL is a configuration error even
+  // when this build happens to have a usable origin. Validating it only on the failure path would
+  // leave the typo in place until the day the origin goes missing, which is the worst day to
+  // discover that the switch meant to catch that was never being read.
+  const production = isProductionBuild(env)
+
   const result = normalizeSiteUrl(env['PUBLIC_SITE_URL'])
   if (result.ok) return { origin: result.origin, source: 'env' }
 
-  if (isProductionBuild(env)) {
+  if (production) {
     throw new SiteUrlConfigError(
       result.code,
       `${result.message}\n` +

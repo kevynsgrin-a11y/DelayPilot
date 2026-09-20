@@ -453,17 +453,56 @@ to `frontend-ui-engineer`: omit the canonical, `og:url` and `og:image` for the e
 carrying a path, query, fragment or credentials, an IP literal, a host with no dot, or a host
 carrying a placeholder label (`example`, `invalid`, `test`, `localhost`, `changeme`, `your-domain`,
 and the rest of the list in `site-url.mjs`). `https://example.invalid`, the literal in
-`.env.example`, is refused by name in a unit test.
+`.env.example`, is refused by name in a unit test. It also exits non-zero when the switch that
+decides whether this is a production build is itself unreadable — see the vocabulary below.
 
-A build is **production** when, in order: `SEO_REQUIRE_SITE_URL` is `1`/`true` (or `0`/`false` to
-force it off); otherwise `VERCEL_ENV === 'production'`; otherwise a Cloudflare build of branch
-`main` (`CF_PAGES_BRANCH` / `WORKERS_CI_BRANCH`, decision D1). Anything else — a laptop, a
-pull-request check, a preview deployment — is not, and exits zero with a line saying which tags were
-omitted and why. **`NODE_ENV` is deliberately not read**: it is `production` for every optimized
-build including a preview of the same commit, so it cannot tell the deployment that owns the domain
-from one that does not.
+A build is **production** when, in order: `SEO_REQUIRE_SITE_URL` gives an answer; otherwise
+`VERCEL_ENV === 'production'`; otherwise a Cloudflare build of branch `main` (`CF_PAGES_BRANCH` /
+`WORKERS_CI_BRANCH`, decision D1). Anything else — a laptop, a pull-request check, a preview
+deployment — is not, and exits zero with a line saying which tags were omitted and why.
+**`NODE_ENV` is deliberately not read**: it is `production` for every optimized build including a
+preview of the same commit, so it cannot tell the deployment that owns the domain from one that
+does not.
 
-Measured behaviour, 2026-09-20:
+#### The `SEO_REQUIRE_SITE_URL` switch has a closed vocabulary
+
+- `1` or `true` — force the guard **on**.
+- `0` or `false` — force it **off**, exempting this build.
+- unset, empty, or whitespace only — say nothing; `VERCEL_ENV` and the Cloudflare branch decide.
+- **anything else** — `SiteUrlConfigError [invalid-switch]`, exit 1, build stops.
+
+Comparison ignores case and surrounding whitespace, so `TRUE`, `False` and `" 1 "` are read as the
+values they plainly are. Everything outside that list — `yes`, `on`, `Y`, `enabled`, `require`,
+`no`, `off` — is refused by name, in a message giving the variable, the value received, and the
+values accepted.
+
+**Why refusing is the right third answer, and not pedantry.** Until 2026-09-20 this switch read
+every unrecognized value as OFF. That meant a contributor reaching for it to turn the guard **on**
+could turn it off instead — silently, on a genuine production build, which is precisely the build
+where the guard's silence is most expensive: it is what stands between a missing origin and
+canonical tags pointing at a host nobody owns. Coercing an unrecognized value the other way, to ON,
+is no better: it would fail builds whose author wrote something like `exempt` meaning off. Neither
+reading is guessed (`AGENTS.md §1.5`). The switch is parsed by `readProductionSwitch` in
+`apps/web/src/lib/seo/site-url.mjs`, and it is validated on **every** call to `resolveSiteUrl`,
+including builds whose `PUBLIC_SITE_URL` is perfectly valid — a typo that only surfaces on the day
+the origin goes missing is a typo that was never being read.
+
+Measured against `node scripts/seo/site-url-guard.mjs` with `VERCEL_ENV=production` and
+`PUBLIC_SITE_URL` unset — a genuine Vercel production build — on 2026-09-20:
+
+| `SEO_REQUIRE_SITE_URL`            | Exit | Meaning                                            |
+| --------------------------------- | ---- | -------------------------------------------------- |
+| unset                             | 1    | defers to `VERCEL_ENV`; guard applies              |
+| empty, or whitespace only         | 1    | blank is unset, not a value; guard applies         |
+| `1`, `true`, `TRUE`, `" 1 "`      | 1    | guard forced on                                    |
+| `0`, `false`, `FALSE`             | 0    | deliberate opt-out; guard skipped                  |
+| `yes`, `on`, `Y`, `enabled`, `No` | 1    | `SiteUrlConfigError [invalid-switch]`; build stops |
+
+Exit 1 in the first three rows is `SiteUrlConfigError [missing]` — the guard applying to a build
+with no origin, which is its job. Every row above, plus twenty refused values, is pinned in
+`apps/web/src/lib/seo/site-url.test.ts`, so the vocabulary cannot widen or narrow in silence.
+
+Measured behaviour of the guard as a whole, 2026-09-20:
 
 | Environment                                                        | Exit | Output                                    |
 | ------------------------------------------------------------------ | ---- | ----------------------------------------- |
@@ -574,3 +613,8 @@ if a faster pre-check is wanted; it must not run before `build`, and it must not
    correct until then.
 9. **`Article` markup has no live call site** until a guide reaches `published` (I-6), because
    structured data is emitted on indexable pages only.
+10. **The `SEO_REQUIRE_SITE_URL` comment in `.env.example`** still describes the pre-2026-09-20
+    fail-open ("Any non-empty value that is not `1`/`true` reads as OFF, so `yes` is not `true`"),
+    which the switch no longer does. The file belongs to `principal-architect`; the correction is
+    filed as a handoff with exact replacement wording. Until it lands, §10.1 above is the
+    authoritative description and the tests are the proof.

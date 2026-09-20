@@ -28,19 +28,28 @@
 
 import process from 'node:process'
 
-import { SiteUrlConfigError, resolveSiteUrl } from '../../apps/web/src/lib/seo/site-url.mjs'
+import {
+  PRODUCTION_SWITCH_VAR,
+  SiteUrlConfigError,
+  readProductionSwitch,
+  resolveSiteUrl,
+} from '../../apps/web/src/lib/seo/site-url.mjs'
 
 const forced = process.argv.includes('--production')
 const env = forced ? { ...process.env, SEO_REQUIRE_SITE_URL: '1' } : process.env
 
-/** Which signal decided this is (or is not) a production build, for the log line. */
+/**
+ * Which signal decided this is (or is not) a production build, for the log line.
+ *
+ * It asks `readProductionSwitch` rather than re-reading the variable itself, so the line names the
+ * signal that actually decided: a blank `SEO_REQUIRE_SITE_URL` decides nothing and must not be
+ * reported as though it did. That function throws on a value outside its vocabulary, but this
+ * runs only after `resolveSiteUrl` has already read the same switch, so by here it is valid.
+ */
 function signal() {
   if (forced) return '--production'
-  if (
-    process.env['SEO_REQUIRE_SITE_URL'] !== undefined &&
-    process.env['SEO_REQUIRE_SITE_URL'] !== ''
-  )
-    return `SEO_REQUIRE_SITE_URL=${process.env['SEO_REQUIRE_SITE_URL']}`
+  if (readProductionSwitch(process.env) !== undefined)
+    return `${PRODUCTION_SWITCH_VAR}=${process.env[PRODUCTION_SWITCH_VAR]}`
   if (process.env['VERCEL_ENV'] !== undefined && process.env['VERCEL_ENV'] !== '')
     return `VERCEL_ENV=${process.env['VERCEL_ENV']}`
   const branch = process.env['CF_PAGES_BRANCH'] ?? process.env['WORKERS_CI_BRANCH']

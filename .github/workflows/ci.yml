@@ -12,9 +12,9 @@
 #    2  format                    pnpm format:check
 #    3  lint                      pnpm lint
 #    4  typecheck                 pnpm typecheck   (runs `wrangler types` for apps/edge first)
-#    5  unit                      pnpm test        (vitest: 18 files, 888 tests, ~5 s, measured
-#                                                   2026-09-20 on this branch — docs/TESTING.md §10
-#                                                   records 852, taken earlier in the same session)
+#    5  unit                      pnpm test        (vitest: 18 files, 888 tests, ~3–5 s;
+#                                                   docs/TESTING.md §10 is the maintained count —
+#                                                   do not duplicate it, point at it)
 #    8  web build                 pnpm build → @delaypilot/web  (astro build + verify-dist)
 #    9  edge build                pnpm build → @delaypilot/edge (wrangler deploy --dry-run)
 #   13  SEO validation            pnpm test:seo    (nine suites over the BUILT apps/web/dist)
@@ -82,16 +82,28 @@
 #     pnpm exec playwright test --project=visual -g "home"  # one set
 #
 # Making it a CI gate needs a runner image whose rendering the baselines were generated on — a
-# container action or a self-hosted image pinned to the same Chromium and fonts. That is a real
-# option, it is not free, and it is filed for qa-test-architect rather than faked here. Nothing in
-# `e2e/__screenshots__/` is qa-test-architect's to change from this workflow, and this change
-# touches none of it.
+# container action or a self-hosted image pinned to the same Chromium and fonts. Asked and
+# answered: qa-test-architect's ruling is **not yet**, recorded in docs/TESTING.md §5 under "The
+# `visual` project is deliberately excluded from runner CI". It would rather land a concrete image
+# pinned to Chromium 141.0.7390.37 and this font set than have this workflow changed speculatively.
+# When that image exists, this file gains one `--project=visual` and nothing else. Nothing under
+# `e2e/__screenshots__/` is this workflow's to touch, and nothing here touches it.
 #
-# ── KNOWN RED: check 15 fails on this tree ───────────────────────────────────────────────────────
-# `pnpm test:e2e` is currently 232 passed / 4 failed against one real product defect — F-QA-1 in
-# docs/TESTING.md §11, a `.dpp-state` rule that makes a `hidden` "provider unavailable" panel paint
-# on the homepage. The gate is wired anyway: the fix belongs to frontend-ui-engineer in
-# apps/web/src/layouts/app.css, and a branch that cannot go green on it must not merge.
+# ── WHY CHECK 15 EARNS ITS FIVE MINUTES ──────────────────────────────────────────────────────────
+# Green as of 6d8bb3d: `pnpm exec playwright test` measured 236 passed / 1 skipped / 0 failed on
+# 2026-09-20. **This is not a standing exception — a red check 15 is a real failure.**
+#
+# It went red exactly once, in the session that wired it, on F-QA-1: a `.dpp-state` rule setting
+# `display: grid` outranked the user-agent `[hidden] { display: none }`, so the homepage painted
+# "Unavailable — no licensed flight-data provider is connected" to every reader before they had
+# typed anything, and showed two mutually exclusive DIRECTIVE.md §17 states at once. Fixed in
+# 27764f3 with a `[hidden]` reset at the top of the cascade; the twelve §17 state-panel frames that
+# fix shifted were ruled on and rebaselined in 6d8bb3d; closed in docs/TESTING.md §11.
+#
+# Kept here for HOW it hid, which is the argument for spending the five minutes: the markup was
+# correct, so verify-dist passed; the rendered page was perfectly accessible, so the whole axe sweep
+# passed; the element is `tabindex="-1"`, so the keyboard walk never landed on it. Only a check that
+# reads COMPUTED STYLE in a real browser could see it.
 #
 # ── THE FOUR REPO-LOCAL GATES ────────────────────────────────────────────────────────────────────
 # Not part of the 18, and they substitute for none of them:

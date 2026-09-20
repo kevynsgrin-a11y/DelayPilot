@@ -1,5 +1,5 @@
 /**
- * The five non-axe regression assertions of `docs/ACCESSIBILITY.md §12`.
+ * The non-axe regression assertions of `docs/ACCESSIBILITY.md §12`.
  *
  * Owner: qa-test-architect. Specified by `accessibility-lead`.
  *
@@ -10,13 +10,26 @@
  *
  *   1. 320 px reflow — B8. Two routes scrolled sideways with zero axe violations (SC 1.4.10).
  *   2. Three distinct progressbar strings — B9 and F27. A meter announced as measuring something
- *      it does not measure (SC 2.4.6), and the "Risk band, Risk band" stutter beside it.
+ *      it does not measure (SC 2.4.6), and the "Risk band, Risk band" stutter beside it. Since the
+ *      §16.6 amendment it also asserts that the ANNOUNCEMENT EQUALS THE VISIBLE READOUT (F48).
  *   3. Prose tables in a named, keyboard-operable region with scoped headers — F31.
  *   4. No surviving `aria-busy`, no live region on a served route — F28 and §15.7.
  *   5. No accessible name ending in its own `<dt>`'s label word — F29, and F39 one component over.
+ *   6. Every element carrying `hidden` computes `display: none` — F-QA-1, §12 item 6.
  *
- * Every check returns findings as `{ check, route, detail }`. Nothing is repaired, nothing is
- * waived: a finding is routed to the owning agent with input · expected · observed.
+ * Every check returns `{ findings, populations }`. Nothing is repaired, nothing is waived: a
+ * finding is routed to the owning agent with input · expected · observed.
+ *
+ * ────────────────────────────────────────────────────────────────────────────────────────────────
+ * POPULATIONS — §12 item 7, F46. NO CHECK MAY REPORT "clean" OVER ZERO ELEMENTS.
+ *
+ * `clean` and `nothing matched` used to be the same line of output. There are 6 meters and 7 tables
+ * across 20 routes, so 17 routes have no meter at all and the meter check still printed `clean`;
+ * and the item-5 pill pass is keyed on the class substrings `status-pill` / `dp-pill`, so a rename
+ * would take it to zero silently — F39's fix already removed one class from that family. So every
+ * check now reports the size of the population it examined, `run-axe.mjs` prints it per route, and
+ * `coverage.mjs` fails the run when a population that was non-zero in `baseline.json` is zero now.
+ * ────────────────────────────────────────────────────────────────────────────────────────────────
  */
 /*
  * BROWSER GLOBALS. Every `document` / `window` reference in this file sits inside a function that
@@ -24,9 +37,76 @@
  * Node globals only, and that file is `principal-architect`'s — so the page's globals are declared
  * here rather than by widening the lint configuration for the whole repository.
  */
-/* global document, window, getComputedStyle, HTMLElement */
+/* global document, window, getComputedStyle */
 
 /** @typedef {{ check: string, route: string, detail: string }} Finding */
+/**
+ * `notes` are observations a check reports without gating on them — measured, printed, and routed
+ * to an owner, but not a failure this suite decided on its own. See `checkLabelEchoes`.
+ *
+ * @typedef {{ findings: Finding[], populations: Record<string, number>, notes?: string[] }} CheckResult
+ */
+
+/**
+ * The populations every route reports, in print order. `key` is what `baseline.json` records and
+ * what the zero-floor rule compares; `label` is the column head; `check` is the assertion whose
+ * coverage the number describes, so a floor breach names the check that stopped examining anything.
+ *
+ * `zeroIsTheResult` marks the one population whose zero is the ASSERTION rather than a coverage
+ * hole: §12 item 4 forbids live regions outright, so `live-candidate: 0` is the check passing, not
+ * the check finding nothing to look at. Every other zero means the check cannot fail on that
+ * surface, and the runner says so out loud.
+ *
+ * @type {{ key: string, check: string, label: string, zeroIsTheResult?: true }[]}
+ */
+export const POPULATION_COLUMNS = [
+  { key: 'body-elements', check: 'reflow-320', label: 'elements' },
+  { key: 'progressbar', check: 'progressbar-three-strings', label: 'meters' },
+  { key: 'progressbar-readout', check: 'progressbar-three-strings', label: 'readouts' },
+  { key: 'table', check: 'table-region', label: 'tables' },
+  { key: 'th', check: 'table-region', label: 'th' },
+  { key: 'aria-busy', check: 'busy-and-live', label: 'busy' },
+  { key: 'live-candidate', check: 'busy-and-live', label: 'live', zeroIsTheResult: true },
+  { key: 'hidden-attribute', check: 'hidden-means-hidden', label: 'hidden' },
+  { key: 'dl-row', check: 'label-echo', label: 'dl-rows' },
+  { key: 'dl-named-value', check: 'label-echo', label: 'named' },
+  { key: 'dt-label-word', check: 'label-echo', label: 'dt-words' },
+  { key: 'status-pill', check: 'label-echo', label: 'pills' },
+  { key: 'state-container-elements', check: 'state-fixture', label: 'state-el' },
+]
+
+/**
+ * THE VISIBILITY PREDICATE. One function, used by every check that asks "is this on screen".
+ *
+ * `Element.checkVisibility({ contentVisibilityAuto: true, opacityProperty: true,
+ * visibilityProperty: true })` AND NOTHING ELSE — `docs/ACCESSIBILITY.md §12` item 4 as amended by
+ * §16.6. The two terms it replaces were both wrong, and both wrong in the direction that reports a
+ * defect as clean:
+ *
+ *   · `element.closest('[hidden]') === null` dismissed an element BY THE ATTRIBUTE THAT FAILED.
+ *     F-QA-1 was a `hidden` attribute with no effect — an author `display` rule outranks the
+ *     user-agent `[hidden] { display: none }` — so `hidden` is a claim to be checked, never
+ *     evidence. And because the three terms were `&&`-ed with that one first, a panel inside
+ *     `[hidden]` was declared not-rendered before either computed-style term ran (F43). Measured on
+ *     a seeded build: `display: grid`, `visibility: visible`, painting at 446 × 170 px, carrying
+ *     `aria-busy="true"` — and `rendered()` counted 0 of 1.
+ *   · `offsetParent === null` is null BY SPECIFICATION for every `position: fixed` element and for
+ *     `<body>`, both ordinary places to put a loading state (F44).
+ *
+ * Exported as the OPTIONS OBJECT rather than as a function, because a `page.evaluate` body is
+ * serialised and cannot close over anything in Node — the options travel as an argument, so every
+ * caller asks the browser the same question and there is one place to change it. It is deliberately
+ * not passed as a source string to `eval`: the page is served under `script-src 'self'` with no
+ * `'unsafe-eval'`, and a check that needed the policy relaxed would be measuring a page nobody
+ * serves.
+ *
+ * @type {{ contentVisibilityAuto: true, opacityProperty: true, visibilityProperty: true }}
+ */
+export const VISIBILITY_OPTIONS = {
+  contentVisibilityAuto: true,
+  opacityProperty: true,
+  visibilityProperty: true,
+}
 
 /* ---------------------------------------------------------------------------------------------- */
 /* 1. Reflow at 320 CSS px — SC 1.4.10, B8                                                        */
@@ -40,15 +120,16 @@
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} route
- * @returns {Promise<Finding[]>}
+ * @returns {Promise<CheckResult>}
  */
 export async function checkReflow320(page, route) {
   const measured = await page.evaluate(() => {
     const scroller = document.scrollingElement
     const scrollWidth = scroller === null ? 0 : scroller.scrollWidth
+    const candidates = [...document.querySelectorAll('body *')]
     const overflowing = []
     if (scrollWidth > window.innerWidth) {
-      for (const element of document.querySelectorAll('body *')) {
+      for (const element of candidates) {
         const rect = element.getBoundingClientRect()
         if (rect.width === 0) continue
         if (rect.right > window.innerWidth + 0.5) {
@@ -59,48 +140,85 @@ export async function checkReflow320(page, route) {
         }
       }
     }
-    return { scrollWidth, innerWidth: window.innerWidth, overflowing: overflowing.slice(0, 5) }
+    return {
+      scrollWidth,
+      innerWidth: window.innerWidth,
+      overflowing: overflowing.slice(0, 5),
+      population: candidates.length,
+    }
   })
 
-  if (measured.scrollWidth === measured.innerWidth) return []
-  return [
-    {
-      check: 'reflow-320',
-      route,
-      detail:
-        `scrollWidth=${measured.scrollWidth} against innerWidth=${measured.innerWidth} ` +
-        `(${measured.scrollWidth - measured.innerWidth} px of sideways scroll). ` +
-        `Widest offenders: ${measured.overflowing.join(' | ') || 'none identified'}`,
-    },
-  ]
+  const populations = { 'body-elements': measured.population }
+  if (measured.scrollWidth === measured.innerWidth) return { findings: [], populations }
+  return {
+    populations,
+    findings: [
+      {
+        check: 'reflow-320',
+        route,
+        detail:
+          `scrollWidth=${measured.scrollWidth} against innerWidth=${measured.innerWidth} ` +
+          `(${measured.scrollWidth - measured.innerWidth} px of sideways scroll). ` +
+          `Widest offenders: ${measured.overflowing.join(' | ') || 'none identified'}`,
+      },
+    ],
+  }
 }
 
 /* ---------------------------------------------------------------------------------------------- */
-/* 2. Three distinct progressbar strings — SC 2.4.6, B9 / F27                                     */
+/* 2. The meter says one thing — SC 2.4.6 / 1.3.1, B9 / F27 / F48                                 */
 /* ---------------------------------------------------------------------------------------------- */
 
 /**
- * For every `role="progressbar"`: `aria-label`, the FIRST CLAUSE of `aria-valuetext`, and the band
- * word must be three different strings (`docs/VOICE.md §9.1`).
+ * For every `role="progressbar"`, two rules:
  *
- * `aria-valuetext` is authored as "<reading>, <band>", so the first clause is what the bar reads
- * and the last is the band it falls in. A screen reader speaks all three in a row; any two being
- * the same is the stutter F27 filed ("Risk band, Risk band"), and the label matching the reading is
- * B9 — a meter named for a measurement it does not take.
+ *   (a) `aria-label`, the FIRST CLAUSE of `aria-valuetext`, and the band word are three different
+ *       strings (`docs/VOICE.md §9.1`). `aria-valuetext` is authored as "<reading>, <band>", so the
+ *       first clause is what the bar reads and the last is the band it falls in. A screen reader
+ *       speaks all three in a row; any two being the same is the stutter F27 filed ("Risk band,
+ *       Risk band"), and the label matching the reading is B9 — a meter named for a measurement it
+ *       does not take.
+ *
+ *   (b) `aria-valuetext` EQUALS THE VISIBLE READOUT — `.dp-progress__value` then
+ *       `.dp-progress__band`, joined with ", " exactly as `ProgressBar.tsx` composes the attribute.
+ *       §12 item 2 as amended by §16.6, finding F48. (a) compares three ARIA strings to each other
+ *       and can therefore never catch the failure mode that produced B3 and then B7: the children
+ *       of `role="progressbar"` are PRESENTATIONAL in WAI-ARIA 1.2, so everything inside the meter
+ *       is dropped from the accessibility tree, and the eye and the accessibility tree can drift
+ *       apart without either one looking wrong on its own. B3 was a reading that reached the tree
+ *       and not the eye; B7 was a band word that reached the eye and not the tree. Nothing guarded
+ *       the third case — both present, saying different things — until this.
+ *
+ * A meter with no visible readout element at all is itself the B3 shape and is reported as one,
+ * which is also what keeps the `progressbar-readout` population honest: rename the classes and the
+ * population drops to zero and `coverage.mjs` fails the run, rather than this rule quietly passing
+ * over nothing (F46).
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} route
- * @returns {Promise<Finding[]>}
+ * @returns {Promise<CheckResult>}
  */
 export async function checkProgressBarStrings(page, route) {
-  const meters = await page.evaluate(() =>
-    [...document.querySelectorAll('[role="progressbar"]')].map((element) => ({
+  const meters = await page.evaluate(() => {
+    /*
+     * `\s` in JavaScript already includes U+00A0, so collapsing whitespace also normalises a
+     * non-breaking space. Comparing an attribute to rendered text without that would fail on a
+     * typographic space nobody can see.
+     *
+     * @param {Element | null} element
+     */
+    const text = (element) =>
+      element === null ? null : (element.textContent ?? '').replace(/\s+/g, ' ').trim()
+
+    return [...document.querySelectorAll('[role="progressbar"]')].map((element) => ({
       label: element.getAttribute('aria-label'),
       valueText: element.getAttribute('aria-valuetext'),
       valueNow: element.getAttribute('aria-valuenow'),
+      visibleValue: text(element.querySelector('.dp-progress__value')),
+      visibleBand: text(element.querySelector('.dp-progress__band')),
       className: String(element.className).slice(0, 60),
-    })),
-  )
+    }))
+  })
 
   /** @type {Finding[]} */
   const findings = []
@@ -149,8 +267,44 @@ export async function checkProgressBarStrings(page, route) {
         }
       }
     }
+
+    /* (b) — F48. The announcement against the readout a sighted reader actually has. */
+    if (meter.visibleValue === null || meter.visibleBand === null) {
+      findings.push({
+        check: 'progressbar-three-strings',
+        route,
+        detail:
+          `${where}: no visible readout — ` +
+          `${meter.visibleValue === null ? '.dp-progress__value' : '.dp-progress__band'} is absent. ` +
+          'A meter whose reading exists only in ARIA leaves a sighted reader a coloured bar and no ' +
+          'number (docs/ACCESSIBILITY.md B3). If the class was renamed, this check has stopped ' +
+          'examining anything and §12 item 7 requires the run to fail rather than print clean.',
+      })
+      continue
+    }
+    const announced = meter.valueText.replace(/\s+/g, ' ').trim()
+    const onScreen = `${meter.visibleValue}, ${meter.visibleBand}`
+    if (announced !== onScreen) {
+      findings.push({
+        check: 'progressbar-three-strings',
+        route,
+        detail:
+          `${where}: aria-valuetext is "${announced}" and the visible readout is "${onScreen}". ` +
+          'The children of role="progressbar" are presentational, so the eye and the accessibility ' +
+          'tree have drifted apart (docs/ACCESSIBILITY.md §12 item 2 as amended, B3/B7, F48).',
+      })
+    }
   }
-  return findings
+
+  return {
+    findings,
+    populations: {
+      progressbar: meters.length,
+      'progressbar-readout': meters.filter(
+        (meter) => meter.visibleValue !== null && meter.visibleBand !== null,
+      ).length,
+    },
+  }
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -172,7 +326,7 @@ export async function checkProgressBarStrings(page, route) {
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} route
- * @returns {Promise<Finding[]>}
+ * @returns {Promise<CheckResult>}
  */
 export async function checkTableRegions(page, route) {
   const tables = await page.evaluate(() =>
@@ -243,7 +397,14 @@ export async function checkTableRegions(page, route) {
       })
     }
   }
-  return findings
+
+  return {
+    findings,
+    populations: {
+      table: tables.length,
+      th: tables.reduce((sum, table) => sum + table.headers, 0),
+    },
+  }
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -254,10 +415,17 @@ export async function checkTableRegions(page, route) {
  * Two rules in one pass, because they are the same mistake in two directions: telling a reader
  * something is happening when it is not.
  *
- * `aria-busy="true"` on a RENDERED element of a page that is not loading is F28. The one instance
- * this build carries is inside `<div data-dp-state="searching" hidden>` on `/` — the real searching
- * state, out of the accessibility tree until a search runs — so the check measures what is rendered
- * rather than what is in the markup.
+ * `aria-busy="true"` on a VISIBLE element of a page that is not loading is F28. The one instance a
+ * served build carries is inside `<div data-dp-state="searching" hidden>` on `/` — the real
+ * searching state, out of the accessibility tree until a search runs — so the check measures what
+ * is on screen rather than what is in the markup. What "on screen" means is `VISIBLE` above, and
+ * the two findings F43 and F44 are both the old predicate answering that question from an
+ * attribute and from `offsetParent` instead of from the rendered box.
+ *
+ * `loading: true` suspends the `aria-busy` half and says so in the output. It is passed by the
+ * state sweep for `searching` and by nothing else: while that state is on screen the page IS
+ * loading, `aria-busy` is correct, and asserting its absence there would be asserting the opposite
+ * of what `e2e/lookup-states.e2e.mjs` requires. The live-region half still runs.
  *
  * `aria-live` on a served route is forbidden outright by §12 item 4. `role="alert"` and
  * `role="status"` are implicit live regions and are held to the same rule, which is what §15.15
@@ -267,20 +435,19 @@ export async function checkTableRegions(page, route) {
  *
  * @param {import('@playwright/test').Page} page
  * @param {string} route
- * @returns {Promise<Finding[]>}
+ * @param {{ loading?: boolean }} [options]
+ * @returns {Promise<CheckResult>}
  */
-export async function checkBusyAndLiveRegions(page, route) {
-  const measured = await page.evaluate(() => {
+export async function checkBusyAndLiveRegions(page, route, options = {}) {
+  const loading = options.loading === true
+  const measured = await page.evaluate((options) => {
     /** @param {Element} element */
-    const rendered = (element) =>
-      element.closest('[hidden]') === null &&
-      !(element instanceof HTMLElement && element.offsetParent === null) &&
-      getComputedStyle(element).display !== 'none'
+    const visible = (element) => element.checkVisibility(options)
 
     const busy = [...document.querySelectorAll('[aria-busy="true"]')]
     return {
-      busyRendered: busy
-        .filter(rendered)
+      busyVisible: busy
+        .filter(visible)
         .map(
           (element) =>
             `${element.tagName.toLowerCase()}.${String(element.className).split(' ')[0]}`,
@@ -294,17 +461,19 @@ export async function checkBusyAndLiveRegions(page, route) {
         (element) => `${element.tagName.toLowerCase()}[role="${element.getAttribute('role')}"]`,
       ),
     }
-  })
+  }, VISIBILITY_OPTIONS)
 
   /** @type {Finding[]} */
   const findings = []
-  if (measured.busyRendered.length > 0) {
+  if (!loading && measured.busyVisible.length > 0) {
     findings.push({
       check: 'busy-and-live',
       route,
       detail:
-        `${measured.busyRendered.length} rendered element(s) carry aria-busy="true" on a page that ` +
-        `is not loading: ${measured.busyRendered.join(', ')} (F28).`,
+        `${measured.busyVisible.length} visible element(s) carry aria-busy="true" on a page that ` +
+        `is not loading: ${measured.busyVisible.join(', ')} (F28). Visibility is decided by ` +
+        'Element.checkVisibility, so a `hidden` attribute that has been defeated by an author ' +
+        '`display` rule does not exempt it (F43/F44).',
     })
   }
   if (measured.live.length > 0) {
@@ -321,7 +490,14 @@ export async function checkBusyAndLiveRegions(page, route) {
       detail: `${measured.alerts.length} implicit live region(s): ${measured.alerts.join(', ')}. §15.7 measured zero; a new one needs an accessibility-lead ruling, not a silent addition.`,
     })
   }
-  return findings
+
+  return {
+    findings,
+    populations: {
+      'aria-busy': measured.busyTotal,
+      'live-candidate': measured.live.length + measured.alerts.length,
+    },
+  }
 }
 
 /* ---------------------------------------------------------------------------------------------- */
@@ -340,9 +516,14 @@ export async function checkBusyAndLiveRegions(page, route) {
  *      uses as a `<dt>` label. F39 lived in `ItineraryTimeline`, which is not inside a `<dl>` at
  *      all, so pass (a) alone would have missed it exactly as the first review did.
  *
+ * Pass (b) is keyed on the class substrings `status-pill` and `dp-pill`, which is a real fragility
+ * — F39's own fix removed one class from that family. It is not made less fragile by being written
+ * differently; it is made VISIBLE by reporting the pill population, so the next rename fails the
+ * run at the floor check instead of passing over zero elements (F46, §12 item 7).
+ *
  * @param {import('@playwright/test').Page} page
  * @param {string} route
- * @returns {Promise<Finding[]>}
+ * @returns {Promise<CheckResult>}
  */
 export async function checkLabelEchoes(page, route) {
   const measured = await page.evaluate(() => {
@@ -360,43 +541,102 @@ export async function checkLabelEchoes(page, route) {
     const name = (element) =>
       (element.getAttribute('aria-label') ?? element.textContent ?? '').replace(/\s+/g, ' ').trim()
 
-    /* (a) per definition-list row */
+    /*
+     * DOES THIS ELEMENT HAVE AN ACCESSIBLE NAME OF ITS OWN? §12 item 5 is worded about accessible
+     * names, and both defects it was written from — F29 on `SegmentCard`, F39 on
+     * `ItineraryTimeline` — were a STATUS PILL whose name read "Delayed Status". A bare `<span>` of
+     * prose inside a `<dd>` has no accessible name: it contributes text to the `<dd>`'s content and
+     * a reader hears the row as a unit. So the gating pass is over named objects, and the prose
+     * scan is reported separately rather than failing a build on a copy judgement nobody has ruled
+     * on (see `proseHits` below).
+     */
+    const NAMED_ROLES = new Set([
+      'button',
+      'link',
+      'heading',
+      'status',
+      'img',
+      'option',
+      'tab',
+      'progressbar',
+      'meter',
+    ])
+    /** @param {Element} element */
+    const named = (element) => {
+      if (element.closest('[aria-hidden="true"]') !== null) return false
+      if (element.hasAttribute('aria-label') || element.hasAttribute('aria-labelledby')) return true
+      const role = element.getAttribute('role')
+      if (role !== null && NAMED_ROLES.has(role)) return true
+      if (/^(BUTTON|SUMMARY|H[1-6])$/.test(element.tagName)) return true
+      if (element.tagName === 'A' && element.hasAttribute('href')) return true
+      /* The pill/chip family F29 and F39 both lived in. Its population is reported, so a rename
+         fails the run at the floor check instead of taking this pass to zero silently (F46). */
+      return /status-pill|dp-pill|dp-chip/.test(String(element.className))
+    }
+
+    /*
+     * (a) per definition-list row.
+     *
+     * A ROW IS A `<dt>` AND THE `<dd>`s THAT FOLLOW IT, wherever they sit. This used to walk
+     * `list.children` and take only direct `<dt>` / `<dd>` children, and on this build that is
+     * ZERO OF 120 ROWS on every route: every row in the product is wrapped in
+     * `<div class="dpp-row">`, which the HTML specification explicitly permits inside a `<dl>`.
+     * So the rule §12 item 5 actually words — F29's rule — examined nothing and printed `clean`,
+     * while `--seed-violation=label-echo` passed because the seed appends a FLAT `<dl>` that the
+     * old traversal could see. A seeded proof shows the mechanism works; only the population shows
+     * whether it works on the product. That is F46's whole argument, and it found this.
+     */
     const rowHits = []
+    const proseHits = []
     const labelWords = new Set()
-    for (const list of document.querySelectorAll('dl')) {
-      /** @type {Element | null} */
-      let term = null
-      for (const child of list.children) {
-        if (child.tagName === 'DT') {
-          term = child
-          const word = lastWord(name(child))
-          if (word !== '') labelWords.add(word)
-          continue
-        }
-        if (child.tagName !== 'DD' || term === null) continue
-        const word = lastWord(name(term))
+    let rows = 0
+    let namedValues = 0
+    for (const term of document.querySelectorAll('dl dt')) {
+      const word = lastWord(name(term))
+      if (word !== '') labelWords.add(word)
+      for (
+        let sibling = term.nextElementSibling;
+        sibling !== null && sibling.tagName === 'DD';
+        sibling = sibling.nextElementSibling
+      ) {
+        rows += 1
+        const candidates = [sibling, ...sibling.querySelectorAll('*')]
+        namedValues += candidates.filter(named).length
         if (word === '') continue
         /*
          * An outer element and its only child report the same text, so the same defect would be
          * filed twice. One defect, one finding: dedupe on the pair that identifies it.
+         *
+         * THE NAMED CANDIDATE WINS THE DEDUPE. A `<dd>` wrapping a single status pill reports the
+         * pill's text as its own, and the wrapper has no accessible name — so a first-wins dedupe
+         * files the defect as unnamed prose and the gating pass never sees the pill. That is F29's
+         * exact markup, and the `--seed-violation=label-echo` proof caught it: the seed fired only
+         * through the page-wide pill pass until this became an upgrade rather than a skip.
          */
-        const seen = new Set()
-        const candidates = [child, ...child.querySelectorAll('*')]
+        const seen = new Map()
         for (const candidate of candidates) {
           const value = name(candidate)
           if (value === '' || lastWord(value) !== word) continue
           if (value.toLowerCase() === name(term).toLowerCase()) continue
           const key = `${name(term)}\u0000${value}`
-          if (seen.has(key)) continue
-          seen.add(key)
-          rowHits.push({ term: name(term), value: value.slice(0, 60) })
+          const previous = seen.get(key)
+          if (previous === undefined) {
+            seen.set(key, { term: name(term), value: value.slice(0, 60), named: named(candidate) })
+          } else if (named(candidate)) {
+            previous.named = true
+          }
+        }
+        for (const hit of seen.values()) {
+          if (hit.named) rowHits.push(hit)
+          else proseHits.push(hit)
         }
       }
     }
 
     /* (b) every status pill on the page, against every label word on the page */
     const pillHits = []
-    for (const pill of document.querySelectorAll('[class*="status-pill"], [class*="dp-pill"]')) {
+    const pills = [...document.querySelectorAll('[class*="status-pill"], [class*="dp-pill"]')]
+    for (const pill of pills) {
       const value = name(pill)
       if (value === '') continue
       const word = lastWord(value)
@@ -405,7 +645,15 @@ export async function checkLabelEchoes(page, route) {
       }
     }
 
-    return { rowHits, pillHits, labelWords: [...labelWords].length }
+    return {
+      rowHits,
+      proseHits,
+      pillHits,
+      rows,
+      namedValues,
+      labelWords: [...labelWords].length,
+      pills: pills.length,
+    }
   })
 
   /** @type {Finding[]} */
@@ -424,5 +672,82 @@ export async function checkLabelEchoes(page, route) {
       detail: `status pill "${hit.pill}" ends with "${hit.word}", which this page uses as a <dt> label (F39).`,
     })
   }
-  return findings
+
+  return {
+    findings,
+    /*
+     * Reported, not gated. These are `<dd>` PROSE that repeats its own `<dt>`'s last word —
+     * "Slack: 7 minutes of slack" — which is a copy judgement for `ux-copy-steward` and a ruling
+     * for `accessibility-lead`, not the accessible-name defect §12 item 5 was written from. They
+     * became visible only when the row traversal was fixed; failing a build on them would be this
+     * suite inventing a gate nobody specified.
+     */
+    notes: measured.proseHits.map(
+      (hit) => `"${hit.value}" sits under <dt>${hit.term}</dt> and repeats that label's own word`,
+    ),
+    populations: {
+      'dl-row': measured.rows,
+      'dl-named-value': measured.namedValues,
+      'dt-label-word': measured.labelWords,
+      'status-pill': measured.pills,
+    },
+  }
+}
+
+/* ---------------------------------------------------------------------------------------------- */
+/* 6. The `hidden` attribute means what it says — F-QA-1, §12 item 6                              */
+/* ---------------------------------------------------------------------------------------------- */
+
+/**
+ * Every element carrying `hidden` computes `display: none`, read from computed style.
+ *
+ * This is F-QA-1's rule, and it is implemented in `e2e/hidden-states.e2e.mjs` as a whole-site
+ * sweep. §16.6 item 6 puts it in the accessibility gate as well, for two reasons that are both
+ * about what a gate is for: a `§17` state panel that paints when it should not is an accessibility
+ * defect — it announces a state the product did not mean to announce — and a rule that lives in
+ * exactly one suite can be deleted from that suite without anything noticing. Two suites, one rule,
+ * and neither one is where the other's coverage comes from.
+ *
+ * It is also the rule whose absence here let F43 through: the `aria-busy` check used to decide
+ * hiddenness from the same attribute this check exists to doubt.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} route
+ * @returns {Promise<CheckResult>}
+ */
+export async function checkHiddenMeansHidden(page, route) {
+  const measured = await page.evaluate(() => {
+    const all = [...document.querySelectorAll('[hidden]')]
+    return {
+      population: all.length,
+      rendered: all
+        .map((element) => {
+          const style = getComputedStyle(element)
+          const rect = element.getBoundingClientRect()
+          return {
+            selector:
+              `${element.tagName.toLowerCase()}` +
+              `${String(element.className) === '' ? '' : `.${String(element.className).split(' ')[0]}`}` +
+              `${element.hasAttribute('data-dp-state') ? `[data-dp-state="${element.getAttribute('data-dp-state')}"]` : ''}`,
+            display: style.display,
+            size: `${Math.round(rect.width)}×${Math.round(rect.height)}`,
+            text: (element.textContent ?? '').replace(/\s+/g, ' ').trim().slice(0, 60),
+          }
+        })
+        .filter((entry) => entry.display !== 'none'),
+    }
+  })
+
+  return {
+    populations: { 'hidden-attribute': measured.population },
+    findings: measured.rendered.map((entry) => ({
+      check: 'hidden-means-hidden',
+      route,
+      detail:
+        `${entry.selector} carries \`hidden\` and computes display:${entry.display}, painting ` +
+        `${entry.size} — "${entry.text}". An author \`display\` rule outranks the user-agent ` +
+        '`[hidden] { display: none }`, so the attribute has no effect and a state the product ' +
+        'meant to conceal is on screen (F-QA-1, §12 item 6). Owner: frontend-ui-engineer.',
+    })),
+  }
 }

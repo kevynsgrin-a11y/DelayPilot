@@ -19,33 +19,34 @@ every line of it:
 
 `DIRECTIVE.md §25` lists eighteen commands. This is every one of them, with what it does **today**.
 
-| Command                                                         | Runs                                                 | State                                                                        | Owner                        |
-| --------------------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------- |
-| `pnpm install --frozen-lockfile`                                | pnpm                                                 | Working                                                                      | `principal-architect`        |
-| `pnpm format:check`                                             | `prettier --check .`                                 | Working                                                                      | `principal-architect`        |
-| `pnpm lint`                                                     | `astro sync` + `eslint .` + `pnpm lint:copy`         | Working                                                                      | `principal-architect`        |
-| `pnpm typecheck`                                                | `pnpm -r typecheck`                                  | Working                                                                      | `principal-architect`        |
-| `pnpm test`                                                     | `vitest run` — unit, in-package                      | Working. **Does not include `tests/**` or `e2e/**`** — see §2.               | package owners               |
-| `pnpm test:workers`                                             | —                                                    | **Loud stub, exit 1.** Phase 12, `qa-test-architect`. §8.                    | `qa-test-architect`          |
-| `pnpm test:e2e`                                                 | `pnpm exec playwright test`                          | Working — 237 tests, 6 spec files, 3 projects; CI runs 168 of them. §4, §10. | `qa-test-architect`          |
-| `pnpm test:a11y`                                                | `node tests/a11y/run-axe.mjs`                        | Working — 80 axe runs (88 with `--conditional`) + 100 regression checks. §3. | `qa-test-architect`          |
-| `pnpm test:seo`                                                 | `node scripts/seo/test-seo.mjs`                      | `seo-engineer`, same session — not run by me                                 | `seo-engineer`               |
-| `pnpm test:security`                                            | —                                                    | **Loud stub, exit 1.** Phase 12, `security-privacy-engineer`. §8.            | `security-privacy-engineer`  |
-| `pnpm build`                                                    | `astro build` + `verify-dist` + `wrangler --dry-run` | Working                                                                      | `frontend-ui-engineer` / SRE |
-| `pnpm quality`                                                  | chains twelve of the above                           | **Failing**, because `test:workers` and `test:security` are stubs            | `platform-release-sre`       |
-| `pnpm dev` / `pnpm preview`                                     | Astro / Wrangler                                     | Working                                                                      | —                            |
-| `pnpm smoke`                                                    | —                                                    | Loud stub, exit 1. Phase 13, `platform-release-sre`                          | `platform-release-sre`       |
-| `pnpm deploy`                                                   | `wrangler deploy`                                    | **Blocked (external)** — no Cloudflare credentials                           | `platform-release-sre`       |
-| `pnpm db:migrate:local` / `db:seed:local` / `db:migrate:remote` | —                                                    | Loud stubs, exit 1. Phase 3, `data-platform-engineer`                        | `data-platform-engineer`     |
-| `pnpm model:validate`                                           | —                                                    | Loud stub, exit 1. Phase 6, `risk-modeling-scientist`                        | `risk-modeling-scientist`    |
+| Command                                                         | Runs                                                 | State                                                                         | Owner                        |
+| --------------------------------------------------------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------- |
+| `pnpm install --frozen-lockfile`                                | pnpm                                                 | Working                                                                       | `principal-architect`        |
+| `pnpm format:check`                                             | `prettier --check .`                                 | Working                                                                       | `principal-architect`        |
+| `pnpm lint`                                                     | `astro sync` + `eslint .` + `pnpm lint:copy`         | Working                                                                       | `principal-architect`        |
+| `pnpm typecheck`                                                | `pnpm -r typecheck`                                  | Working                                                                       | `principal-architect`        |
+| `pnpm test`                                                     | `vitest run` — unit, in-package                      | Working. **Does not include `tests/**` or `e2e/**`** — see §2.                | package owners               |
+| `pnpm test:workers`                                             | —                                                    | **Loud stub, exit 1.** Phase 12, `qa-test-architect`. §8.                     | `qa-test-architect`          |
+| `pnpm test:e2e`                                                 | `pnpm exec playwright test`                          | Working — 237 tests, 6 spec files, 3 projects; CI runs 168 of them. §4, §10.  | `qa-test-architect`          |
+| `pnpm test:a11y`                                                | `node tests/a11y/run-axe.mjs`                        | Working — 92 axe runs (100 with `--conditional`) + 135 regression checks. §3. | `qa-test-architect`          |
+| `pnpm test:seo`                                                 | `node scripts/seo/test-seo.mjs`                      | `seo-engineer`, same session — not run by me                                  | `seo-engineer`               |
+| `pnpm test:security`                                            | —                                                    | **Loud stub, exit 1.** Phase 12, `security-privacy-engineer`. §8.             | `security-privacy-engineer`  |
+| `pnpm build`                                                    | `astro build` + `verify-dist` + `wrangler --dry-run` | Working                                                                       | `frontend-ui-engineer` / SRE |
+| `pnpm quality`                                                  | chains twelve of the above                           | **Failing**, because `test:workers` and `test:security` are stubs             | `platform-release-sre`       |
+| `pnpm dev` / `pnpm preview`                                     | Astro / Wrangler                                     | Working                                                                       | —                            |
+| `pnpm smoke`                                                    | —                                                    | Loud stub, exit 1. Phase 13, `platform-release-sre`                           | `platform-release-sre`       |
+| `pnpm deploy`                                                   | `wrangler deploy`                                    | **Blocked (external)** — no Cloudflare credentials                            | `platform-release-sre`       |
+| `pnpm db:migrate:local` / `db:seed:local` / `db:migrate:remote` | —                                                    | Loud stubs, exit 1. Phase 3, `data-platform-engineer`                         | `data-platform-engineer`     |
+| `pnpm model:validate`                                           | —                                                    | Loud stub, exit 1. Phase 6, `risk-modeling-scientist`                         | `risk-modeling-scientist`    |
 
 ### Running one suite locally
 
 ```bash
-# Accessibility — the whole of docs/ACCESSIBILITY.md §12, served under the real CSP.
-pnpm test:a11y                              # 20 routes × 4 = 80 axe runs + 100 regression checks
-node tests/a11y/run-axe.mjs --conditional   # + /accessibility/ and /contact/ = the published 88
+# Accessibility — docs/ACCESSIBILITY.md §12 clause by clause (§3), served under the real CSP.
+pnpm test:a11y                              # 20 routes × 4 = 80 runs, + 3 driven §17 states × 4 = 92
+node tests/a11y/run-axe.mjs --conditional   # + /accessibility/ and /contact/ × 4 = 100
 node tests/a11y/run-axe.mjs --routes=/ --seed-violation=live   # prove a check fails when it should
+node tests/a11y/run-axe.mjs --record-baseline  # rewrite the coverage baseline — deliberate, §3
 
 # Browser suites.
 pnpm test:e2e                                        # all three projects
@@ -117,21 +118,55 @@ Browser globals inside `page.evaluate` callbacks are declared per file with a na
 
 ---
 
-## 3. `pnpm test:a11y` — `docs/ACCESSIBILITY.md §12`, executed
+## 3. `pnpm test:a11y` — `docs/ACCESSIBILITY.md §12`, clause by clause
 
 **Entry point:** `tests/a11y/run-axe.mjs` (plain `node`, no flags, exits non-zero on any failure).
 
+> **This command does not execute the whole of `docs/ACCESSIBILITY.md §12`, and this section says
+> which clauses it does execute.** The claim that it did was made here and was wrong: the S4 review
+> (`docs/ACCESSIBILITY.md §16`) measured three classes of defect passing the gate, and §12 itself
+> gained four items it had never asked for. The table below is the honest version, and a row that
+> reads **Partly** is not a promise — it is a gap somebody can act on.
+
+### §12, clause by clause
+
+| §12 clause                                                        | Executed                          | Where / why not                                                                                                                                                                                                    |
+| ----------------------------------------------------------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Tags `wcag2a` `wcag2aa` `wcag21aa` `wcag22aa`                     | **Yes**, superset (`wcag21a` too) | `WCAG_TAGS` in `axe-sweep.mjs`. No `rules` option is passed anywhere, so no rule is disabled                                                                                                                       |
+| `best-practice` separate, reported, non-blocking                  | **Yes**                           | a second `axe.run`, counted into `bestPractice`, excluded from `failures`                                                                                                                                          |
+| Zero violations at any impact, `minor` included                   | **Yes**                           | no impact filter exists in the path                                                                                                                                                                                |
+| Both themes                                                       | **Yes**, superset                 | `CONTEXT_MATRIX` — `{light, dark} × {no-preference, reduce}`, four runs per surface                                                                                                                                |
+| Every `§18.1` public and `§18.2` private route                    | **Partly**                        | 20 routes, derived from `dist` and now **pinned** against `baseline.json` (item 9). The `§18.2` private routes and the unbuilt `§18.1` families are **Not run** — they do not exist yet                            |
+| Each `§17` state fixture, on the surface that owns it             | **Partly** — 3 of 13              | `states.mjs` drives `searching`, `provider unavailable` and the lookup error summary on `/` and runs axe with the state on screen. The other `§17` states need a provider, a trip or a session and are **Not run** |
+| axe same-origin, the page's real CSP left enforced                | **Yes**                           | request interception + `<script src>`; `@axe-core/playwright` is installed and deliberately unused                                                                                                                 |
+| `incomplete` counted, printed, never waived                       | **Yes**, and dispositioned        | per route × rule × **message class** × node count, with §16.4's disposition printed per class. An undispositioned class **fails** the run                                                                          |
+| Item 1 — `scrollWidth === innerWidth` at 320 px                   | **Yes**                           | `checkReflow320`, own 320 × 720 context, every route. **Not run on the state surfaces** — they are driven in the axe viewport                                                                                      |
+| Item 2 — three distinct progressbar strings **+ visible readout** | **Yes**                           | `checkProgressBarStrings`; the F48 half compares `aria-valuetext` to `.dp-progress__value` + `.dp-progress__band`                                                                                                  |
+| Item 3 — tables in a named, operable region                       | **Yes**, stricter                 | every `<table>`, not only prose; `aria-labelledby` must resolve. No `<caption>` assertion — F31's caption is open and owned by `content-editorial-lead`                                                            |
+| Item 4 — no rendered `aria-busy`, no `aria-live`                  | **Yes**                           | "rendered" is `Element.checkVisibility(…)` and nothing else. Suspended for `searching`, where the page **is** loading                                                                                              |
+| Item 5 — no accessible name echoing its own `<dt>`                | **Partly**                        | the page-wide pill pass is live for the first time. The per-row pass gates over **0 named values** — see the warning below                                                                                         |
+| Item 6 — every `hidden` element computes `display: none`          | **Yes**                           | `checkHiddenMeansHidden`, every surface. Also enforced site-wide by `e2e/hidden-states.e2e.mjs`; two suites, one rule, neither borrowing the other's coverage                                                      |
+| Item 7 — no check reports `clean` over zero elements              | **Yes**                           | every check reports its population; `coverage.mjs` fails on non-zero → zero; a population that is zero **everywhere** is printed as "cannot fail here"                                                             |
+| Item 8 — the state fixtures are swept with the state applied      | **Partly** — 3 states             | `states.mjs`, above                                                                                                                                                                                                |
+| Item 9 — route set asserted, `status === 200` per run             | **Yes**                           | `compareRouteSet` + the `http-status` channel                                                                                                                                                                      |
+| "What axe cannot be asked to prove" stays manual                  | **Yes**                           | focus order, reading order, name quality, combobox traps, zone labelling, whether the itinerary makes sense — `docs/ACCESSIBILITY.md §10`, and §4 here                                                             |
+
+**Screen readers are Not run.** None is installed and none is installable in this container.
+VoiceOver + Safari and NVDA + Firefox stay in the manual matrix.
+
 ### What a zero exit means
 
-| Part                | Parameters                                                                                        |
-| ------------------- | ------------------------------------------------------------------------------------------------- |
-| axe                 | axe-core **4.13.0**, tags `wcag2a` `wcag2aa` `wcag21a` `wcag21aa` `wcag22aa`, viewport 1440 × 900 |
-| matrix              | every emitted route × `{light, dark}` × `{no-preference, reduce}` — four runs per route           |
-| threshold           | **zero violations at any impact**, `minor` included. No rule disabled.                            |
-| `best-practice`     | separate pass, **reported, non-blocking**                                                         |
-| `incomplete`        | counted and printed, **never waived**                                                             |
-| console / CSP       | zero console errors and zero CSP refusals, under the real served policy                           |
-| non-axe regressions | the five `§12` assertions, on every route — `tests/a11y/regressions.mjs`                          |
+| Part                | Parameters                                                                                                                 |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| axe                 | axe-core **4.13.0**, tags `wcag2a` `wcag2aa` `wcag21a` `wcag21aa` `wcag22aa`, viewport 1440 × 900                          |
+| matrix              | every emitted route **and every driven `§17` state** × `{light, dark}` × `{no-preference, reduce}` — four runs each        |
+| runs                | **92** = 80 route + 12 state. `--conditional` adds 8 → **100**. The published 80 + 8 = 88 baseline reproduces unchanged    |
+| threshold           | **zero violations at any impact**, `minor` included. No rule disabled.                                                     |
+| `best-practice`     | separate pass, **reported, non-blocking**                                                                                  |
+| `incomplete`        | counted, classified by axe message, printed with §16.4's disposition, **never waived**; an undispositioned class **fails** |
+| console / CSP       | zero console errors and zero CSP refusals, under the real served policy                                                    |
+| coverage            | the route set matches `baseline.json`, every run returned 200, and no recorded population has fallen to zero               |
+| non-axe regressions | the six `§12` assertions, on every route — `tests/a11y/regressions.mjs` — **147** assertion calls with `--conditional`     |
 
 Reduced motion is a **dimension of the sweep, not a variant of a theme**: ADR 0003 rule 4 makes it a
 state the page can be wrong in.
@@ -149,35 +184,136 @@ injection "disables the CSP under test and the first attempt failed loudly, whic
 to keep". `@axe-core/playwright` is installed and deliberately unused. **No divergence from §12; no
 handoff owed to `accessibility-lead` on this point.**
 
+It is also why the visibility predicate is passed as a serialisable options object rather than a
+source string handed to `eval`: the served policy carries no `'unsafe-eval'`, and a check that
+needed the policy relaxed would be measuring a page nobody serves.
+
+### The `§17` states, driven rather than assumed — §12 item 8
+
+axe does not descend into a `display: none` subtree, so a state that is `hidden` until a reader
+interacts is outside a sweep of served pages **silently**: the run reports the clean result it would
+report if the state did not exist. `accessibility-lead` measured that rather than arguing it — the
+same alt-less `<img>` that produced four `critical` violations on `/about/` produced **zero** inside
+the hidden provider-unavailable panel on `/` (§16.3, F45).
+
+`tests/a11y/states.mjs` drives three states through the island's own submit handler, never by
+setting `hidden` from the test:
+
+| State                  | Reached by                                        | On screen (1440, light) |
+| ---------------------- | ------------------------------------------------- | ----------------------- |
+| `error summary`        | submit with every field empty                     | 446 × 158, 15 elements  |
+| `searching`            | fill the three fields, `requestSubmit()`          | 446 × 170, 8 elements   |
+| `provider unavailable` | fill the three fields, submit, wait for the panel | 446 × 408, 13 elements  |
+
+**`searching` is held still without waiting.** The island schedules `setTimeout(…, 0)` inside its
+own submit handler to move to `unavailable`. Polling for `searching` from Node is a race by
+construction and `waitForTimeout` is forbidden here (§6), so the drive swaps `window.setTimeout` for
+the duration of the **synchronous submit dispatch only**, drops the one callback scheduled inside
+it, and restores the real function before the evaluate returns. axe's own timers are untouched.
+
+Each state proves it is on screen — `Element.checkVisibility`, the same predicate item 4 uses —
+before it is measured, and reports the population inside its container, so a drive that stops
+working fails the run instead of sweeping a state nobody reached. The `aria-busy` half of item 4
+stands down for `searching` and only for `searching`: the page **is** loading there,
+`e2e/lookup-states.e2e.mjs` asserts the busy region is present, and two suites must not require
+opposite things of the same element.
+
+### The six non-axe regression assertions
+
+Each is a defect axe returned clean on, and each has been fixed exactly once.
+
+| #   | Assertion                                                                                                      | Filed as     | Implementation            |
+| --- | -------------------------------------------------------------------------------------------------------------- | ------------ | ------------------------- |
+| 1   | `document.scrollingElement.scrollWidth === window.innerWidth` at 320 px, every route                           | B8           | `checkReflow320`          |
+| 2   | every `role="progressbar"`: name ≠ reading ≠ band, **and `aria-valuetext` equals the visible readout**         | B9, F27, F48 | `checkProgressBarStrings` |
+| 3   | every `<table>` inside `role="region"` + `tabindex="0"` + a **resolving** `aria-labelledby`; `scope` on `<th>` | F31          | `checkTableRegions`       |
+| 4   | no **visible** `aria-busy` on a page that is not loading; no `aria-live` on a served route                     | F28, §15.7   | `checkBusyAndLiveRegions` |
+| 5   | no accessible name ends with the word its own `<dt>` uses as a label                                           | F29, F39     | `checkLabelEchoes`        |
+| 6   | every element carrying `hidden` computes `display: none`                                                       | F-QA-1       | `checkHiddenMeansHidden`  |
+
+Notes on the places the implementation is stricter, looser, or narrower than a naive reading:
+
+- **#4** also treats `role="alert"` and `role="status"` as live regions. `§15.15` measured zero of
+  all three; a page that genuinely needs one is a design change `accessibility-lead` should review,
+  and this check is what forces that review.
+- **#4's visibility predicate is `Element.checkVisibility({ contentVisibilityAuto: true,
+opacityProperty: true, visibilityProperty: true })` and nothing else** (§12 item 4 as amended).
+  It used to open with `element.closest('[hidden]') === null`, which dismissed an element **by the
+  attribute that failed** — F-QA-1 was a `hidden` attribute with no effect — and short-circuited
+  before either computed-style term ran (F43); its second term, `offsetParent === null`, is null by
+  specification for every `position: fixed` element and for `<body>` (F44).
+- **#5 runs twice**, and the two passes have very different coverage today:
+  - page-wide over status pills, as `§15.16` measured it — **live**, and summed over the 23
+    surfaces of a plain run that is **333 pill elements against 111 `<dt>` label words**, 0 hits.
+    Before the row traversal was fixed the label-word set was **empty on every route**, so this
+    pass could not fire either (§11, F-QA-2);
+  - per definition-list row, as `§12` words it — **gating over 0 named values**, see the warning
+    below.
+
+> **Item 5's row pass gates over zero elements, and the output says so every run.** A `<dd>`'s
+> plain prose has no accessible name of its own; F29 and F39 were both a `StatusPill` whose _name_
+> read "Delayed Status". So the gating pass looks at elements that have a name — `aria-label`,
+> `aria-labelledby`, a named role, a heading, a link, or the pill/chip family — and **this build has
+> none of those inside a `<dd>`**. The broader prose scan runs anyway and reports its 24 hits as
+> observations (`"7 minutes of slack"` under `<dt>Slack</dt>`, and three more shapes) without
+> failing the build, because turning a copy judgement into a merge gate is not this suite's call.
+> Open with `accessibility-lead` — §11, F-QA-2.
+
+### Coverage floors — §12 item 7 and item 9
+
+No summary line prints `clean` on its own any more — every one carries the population that produced
+it, which is the sentence F46 is about:
+
+```
+  progressbar-three-strings    clean over 24 element(s) on 6/23 surface(s)
+  label-echo                   clean over 687 element(s) on 9/23 surface(s)
+  hidden-means-hidden          clean over 107 element(s) on 23/23 surface(s)
+```
+
+`tests/a11y/baseline.json` is a **recorded expectation**, in the same discipline as a visual
+baseline: it moves when someone decides the new state is the intended one, never to clear a red run.
+`--record-baseline` refuses a seeded run, a narrowed run, and a failing run.
+
+| Recorded            | Rule                                                                             | Fails the run                       |
+| ------------------- | -------------------------------------------------------------------------------- | ----------------------------------- |
+| the 20-route set    | a recorded route this build does not emit was not swept at all                   | **Yes** — `route-set`               |
+| population per key  | a population that was non-zero and is zero now means the check cannot fail       | **Yes** — `population-floor`        |
+| `incomplete` nodes  | a message class with no §16.4 disposition is a contrast question nobody answered | **Yes** — `incomplete-class`        |
+| `incomplete` counts | a dispositioned class whose count moved                                          | **No** — printed for re-measurement |
+| —                   | any run whose HTTP status was not 200                                            | **Yes** — `http-status`             |
+
+The count asymmetry in the last two rows is deliberate and is argued in `tests/a11y/incomplete.mjs`:
+failing on growth would make "add one more `Demo` provenance chip" a red build only
+`accessibility-lead` can clear, since both the measurement and `docs/ACCESSIBILITY.md` are theirs.
+The count is recorded and every change is printed, so it is visible rather than silent — which is
+the property F47 says was missing. One constant in `coverage.mjs` makes it blocking if they want it.
+
+### The `incomplete` results, dispositioned per class
+
+The runner used to print `route × rule × runs` and point all 20 results at §15.9. §16.4 measured
+what they actually are, and this runner now re-derives the same split every run:
+
+| Message class                       | Nodes/run | What it is                                                 | Disposition (§16.4)                   |
+| ----------------------------------- | --------: | ---------------------------------------------------------- | ------------------------------------- |
+| "overlapped by another element"     |    **29** | text over the `z-index: -1` motif — `/` only               | 4.58:1 light / 5.27:1 dark, floor 4.5 |
+| "due to a background gradient"      |    **54** | every `Demo` provenance chip's `repeating-linear-gradient` | 15.21:1 light / 15.09:1 dark          |
+| "contains only non-text characters" |     **6** | the `→` route arrows, all `aria-hidden="true"`             | 5.70:1 light / 5.27:1 dark            |
+
+89 nodes per run across five routes, identical in all four contexts — re-measured here and equal to
+§16.4 to the node. **§15.3's "every one is `color-contrast` … overlapped by another element" is
+superseded by §16.4 and this measurement agrees with the correction.**
+
+The driven states add nodes nobody has measured yet: `/ [error summary]` returns **36** overlapped
+nodes against the route's 29, and `/ [provider unavailable]` returns **34**. The runner prints that
+delta on every run, as an open re-measurement request rather than a waiver (§11, F-QA-3).
+
 ### The two conditional routes
 
 `/accessibility/` and `/contact/` are emitted only when `PUBLIC_CONTACT_EMAIL` is set (owner input
 **I-3**, `docs/BUILD_PLAN.md §10`). `--conditional` builds them into a **scratch `outDir` outside the
 repository** with a reserved `example.invalid` address that is never committed and never printed,
 sweeps them, and deletes the build. Without the flag the runner prints `Not run: the 8 conditional
-runs` and names the flag — it never silently reports 80 as though it were 88.
-
-### The five non-axe regression assertions
-
-Each is a defect axe returned clean on, and each has been fixed exactly once.
-
-| #   | Assertion                                                                                                      | Filed as   | Implementation            |
-| --- | -------------------------------------------------------------------------------------------------------------- | ---------- | ------------------------- |
-| 1   | `document.scrollingElement.scrollWidth === window.innerWidth` at 320 px, every route                           | B8         | `checkReflow320`          |
-| 2   | every `role="progressbar"`: `aria-label`, first clause of `aria-valuetext`, band word are three strings        | B9, F27    | `checkProgressBarStrings` |
-| 3   | every `<table>` inside `role="region"` + `tabindex="0"` + a **resolving** `aria-labelledby`; `scope` on `<th>` | F31        | `checkTableRegions`       |
-| 4   | no **rendered** `aria-busy` on a page that is not loading; no `aria-live` on a served route                    | F28, §15.7 | `checkBusyAndLiveRegions` |
-| 5   | no accessible name ends with the word its own `<dt>` uses as a label                                           | F29, F39   | `checkLabelEchoes`        |
-
-Notes on the two places the implementation is stricter or looser than a naive reading:
-
-- **#4** also treats `role="alert"` and `role="status"` as live regions. `§15.15` measured zero of
-  all three; a page that genuinely needs one is a design change `accessibility-lead` should review,
-  and this check is what forces that review. It measures **rendered** elements, so the one
-  `aria-busy="true"` inside `<div data-dp-state="searching" hidden>` on `/` is correctly ignored.
-- **#5** runs twice: per definition-list row as `§12` words it, and page-wide over status pills as
-  `§15.16` measured it (39 pills, 0 ending in a field label). F39 lived in `ItineraryTimeline`,
-  outside any `<dl>`, so the row rule alone would have missed it exactly as the first review did.
+runs` and names the flag — it never silently reports 92 as though it were 100.
 
 ---
 
@@ -396,6 +532,51 @@ Every one of these was executed in the S4 session. A check nobody has watched fa
 | visual baselines          | any pixel change — observed for real, not seeded                          | 12 of 69 failed on a 1-device-row shift; §11               |
 
 The a11y seeds live in `SEEDS` in `tests/a11y/run-axe.mjs`; an unknown name exits 2 with the list.
+Two were added in S5: `progressbar-readout` (the announcement and the visible readout disagree) and
+`busy` (a `hidden` element with `display` forced back on, carrying `aria-busy`).
+
+### The negative results — checks watched to PASS while a defect was present
+
+A check watched to fail proves the wiring. A check watched to **pass while the defect was on the
+page** proves the opposite, and it is the more valuable of the two, because nothing else in a green
+run distinguishes it from coverage. These three were measured by `accessibility-lead` in
+`docs/ACCESSIBILITY.md §16.3` against a scratch `dist`, and re-measured here before each fix:
+
+| Seeded into a scratch `dist`                                                                                                                                              | The gate said                                                                              | Filed as |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | -------- |
+| `div[data-dp-state="searching"][hidden] { display: grid !important }` — a panel painting **446 × 170 px**, carrying `aria-busy="true"`, reading "Looking up this flight." | `4 axe run(s), 5 regression assertion(s). Passing — 0 … 0 regression findings`, **exit 0** | **F43**  |
+| a visible 200 × 40 `position: fixed` bar with `aria-busy="true"` on `/about/`                                                                                             | `busy-and-live clean`, **exit 0**                                                          | **F44**  |
+| an alt-less `<img>` **inside** the hidden provider-unavailable panel on `/`                                                                                               | `4 axe run(s) … Passing — 0 violations at any impact`, **exit 0**                          | **F45**  |
+
+`e2e/hidden-states.e2e.mjs` did catch F43's shape on the same build (`1 failed … 19 passed`), which
+is why the product was never exposed — but a rule that lives in one suite and is contradicted by
+another suite's predicate has a shelf life, and F44 and F45 had no compensating control at all.
+
+### The paired demonstrations — S5
+
+Every fix below was demonstrated against the **same seeded build**, twice: once with the harness as
+it stood at `4abbda1` (a detached `git worktree`, so the old code ran against the same
+`node_modules`), once after the fix. No seed touched `apps/web/dist` or `apps/web/src`. A predicate
+swapped for a better one without a run that fails on the old predicate is the same trust problem one
+level up.
+
+| #       | Seeded into a scratch `dist`                                                                | Old harness                                                                    | New harness                                                                                               |
+| ------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| **F43** | `div[data-dp-state="searching"][hidden]{display:grid !important}` appended to the built CSS | exit **0**, `Passing`                                                          | exit **1**, 6 findings — `1 visible element(s) carry aria-busy="true"` + `display:grid, painting 446×170` |
+| **F44** | a `.dp-seed-fixed-busy` 200 × 40 `position: fixed` bar on `/about/`                         | exit **0**, `Passing`                                                          | exit **1**, `busy-and-live /about/: … div.dp-seed-fixed-busy`                                             |
+| **F45** | `<img src="/icons/icon-192.png">` inside `[data-dp-state="unavailable"][hidden]` on `/`     | exit **0**, `Passing`                                                          | exit **1**, `image-alt (critical) × 1` on all four runs of `/ [provider unavailable]`                     |
+| **F46** | `dp-status-pill` → `dp-statusbadge` throughout `/index.html`                                | exit **0**, `Passing` — the pill pass silently examined 0                      | exit **1**, `population-floor`: "examined 72 `status-pill` element(s) … and examines 0 now"               |
+| **F47** | a compliant table region whose `<th>` has no data cells, on `/methodology/`                 | exit **0**; `th-has-data-cells × 4 run(s)` printed under the §15.9 disposition | exit **1**, `th-has-data-cells unmeasured=1` + `incomplete-class` finding with NO DISPOSITION             |
+| **F48** | `.dp-progress__value` "Risk band" → "Critical band" on `/delay-risk/`                       | exit **0**, `Passing`                                                          | exit **1**, `aria-valuetext is "Risk band, Watch" and the visible readout is "Critical band, Watch"`      |
+| **F49** | `rm -rf dist/about`                                                                         | exit **0**, `Passing` over 19 routes                                           | exit **1**, `route-set /about/: recorded … and not emitted by this build`                                 |
+| **F50** | the same build, swept with `--routes=/about/`                                               | exit **1** — but via **4 console errors, 0 findings**                          | exit **1** with **4 explicit `http-status` findings**: the right exit for the right reason                |
+
+Reproduce any row:
+
+```bash
+cp -a apps/web/dist /tmp/scratch && <seed the bytes>
+node tests/a11y/run-axe.mjs --dist=/tmp/scratch --routes=/ --port=4561
+```
 
 ---
 
@@ -447,19 +628,21 @@ CI.
 
 ### §22 Accessibility
 
-| Case                       | Where                                                   | State                                    |
-| -------------------------- | ------------------------------------------------------- | ---------------------------------------- |
-| axe on every primary route | `tests/a11y/run-axe.mjs`                                | **Exists** — 88 runs                     |
-| keyboard-only flows        | `e2e/keyboard-walk.e2e.mjs`                             | **Exists** — 10 walks                    |
-| focus order                | manual, `docs/ACCESSIBILITY.md §10`                     | Not automatable — see §4                 |
-| dialogs                    | `e2e/keyboard-walk.e2e.mjs` (drawer)                    | **Exists**                               |
-| live regions               | `tests/a11y/regressions.mjs` #4                         | **Exists** — asserts there are none      |
-| error handling             | `e2e/lookup-states.e2e.mjs` (error summary + focus)     | **Exists**                               |
-| reduced motion             | `run-axe.mjs` matrix + `visual.e2e.mjs` animation check | **Exists**                               |
-| 200 % zoom                 | `docs/ACCESSIBILITY.md §15.15`, measured by hand        | **Not run** here — reflow at 320 is      |
-| high contrast              | —                                                       | **Not run**                              |
-| mobile touch targets       | `docs/ACCESSIBILITY.md §15.16`, measured by hand        | **Not run** here                         |
-| screen-reader names        | —                                                       | **Not run** — no screen reader installed |
+| Case                        | Where                                                   | State                                    |
+| --------------------------- | ------------------------------------------------------- | ---------------------------------------- |
+| axe on every primary route  | `tests/a11y/run-axe.mjs`                                | **Exists** — 92 runs, 100 conditional    |
+| axe on `§17` state fixtures | `tests/a11y/states.mjs`                                 | **Exists** — 3 of 13 states, §3          |
+| keyboard-only flows         | `e2e/keyboard-walk.e2e.mjs`                             | **Exists** — 10 walks                    |
+| focus order                 | manual, `docs/ACCESSIBILITY.md §10`                     | Not automatable — see §4                 |
+| dialogs                     | `e2e/keyboard-walk.e2e.mjs` (drawer)                    | **Exists**                               |
+| live regions                | `tests/a11y/regressions.mjs` #4                         | **Exists** — asserts there are none      |
+| gate coverage floors        | `tests/a11y/coverage.mjs` + `baseline.json`             | **Exists** — route set, populations, 200 |
+| error handling              | `e2e/lookup-states.e2e.mjs` (error summary + focus)     | **Exists**                               |
+| reduced motion              | `run-axe.mjs` matrix + `visual.e2e.mjs` animation check | **Exists**                               |
+| 200 % zoom                  | `docs/ACCESSIBILITY.md §15.15`, measured by hand        | **Not run** here — reflow at 320 is      |
+| high contrast               | —                                                       | **Not run**                              |
+| mobile touch targets        | `docs/ACCESSIBILITY.md §15.16`, measured by hand        | **Not run** here                         |
+| screen-reader names         | —                                                       | **Not run** — no screen reader installed |
 
 ### §22 Visual regression
 
@@ -487,26 +670,26 @@ same eleven under the same step names before it calls Wrangler, because it can b
 changed together. Measured runtimes below are from this session, on this machine, against a 20-route
 build — a hosted runner is slower.
 
-| #   | Check                  | Command                          | In CI | Runtime                                  | Gates merge on                                            |
-| --- | ---------------------- | -------------------------------- | ----- | ---------------------------------------- | --------------------------------------------------------- |
-| 1   | frozen-lockfile        | `pnpm install --frozen-lockfile` | yes   | ~8 s                                     | a lockfile that does not match `package.json`             |
-| 2   | format                 | `pnpm format:check`              | yes   | ~10 s                                    | any unformatted file                                      |
-| 3   | lint                   | `pnpm lint`                      | yes   | ~40 s                                    | an ESLint error or a forbidden phrase (298 files, 0 hits) |
-| 4   | typecheck              | `pnpm typecheck`                 | yes   | ~60 s                                    | any TS or `astro check` error                             |
-| 5   | unit                   | `pnpm test`                      | yes   | ~3 s                                     | 18 files, 888 tests, 0 skipped, 0 `.only`                 |
-| 6   | property               | `pnpm test`                      | no    | —                                        | Phase 2                                                   |
-| 7   | Workers integration    | `pnpm test:workers`              | no    | —                                        | stub, §8                                                  |
-| 8   | web build              | `pnpm build`                     | yes   | ~40 s                                    | `verify-dist` findings                                    |
-| 9   | edge build             | `pnpm build`                     | yes   | ~10 s                                    | `wrangler deploy --dry-run`                               |
-| 10  | migration validation   | `pnpm db:migrate:local`          | no    | —                                        | Phase 3                                                   |
-| 11  | rights-rule validation | —                                | no    | —                                        | Phase 5                                                   |
-| 12  | content-quality gate   | —                                | no    | —                                        | Phase 11                                                  |
-| 13  | SEO validation         | `pnpm test:seo`                  | yes   | ~15 s                                    | nine suites over the built `apps/web/dist`                |
-| 14  | accessibility smoke    | `pnpm test:a11y`                 | yes   | **109 s** (80 runs) / 122 s + build (88) | one axe violation at any impact; CI runs the 80-run sweep |
-| 15  | Playwright             | `pnpm test:e2e`                  | yes   | **~126 s** (237 tests, 2 workers)        | **168 of 237** — `desktop` + `mobile-375`; `visual` is §5 |
-| 16  | bundle budgets         | `pnpm perf:budgets`              | yes   | ~5 s                                     | `perf.budgets.json` script/island counts and byte budgets |
-| 17  | dependency audit       | —                                | no    | —                                        | `security-privacy-engineer`                               |
-| 18  | secret scan            | `pnpm test:security`             | no    | —                                        | stub, §8                                                  |
+| #   | Check                  | Command                          | In CI | Runtime                                   | Gates merge on                                                                                |
+| --- | ---------------------- | -------------------------------- | ----- | ----------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | frozen-lockfile        | `pnpm install --frozen-lockfile` | yes   | ~8 s                                      | a lockfile that does not match `package.json`                                                 |
+| 2   | format                 | `pnpm format:check`              | yes   | ~10 s                                     | any unformatted file                                                                          |
+| 3   | lint                   | `pnpm lint`                      | yes   | ~40 s                                     | an ESLint error or a forbidden phrase (298 files, 0 hits)                                     |
+| 4   | typecheck              | `pnpm typecheck`                 | yes   | ~60 s                                     | any TS or `astro check` error                                                                 |
+| 5   | unit                   | `pnpm test`                      | yes   | ~3 s                                      | 18 files, 888 tests, 0 skipped, 0 `.only`                                                     |
+| 6   | property               | `pnpm test`                      | no    | —                                         | Phase 2                                                                                       |
+| 7   | Workers integration    | `pnpm test:workers`              | no    | —                                         | stub, §8                                                                                      |
+| 8   | web build              | `pnpm build`                     | yes   | ~40 s                                     | `verify-dist` findings                                                                        |
+| 9   | edge build             | `pnpm build`                     | yes   | ~10 s                                     | `wrangler deploy --dry-run`                                                                   |
+| 10  | migration validation   | `pnpm db:migrate:local`          | no    | —                                         | Phase 3                                                                                       |
+| 11  | rights-rule validation | —                                | no    | —                                         | Phase 5                                                                                       |
+| 12  | content-quality gate   | —                                | no    | —                                         | Phase 11                                                                                      |
+| 13  | SEO validation         | `pnpm test:seo`                  | yes   | ~15 s                                     | nine suites over the built `apps/web/dist`                                                    |
+| 14  | accessibility smoke    | `pnpm test:a11y`                 | yes   | **121 s** (92 runs) / 135 s + build (100) | one axe violation at any impact, one regression or coverage finding; CI runs the 92-run sweep |
+| 15  | Playwright             | `pnpm test:e2e`                  | yes   | **~126 s** (237 tests, 2 workers)         | **168 of 237** — `desktop` + `mobile-375`; `visual` is §5                                     |
+| 16  | bundle budgets         | `pnpm perf:budgets`              | yes   | ~5 s                                      | `perf.budgets.json` script/island counts and byte budgets                                     |
+| 17  | dependency audit       | —                                | no    | —                                         | `security-privacy-engineer`                                                                   |
+| 18  | secret scan            | `pnpm test:security`             | no    | —                                         | stub, §8                                                                                      |
 
 Checks 5, 13, 14, 15 and 16 were added in `acd1ec6`. Check 15 is **Passing** on this tree: the one
 real product defect it was red on (F-QA-1) is fixed and closed in §11.
@@ -536,7 +719,32 @@ WebKit and Firefox are installed in neither place and stay **Not run** (§4).
 ## 11. Findings from this session
 
 Filed, not fixed. A QA agent that patched product code to turn its own suite green would have
-removed the only reason to trust the suite. **Open: none.** The one finding below is closed.
+removed the only reason to trust the suite. **Open: three, none of them a product defect and none
+of them mine to rule on.** F-QA-1 is closed.
+
+### F-QA-2 — `docs/ACCESSIBILITY.md §12` item 5 examined 0 of 120 definition-list rows — **OPEN**
+
+|                          |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Owner**                | the fix is mine and is landed; the **ruling** is `accessibility-lead`'s                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **File**                 | `tests/a11y/regressions.mjs`, `checkLabelEchoes` pass (a), as it stood at `4abbda1`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **Input**                | `node tests/a11y/run-axe.mjs` on this build, with the population of each check reported (F46's fix)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| **Expected**             | the F29 rule — "nothing inside a `<dd>` may end with the last word of its own `<dt>`" — applied to every row                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| **Observed**             | the pass walked `list.children` and took only DIRECT `<dt>` / `<dd>` children. Measured across the 20 routes: **0 direct `<dd>` children and 120 `<dt>`/`<dd>` pairs** — every row in this product is wrapped in `<div class="dpp-row">`, which the HTML specification explicitly permits. Both passes were therefore inert: the row pass saw no rows, and the pill pass compared 318 pills against an **empty** set of label words                                                                                                                                                                                                                                                                                                                                      |
+| **Why it was invisible** | `--seed-violation=label-echo` appends a FLAT `<dl>`, which the old traversal could see, so the seeded proof passed on a mechanism that never touched the product. **A seeded proof shows the wiring; only the population shows the coverage** — which is precisely the argument F46 makes, one level down from where it was filed                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Fixed in**             | this change: a row is now a `<dt>` and the `<dd>`s that follow it, wherever they sit. 243 rows and 111 label words per plain run                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| **Open**                 | the gating pass now looks at values that have an **accessible name of their own**, because F29 and F39 were both a `StatusPill` _name_ and a `<dd>`'s plain prose has no name. On this build that population is **0**, and the runner prints "this is not a pass" every run. The broad prose scan reports **24 observations** — `"7 minutes of slack"` under `<dt>Slack</dt>`, `"Demo rule set"` under `<dt>Rule set</dt>`, `"Estimated"` under `<dt>Departs · Estimated</dt>`, and the `/flight-status/` provenance line under `<dt>Second demonstration fixture</dt>` — without failing the build. **`accessibility-lead` to rule** whether item 5 covers `<dd>` prose; if it does, one line moves them from `notes` to `findings` and the copy is `ux-copy-steward`'s |
+
+### F-QA-3 — the driven `§17` states expose 12 contrast nodes nobody has measured — **OPEN**
+
+|              |                                                                                                                                                                                                                                                                                             |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Owner**    | `accessibility-lead` (measurement); raised by the F45 fix                                                                                                                                                                                                                                   |
+| **Input**    | `pnpm test:a11y`, the `§12` item 8 state sweep, 1440 × 900, both themes                                                                                                                                                                                                                     |
+| **Expected** | the `incomplete` node population of a state to be covered by the pixel measurement in `docs/ACCESSIBILITY.md §16.4`                                                                                                                                                                         |
+| **Observed** | §16.4 measured the **served** routes. With the state on screen, `/ [error summary]` returns **36** `overlapped`-class nodes against the route's 29, and `/ [provider unavailable]` returns **34** — 12 nodes, in both themes, that were outside every run until item 8 landed               |
+| **Impact**   | none proven. They are the same class §16.4 measured at 4.58:1 worst, over the same motif layer; nothing here claims they fail. But axe returns `incomplete` rather than `violation` on them, so **no automated check is gating those pixels**, and that is the state §16.4 exists to refuse |
+| **Handling** | the runner re-derives the delta from the served route every run and prints it as an open re-measurement request. It is deliberately **not** silenced by recording it in `baseline.json`                                                                                                     |
 
 ### F-QA-1 — the homepage renders a `hidden` provider-unavailable panel — **CLOSED**
 

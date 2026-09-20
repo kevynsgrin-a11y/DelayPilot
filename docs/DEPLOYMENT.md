@@ -4,7 +4,8 @@
 **Owned paths:** this file, `vercel.json`, `apps/edge/wrangler.jsonc`, `.github/workflows/**`,
 `packages/observability/**`, `docs/RUNBOOK.md`, `docs/ANALYTICS.md`
 **Scope of this revision (2026-09-20, visual-overhaul session S4):** the response-header and cache
-contract for the static web deployment, and the verification that proves it is live. The Cloudflare
+contract for the static web deployment, the verification that proves it is live, the settled Vercel
+Root Directory (§2), and the gate list both workflows run before a deploy (§1.1). The Cloudflare
 Worker deployment, the secret inventory, D1 migration procedure and the fifteen runbooks are
 `DIRECTIVE.md` Phase 13 and are not in this document yet; `docs/RUNBOOK.md` does not exist.
 
@@ -41,6 +42,46 @@ Two consequences follow, and both are easy to forget:
    ignoring it as configuration. Reading the file on the live site tells you what the policy was
    supposed to be, not what you received.
 
+### 1.1 What has to be green before anything deploys
+
+`.github/workflows/deploy.yml` is two jobs. `guard` reads whether `CLOUDFLARE_API_TOKEN` and
+`CLOUDFLARE_ACCOUNT_ID` exist; `deploy` runs only when both do, so an unarmed repository **skips**
+rather than fails — a missing credential is a pending setup task, not a broken pipeline.
+
+When it is armed, the `deploy` job runs the same eleven `DIRECTIVE.md §23` checks that
+`.github/workflows/ci.yml` runs, in the same order, under identical step names, **before** it calls
+`wrangler`:
+
+| §23 | Check          | Command                          | §23 | Check               | Command             |
+| --- | -------------- | -------------------------------- | --- | ------------------- | ------------------- |
+| 1   | frozen install | `pnpm install --frozen-lockfile` | 9   | edge build          | `pnpm build`        |
+| 2   | format         | `pnpm format:check`              | 13  | SEO validation      | `pnpm test:seo`     |
+| 3   | lint           | `pnpm lint`                      | 14  | accessibility smoke | `pnpm test:a11y`    |
+| 4   | typecheck      | `pnpm typecheck`                 | 15  | Playwright          | `pnpm test:e2e`     |
+| 5   | unit           | `pnpm test`                      | 16  | bundle budgets      | `pnpm perf:budgets` |
+| 8   | web build      | `pnpm build`                     |     |                     |                     |
+
+Plus the four repo-local gates (`validate-build-system`, `validate-security-headers`,
+`validate-contrast`, image budgets) and one deploy-only assertion: that the built homepage carries a
+`rel="canonical"`, which proves `PUBLIC_SITE_URL` reached the build.
+
+Two properties of that list are load-bearing and easy to erode:
+
+- **The two workflows must assert the same standard.** A deploy that gates on less than the pull
+  request did makes the deploy the real gate, and the weaker one. Add a check to one file and add
+  it to the other in the same change.
+- **The deploy is the only place the gates measure the production-shaped build.** `PUBLIC_SITE_URL`
+  is set in `deploy.yml` and nowhere else, so canonical tags, `og:url` and the JSON-LD blocks exist
+  only in that output — the heavier tree every budget in `perf.budgets.json` was set against
+  (`docs/PERFORMANCE.md §3.1a`).
+
+Seven §23 checks are still absent from both workflows (6 property, 7 Workers integration, 10
+migration validation, 11 rights-rule validation, 12 content-quality gate, 17 dependency audit, 18
+secret scan). The header comment of `ci.yml` names the phase and owner of each. The Playwright
+`visual` project is also excluded from both, deliberately: its 68 baselines were generated on the
+development container's rendering at `maxDiffPixels: 0` and are valid for that toolchain and
+nothing else (`docs/TESTING.md §5`), so it stays a local and pre-merge check.
+
 ---
 
 ## 2. Where the Vercel configuration lives, and why there are two copies
@@ -48,31 +89,94 @@ Two consequences follow, and both are easy to forget:
 Vercel reads `vercel.json` from the project's configured **Root Directory**, not from the
 repository root.
 
-`docs/decisions/0002-foundation-stack-and-versions.md` records the owner's 2026-09-11 audit finding
-that the `delaypilot` project's Root Directory is `apps/web`. The merged
-[PR #16](https://github.com/kevynsgrin-a11y/DelayPilot/pull/16) states the same thing and carries a
-probe taken at that time: `curl -I https://delaypilot.app/` returned `strict-transport-security`
-and nothing else — no `X-Frame-Options`, no `X-Content-Type-Options`, no `Referrer-Policy`, no
-`Permissions-Policy`, no CSP. That PR's fix added `apps/web/vercel.json`, but it merged into the
-retired branch `claude/inkling-multimodal-subagents-stn4l5`, so it never reached `main`.
+### 2.1 Settled: the Root Directory is `apps/web`
 
-A repository cannot read a Vercel project setting. So the same configuration is committed at both
-paths and `scripts/validate-security-headers.mjs` holds them byte-identical:
+**`apps/web/vercel.json` is the file the platform reads. The repository-root `vercel.json` is
+inert.** This is no longer an inference from a symptom.
 
-| Path                   | Read when Root Directory is | Otherwise |
-| ---------------------- | --------------------------- | --------- |
-| `vercel.json`          | the repository root         | inert     |
-| `apps/web/vercel.json` | `apps/web`                  | inert     |
+The evidence is Vercel's own integration metadata. The `vercel[bot]` comment on
+[PR #21](https://github.com/kevynsgrin-a11y/DelayPilot/pull/21) carries a base64 `[vc]:` blob;
+decoded, it reads:
 
-Identical content means the served policy is the same under either setting, and no reviewer has to
-know which one is live to review the change.
+```json
+{
+  "isMonorepo": true,
+  "projects": [
+    {
+      "name": "delaypilot",
+      "projectId": "prj_cw05bF1hLnrxJV7tqOJ84Frt1x8g",
+      "rootDirectory": "apps/web"
+    }
+  ]
+}
+```
 
-**How to collapse this to one file.** In the Vercel dashboard, open project `delaypilot` →
-Settings → Build and Deployment → Root Directory, or run `vercel project inspect delaypilot` with
-the CLI authenticated to the team. Delete whichever copy is inert, remove its row from
-`VERCEL_FILES` in `scripts/validate-security-headers.mjs`, and record the setting here. Until
-someone with dashboard access does that, both copies stay: deleting the wrong one silently
-un-protects the site, and the parity check cannot catch a file that is not there.
+That `projectId` is the same one the Vercel API returns for the project named `delaypilot`. The
+blob is written by Vercel's GitHub integration from the project's actual settings, so it is a
+reading of the setting rather than a report about it.
+
+Three things follow.
+
+1. **`docs/decisions/0002-foundation-stack-and-versions.md` was right.** Its "Hosting reality on
+   2026-09-11 (reported, not verified live)" section recorded the Root Directory as `apps/web` from
+   the owner's audit. It is now verified.
+2. **The original header finding is explained end to end.** The old root `vercel.json` declared
+   four headers and Vercel never read them. That is exactly why the probe recorded in
+   [PR #16](https://github.com/kevynsgrin-a11y/DelayPilot/pull/16) —
+   `curl -I https://delaypilot.app/` — returned `strict-transport-security` and nothing else: no
+   `X-Frame-Options`, no `X-Content-Type-Options`, no `Referrer-Policy`, no `Permissions-Policy`,
+   no CSP. HSTS was the one header Vercel adds itself. PR #16's fix added `apps/web/vercel.json`,
+   but it merged into the retired branch `claude/inkling-multimodal-subagents-stn4l5`, so it never
+   reached `main`.
+3. **Both copies stay, and the reason has changed.** See §2.2.
+
+**Provenance of this subsection.** The decode above was performed by the coordinating session of
+2026-09-20 and is recorded here rather than re-derived: GitHub API access is not enabled in the
+agent session that wrote this file, so nothing here was fetched by it (`AGENTS.md §6`). To re-check
+it yourself, read the `vercel[bot]` comment on PR #21 and decode the `[vc]:` payload:
+
+```bash
+gh pr view 21 --repo kevynsgrin-a11y/DelayPilot --json comments \
+  --jq '.comments[] | select(.author.login == "vercel") | .body' \
+  | grep -o '\[vc\]: #[^ ]*' | sed 's/.*data=//' | base64 -d
+```
+
+### 2.2 The second copy is a guard, not an unresolved question
+
+**Do not delete `vercel.json` because it is inert.** It is inert _today_, under the current setting,
+and that setting is one dashboard field away from changing. Whoever flips the Root Directory back
+to the repository root would, with only one copy on disk, silently un-protect the entire site — and
+no local check would notice, because every build gate reads `apps/web/public/_headers` and none of
+them reads what Vercel serves.
+
+So the same configuration is committed at both paths, and
+`scripts/validate-security-headers.mjs` holds them byte-identical:
+
+| Path                   | Role today                                    | Read when Root Directory is |
+| ---------------------- | --------------------------------------------- | --------------------------- |
+| `apps/web/vercel.json` | **Live.** This is the served policy.          | `apps/web` — current        |
+| `vercel.json`          | **Guard copy.** Inert, deliberately retained. | the repository root         |
+
+The parity check is what makes the guard copy safe rather than a liability: a second file that
+could drift from the live one would be worse than no second file, because it would look
+authoritative while being wrong. Because the two cannot drift, the served policy is the same under
+either setting and no reviewer has to know which one is live to review the change.
+
+**Do not weaken the four-way check to accommodate this** (`§3`). Removing `vercel.json` from
+`VERCEL_FILES` and leaving the file on disk is the worst of both worlds.
+
+### 2.3 How to re-check the setting if it is ever changed
+
+Not a pending task — a procedure for the next time someone touches the project configuration.
+
+```bash
+# Dashboard: project `delaypilot` → Settings → Build and Deployment → Root Directory.
+vercel project inspect delaypilot           # CLI, authenticated to team kevynsgrin-a11ys-projects
+```
+
+If the answer is no longer `apps/web`, update the table in §2.2, update `§3`'s row 3/4 note, and
+re-run `node scripts/validate-security-headers.mjs`. The set of committed copies does not change:
+whichever one is inert stays, for the reason in §2.2.
 
 ---
 
@@ -85,11 +189,12 @@ different formats and none of them reads another's.
 | --- | --------------------------------------------- | ----------------------------------------------------------------------------- |
 | 1   | `apps/web/public/_headers`                    | Cloudflare static assets. **The reference copy** — every build gate reads it. |
 | 2   | `apps/edge/src/index.ts` → `SECURITY_HEADERS` | Cloudflare Worker responses, which never see `_headers`.                      |
-| 3   | `vercel.json`                                 | Vercel, if Root Directory is the repository root.                             |
-| 4   | `apps/web/vercel.json`                        | Vercel, if Root Directory is `apps/web` — which is what §2 records.           |
+| 3   | `apps/web/vercel.json`                        | **Vercel. This is the live one** — Root Directory is `apps/web` (§2.1).       |
+| 4   | `vercel.json`                                 | Vercel, if Root Directory is ever set back to the repository root (§2.2).     |
 
 `node scripts/validate-security-headers.mjs` fails the build on any drift between them. It runs in
-CI (`.github/workflows/ci.yml` → "Validate security-header parity").
+both workflows, under the same step name — `.github/workflows/ci.yml` and
+`.github/workflows/deploy.yml` → "Validate security-header parity".
 
 `node scripts/validate-security-headers.mjs --self-test` proves the checker fires: it reads the
 four real files, asserts the live policy passes, then seeds one divergence at a time in memory and
@@ -246,7 +351,8 @@ curl -sI "$PREVIEW/_astro/BaseLayout.TsEFhHoJ.css" | grep -ci '^cache-control:' 
 ```
 
 If step 1 returns only `strict-transport-security`, the configuration is in the file Vercel is not
-reading — go to §2 and check the Root Directory.
+reading — go to §2.3 and re-check the Root Directory. That is the exact symptom recorded in PR #16,
+and §2.1 now explains it.
 
 The asset filename in step 3 is the one measured on 2026-09-20
 (`perf.budgets.json → measurement.takenFrom`). It changes whenever the stylesheet changes; take the
@@ -315,17 +421,22 @@ Worker rollback, D1 migration rollback and the fifteen incident runbooks are Pha
 
 Each is a named credential or setting, not a task.
 
-| Blocker                                                                                    | Needed for                                                                                                      |
-| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
-| Vercel dashboard or CLI access to project `delaypilot` in team `kevynsgrin-a11ys-projects` | Reading the Root Directory setting, so one of the two `vercel.json` copies can be deleted (§2)                  |
-| A reachable preview or production URL                                                      | Every check in §5. Outbound HTTPS to `delaypilot.app` and `*.vercel.app` is refused by this environment's proxy |
-| Reachable `vercel.com` documentation                                                       | Verifying static-file `Cache-Control` semantics before the §4.3 HTML rule can be written                        |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, the D1 database id                        | `pnpm deploy`, `pnpm db:migrate:remote`, and any claim that the Worker is running                               |
+| Blocker                                                             | Needed for                                                                                                      |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| A reachable preview or production URL                               | Every check in §5. Outbound HTTPS to `delaypilot.app` and `*.vercel.app` is refused by this environment's proxy |
+| Reachable `vercel.com` documentation                                | Verifying static-file `Cache-Control` semantics before the §4.3 HTML rule can be written                        |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, the D1 database id | `pnpm deploy`, `pnpm db:migrate:remote`, and any claim that the Worker is running                               |
+
+**Resolved 2026-09-20.** "Vercel dashboard or CLI access, to read the Root Directory setting" was
+listed here. It is settled by §2.1 — the setting is `apps/web`, read from Vercel's own integration
+metadata. Dashboard access is no longer needed to answer the question, and the second `vercel.json`
+is retained on purpose (§2.2) rather than waiting on anyone to delete it.
 
 ---
 
 ## 9. Change log
 
-| Date       | Change                                                                                                                                                                                                                                                                                                                                                                        |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-20 | Document created. Security policy ported into `vercel.json` and `apps/web/vercel.json`; `X-Frame-Options` conflict resolved to `DENY`; P-1 asset cache matrix added with the private-prefix guard; repository-root `_headers` deleted; `scripts/validate-security-headers.mjs` extended to a four-way check with a seeded-drift self-test. Live effect not verified — see §8. |
+| Date       | Change                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026-09-20 | Document created. Security policy ported into `vercel.json` and `apps/web/vercel.json`; `X-Frame-Options` conflict resolved to `DENY`; P-1 asset cache matrix added with the private-prefix guard; repository-root `_headers` deleted; `scripts/validate-security-headers.mjs` extended to a four-way check with a seeded-drift self-test. Live effect not verified — see §8.                                                                    |
+| 2026-09-20 | §2 rewritten: the Vercel Root Directory is settled at `apps/web` from the `vercel[bot]` `[vc]:` metadata on PR #21, so `apps/web/vercel.json` is live and the root copy is a deliberate guard rather than an open question; the dashboard-access blocker is resolved. §1.1 added: `deploy.yml` split into a `guard` job and a `deploy` job and brought to the same eleven §23 checks `ci.yml` now runs. Live effect still not verified — see §8. |

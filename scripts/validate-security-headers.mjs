@@ -12,17 +12,29 @@
  *   2. `apps/edge/src/index.ts` → `SECURITY_HEADERS` — the Cloudflare Worker's middleware, which
  *      covers Worker-generated responses (`/api/*` and the residual ASSETS fallthrough). A Worker
  *      response never sees the `_headers` file.
- *   3. `vercel.json` and 4. `apps/web/vercel.json` — the only header declaration Vercel reads, and
- *      Vercel is what serves `delaypilot.app` today. Vercel does not read `_headers` at all: it
- *      copies it into the build output as an ordinary static file and ignores it as configuration.
+ *   3. `apps/web/vercel.json` (live) and 4. `vercel.json` (inert guard copy — see below) — the
+ *      only header declaration Vercel reads, and Vercel is what serves `delaypilot.app` today.
+ *      Vercel does not read `_headers` at all: it copies it into the build output as an ordinary
+ *      static file and ignores it as configuration. This numbering matches `docs/DEPLOYMENT.md §3`.
  *
- * Why two Vercel files. Vercel reads `vercel.json` from the project's configured Root Directory,
- * not from the repository root. `docs/decisions/0002-foundation-stack-and-versions.md` and the
- * merged PR #16 both record that the `delaypilot` project's Root Directory is `apps/web`, which
- * makes the repository-root file inert; the repository cannot observe that setting, so the same
- * configuration is committed at both paths and this check holds them byte-identical. Once the
- * setting is confirmed, the inert copy is deleted and `VERCEL_FILES` loses a row —
- * `docs/DEPLOYMENT.md §2` carries the decision procedure.
+ * WHY TWO VERCEL FILES, AND WHY THE INERT ONE STAYS. Vercel reads `vercel.json` from the project's
+ * configured Root Directory, not from the repository root. That setting is **confirmed to be
+ * `apps/web`**: Vercel's own GitHub integration publishes it in the base64 `[vc]:` metadata on its
+ * pull-request comments, which name project `delaypilot` with `"rootDirectory": "apps/web"`.
+ * `docs/DEPLOYMENT.md §2.1` carries the decoded payload and the command to re-derive it. So
+ * `apps/web/vercel.json` is the file the platform reads, and the repository-root `vercel.json` is
+ * inert. The repository CAN observe this setting; it no longer has to guess.
+ *
+ * DO NOT DELETE THE INERT COPY, and do not drop its row from `VERCEL_FILES`. It is inert under
+ * today's setting, and that setting is one dashboard field away from changing. With only one copy
+ * on disk, whoever flips the Root Directory back to the repository root un-protects the entire
+ * site — silently, because every build gate in this repository reads `apps/web/public/_headers`
+ * and none of them reads what a server actually sent. The second copy is insurance, and THIS CHECK
+ * is what makes keeping it safe: a second file free to drift from the live one would be worse than
+ * no second file at all, because it would look authoritative while being wrong. Because the two
+ * cannot drift, the served policy is identical under either setting and no reviewer has to know
+ * which one is live to review a change. `docs/DEPLOYMENT.md §2.2` is the decision; this is its
+ * enforcement. `§2.3` is how to re-check the setting if anyone ever changes it.
  *
  * WHAT DRIFT COSTS. An engineer tightening the CSP in one file leaves the other three on the old
  * policy, and the site looks protected while being a quarter protected. Nothing else in the
@@ -379,9 +391,12 @@ export function checkPolicies({ headersText, workerText, vercel }) {
   for (const file of vercel.slice(1)) {
     if (file.text !== vercel[0].text) {
       errors.push(
-        `${file.label} is not byte-identical to ${vercel[0].label}. Both are committed because the ` +
-          `project's Root Directory cannot be observed from the repository; if they differ, which ` +
-          `one users receive depends on a setting no reviewer can see.`,
+        `${file.label} is not byte-identical to ${vercel[0].label}. Both are committed on ` +
+          `purpose: the Root Directory is apps/web, so apps/web/vercel.json is the live policy ` +
+          `and vercel.json is a guard copy kept against that setting ever changing ` +
+          `(docs/DEPLOYMENT.md §2.2). A guard copy free to disagree with the live one is worse ` +
+          `than no guard copy, because it looks authoritative while being wrong. Make them ` +
+          `identical — do not delete either.`,
       )
     }
   }

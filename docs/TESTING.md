@@ -27,7 +27,7 @@ every line of it:
 | `pnpm typecheck`                                                | `pnpm -r typecheck`                                  | Working                                                                      | `principal-architect`        |
 | `pnpm test`                                                     | `vitest run` — unit, in-package                      | Working. **Does not include `tests/**` or `e2e/**`** — see §2.               | package owners               |
 | `pnpm test:workers`                                             | —                                                    | **Loud stub, exit 1.** Phase 12, `qa-test-architect`. §8.                    | `qa-test-architect`          |
-| `pnpm test:e2e`                                                 | `pnpm exec playwright test`                          | Working — 237 tests, 6 spec files, 3 projects. §4.                           | `qa-test-architect`          |
+| `pnpm test:e2e`                                                 | `pnpm exec playwright test`                          | Working — 237 tests, 6 spec files, 3 projects; CI runs 168 of them. §4, §10. | `qa-test-architect`          |
 | `pnpm test:a11y`                                                | `node tests/a11y/run-axe.mjs`                        | Working — 80 axe runs (88 with `--conditional`) + 100 regression checks. §3. | `qa-test-architect`          |
 | `pnpm test:seo`                                                 | `node scripts/seo/test-seo.mjs`                      | `seo-engineer`, same session — not run by me                                 | `seo-engineer`               |
 | `pnpm test:security`                                            | —                                                    | **Loud stub, exit 1.** Phase 12, `security-privacy-engineer`. §8.            | `security-privacy-engineer`  |
@@ -193,6 +193,9 @@ Notes on the two places the implementation is stricter or looser than a naive re
 | `mobile-375` | Chromium, 375 × 812, `isMobile`, `hasTouch` | 84 tests      |
 | `visual`     | Chromium, viewport per test                 | 69 tests — §5 |
 
+`desktop` + `mobile-375` = **168 tests**, and that pair is what CI runs. `visual` is a local and
+pre-merge check by deliberate decision, for the reason in §5.
+
 **WebKit and Mobile Safari are `Not run`.** Only Chromium is installed at `/opt/pw-browsers`, and
 `playwright install` must not be run in this environment (`@playwright/test@1.56.1` is pinned to the
 pre-installed revision). The `mobile-375` project is Chromium with a mobile viewport: it tests
@@ -289,11 +292,55 @@ They are orthogonal, so both dimensions exist. A computed-style assertion additi
 animations are running** under `reduce` on all six routes — a stronger claim than a photograph.
 
 **Tolerance: `maxDiffPixels: 0`**, because two consecutive runs of this suite on this toolchain
-produce byte-identical PNGs (measured: md5 of the md5s of all 68 files unchanged across a
-regenerate-then-verify cycle, `f25015c2b9b37a6a698a82297f42edf3`), so any non-zero diff is a real
-change in the product rather than noise this suite would be hiding by rounding it away. A different
+produce byte-identical PNGs, so any non-zero diff is a real change in the product rather than noise
+this suite would be hiding by rounding it away. Current fingerprint of the committed set: md5 of the
+md5s of all 68 files, `4842f7045c4008d1ea7c4d0a97a42757` (it was
+`f25015c2b9b37a6a698a82297f42edf3` before the twelve-frame rebaseline recorded in §11). A different
 OS, GPU or Chromium revision will need a deliberate rebaseline; the baselines are valid for the
 pinned toolchain and nothing else.
+
+**Never widen the tolerance to clear a failure.** `maxDiffPixels: 0` is the only reason a green run
+here means anything; a `maxDiffPixelRatio` large enough to absorb the re-rasterisation in §11 would
+also absorb a provenance chip changing colour or a state label losing a word. A rebaseline records a
+change someone inspected. A widened tolerance hides every future one, silently, forever.
+
+### Element-scoped frames measure the document above them as well
+
+The twelve `§17` panel frames are captured with `expect(locator).toHaveScreenshot()`, so the PNG is
+`ceil(top + height) − floor(top)` device rows of a box whose height is fractional — 691.515625 px
+for `article.dpp-segment` at 1440, 1286.625 px for `section.dpp-connection`, 1222.828125 px for
+`section.dpp-rights`. Change the height of anything **above** the panel and the panel's `top` lands
+on a different fraction, the same box spans a different number of integer rows, and every glyph in
+it re-rasterises. The panel itself need not change by one pixel — in §11 it did not, to the sixth
+decimal — and the frame still fails.
+
+So when a layout change lands, the frames it can disturb are not only the ones showing the changed
+element. **Full-page frames are safe if the change is below the fold; element-scoped frames are
+never safe if the change is anywhere above them in the document.** Check both, and check them with
+the panel's own measured `getBoundingClientRect()` rather than by eye.
+
+### The `visual` project is deliberately excluded from runner CI
+
+`.github/workflows/ci.yml` runs `pnpm test:e2e --project=desktop --project=mobile-375` — 168 of the
+237 tests — and **not** `visual` (69). The decision is recorded here so it is findable from the
+suite and not only from the workflow.
+
+These 68 baselines were generated in this development container, on its fonts, its GPU-less
+rasterisation and its Chromium 141.0.7390.37. `maxDiffPixels: 0` is defensible **because** two runs
+on that toolchain are byte-identical. The same zero tolerance on a GitHub-hosted `ubuntu-latest`
+image turns font hinting into a test failure, and a suite that fails for reasons unrelated to the
+change under review gets muted — which is worse than not having it. So `visual` stays a local and
+pre-merge check, run by whichever agent changed the surface:
+
+```bash
+pnpm exec playwright test --project=visual            # all 69 frames
+pnpm exec playwright test --project=visual -g "home"  # one set
+```
+
+Making it a CI gate needs a runner whose rendering the baselines were generated on — a container
+action, or a self-hosted image pinned to the same Chromium build and the same font set. That is a
+real option and it is not free; it is open on me, not on `platform-release-sre`, who has said it
+will wire whatever lands.
 
 ### Updating a baseline
 
@@ -346,7 +393,7 @@ Every one of these was executed in the S4 session. A check nobody has watched fa
 | CSP detector              | built in — `csp-and-errors.e2e.mjs` appends an inline `<script>`          | `script-src` refusal recorded; the script did not execute  |
 | focus-indicator detector  | built in — `keyboard-walk.e2e.mjs` loads a same-origin ring-stripping CSS | stops without an indicator > 0                             |
 | each `§20` clause         | built in — `ad-placement.e2e.mjs` seeds a slot into each position         | all six clauses fire; the permitted position fires nothing |
-| visual baselines          | any pixel change                                                          | `maxDiffPixels: 0`                                         |
+| visual baselines          | any pixel change — observed for real, not seeded                          | 12 of 69 failed on a 1-device-row shift; §11               |
 
 The a11y seeds live in `SEEDS` in `tests/a11y/run-axe.mjs`; an unknown name exits 2 with the list.
 
@@ -374,7 +421,7 @@ correct state: it fails at a stub that says why, not at an invented green.
 ### §22 Unit
 
 Owned by the package that owns the code (`ROSTER.md §3`), not by this file. Today `pnpm test` runs
-**18 files, 852 tests** across `packages/ui`, `apps/web/src/lib/copy`, `apps/web/src/lib/seo` and
+**18 files, 888 tests** across `packages/ui`, `apps/web/src/lib/copy`, `apps/web/src/lib/seo` and
 `apps/web/test`. Every `§13` formula — Haversine, distance bands, delay arithmetic, Beta-Binomial,
 calibration metrics, connection slack, Monte Carlo determinism, freshness weight, confidence, alert
 fingerprints, entitlements, encryption envelopes, rule predicates, provider normalization — is
@@ -416,8 +463,10 @@ CI.
 
 ### §22 Visual regression
 
-**Exists** — §5. 375 / 768 / 1024 / 1440, light and dark, plus reduced motion as its own state, over
-the six routes and three state panels this tree can reach. The `§17` states that need a contract, a
+**Exists** — §5 — **and it is not a CI gate.** The 69 frames run locally and pre-merge only, for
+the toolchain reason in §5; a coverage map that let "Exists" be read as "CI enforces it" would be
+the kind of green this document exists to refuse. 375 / 768 / 1024 / 1440, light and dark, plus
+reduced motion as its own state, over the six routes and three state panels this tree can reach. The `§17` states that need a contract, a
 provider, a trip or a session — `already missed`, `offline`, `error boundary`, `maintenance`,
 `consent required`, `ad blocked`, all of Trip, Billing beyond `not configured`, and Notifications —
 are **Not run**, and a baseline of a state nobody can reach would certify nothing.
@@ -431,57 +480,133 @@ are **Not run**, and a baseline of a state nobody can reach would certify nothin
 
 ## 10. `DIRECTIVE.md §23` — CI check order
 
-`.github/workflows/ci.yml` (owner: `platform-release-sre`) runs six of the eighteen. Measured
-runtimes below are from this session, on this machine, against a 20-route build.
+`.github/workflows/ci.yml` (owner: `platform-release-sre`) runs **eleven of the eighteen**, plus
+four repo-local gates that substitute for none of them. `.github/workflows/deploy.yml` re-runs the
+same eleven under the same step names before it calls Wrangler, because it can be triggered by
+`workflow_dispatch` and must not assume a CI run happened on the same commit; the two lists must be
+changed together. Measured runtimes below are from this session, on this machine, against a 20-route
+build — a hosted runner is slower.
 
-| #   | Check                  | Command                          | In CI  | Runtime                                  | Gates merge on                                            |
-| --- | ---------------------- | -------------------------------- | ------ | ---------------------------------------- | --------------------------------------------------------- |
-| 1   | frozen-lockfile        | `pnpm install --frozen-lockfile` | yes    | ~8 s                                     | a lockfile that does not match `package.json`             |
-| 2   | format                 | `pnpm format:check`              | yes    | ~10 s                                    | any unformatted file                                      |
-| 3   | lint                   | `pnpm lint`                      | yes    | ~40 s                                    | an ESLint error or a forbidden phrase (294 files, 0 hits) |
-| 4   | typecheck              | `pnpm typecheck`                 | yes    | ~60 s                                    | any TS or `astro check` error                             |
-| 5   | unit                   | `pnpm test`                      | **no** | ~4 s                                     | ready to add — 18 files, 852 tests, 0 skipped             |
-| 6   | property               | `pnpm test`                      | no     | —                                        | Phase 2                                                   |
-| 7   | Workers integration    | `pnpm test:workers`              | no     | —                                        | stub, §8                                                  |
-| 8   | web build              | `pnpm build`                     | yes    | ~40 s                                    | `verify-dist` findings                                    |
-| 9   | edge build             | `pnpm build`                     | yes    | ~10 s                                    | `wrangler deploy --dry-run`                               |
-| 10  | migration validation   | `pnpm db:migrate:local`          | no     | —                                        | Phase 3                                                   |
-| 11  | rights-rule validation | —                                | no     | —                                        | Phase 5                                                   |
-| 12  | content-quality gate   | —                                | no     | —                                        | Phase 11                                                  |
-| 13  | SEO validation         | `pnpm test:seo`                  | no     | —                                        | `seo-engineer`, same session                              |
-| 14  | accessibility smoke    | `pnpm test:a11y`                 | **no** | **109 s** (80 runs) / 122 s + build (88) | **ready to add** — see below                              |
-| 15  | Playwright             | `pnpm test:e2e`                  | **no** | **~126 s** (237 tests, 2 workers)        | **ready to add** — see below                              |
-| 16  | bundle budgets         | `pnpm perf:budgets`              | no     | —                                        | `performance-engineer`, same session                      |
-| 17  | dependency audit       | —                                | no     | —                                        | `security-privacy-engineer`                               |
-| 18  | secret scan            | `pnpm test:security`             | no     | —                                        | stub, §8                                                  |
+| #   | Check                  | Command                          | In CI | Runtime                                  | Gates merge on                                            |
+| --- | ---------------------- | -------------------------------- | ----- | ---------------------------------------- | --------------------------------------------------------- |
+| 1   | frozen-lockfile        | `pnpm install --frozen-lockfile` | yes   | ~8 s                                     | a lockfile that does not match `package.json`             |
+| 2   | format                 | `pnpm format:check`              | yes   | ~10 s                                    | any unformatted file                                      |
+| 3   | lint                   | `pnpm lint`                      | yes   | ~40 s                                    | an ESLint error or a forbidden phrase (298 files, 0 hits) |
+| 4   | typecheck              | `pnpm typecheck`                 | yes   | ~60 s                                    | any TS or `astro check` error                             |
+| 5   | unit                   | `pnpm test`                      | yes   | ~3 s                                     | 18 files, 888 tests, 0 skipped, 0 `.only`                 |
+| 6   | property               | `pnpm test`                      | no    | —                                        | Phase 2                                                   |
+| 7   | Workers integration    | `pnpm test:workers`              | no    | —                                        | stub, §8                                                  |
+| 8   | web build              | `pnpm build`                     | yes   | ~40 s                                    | `verify-dist` findings                                    |
+| 9   | edge build             | `pnpm build`                     | yes   | ~10 s                                    | `wrangler deploy --dry-run`                               |
+| 10  | migration validation   | `pnpm db:migrate:local`          | no    | —                                        | Phase 3                                                   |
+| 11  | rights-rule validation | —                                | no    | —                                        | Phase 5                                                   |
+| 12  | content-quality gate   | —                                | no    | —                                        | Phase 11                                                  |
+| 13  | SEO validation         | `pnpm test:seo`                  | yes   | ~15 s                                    | nine suites over the built `apps/web/dist`                |
+| 14  | accessibility smoke    | `pnpm test:a11y`                 | yes   | **109 s** (80 runs) / 122 s + build (88) | one axe violation at any impact; CI runs the 80-run sweep |
+| 15  | Playwright             | `pnpm test:e2e`                  | yes   | **~126 s** (237 tests, 2 workers)        | **168 of 237** — `desktop` + `mobile-375`; `visual` is §5 |
+| 16  | bundle budgets         | `pnpm perf:budgets`              | yes   | ~5 s                                     | `perf.budgets.json` script/island counts and byte budgets |
+| 17  | dependency audit       | —                                | no    | —                                        | `security-privacy-engineer`                               |
+| 18  | secret scan            | `pnpm test:security`             | no    | —                                        | stub, §8                                                  |
 
-**To `platform-release-sre`:** checks 5, 14 and 15 are ready to add. Both browser checks need
-`pnpm build` to have run first and need `PLAYWRIGHT_BROWSERS_PATH` pointing at a pre-installed
-Chromium — **never `playwright install` in a pinned environment**; `@playwright/test@1.56.1` matches
-the revision at `/opt/pw-browsers/chromium-1194`. Check 15 is currently **Failing** on one real
-product defect (§11), so it should land in the same change as that fix or immediately after it.
+Checks 5, 13, 14, 15 and 16 were added in `acd1ec6`. Check 15 is **Passing** on this tree: the one
+real product defect it was red on (F-QA-1) is fixed and closed in §11.
+
+### `playwright install`: correct here, wrong on a runner
+
+§13 says **never run `playwright install` here**, and that is true **of this development container
+and nowhere else**. It ships Chromium 141.0.7390.37 at `/opt/pw-browsers/chromium-1194` with
+`PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers`, and `@playwright/test@1.56.1` is pinned to exactly that
+revision; a download here would produce a second copy, or a mismatched one.
+
+A GitHub-hosted `ubuntu-latest` runner has no such directory and no pre-installed browser, so
+carrying that sentence there produces a workflow whose `chromium.launch()` has nothing to launch.
+**On a runner, `playwright install chromium` _is_ the pinned path**: the revision it downloads is
+resolved from the pinned `@playwright/test` version in `package.json` — the same pinning discipline
+this container expresses by a different mechanism. Both workflows therefore leave
+`PLAYWRIGHT_BROWSERS_PATH` unset, install **Chromium only**, and cache `~/.cache/ms-playwright`
+keyed on the exact pinned version **with no `restore-keys`**, because a prefix cache hit would hand
+the run the wrong Chromium. `tests/tools/browser.mjs` warns when the variable is unset; on a runner
+that warning is the expected state, not a failure. The reasoning is also recorded in the `ci.yml`
+header, which is the file a contributor reads first.
+
+WebKit and Firefox are installed in neither place and stay **Not run** (§4).
 
 ---
 
-## 11. Open findings from this session
+## 11. Findings from this session
 
 Filed, not fixed. A QA agent that patched product code to turn its own suite green would have
-removed the only reason to trust the suite.
+removed the only reason to trust the suite. **Open: none.** The one finding below is closed.
 
-### F-QA-1 — the homepage renders a `hidden` provider-unavailable panel
+### F-QA-1 — the homepage renders a `hidden` provider-unavailable panel — **CLOSED**
 
-|                                  |                                                                                                                                                                                                                                                                                                                                                                                        |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Owner**                        | `frontend-ui-engineer` (`apps/web/src/layouts/**`)                                                                                                                                                                                                                                                                                                                                     |
-| **File**                         | `apps/web/src/layouts/app.css:1883` — `.dpp-state { display: grid; gap: … }`                                                                                                                                                                                                                                                                                                           |
-| **Input**                        | `GET /`, any viewport, either theme, no interaction                                                                                                                                                                                                                                                                                                                                    |
-| **Expected**                     | `<div class="dpp-state" data-dp-state="unavailable" hidden>` is not rendered. `LookupForm.astro:139` writes `hidden` for exactly this reason, and the island's `show()` toggles the attribute.                                                                                                                                                                                         |
-| **Observed**                     | The element computes `display: grid` and paints at **446 × 408 px** at 1440 and **293 × 502 px** at 375. `.dpp-state` sets `display` unconditionally, and an author rule outranks the user-agent `[hidden] { display: none }`, so the attribute has no effect. A reader landing on `/` is shown "Unavailable — No licensed flight-data provider is connected…" before typing anything. |
-| **Failing tests**                | `e2e/hidden-states.e2e.mjs` `/` and `e2e/lookup-states.e2e.mjs` `initial`, in both projects — 4 of 237                                                                                                                                                                                                                                                                                 |
-| **Why nothing caught it before** | The markup is correct, so `verify-dist.mjs` passes; the resulting page is perfectly accessible, so all 88 axe runs pass; the element is `tabindex="-1"`, so the keyboard walk never lands on it. It is only visible to a check that reads **computed style**. This is the single clearest argument for running a browser in CI.                                                        |
-| **Suggested fix**                | One rule, e.g. `.dpp-state[hidden] { display: none }`, beside the existing `.dpx-lookup__result[hidden]` and `.dpx-errors[hidden]` rules at `app.css:1022` and `:1030`. The same class of bug is prevented site-wide by `hidden-states.e2e.mjs`.                                                                                                                                       |
-| **Second symptom**               | The `initial` note (`<p data-dp-state="initial">`) and the `unavailable` card are on screen **at the same time**, so the page presents two mutually exclusive `§17` states at once, and the state change a reader is supposed to perceive after submitting has already happened before they type.                                                                                      |
-| **After the fix**                | The panel sits below the fold at both baselined widths, so the `home-*` visual baselines are **expected to be unaffected**. Confirm rather than assume: `pnpm exec playwright test --project=visual -g "home"`. If a frame does move, rebaseline with `--update-snapshots=changed` in the same commit as the fix and say so in the message.                                            |
+|                                  |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Owner**                        | `frontend-ui-engineer` (`apps/web/src/layouts/**`)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| **File**                         | `apps/web/src/layouts/app.css:1883` — `.dpp-state { display: grid; gap: … }`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| **Input**                        | `GET /`, any viewport, either theme, no interaction                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Expected**                     | `<div class="dpp-state" data-dp-state="unavailable" hidden>` is not rendered. `LookupForm.astro:139` writes `hidden` for exactly this reason, and the island's `show()` toggles the attribute.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Observed**                     | The element computes `display: grid` and paints at **446 × 408 px** at 1440 and **293 × 502 px** at 375. `.dpp-state` sets `display` unconditionally, and an author rule outranks the user-agent `[hidden] { display: none }`, so the attribute has no effect. A reader landing on `/` is shown "Unavailable — No licensed flight-data provider is connected…" before typing anything.                                                                                                                                                                                                                                                                                        |
+| **Failing tests**                | `e2e/hidden-states.e2e.mjs` `/` and `e2e/lookup-states.e2e.mjs` `initial`, in both projects — 4 of 237                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Why nothing caught it before** | The markup is correct, so `verify-dist.mjs` passes; the resulting page is perfectly accessible, so all 88 axe runs pass; the element is `tabindex="-1"`, so the keyboard walk never lands on it. It is only visible to a check that reads **computed style**. This is the single clearest argument for running a browser in CI.                                                                                                                                                                                                                                                                                                                                               |
+| **Suggested fix**                | One rule, e.g. `.dpp-state[hidden] { display: none }`, beside the existing `.dpx-lookup__result[hidden]` and `.dpx-errors[hidden]` rules at `app.css:1022` and `:1030`. The same class of bug is prevented site-wide by `hidden-states.e2e.mjs`.                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Second symptom**               | The `initial` note (`<p data-dp-state="initial">`) and the `unavailable` card are on screen **at the same time**, so the page presents two mutually exclusive `§17` states at once, and the state change a reader is supposed to perceive after submitting has already happened before they type.                                                                                                                                                                                                                                                                                                                                                                             |
+| **After the fix**                | The panel sits below the fold at both baselined widths, so the `home-*` visual baselines are **expected to be unaffected**. Confirm rather than assume: `pnpm exec playwright test --project=visual -g "home"`. If a frame does move, rebaseline with `--update-snapshots=changed` in the same commit as the fix and say so in the message.                                                                                                                                                                                                                                                                                                                                   |
+| **Fixed in**                     | `27764f3`, `frontend-ui-engineer`. Not the suggested rule: a single site-wide reset at the top of the cascade, `[hidden] { display: none !important }`, and the removal of all four per-component `[hidden]` rules it replaces. `!important` is load-bearing — `[hidden]` has specificity (0,1,0), identical to a single class, so without it the reset wins or loses on where the next author happens to put their rule, which is not a reset. Three of the four removed rules guarded elements that never set `display` at all, which is the evidence the per-component pattern was applied by reflex rather than by measurement — and exactly how `.dpp-state` was missed. |
+| **Verified**                     | `e2e/hidden-states.e2e.mjs` + `e2e/lookup-states.e2e.mjs`: 4 failures → **50 passed**. `e2e/hidden-states.e2e.mjs` now sweeps every emitted route for any `[hidden]` element whose computed `display` is not `none`, so the guarantee is site-wide rather than four hand-placed rules. Measured in this session against the pre-fix and post-fix builds side by side: `[hidden]` elements painting on `/` went `["div.dpp-state"]` → `[]`.                                                                                                                                                                                                                                    |
+
+#### What the original entry got half-right, and the lesson
+
+The **After the fix** row predicted the `home-*` frames would be unaffected. That was correct and it
+was confirmed rather than assumed — all 8 `home-*` frames and all 48 breakpoint frames passed
+untouched. What it did not anticipate is the set it said nothing about: the **twelve `§17`
+state-panel frames**, which are element-scoped and therefore sensitive to document height **above**
+them, not only to the element they photograph. Removing the wrongly visible panel dropped `/`'s
+`scrollHeight` by exactly that panel's height — measured 19472 → 19064 at 1440 (−408) and
+33346 → 32844 at 375 (−502) — so every panel below it started at a different fraction of a pixel.
+
+**The rule to carry forward: a full-page frame is safe from a change below its fold; an
+element-scoped frame is never safe from a change anywhere above it in the document.** §5 now states
+this, with the arithmetic.
+
+#### Ruling on the twelve moved baselines
+
+`frontend-ui-engineer` left `e2e/__screenshots__/**` untouched and recommended a rebaseline. The
+ruling is mine, and it was reached by measurement rather than by agreement:
+
+1. **Nothing that produces content changed.** `git diff 80f71b5..HEAD -- apps/web packages/ui data`
+   is six files. Only two reach the browser: `app.css` (one `[hidden]` reset in, four redundant
+   rules out) and `BaseLayout.astro` (`<head>` only — meta tags and one
+   `type="application/ld+json"` data block, neither of which renders). No component, no token, no
+   copy, no demo data.
+2. **The panels did not change size.** Measured against a reconstructed pre-fix build served beside
+   the post-fix one: `article.dpp-segment` 691.515625 px at 1440 in both;
+   `section.dpp-connection` 1286.625 px in both; `section.dpp-rights` 1222.828125 px in both.
+   Identical to the sixth decimal, at 375 as well. Only `top` moved — by −408.3906/−408.3907 at
+   1440 and −502.0156/−502.0157 at 375. **Fractional**, which is the whole mechanism.
+3. **The ±1 px is fully explained, with no residual.** A fractional-height box at a new fractional
+   offset spans a different number of integer device rows:
+   `ceil(top + height) − floor(top)` predicts **12 of 12** frame heights exactly — both the old
+   value and the new one. `segment` 693 → 692, `rights` 1224 → 1223, `connection` 1287 → **1288**
+   (it grew; a uniform "everything shrank" story would not have predicted that). All six 375 frames
+   are predicted unchanged, and all six are unchanged.
+4. **No content moved, vanished or was truncated.** Every leaf text node inside all three panels is
+   identical across the two builds in count (58 / 71 / 42), tag, class, text, height, and offset
+   **relative to the panel's own top**. Provenance chips identical. `Demo data — not a live flight.`
+   appears 16 times on `/` in both, byte-identical, so every `Demo` chip still carries its `§28`
+   sentence. Card borders and corner radii are present on all four edges of both the old and the new
+   frame — nothing is clipped.
+5. **Read, not skimmed.** Three diffs inspected directly plus a 3× magnified before/after of the one
+   region that redraws visibly (`Rebooking · Cannot determine` at 375): same words, same chip, same
+   position; only glyph anti-aliasing differs.
+
+**Verdict: the baselines were photographed through the defect; the new rendering is the correct
+one.** Rebaselined with `--update-snapshots=changed -g "§17 state panels"` on the pinned toolchain
+this set was generated on (Chromium 141.0.7390.37 at `/opt/pw-browsers/chromium-1194`,
+`@playwright/test@1.56.1`, Node 22.22.2) — confirmed before rebaselining, per §5's rule that a
+baseline is valid for the pinned toolchain and nothing else. Exactly 12 files rewritten, none added,
+none deleted, and the other 56 byte-identical to their previous contents. The tolerance was **not**
+touched: `maxDiffPixels: 0` stands.
 
 ---
 
@@ -508,13 +633,13 @@ The rules every future fixture is held to:
 
 ## 13. Environment
 
-| Fact                       | Value                                                                                           |
-| -------------------------- | ----------------------------------------------------------------------------------------------- |
-| Node                       | 22.x (`engines.node >= 22.12.0`)                                                                |
-| Playwright                 | `@playwright/test@1.56.1`, pinned to the pre-installed browser revision                         |
-| Chromium                   | 141.0.7390.37 at `/opt/pw-browsers/chromium-1194`                                               |
-| `PLAYWRIGHT_BROWSERS_PATH` | `/opt/pw-browsers` — **never run `playwright install` here**                                    |
-| axe-core                   | 4.13.0 exactly (the version the published baseline was measured with)                           |
-| `@axe-core/playwright`     | 4.13.0, installed and deliberately unused — §3                                                  |
-| Chromium sandbox           | `--no-sandbox`, because this container runs as root. A property of the runner, not the product. |
-| Ports                      | 4500–4599 reserved for QA harnesses                                                             |
+| Fact                       | Value                                                                                                  |
+| -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Node                       | 22.x (`engines.node >= 22.12.0`)                                                                       |
+| Playwright                 | `@playwright/test@1.56.1`, pinned to the pre-installed browser revision                                |
+| Chromium                   | 141.0.7390.37 at `/opt/pw-browsers/chromium-1194`                                                      |
+| `PLAYWRIGHT_BROWSERS_PATH` | `/opt/pw-browsers` — **never run `playwright install` _here_.** On a runner it is the pinned path; §10 |
+| axe-core                   | 4.13.0 exactly (the version the published baseline was measured with)                                  |
+| `@axe-core/playwright`     | 4.13.0, installed and deliberately unused — §3                                                         |
+| Chromium sandbox           | `--no-sandbox`, because this container runs as root. A property of the runner, not the product.        |
+| Ports                      | 4500–4599 reserved for QA harnesses                                                                    |

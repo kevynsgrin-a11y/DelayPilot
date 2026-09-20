@@ -1,0 +1,331 @@
+# docs/DEPLOYMENT.md — how DelayPilot reaches a browser
+
+**Owner:** `platform-release-sre` (`docs/agents/ROSTER.md §3`)
+**Owned paths:** this file, `vercel.json`, `apps/edge/wrangler.jsonc`, `.github/workflows/**`,
+`packages/observability/**`, `docs/RUNBOOK.md`, `docs/ANALYTICS.md`
+**Scope of this revision (2026-09-20, visual-overhaul session S4):** the response-header and cache
+contract for the static web deployment, and the verification that proves it is live. The Cloudflare
+Worker deployment, the secret inventory, D1 migration procedure and the fifteen runbooks are
+`DIRECTIVE.md` Phase 13 and are not in this document yet; `docs/RUNBOOK.md` does not exist.
+
+---
+
+## 0. The one thing this document protects
+
+**A security header that is declared but not served protects nobody, and nothing in a build can
+tell the difference.** Every gate in this repository — `apps/web/scripts/verify-dist.mjs`, the axe
+runner, the Lighthouse harness, the Playwright CSP suite — reads the policy out of
+`apps/web/public/_headers` and holds the build to it. All of them would have gone on passing
+forever while the deployed site served no Content-Security-Policy at all, because the server that
+actually serves `delaypilot.app` does not read that file and never has.
+
+That is not hypothetical. It is what this repository did between the first `_headers` commit and
+this change.
+
+---
+
+## 1. What serves the site today
+
+| Surface                                         | Server                                         | Status                                                                             |
+| ----------------------------------------------- | ---------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `delaypilot.app`, `www.delaypilot.app`          | Vercel project `delaypilot`, built from `main` | Live. Serves the pre-rendered `apps/web` build.                                    |
+| `/api/**`, `/auth/**`, `/webhooks/**`, `/go/**` | Cloudflare Worker (`apps/edge`)                | Not deployed. `.github/workflows/deploy.yml` skips without Cloudflare credentials. |
+
+Two consequences follow, and both are easy to forget:
+
+1. **`/api/v1/health` is unreachable on the live site.** It is a Worker route and the Worker is not
+   deployed. Any smoke test that probes it against `delaypilot.app` is testing a 404.
+2. **`apps/web/public/_headers` is inert in production.** It is Cloudflare's static-assets header
+   format. Vercel neither parses it nor applies it; the Astro build copies it into `apps/web/dist`
+   like any other file in `public/`, so Vercel serves it as a static text file at `/_headers` while
+   ignoring it as configuration. Reading the file on the live site tells you what the policy was
+   supposed to be, not what you received.
+
+---
+
+## 2. Where the Vercel configuration lives, and why there are two copies
+
+Vercel reads `vercel.json` from the project's configured **Root Directory**, not from the
+repository root.
+
+`docs/decisions/0002-foundation-stack-and-versions.md` records the owner's 2026-09-11 audit finding
+that the `delaypilot` project's Root Directory is `apps/web`. The merged
+[PR #16](https://github.com/kevynsgrin-a11y/DelayPilot/pull/16) states the same thing and carries a
+probe taken at that time: `curl -I https://delaypilot.app/` returned `strict-transport-security`
+and nothing else — no `X-Frame-Options`, no `X-Content-Type-Options`, no `Referrer-Policy`, no
+`Permissions-Policy`, no CSP. That PR's fix added `apps/web/vercel.json`, but it merged into the
+retired branch `claude/inkling-multimodal-subagents-stn4l5`, so it never reached `main`.
+
+A repository cannot read a Vercel project setting. So the same configuration is committed at both
+paths and `scripts/validate-security-headers.mjs` holds them byte-identical:
+
+| Path                   | Read when Root Directory is | Otherwise |
+| ---------------------- | --------------------------- | --------- |
+| `vercel.json`          | the repository root         | inert     |
+| `apps/web/vercel.json` | `apps/web`                  | inert     |
+
+Identical content means the served policy is the same under either setting, and no reviewer has to
+know which one is live to review the change.
+
+**How to collapse this to one file.** In the Vercel dashboard, open project `delaypilot` →
+Settings → Build and Deployment → Root Directory, or run `vercel project inspect delaypilot` with
+the CLI authenticated to the team. Delete whichever copy is inert, remove its row from
+`VERCEL_FILES` in `scripts/validate-security-headers.mjs`, and record the setting here. Until
+someone with dashboard access does that, both copies stay: deleting the wrong one silently
+un-protects the site, and the parity check cannot catch a file that is not there.
+
+---
+
+## 3. One policy, four declarations
+
+The same security policy is written in four places because three different servers read three
+different formats and none of them reads another's.
+
+| #   | File                                          | Applies to                                                                    |
+| --- | --------------------------------------------- | ----------------------------------------------------------------------------- |
+| 1   | `apps/web/public/_headers`                    | Cloudflare static assets. **The reference copy** — every build gate reads it. |
+| 2   | `apps/edge/src/index.ts` → `SECURITY_HEADERS` | Cloudflare Worker responses, which never see `_headers`.                      |
+| 3   | `vercel.json`                                 | Vercel, if Root Directory is the repository root.                             |
+| 4   | `apps/web/vercel.json`                        | Vercel, if Root Directory is `apps/web` — which is what §2 records.           |
+
+`node scripts/validate-security-headers.mjs` fails the build on any drift between them. It runs in
+CI (`.github/workflows/ci.yml` → "Validate security-header parity").
+
+`node scripts/validate-security-headers.mjs --self-test` proves the checker fires: it reads the
+four real files, asserts the live policy passes, then seeds one divergence at a time in memory and
+asserts each is rejected. It modifies nothing on disk.
+
+### 3.1 The headers
+
+Values are byte-identical across all four files. The reasoning for each CSP directive — and the
+conditions under which `'unsafe-inline'` would have to come back — is documented once, in the
+comment block of `apps/web/public/_headers`. Do not restate it; do not widen a directive to make a
+build green.
+
+| Header                      | Value                                                                                                                                                                                          |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `X-Content-Type-Options`    | `nosniff`                                                                                                                                                                                      |
+| `X-Frame-Options`           | `DENY`                                                                                                                                                                                         |
+| `Referrer-Policy`           | `strict-origin-when-cross-origin`                                                                                                                                                              |
+| `Permissions-Policy`        | `geolocation=(), camera=(), microphone=(), payment=()`                                                                                                                                         |
+| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload`                                                                                                                                                 |
+| `Content-Security-Policy`   | `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'` |
+
+### 3.2 Framing: `DENY`, not `SAMEORIGIN`
+
+The repository previously disagreed with itself: `apps/web/public/_headers` set
+`frame-ancestors 'none'` and `X-Frame-Options: DENY`, while the root `vercel.json` set
+`X-Frame-Options: SAMEORIGIN`. **`DENY` and `frame-ancestors 'none'` are correct and both files now
+say so**, because DelayPilot has no embed surface and frames none of its own pages, while its
+private routes (`/app/**`, `/auth/**`, `/checkout/**`, `/admin/**`) must never be framable at all —
+`SAMEORIGIN` was the weaker default of a file nothing read, not a decision anyone took.
+
+---
+
+## 4. Cache policy
+
+`docs/PERFORMANCE.md §7` finding P-1 measured Lighthouse `cache-insight` at **0** with **49,126
+bytes** of estimated waste on `/`: all seven static assets reported `cacheLifetimeMs: 0`, because
+no file in the repository declared a `Cache-Control` header for a static asset. The rules below are
+declared in `vercel.json` (both copies).
+
+| Source pattern          | `Cache-Control`                       | Why that value                                                                                           |
+| ----------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `/_astro/:path*`        | `public, max-age=31536000, immutable` | Astro content-hashes these filenames. A change produces a new URL, so the old one can never be wrong.    |
+| `/fonts/:path*`         | `public, max-age=31536000, immutable` | Immutable subsets. **A new subset must be a new filename** — see the contract below.                     |
+| `/icons/:path*`         | `public, max-age=604800`              | Not content-hashed. A week is short enough that a corrected icon lands without a filename change.        |
+| `/og/:path*`            | `public, max-age=604800`              | Same class.                                                                                              |
+| `/brand/:path*`         | `public, max-age=604800`              | Same class.                                                                                              |
+| `/favicon.ico`          | `public, max-age=604800`              | Same class; the root copy of `/icons/favicon.ico`.                                                       |
+| `/theme-init.js`        | `public, max-age=3600`                | **Not** content-hashed and it runs before first paint. `immutable` would strand a fix for a year.        |
+| `/manifest.webmanifest` | `public, max-age=3600`                | Not hashed; a wrong manifest should be correctable within an hour.                                       |
+| `/robots.txt`           | `public, max-age=3600`                | A crawler directive that may need to change quickly.                                                     |
+| `/sitemap.xml`          | `public, max-age=3600`                | Same; a removed route should stop being advertised quickly.                                              |
+| `/llms.txt`             | `public, max-age=3600`                | Same class.                                                                                              |
+| `/humans.txt`           | `public, max-age=3600`                | Same class.                                                                                              |
+| `/_headers`             | `public, max-age=3600`                | Served publicly by Vercel as a text file; also carries `X-Robots-Tag: noindex` (§6).                     |
+| `/app/:path*`           | `private, no-store`                   | `AGENTS.md §2`. Declared before the route exists so it cannot be forgotten on the day it lands.          |
+| `/auth/:path*`          | `private, no-store`                   | Same.                                                                                                    |
+| `/checkout/:path*`      | `private, no-store`                   | Same.                                                                                                    |
+| `/admin/:path*`         | `private, no-store`                   | Same.                                                                                                    |
+| `/api/:path*`           | `private, no-store`                   | Same. The Worker already sets `no-store` on API responses; this covers the Vercel side of the same path. |
+
+### 4.1 Why the rules are disjoint, and why that is enforced
+
+Vercel applies **every** matching header rule. No Vercel documentation reachable from the build
+environment defines which value wins when two rules set the same key, and an undefined
+`Cache-Control` on a private route is a privacy defect, not a performance question. So no two
+`Cache-Control` rules may match the same request, and `scripts/validate-security-headers.mjs`
+proves it: every `Cache-Control` source must be written as `/exact/path` or `/prefix/:path*`, the
+checker rejects anything outside that grammar, and it rejects any overlapping pair. The site-wide
+security block sets no `Cache-Control` at all, which is what makes it safe for it to match
+everything.
+
+The prefix form matters. Under path-to-regexp — the matcher Vercel compiles `source` with —
+`/api/:path*` matches `/api`, `/api/` and `/api/v1/health` but not `/apiary`, and `/favicon.ico`
+matches only `/favicon.ico` because the dot is escaped. Verified against the `path-to-regexp@6.3.0`
+copy in this repository's `node_modules`; the version Vercel runs was not verifiable from the build
+environment (see §7).
+
+### 4.2 What may never gain a shared-cache directive
+
+- **No route that renders provider data** may carry `s-maxage` or `stale-while-revalidate` without
+  the licensed cache window from `docs/PROVIDER_LICENSING.md` behind it. Past its freshness
+  threshold a datum is `Cached` or `Stale` with its age shown, never `Live` (`AGENTS.md §1.2`), so a
+  shared cache that outlives the window changes the provenance label the traveler is owed. No route
+  renders provider data today. That is why the rules above are safe now and would not be later.
+- **`/app/**`, `/auth/**`, `/checkout/**`, `/admin/**` and any authenticated API path** may never
+  carry `public`, `s-maxage`, `stale-while-revalidate` or `immutable` at all (`AGENTS.md §2`). The
+  parity check fails the build if one of them does, and fails it if one of them loses its rule.
+
+### 4.3 The HTML documents line is deliberately not implemented
+
+P-1 also proposes `public, max-age=0, s-maxage=<ttl>, stale-while-revalidate=<swr>` on HTML
+documents. It is **not** in `vercel.json`, for two reasons, neither of which is a judgement about
+whether it would help:
+
+1. "HTML documents" cannot be written as a source pattern disjoint from the asset rules without a
+   negative-lookahead regex, and §4.1 is the reason that matters.
+2. Vercel's treatment of `s-maxage` and `stale-while-revalidate` on a **static** file — whether the
+   directives are served through to the browser, consumed by the CDN, or rewritten — could not be
+   verified against Vercel's documentation from this build environment (§7). `AGENTS.md §5.1`
+   forbids taking a platform fact from memory.
+
+The measured waste in P-1 is entirely in the seven static assets, all of which are covered above.
+When vercel.com is reachable, verify the static-file `Cache-Control` semantics, then add one rule
+per **enumerated** HTML path class rather than a catch-all, and re-run the parity check — it will
+reject an overlapping pattern on sight.
+
+### 4.4 Contract: an immutable filename must change when its bytes change
+
+`/_astro/*` satisfies this by construction — Astro content-hashes it. `/fonts/*` does not: the
+build emits `geist-sans-latin-400.woff2` and `geist-sans-latin-600.woff2` at fixed names. With
+`immutable, max-age=31536000`, re-subsetting a font **under the same filename** strands returning
+visitors on the old file for up to a year, and no deploy fixes it. A new subset must ship under a
+new filename. Owner of that constraint: `brand-design-director` (`apps/web/public/fonts/**`).
+
+---
+
+## 5. Verifying that any of this is live
+
+Local checks prove the declarations agree. They cannot prove what a server sent.
+
+```bash
+node --input-type=module -e "import('node:fs').then(fs=>{JSON.parse(fs.readFileSync('vercel.json','utf8'));console.log('ok')})"
+node scripts/validate-security-headers.mjs              # the four declarations agree
+node scripts/validate-security-headers.mjs --self-test  # and the checker fires on drift
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm test
+```
+
+**The live check is a separate, mandatory step, and it belongs on the preview deployment.** Merging
+to `main` is a production deploy (`docs/BUILD_PLAN.md §10`, decision D1), so a header change is
+verified **before** the pull request merges, not after. Every branch gets a preview at
+`https://delaypilot-git-<branch>-kevynsgrin-a11ys-projects.vercel.app` (`docs/BUILD_PLAN.md §10`,
+input I-7).
+
+```bash
+PREVIEW=https://delaypilot-git-<branch>-kevynsgrin-a11ys-projects.vercel.app
+
+# 1. The six security headers are present on an HTML document.
+curl -sI "$PREVIEW/" | grep -iE 'content-security-policy|x-frame-options|x-content-type-options|referrer-policy|permissions-policy|strict-transport-security'
+
+# 2. The CSP is byte-identical to the one the build is verified against.
+diff <(curl -sI "$PREVIEW/" | grep -i '^content-security-policy:' | cut -d' ' -f2- | tr -d '\r') \
+     <(grep -i 'Content-Security-Policy:' apps/web/public/_headers | cut -d':' -f2- | sed 's/^ *//')
+
+# 3. Long-lived caching reaches the content-hashed assets.
+curl -sI "$PREVIEW/_astro/BaseLayout.TsEFhHoJ.css" | grep -i cache-control   # public, max-age=31536000, immutable
+curl -sI "$PREVIEW/fonts/geist-sans-latin-400.woff2" | grep -i cache-control # public, max-age=31536000, immutable
+curl -sI "$PREVIEW/theme-init.js" | grep -i cache-control                    # public, max-age=3600
+
+# 4. Exactly one Cache-Control header comes back on each. Two means a rule overlap reached production.
+curl -sI "$PREVIEW/_astro/BaseLayout.TsEFhHoJ.css" | grep -ci '^cache-control:'  # expect 1
+
+# 5. Nothing is broken by the policy: load the page in a browser with the console open and
+#    confirm zero CSP violation reports on /, /flight-status/, /connection-risk/ and a /guides/ page.
+```
+
+If step 1 returns only `strict-transport-security`, the configuration is in the file Vercel is not
+reading — go to §2 and check the Root Directory.
+
+The asset filename in step 3 is the one measured on 2026-09-20
+(`perf.budgets.json → measurement.takenFrom`). It changes whenever the stylesheet changes; take the
+current one from `apps/web/dist/_astro/` or from the page source.
+
+---
+
+## 6. `/_headers` is served publicly, and stays where it is
+
+`apps/web/public/_headers` is copied into `apps/web/dist` by the build, so Vercel serves it at
+`/_headers` as a static text file while ignoring it as configuration.
+
+**Decision: keep the file at `apps/web/public/_headers`.** It is the single source of the policy
+string for six consumers — `apps/web/scripts/verify-dist.mjs`, `scripts/perf/serve-dist.mjs`,
+`scripts/perf/lighthouse.mjs`, `tests/tools/serve-dist.mjs`, `tests/a11y/run-axe.mjs` and
+`playwright.config.mjs` — each of which reads the policy from that path rather than restating it.
+Moving it would be a change in `apps/web/**`, which `platform-release-sre` does not own, and would
+turn one source of truth into a migration across six readers for a file whose entire content is a
+policy every response already advertises in full. It contains no secret and discloses nothing that
+`curl -I` does not.
+
+What it costs is a file that could be indexed or mistaken for live configuration. Both are handled:
+`vercel.json` serves `/_headers` with `X-Robots-Tag: noindex`, and this section is the record that
+it is a build artefact rather than a control surface. The file's own comment block still asserts
+"Cloudflare parses this file rather than serving it; it never appears as a public asset" — true of
+Cloudflare, false of the server that actually runs the site. Correcting that sentence is a handoff
+to the owner of `apps/web/public/**`.
+
+**The repository-root `_headers` file is deleted.** It was a weaker duplicate
+(`X-Frame-Options: SAMEORIGIN`, no CSP, `max-age=31536000`), no tool read it, no server read it, and
+`docs/BUILD_PLAN.md §10` had already recorded it as dead. The only thing that touched it was the
+copy lint's repository-root sweep, which simply has one fewer file to scan.
+
+---
+
+## 7. Rollback
+
+A header change is reversible by content, and the deployment is reversible by promotion. Both,
+in order of preference:
+
+1. **Revert the configuration.** `git revert <sha>` on the commit that changed `vercel.json` and
+   `apps/web/vercel.json`, then let the branch deploy. `node scripts/validate-security-headers.mjs`
+   must pass on the reverted tree — if it fails, the revert has put the four declarations out of
+   step and the fix is to revert all four together, never to relax one.
+2. **Promote the previous deployment.** In the Vercel dashboard, project `delaypilot` →
+   Deployments → the last known-good deployment → Promote to Production. This restores the previous
+   build and its headers in one step, without waiting for a build.
+3. **Never "fix forward" by widening the policy.** If a route breaks under the CSP, the break is a
+   finding about that route: the build is verified against this exact policy by
+   `apps/web/scripts/verify-dist.mjs`, which prints the precise `sha256-...` source any inline
+   element would need. A policy widened to turn a page green is the failure mode the whole
+   arrangement exists to prevent (`apps/web/public/_headers`, "HOW TO CHANGE THIS POLICY WITHOUT
+   GUESSING").
+
+A cache rollback has a tail the code does not: an asset already served with
+`max-age=31536000, immutable` stays in browser caches until it expires. Reverting the rule does not
+recall it. That is why `immutable` is restricted to content-hashed and new-filename-per-change
+assets (§4.4) — for those, the recall mechanism is the new URL.
+
+Worker rollback, D1 migration rollback and the fifteen incident runbooks are Phase 13
+(`DIRECTIVE.md §21`, `docs/RUNBOOK.md`).
+
+---
+
+## 8. External blockers
+
+Each is a named credential or setting, not a task.
+
+| Blocker                                                                                    | Needed for                                                                                                      |
+| ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| Vercel dashboard or CLI access to project `delaypilot` in team `kevynsgrin-a11ys-projects` | Reading the Root Directory setting, so one of the two `vercel.json` copies can be deleted (§2)                  |
+| A reachable preview or production URL                                                      | Every check in §5. Outbound HTTPS to `delaypilot.app` and `*.vercel.app` is refused by this environment's proxy |
+| Reachable `vercel.com` documentation                                                       | Verifying static-file `Cache-Control` semantics before the §4.3 HTML rule can be written                        |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, the D1 database id                        | `pnpm deploy`, `pnpm db:migrate:remote`, and any claim that the Worker is running                               |
+
+---
+
+## 9. Change log
+
+| Date       | Change                                                                                                                                                                                                                                                                                                                                                                        |
+| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-20 | Document created. Security policy ported into `vercel.json` and `apps/web/vercel.json`; `X-Frame-Options` conflict resolved to `DENY`; P-1 asset cache matrix added with the private-prefix guard; repository-root `_headers` deleted; `scripts/validate-security-headers.mjs` extended to a four-way check with a seeded-drift self-test. Live effect not verified — see §8. |

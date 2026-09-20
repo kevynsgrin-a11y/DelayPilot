@@ -25,22 +25,26 @@
  * script reads the RENDERED result of those decisions out of dist and never re-derives them; a
  * second implementation of the same rule is a second rule (AGENTS.md §3.2).
  *
- * THE ORIGIN IS PINNED HERE. PUBLIC_SITE_URL is unset by owner input I-4, so BaseLayout emits no
- * canonical and no og:url — guessing an origin would be a fabricated value (AGENTS.md §1.1). But
- * the sitemap protocol requires an absolute <loc>, so the domain is committed in sitemap.xml and
- * in robots.txt's `Sitemap:` line. EXPECTED_ORIGIN below is the third statement of it, and it
- * exists so the other two are checked rather than trusted: a typo'd or swapped host in either file
- * fails here. When PUBLIC_SITE_URL is configured, the resolver in apps/web/src/lib/seo/ becomes the
- * single source and this constant reads from it.
+ * THE ORIGIN COMES FROM THE RESOLVER. PUBLIC_SITE_URL is unset by owner input I-4, so BaseLayout
+ * emits no canonical and no og:url — guessing an origin would be a fabricated value
+ * (AGENTS.md §1.1). But the sitemap protocol requires an absolute <loc>, so an origin is committed
+ * anyway, once, in apps/web/src/lib/seo/site-url.mjs. This script imports it rather than restating
+ * it, and it exists so sitemap.xml and robots.txt are checked against that one statement rather
+ * than trusted: a typo'd or swapped host in either file fails here. Configure PUBLIC_SITE_URL and
+ * the configured origin takes over with no edit to any of the three files.
  *
  * Run: node scripts/seo/verify-sitemap.mjs   (after a build — it reads apps/web/dist)
- * Exit code is 1 on any finding.
+ * Exit code is 1 on any finding. `pnpm test:seo` runs this script as one of its suites; running it
+ * alone is the fast subset.
  */
 
 import { readFile, readdir } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
+
+import { COMMITTED_ORIGIN, normalizeSiteUrl } from '../../apps/web/src/lib/seo/site-url.mjs'
 
 const repoRoot = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
 const DIST = join(repoRoot, 'apps/web/dist')
@@ -48,8 +52,15 @@ const SITEMAP_SOURCE = 'apps/web/public/sitemap.xml'
 const SITEMAP_BUILT = 'apps/web/dist/sitemap.xml'
 const ROBOTS_SOURCE = 'apps/web/public/robots.txt'
 
-/** The committed origin. See the docblock: this is the third statement, and it checks the other two. */
-const EXPECTED_ORIGIN = 'https://delaypilot.app'
+/**
+ * The origin every `<loc>` must use: the configured `PUBLIC_SITE_URL` when there is one, and
+ * otherwise the origin committed in `apps/web/src/lib/seo/site-url.mjs` because the sitemap
+ * protocol has no relative form. It is no longer typed here — the S4 resolver is the single source
+ * the docblock above anticipated, so this file and robots.txt are checked against it rather than
+ * against a third copy of the string.
+ */
+const configuredOrigin = normalizeSiteUrl(process.env['PUBLIC_SITE_URL'])
+const EXPECTED_ORIGIN = configuredOrigin.ok ? configuredOrigin.origin : COMMITTED_ORIGIN
 
 /** Emitted HTML that is never a sitemap entry, whatever its robots directive says. */
 const NEVER_LISTED = new Set(['/404.html'])
@@ -164,8 +175,9 @@ for (const loc of locs) {
 
   if (url.origin !== EXPECTED_ORIGIN) {
     fail(
-      `<loc>${loc}</loc> has origin ${url.origin}; the committed origin is ${EXPECTED_ORIGIN}. ` +
-        `Changing the site's domain is one edit in sitemap.xml, one in robots.txt, and one here.`,
+      `<loc>${loc}</loc> has origin ${url.origin}; the resolved origin is ${EXPECTED_ORIGIN}. ` +
+        `Changing the site's domain is one edit in sitemap.xml, one in robots.txt, and — when the ` +
+        `fallback itself moves — COMMITTED_ORIGIN in apps/web/src/lib/seo/site-url.mjs.`,
     )
     continue
   }

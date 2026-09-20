@@ -459,3 +459,30 @@ Ruling adopted (`DIRECTIVE.md §3.1`): the demo sentence is triggered by fixture
 - `visual-asset-director` — `design/**` carries 11 copy-lint hits (negations, reference only, excluded by documented reason) and the route-globe SVG carries the attributes the inliner adds (F38 source side).
 - `ux-copy-steward` — F36's statement sentences are re-reviewed by `accessibility-lead` before `/accessibility/` publishes (I-3); the rank-claim lint rules are live.
 - `seo-engineer` — one `description` changed (`guides/flight-cancelled-what-to-do`); the noindex list and sitemap set are unchanged; `<link rel="canonical">` on every page waits on I-4.
+
+---
+
+### S4 opened (2026-09-20)
+
+PR C merged to `main` as `b3e6aae` on 2026-09-13; the production deployment built from that commit is
+live and serving the S3 build. The session branch was restarted from `origin/main` and S4 is running
+the `§9` dispatch: `seo-engineer` (Phase 11 technical SEO) with `performance-engineer` (budgets and
+the Lighthouse gate) and `qa-test-architect` (the axe runner, the end-to-end suite, visual
+regression) in parallel, after `principal-architect` landed the harness dependencies and turned four
+deliberate exit-1 stubs into real commands.
+
+**Two facts recorded here because the files they belong to cannot carry them.**
+
+`@playwright/test` is pinned to **1.56.1 exactly** because `playwright-core@1.56.1` declares chromium
+revision **1194**, and `/opt/pw-browsers/chromium-1194` is the browser this environment has
+pre-installed. `package.json` is JSON and cannot hold the reason. A future bump must either land on a
+version whose `browsers.json` still names revision 1194, or launch with
+`executablePath: '/opt/pw-browsers/chromium'`. Bumping blind fails at launch with a missing-browser
+error, and `playwright install` must never be run here. `axe-core` is pinned to **4.13.0 exactly**
+for the same class of reason: `docs/ACCESSIBILITY.md §12` records the 88-run baseline at that rule
+set, and a silent drift to a newer one invalidates the recorded measurement rather than improving it.
+
+`pnpm quality` short-circuits at `pnpm test:workers`, a deliberate Phase 12 stub, **before** it
+reaches `test:e2e`, `test:a11y`, `test:seo` or `perf:budgets`. Running `quality` alone therefore
+exercises none of the four new harnesses. Until Phase 12 lands the Workers pool, every gate run must
+invoke them individually, and any report claiming `quality` covered them is wrong.

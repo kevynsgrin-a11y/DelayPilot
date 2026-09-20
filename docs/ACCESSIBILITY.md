@@ -7,10 +7,11 @@ finding filed against another agent's path, never a patch (`AGENTS.md §3.5`).
 stricter than WCAG and are applied throughout: the 3:1 large-text allowance of SC 1.4.3 is never
 used, and the touch-target floor is 44 × 44 px, not the 24 × 24 px of SC 2.5.8 (`DIRECTIVE.md §18.7`).
 
-**Reviewed:** 2026-09-11 (Phase 9, three passes), 2026-09-12 (Phase 10, two passes) and
-2026-09-13 (Phase 10 residue round).
-**Branch:** `claude/intelligent-knuth-d3s8za`. **This revision describes the product tree at
-`af24302`**, which is head `8a9d44a` less the build-plan commit.
+**Reviewed:** 2026-09-11 (Phase 9, three passes), 2026-09-12 (Phase 10, two passes),
+2026-09-13 (Phase 10 residue round) and 2026-09-20 (S4, the accessibility gate itself).
+**Branch:** `claude/intelligent-knuth-d3s8za`. **§1–§15 describe the product tree at
+`af24302`**, which is head `8a9d44a` less the build-plan commit; **§16 describes `6d8bb3d`**,
+and it reviews `pnpm test:a11y` rather than the product.
 
 | Pass                               | Phase | Tree      | Verdict                                                           |
 | ---------------------------------- | ----- | --------- | ----------------------------------------------------------------- |
@@ -20,8 +21,11 @@ used, and the touch-target floor is 44 × 44 px, not the 24 × 24 px of SC 2.5.8
 | Visual-overhaul session S3, routes | 10    | `d35f69c` | BLOCKED — 2 blockers (B8, B9), 14 findings (F25–F38)              |
 | Re-review after the S3 fix loop    | 10    | `692ad3f` | GREEN — B8 and B9 closed by measurement; F39–F42 raised           |
 | Residue round                      | 10    | `af24302` | **GREEN** — F39, F41, F42 closed; no new finding                  |
+| S4 review of the a11y gate         | 12    | `6d8bb3d` | **GREEN WITH FINDINGS** — the gate is real and can fail; F43–F50  |
 
-**The current verdict is §15.16**, which carries §15.15's GREEN forward unchanged.
+**The current product verdict is §15.16**, which carries §15.15's GREEN forward unchanged.
+**§16 is a separate verdict on a separate object** — `pnpm test:a11y`, the runner
+`qa-test-architect` built to execute §12 — and it changes no route result.
 §15.1–§15.14 are the record of the first Phase 10 pass and are
 left as written, so the two blockers can still be read as they were filed; §15.15 says what happened
 to every one of them. Sections 1–14 are the Phase 9 record, except §10.2 (the manual matrix, carrying
@@ -1012,6 +1016,10 @@ b7f28e3a…  packages/ui/src/primitives/…/*.css     27672f98…  changed: B1, 
 
 Specified here by `accessibility-lead`; implemented and owned by `qa-test-architect`. Recorded now so
 the runner is not designed twice.
+
+**Amended 2026-09-20 — read §16.6 with this section.** Items 2 and 4 are corrected and items
+6, 7, 8 and 9 are added, after the S4 review measured three classes of defect passing the runner
+that implements this spec. Items 1, 3 and 5 stand exactly as written below.
 
 **Rule tags.** `wcag2a`, `wcag2aa`, `wcag21aa`, `wcag22aa`. The `best-practice` tag runs as a
 separate, reported-but-non-blocking pass — F13 and F14 live there and are still worth fixing.
@@ -2023,13 +2031,361 @@ in all five before it.
 
 ---
 
-## 16. Revision history
+## 16. S4 review — the accessibility gate itself, 2026-09-20, tree `6d8bb3d`
 
-| Date       | Phase                                                    | Verdict                                                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
-| ---------- | -------------------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 2026-09-11 | Phase 9 (visual-overhaul session S2)                     | **BLOCKED — 6 blockers**                                 | First revision. Tokens, contrast, focus, reduced motion, primitive semantics, mark legibility, motif inventory. Route-level, keyboard, screen-reader, zoom and Lighthouse results are Phase 12 and are recorded as Not run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| 2026-09-11 | Phase 9 re-review, tree `63005a3`                        | **BLOCKED — 1 blocker (B7)**                             | B1–B6 verified closed and B7 raised: the fix for B3 put the band word inside a `role="progressbar"`, whose children are presentational, so `bandLabel` reaches the eye and not the accessibility tree (SC 1.3.1). Thirteen of the seventeen findings closed; F15, F22 and F23 remain with their original owners. Contrast re-measured: 101 unique rendered pairs, 202 measurements, zero below floor. Mark decision unchanged — the artwork is byte-identical. Phase 12 cells still Not run, for the same reason.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        |
-| 2026-09-11 | Phase 9 B7 re-review, tree at `9dd1f75`                  | **GREEN**                                                | B7 closed: `aria-valuetext` carries the reading and the band, verified from three rendered fixture states, with the visible readout intact. The `aria-describedby` alternative I had offered is recorded as rejected, correctly — it would have forced either a doubled announcement or a screen-reader-computed percentage, which is a published-precision defect. No token changed, so the contrast result is unchanged. F24 raised (copy, `ux-copy-steward`). Phase 9 has no open blocker; F15, F22, F23 and F24 remain with their owners for Phases 10–11, and every Phase 12 cell is still Not run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 2026-09-12 | Phase 10 (visual-overhaul session S3), tree `d35f69c`    | **BLOCKED — 2 blockers (B8, B9), 14 findings (F25–F38)** | Route-level review of the twenty served S3 routes plus `/accessibility/` and `/contact/` from a scratch build. 88 axe runs, both themes and both motion preferences, zero violations. Keyboard walks, focus measured from rendered pixels, reduced motion measured from computed styles (ADR 0003 rule 4), reflow and zoom, touch targets, motif-behind-text pixel diff, and the accessibility statement reviewed sentence by sentence (§13.1). B8: SC 1.4.10 Reflow fails at 320 CSS px on `/` and `/connection-risk/`. B9: the `/delay-risk/` band meter is announced as a connection-slack measurement (SC 2.4.6). F22 and F24 closed by measurement; F15 closed on every shipped surface. §10.2 moved from `Not run` to measured results; §13 citation `§35` corrected to `§3.4`.                                                                                                                                                                                                                                                                                    |
-| 2026-09-12 | Phase 10 re-review after the S3 fix loop, tree `692ad3f` | **GREEN**                                                | B8 and B9 closed, each by the measurement the blocker named: reflow exact at 320 on 20 of 20 routes, and the `/delay-risk/` meter read back from the built HTML as `aria-label="Delay and cancellation assessment"` with `aria-valuetext="Risk band, Watch"`. Eleven of the fourteen findings closed; F31 closed on three of four items with the `<caption>` re-owned to `content-editorial-lead`; F17 and F23 unchanged. 88 axe runs again, zero violations and now zero best-practice. Four new findings: F39 the same "Status" detail one component over in `ItineraryTimeline`, F40 the accessibility statement now listing closed issues as open, F41 the 196 × 23 px feedback address, F42 the loading message announced twice. None blocks. The given `apps/web/dist` was proved byte-identical to a fresh build of the committed tree before anything was measured on it. §13.2 re-reads the statement against all twelve §13.1 rows. The Callout heading-size decision is accepted, with axe's `heading-order` named as the guard that replaces the visual cue. |
-| 2026-09-13 | Phase 10 residue round, tree `af24302`                   | **GREEN**                                                | F39, F41 and F42 closed by measurement: 0 `dp-status-pill__detail` elements and 0 of 39 pills ending in a field label anywhere in the build; the feedback address 196 × 47 px with 0 targets under 44 × 44 on either conditional route; one `StaticText "Looking up this flight."` in the CDP tree where there were two. No new finding. The given `apps/web/dist` proved byte-identical to a build of the working tree, which also showed the one dirty file (`cockpit.ts`, deleting a dead export) changes no rendered byte. 88 axe runs again, zero violations; reflow exact at 320 on 22 of 22 routes; keyboard walks clean. The accessibility statement was re-read and **may not publish as written** — three of its six known issues are now closed, one of them a claim about the page itself — and §15.16 rules the exact three-entry list (F15, F23, F31) and the date it must carry, so no further round trip is needed.                                                                                                                                      |
+> **VERDICT: GREEN WITH FINDINGS.** `pnpm test:a11y` is a real measurement and it can genuinely go
+> red: I seeded seven defects into the bytes of a scratch build and every one of them was caught,
+> through the same server, the same `_headers` policy and the same page load CI uses. It is not the
+> whole of §12. **Three classes of accessibility defect pass this gate today**, and I measured each
+> rather than reasoning about it — a `hidden` panel whose attribute has been defeated while it
+> carries `aria-busy` (F-QA-1's own shape, in the very check that owns `aria-busy`), a visible
+> `position: fixed` element carrying `aria-busy`, and any axe violation inside a `§17` state that is
+> hidden until a reader interacts. Eight findings, **F43–F50**, every one against `tests/**`. **No
+> product defect is raised and no route verdict changes**: §15.16's GREEN stands. What this review
+> refuses is the sentence "`pnpm test:a11y` executes the whole of `docs/ACCESSIBILITY.md §12`". It
+> executes §12 as I wrote it, and §12 as I wrote it has holes — four of them are mine, and §16.6
+> closes them.
+
+**Scope.** `tests/a11y/run-axe.mjs`, `axe-sweep.mjs`, `regressions.mjs`, `conditional-build.mjs`,
+`tests/tools/{serve-dist,routes,browser}.mjs`, and the claims `docs/TESTING.md §3` makes about them.
+The product was re-measured only where the gate's own correctness depended on it. Reviewer:
+`accessibility-lead`; builder: `qa-test-architect` (`ROSTER.md §5`, "UI states and copy", and the
+`A11Y → QA` edge of §4's handoff graph — I specify these assertions, they own the runner).
+
+**Tree control, before anything was measured.** `apps/web/dist` is not evidence until it is shown to
+be this tree. Built into a scratch `outDir` and compared: **all 20 HTML files and all 4 `_astro`
+assets byte-identical**, the only difference being the unreferenced React client chunk that
+`prune-dist.mjs` removes from a real build — the same result §15.15 and §15.16 record. Working tree
+clean at `6d8bb3d` throughout, and **zero product files were changed by this review**.
+
+### 16.1 Does it execute §12, clause by clause
+
+| §12 clause                                            | Executed                   | Evidence, and where it diverges                                                                                                                                                                                                                                                                   |
+| ----------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tags `wcag2a` `wcag2aa` `wcag21aa` `wcag22aa`         | **Yes**, superset          | `WCAG_TAGS` also carries `wcag21a`, which is what the published baseline used. I read both `axe.run` calls: neither passes a `rules` option, so **no rule is disabled** and none is silently down-weighted.                                                                                       |
+| `best-practice` separate, reported, non-blocking      | **Yes**                    | A second `axe.run`; counted into `bestPractice` and excluded from `failures`. 0 today; the seeded run produced 20 (`region` × 5 routes) and still exited on the blocking channels.                                                                                                                |
+| Zero violations at any impact, `minor` included       | **Yes**                    | `failures = violations + consoleErrors + regressionFindings`; `process.exit(failures === 0 ? 0 : 1)`. No impact filter anywhere in the path.                                                                                                                                                      |
+| Both themes                                           | **Yes**, superset          | `CONTEXT_MATRIX` runs `{light, dark} × {no-preference, reduce}` — four per route, not two.                                                                                                                                                                                                        |
+| Every `§18.1` public and `§18.2` private route        | **Partly, and honestly**   | `emittedRoutes()` walks `dist` for `*.html`: 20 today, the rest unbuilt. Derivation is the right call — a new route joins the sweep on the build that emits it. But nothing pins the set, so coverage can shrink without failing. **F49.**                                                        |
+| Each `§17` state fixture, on the surface that owns it | **No**                     | The sweep measures served static pages. The states that are `hidden` until interaction are never evaluated by axe. Measured, not inferred: **F45**.                                                                                                                                               |
+| axe same-origin, the page's real CSP left enforced    | **Yes**, and I verified it | Not taken on the strength of the comment. A seeded `style="color:#f00"` produced four `Refused to apply inline style … "style-src 'self'"` console errors and exit 1, so the policy is live during the run and the console channel gates on it.                                                   |
+| `incomplete` counted, printed, never waived           | **Yes** for the count      | The count is right and it is not waived. The **disposition line printed beside it is wrong for four of the five routes it names**, and its granularity cannot show the change that has actually occurred. **F47**, with the re-measurement in §16.4.                                              |
+| Item 1 — `scrollWidth === innerWidth` at 320 px       | **Yes**                    | Exactly as specified, on every route, in its own 320 × 720 context. Seeded 900 px block → `scrollWidth=900 against innerWidth=320 (580 px of sideways scroll)`.                                                                                                                                   |
+| Item 2 — three distinct progressbar strings           | **Yes** for the collision  | Name, first clause of `aria-valuetext`, last clause, compared pairwise, with null and empty handled. It never compares the announcement to the **visible readout**, which is B3/B7's failure mode and has no guard. **F48.**                                                                      |
+| Item 3 — tables in a named, operable region           | **Yes**, stricter          | Applied to every `<table>`, not only prose, and `aria-labelledby` must resolve to text. It asserts no `<caption>` — **correct**: F31's caption is open and owned by `content-editorial-lead`, and asserting it would fail the build on an accepted finding. Recorded so nobody adds it by reflex. |
+| Item 4 — no rendered `aria-busy`, no `aria-live`      | **Partly**                 | The `aria-live` half is stricter than §12 (whole document, `role="alert"` and `role="status"` too). The `aria-busy` half decides "rendered" from the `hidden` attribute and `offsetParent`, and misses two real shapes. **F43, F44.**                                                             |
+| Item 5 — no accessible name echoing its own `<dt>`    | **Yes**, two passes        | Per `<dl>` row as §12 words it, plus the page-wide pill pass §15.16 measured. The pill pass is keyed on class-name substrings and its coverage is never asserted. **F46.**                                                                                                                        |
+| "What axe cannot be asked to prove" stays manual      | **Yes**                    | The runner's own docstring restates the list and says plainly that no screen reader is installed and those passes are Not run. It claims nothing it does not measure, which is the property that matters most in a gate's own prose.                                                              |
+
+**What the runner does that §12 does not ask for.** All of it is either stricter than the spec or is
+tooling, and I accept every item: the `wcag21a` tag; reduced motion as a dimension rather than a
+variant; console errors and CSP refusals as a blocking channel; `role="alert"` and `role="status"`
+held to the live-region rule; the table rule applied to every table; the pill pass in item 5; the
+zero-route tripwire in `run-axe.mjs`; `--seed-violation`, `--routes`, `--dist` and `--json`. The
+first four are adopted into §12 in §16.6 so they cannot later be dropped as "not in the spec".
+
+### 16.2 Can it fail — seven defects seeded into a build, not into the runner
+
+A green sweep is worth nothing if the harness cannot go red, and the runner's own `--seed-violation`
+hook proves only that the hook works. So the defects were written into **the bytes of a scratch copy
+of `apps/web/dist`** and the runner was pointed at it with `--dist`. `apps/web/dist` was not
+modified and nothing under `apps/web/src` was touched. The harness **can** be pointed at a scratch
+directory: `--dist=<dir>` reaches `emittedRoutes()` and `startServer()` both, and `serve-dist.mjs`
+then replays that directory's own `_headers`, so the scratch build is served under the real policy.
+
+`node tests/a11y/run-axe.mjs --dist=<scratch> --port=4531` → **exit 1**, `80 axe run(s), 100
+regression assertion(s), 99s. Failing — 4 violation(s), 4 console error(s), 6 regression finding(s).`
+
+| Seeded into          | The defect                                                     | The gate's output                                                                                                                          |
+| -------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `/about/`            | `<img src="/icons/icon-192.png">` with no `alt`                | `image-alt (critical) × 1 — img` on all four runs; `violations=4`                                                                          |
+| `/privacy/`          | a 900 px block from a same-origin stylesheet                   | `[reflow-320] /privacy/: scrollWidth=900 against innerWidth=320 (580 px of sideways scroll). Widest offenders: div.dp-seed-wide right=900` |
+| `/terms/`            | `role="progressbar"` whose label repeats its reading           | `[progressbar-three-strings] /terms/: aria-label and aria-valuetext first clause are the same string ("Risk band")`                        |
+| `/methodology/`      | `<table><tr><th>Seeded</th></tr></table>`                      | two findings — `not inside role="region"` and `1 of 1 <th> carry no scope`; also a new axe `incomplete` (`th-has-data-cells`)              |
+| `/data-sources/`     | `<p aria-live="polite">Updated 4 minutes ago.</p>`             | `[busy-and-live] /data-sources/: 1 aria-live region(s): p[aria-live="polite"]`                                                             |
+| `/guides/`           | `<dl><dt>Status</dt><dd><span>Delayed Status</span></dd></dl>` | `[label-echo] /guides/: "Delayed Status" sits under <dt>Status</dt> and ends with that label's own word (F29)`                             |
+| `/editorial-policy/` | `<span style="color:#f00">` under `style-src 'self'`           | four × `Refused to apply inline style because it violates … "style-src 'self'"` → `console errors: 4`                                      |
+
+All five §12 regression assertions fire, the axe channel fires, and the CSP channel fires. **The
+gate can go red on a build.**
+
+### 16.3 The three ways a defect gets through — each measured, none inferred
+
+**F43 — a `hidden` panel that is not hidden, carrying `aria-busy`.** `regressions.mjs`'s `rendered()`
+opens with `element.closest('[hidden]') === null`, so an element inside `[hidden]` is dismissed **by
+the attribute**, before either computed-style term is reached. That is precisely F-QA-1: the attribute
+was present and had no effect. Seeded one author rule into a scratch build —
+`div[data-dp-state="searching"][hidden] { display: grid !important }` — and measured the result:
+
+```
+<div class="dpp-state dpp-loading "> aria-busy="true"
+  inside [hidden]=true  display=grid  position=static  visibility=visible
+  offsetParent===null: false   checkVisibility(): true
+  painted box: 446 × 170 at (769, 1027)
+  text: "Looking up this flight.Looking up this flight."
+regressions.mjs rendered() counts 0 of 1 as rendered
+```
+
+`pnpm test:a11y` on that build: `8 axe run(s) … Passing — 0 violations at any impact, 0 console
+errors, 0 regression findings.` A reader arriving at `/` is told the page is busy looking up a flight
+they have not entered, and the gate that owns the `aria-busy` rule reports clean. `checkVisibility()`
+returns `true` for the same element, so the repair is one predicate.
+
+**F44 — a visible `position: fixed` element carrying `aria-busy`.** The predicate's second term,
+`offsetParent === null`, is null for any `position: fixed` element and for `<body>` itself — both
+are ordinary places to put a loading state. Seeded a 200 × 40 fixed bar on `/about/`:
+
+```
+<div class="dp-seed-fixed-busy"> aria-busy="true"
+  inside [hidden]=false  display=block  position=fixed  visibility=visible
+  offsetParent===null: true   checkVisibility(): true
+  painted box: 200 × 40 at (0, 860)
+regressions.mjs rendered() counts 0 of 1 as rendered
+```
+
+**F45 — §12's state-fixture clause is not executed.** axe does not evaluate a `display: none`
+subtree, so every `§17` state that is hidden until interaction is outside all 80 runs. On `/` that is
+`searching`, the lookup's `provider unavailable` panel and the error summary — the states a traveler
+reaches on a bad day, which is the exact reason §12 names them. Proof rather than assertion: the same
+`image-alt` defect that produced four `critical` violations on `/about/` was seeded **inside** the
+hidden `unavailable` panel on `/`:
+
+```
+seeded an alt-less <img> INSIDE the hidden provider-unavailable panel
+4 axe run(s), 5 regression assertion(s), 9s. Passing — 0 violations at any impact, 0 console errors, 0 regression findings.
+```
+
+**What is not wrong.** `e2e/hidden-states.e2e.mjs` catches F43's shape site-wide, and I verified that
+rather than trusting it: run against the same seeded build, `1 failed … / — every [hidden] element
+computes display:none, 19 passed`. So the product is protected today — by `pnpm test:e2e`, not by
+`pnpm test:a11y`, and not at all for F44 or F45. A rule that lives in one suite and is contradicted
+by another suite's predicate is a rule with a shelf life.
+
+### 16.4 The 20 incomplete results — re-dispositioned from pixels, and the printed disposition is wrong
+
+The runner prints `route × rule × runs` and points every line at §15.9. Both halves need correcting.
+
+**Composition, measured on this tree.** 89 nodes per theme across the five routes, in **three**
+classes, not one:
+
+| axe message                                                    | Nodes | Where                                                                      | §15.9 addresses it |
+| -------------------------------------------------------------- | ----: | -------------------------------------------------------------------------- | ------------------ |
+| background could not be determined — **overlapped** by another |    29 | `/` only — the theme pills and the lookup card over the `z-index:-1` motif | Yes                |
+| background could not be determined — **background gradient**   |    54 | every `Demo` provenance chip: `repeating-linear-gradient` hatch            | **No**             |
+| element content contains **only non-text characters**          |     6 | the `→` route arrows, all `aria-hidden="true"`                             | No                 |
+
+So `docs/ACCESSIBILITY.md §15.3`'s sentence — "Every one is `color-contrast` with the message …
+overlapped by another element" — **is not true on this tree, and is superseded here.** Four of the
+five routes the runner prints (`/flight-status/`, `/connection-risk/`, `/methodology/`,
+`/data-sources/`) contain **no** overlap-class node at all; they are entirely the gradient class,
+which is the `Demo` chip — an `AGENTS.md §1.2` provenance label, which is not a place to leave an
+unmeasured contrast question.
+
+**So I measured all of them, from rendered pixels, in both themes.** Method: screenshot the element;
+screenshot it again with its own text forced transparent through a constructed stylesheet (no inline
+`<style>`, so the served `style-src 'self'` is not involved and layout does not move); glyph pixels
+are the positions where the two differ; for each one the true background is the second render's pixel
+at that position. The foreground is the declared colour and never a blended edge, so there is no
+antialiasing artefact to argue about — the trap §15.9 names.
+
+| Route               | Nodes | Worst ratio, light | Worst ratio, dark | The worst node                                        |
+| ------------------- | ----: | -----------------: | ----------------: | ----------------------------------------------------- |
+| `/`                 |    70 |         **4.58:1** |        **5.27:1** | theme pill label "Light" (light); lookup intro (dark) |
+| `/flight-status/`   |    10 |             5.70:1 |            5.27:1 | the `→` arrow, `aria-hidden`                          |
+| `/connection-risk/` |     6 |            15.21:1 |           15.09:1 | `Demo` chip label over its hatch                      |
+| `/methodology/`     |     2 |            15.21:1 |           15.09:1 | `Demo` chip label over its hatch                      |
+| `/data-sources/`    |     1 |            15.21:1 |           15.09:1 | `Demo` chip label over its hatch                      |
+
+**Zero nodes below floor, in either theme.** The floor applied is 4.5:1 throughout — this document
+never takes the SC 1.4.3 large-text allowance. Three of `/`'s 29 overlap-class nodes are empty form
+controls with no glyph to measure; their labels and hints are separate nodes and are measured above.
+Two independent confirmations fall out of it: the gradient class measures **15.21:1 light / 15.09:1
+dark**, which is §4.1's `--text-primary` on `--border-hairline` row (15.21 / 15.08) to the second
+decimal, from pixels instead of from tokens; and `/`'s worst, 4.58:1, is §4.1's `--text-secondary` on
+`--border-hairline` row exactly. (§4.1 describes the chip's freshness line as `--text-secondary`; it
+renders `--text-primary` on this tree, which is the safer direction. Not a defect — a row to refresh
+when that table is next re-measured.)
+
+**Which of this is a change, and which was always wrong.** §15.3's per-route node counts for the
+other four routes — 10, 6, 2 and 1 — are exactly what I measure today, and every one of those
+nodes is the gradient class. So the misattribution is not a drift: those four were already the
+`Demo` chip when the sentence was written, and the sentence was wrong when it was written. The
+one real change is on `/`.
+
+**The number has moved and the runner cannot see it.** `/` returns **70** incomplete nodes per run;
+§15.3 recorded "up to 63". The rule, the route set and the result count (20) are unchanged, so every
+line the runner prints is identical — the change lives entirely in the node population, which is the
+one quantity the output does not carry. The mechanism is not established and does not change the
+verdict, because all 70 are measured above; what it establishes is that **"a change in this number is
+a finding, not noise" is not enforceable at the granularity the number is printed in**. F47.
+
+### 16.5 The 8 conditional runs — exercised
+
+`pnpm test:a11y --conditional` **Passing**, exit 0:
+
+```
+axe — the two conditional routes (owner input I-3)
+  scratch build → /tmp/delaypilot-a11y-GzS1BP/dist (contact address: a reserved .invalid value, not logged)
+  /accessibility/    violations=0 incomplete=0 best-practice=0 console=0
+  /contact/          violations=0 incomplete=0 best-practice=0 console=0
+axe-core 4.13.0 | runs: 80 | WCAG A/AA violations: 0 | incomplete: 20 | best-practice: 0 | console errors: 0
+axe-core 4.13.0 | runs: 8 | WCAG A/AA violations: 0 | incomplete: 0 | best-practice: 0 | console errors: 0
+88 axe run(s) (8 conditional), 100 + 10 regression assertion(s), 112s. Passing
+```
+
+The path works and it works the way it is documented: an `astro build` into a scratch `outDir`
+outside the repository, `PUBLIC_CONTACT_EMAIL` set to a reserved RFC 2606 `.invalid` address that is
+never printed, the ten regression assertions run on both routes as well, and the scratch tree deleted
+afterwards — I checked, `/tmp/delaypilot-a11y-*` is gone on exit. **Both routes conform**: zero
+violations at any impact in both themes and both motion preferences, zero incomplete, zero
+best-practice, zero console errors. Without the flag the runner prints `Not run: the 8 conditional
+runs` and names the flag, which is `AGENTS.md §6` vocabulary used correctly — it never reports 80 as
+though it were 88. The publication condition on `/accessibility/` is unchanged and is still F40 plus
+owner input I-3; **this is an axe result, not a re-review of the statement's prose**.
+
+### 16.6 §12, amended
+
+Four of the eight findings are mine, not the runner's: §12 did not ask for what I now know it must.
+The amendments below are the specification; `qa-test-architect` owns the implementation and the
+sequencing. Items 1, 3 and 5 stand unchanged.
+
+**Item 2, amended.** Add to the three-strings rule: `aria-valuetext` must equal the meter's own
+visible readout — the `dp-progress__value` and `dp-progress__band` text — because the children of
+`role="progressbar"` are presentational and the eye and the accessibility tree can drift apart
+without either one looking wrong. That drift was B3, and then B7, and nothing guards it today.
+
+**Item 4, amended.** "Rendered" is decided by
+`Element.checkVisibility({ contentVisibilityAuto: true, opacityProperty: true, visibilityProperty: true })`
+and by nothing else. The `hidden` attribute is **not** evidence of hiddenness — it is a claim to be
+checked — and `offsetParent` is null for `position: fixed` elements and for `<body>`.
+
+**Item 6, new — the attribute means what it says.** On every route, every element carrying `hidden`
+computes `display: none`, read from computed style. This is the F-QA-1 rule. It is implemented today
+in `e2e/hidden-states.e2e.mjs` and it belongs in §12 as well, because a `§17` state panel that paints
+when it should not is an accessibility defect — it announces a state the product did not mean to
+announce — and because a rule that lives in one suite can be deleted from that suite without anything
+noticing.
+
+**Item 7, new — no check may report "clean" over zero elements.** Every assertion prints the size of
+the population it examined, and a population that was non-zero in the recorded baseline and is zero
+now is a finding. Today: 6 meters and 7 tables across 20 routes, 17 routes with no meter at all, and
+a pill pass keyed on the substrings `status-pill` and `dp-pill`. A class rename takes any of those to
+zero and the output still reads `clean`.
+
+**Item 8, new — the state fixtures are swept with the state applied.** The `§17` states that are
+hidden until interaction are put into their state and measured there: `searching`, `provider
+unavailable`, and the lookup error summary at minimum. The island's own toggle is the mechanism;
+`e2e/lookup-states.e2e.mjs` already drives them, so the state transitions are available — what is
+missing is an axe run while the state is on screen.
+
+**Item 9, new — the route set is asserted, not merely derived.** Deriving from `dist` is right and
+stays. Alongside it, the emitted set is compared against the recorded expectation, and a route that
+disappears fails the run. The existing zero-route tripwire covers only total loss. Each run also
+asserts its response `status === 200`; the status is already collected and never checked, and a
+non-200 currently fails only incidentally, through Chromium's console error (verified: a sweep of two
+`§18.1` routes this tree does not emit exits 1 with `Failed to load resource: the server responded
+with a status of 404`, and zero violations — the right exit for the wrong reason, and only because
+this server returns a 404 status rather than a 200 fallback).
+
+### 16.7 Findings F43–F50 — all against `tests/**`, owner `qa-test-architect`
+
+#### F43 — the `aria-busy` check dismisses an element by the attribute that failed
+
+|              |                                                                                                                                                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **File**     | `tests/a11y/regressions.mjs:276` — the first term of `rendered()`, `element.closest('[hidden]') === null`                                                                                                                                             |
+| **SC**       | 4.1.2 Name, Role, Value (AA), via `§12` item 4 and F28                                                                                                                                                                                                |
+| **Input**    | a scratch copy of `apps/web/dist` plus one author rule, `div[data-dp-state="searching"][hidden] { display: grid !important }`; `node tests/a11y/run-axe.mjs --dist=<scratch> --routes=/,/about/`                                                      |
+| **Expected** | one `busy-and-live` finding: a rendered element carries `aria-busy="true"` on a page that is not loading                                                                                                                                              |
+| **Observed** | `Passing — 0 violations at any impact, 0 console errors, 0 regression findings`, while the element paints at **446 × 170 px at (769, 1027)**, `display: grid`, `visibility: visible`, `checkVisibility() === true`, reading "Looking up this flight." |
+| **Why**      | the three terms are `&&`-ed and the attribute term is first, so an element inside `[hidden]` never reaches either computed-style term. F-QA-1 was exactly a `hidden` attribute with no effect; this check trusts that attribute                       |
+| **Fix**      | replace the predicate with `checkVisibility({ contentVisibilityAuto: true, opacityProperty: true, visibilityProperty: true })`, which returns `true` for this element                                                                                 |
+
+#### F44 — the same predicate treats every `position: fixed` element as not rendered
+
+|              |                                                                                                                                                            |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **File**     | `tests/a11y/regressions.mjs:277` — `!(element instanceof HTMLElement && element.offsetParent === null)`                                                    |
+| **SC**       | 4.1.2 (AA), `§12` item 4                                                                                                                                   |
+| **Input**    | a visible 200 × 40 `position: fixed` bar carrying `aria-busy="true"` and `role="group"`, seeded into `/about/` in a scratch build                          |
+| **Expected** | one `busy-and-live` finding                                                                                                                                |
+| **Observed** | `busy-and-live clean`, exit 0. `offsetParent === null: true` while `checkVisibility(): true` and the bar paints at **(0, 860)**                            |
+| **Why**      | `offsetParent` is null for `position: fixed` and for `<body>` by specification — both are ordinary hosts for a loading state, so this is not a corner case |
+| **Fix**      | same one-line repair as F43; the `offsetParent` term then has no work left to do                                                                           |
+
+#### F45 — the `§17` state fixtures are not swept
+
+|              |                                                                                                                                                                                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **File**     | `tests/a11y/run-axe.mjs` — the sweep loads each route and measures it as served; no state is applied                                                                                                                                                                |
+| **SC**       | 1.1.1 in the demonstration, but the class is every SC — `§12`'s "State fixtures" clause                                                                                                                                                                             |
+| **Input**    | `<img src="/icons/icon-192.png">` with no `alt`, seeded **inside** `<div data-dp-state="unavailable" … hidden>` on `/` in a scratch build                                                                                                                           |
+| **Expected** | `image-alt (critical)` on all four runs — the identical defect produced exactly that on `/about/`                                                                                                                                                                   |
+| **Observed** | `4 axe run(s) … Passing — 0 violations at any impact`                                                                                                                                                                                                               |
+| **Why**      | axe does not evaluate a `display: none` subtree. `provider unavailable`, `searching` and the lookup error summary are therefore outside all 80 runs — and `§12` names `provider unavailable` specifically because those are the states a traveler hits on a bad day |
+| **Fix**      | `§12` item 8. Drive each hidden state on and run axe with it on screen; `e2e/lookup-states.e2e.mjs` already has the mechanism                                                                                                                                       |
+
+| #       | What                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Fix                                                                                                                                                                          |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **F46** | No check reports the size of the population it examined, so `clean` and "nothing matched" are the same line of output. Measured on this build: **6** `role="progressbar"` and **7** `<table>` across 20 routes, 17 routes with no meter at all; the item-5 pill pass is keyed on `[class*="status-pill"], [class*="dp-pill"]`. F39's fix already removed one class from that family — the next rename takes the pass to zero silently.                                        | `§12` item 7: print the population per check per route, and fail when a previously non-zero population is zero                                                               |
+| **F47** | The `incomplete` disposition line names `§15.9` for all 20 results. **54 of the 89 nodes are the `background gradient` class, which `§15.9` does not address**, and four of the five routes printed contain no overlap-class node at all. The printed granularity (rule × runs) also cannot show the node-population change that has occurred: `/` is at **70** nodes against the **63** recorded in `§15.3`.                                                                 | print the axe `message` and the node count per incomplete result, and cite the disposition per class. §16.4 supplies the corrected disposition and the measurement behind it |
+| **F48** | `§12` item 2 compares three ARIA strings to each other and never to the meter's visible readout. B3 and B7 were both the eye and the accessibility tree drifting apart, and that has no regression guard on any of the 6 meters.                                                                                                                                                                                                                                              | `§12` item 2 as amended: assert `aria-valuetext` equals the rendered `dp-progress__value` plus `dp-progress__band` text                                                      |
+| **F49** | Route coverage is whatever `dist` happens to contain. The zero-route tripwire catches total loss only. `scripts/seo/verify-sitemap.mjs` does catch the disappearance of any of the **13** routes the committed `apps/web/public/sitemap.xml` lists; the exposure is the other **7** — `/404.html`, `/passenger-rights/` and the five guide articles, all `noindex` — and the principle that an accessibility gate should not borrow its coverage guarantee from an SEO check. | `§12` item 9: assert the emitted set against a recorded expectation                                                                                                          |
+| **F50** | `response.status()` is recorded per run and never asserted. A non-200 fails today only through Chromium's console error, which is an accident of this server returning a real 404 rather than a 200 fallback.                                                                                                                                                                                                                                                                 | `§12` item 9: assert `status === 200`                                                                                                                                        |
+
+### 16.8 Commands run
+
+| Command                                                                             | Result                                                                                                                                                                         |
+| ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `pnpm test:a11y`                                                                    | **Passing**, exit 0 — `axe-core 4.13.0 \| runs: 80 \| WCAG A/AA violations: 0 \| incomplete: 20 \| best-practice: 0 \| console errors: 0`; `100 regression assertion(s), 105s` |
+| `pnpm test:a11y --conditional`                                                      | **Passing**, exit 0 — `88 axe run(s) (8 conditional), 100 + 10 regression assertion(s), 112s`                                                                                  |
+| `node tests/a11y/run-axe.mjs --dist=<scratch, 7 seeded defects>`                    | **Failing** by design, exit 1 — `4 violation(s), 4 console error(s), 6 regression finding(s)`; every one of the five §12 assertions fired                                      |
+| `node tests/a11y/run-axe.mjs --dist=<scratch, F43 + F44 seeded> --routes=/,/about/` | **Passing**, exit 0 — the blind spots of §16.3                                                                                                                                 |
+| `node tests/a11y/run-axe.mjs --dist=<scratch, F45 seeded> --routes=/`               | **Passing**, exit 0 — a `critical` violation inside a hidden `§17` state                                                                                                       |
+| `DP_DIST=<F43 build> pnpm exec playwright test e2e/hidden-states.e2e.mjs`           | **Failing**, exit 1 — `1 failed … / — every [hidden] element computes display:none`, `19 passed`. The compensating control works                                               |
+| `pnpm exec astro build --outDir <scratch>` then byte-compare                        | **Passing** — 20 of 20 HTML files and 4 of 4 `_astro` assets identical to `apps/web/dist`                                                                                      |
+| Pixel re-measurement of all 89 incomplete nodes, both themes                        | **Passing** — zero below the 4.5:1 floor; §16.4                                                                                                                                |
+| `pnpm exec prettier --check docs/ACCESSIBILITY.md`                                  | **Passing**                                                                                                                                                                    |
+| `pnpm lint:copy`                                                                    | **Passing**                                                                                                                                                                    |
+
+Not run, and why: `pnpm test:e2e` in full, `pnpm lint`, `pnpm typecheck`, `pnpm build` and
+`pnpm quality` — this review changed one markdown file and no product or test file, and
+`docs/TESTING.md §8` records `pnpm quality` as Failing by design until two stub suites land. No
+screen reader is installed in this environment; the VoiceOver and NVDA passes remain **Not run**,
+exactly as §15.7 and §10.2 record them, and nothing in this section claims otherwise.
+
+### 16.9 Handoffs — S4
+
+- **`qa-test-architect`** — F43 through F50. F43 and F44 are one predicate and one line between
+  them; F45 and F46 are the two that change what the gate means. Nothing here needs a product change
+  and nothing here is urgent enough to hold a release, but `docs/TESTING.md §3`'s claim that the
+  runner executes "the whole of `docs/ACCESSIBILITY.md §12`" is not accurate today and should say
+  which clauses it executes until F45 and F46 land. `docs/TESTING.md §7`'s proof-that-each-check-can-
+  fail table is a good table and it is worth adding the three negative results from §16.3 to it: a
+  check that has been watched pass while a defect was present is worth as much as one watched to fail.
+- **`frontend-ui-engineer`** — nothing open from this review. The `aria-busy` element inside the
+  `searching` state on `/` is correct as built; the defect is in how the gate decides it is hidden.
+- **`brand-design-director`** — no action. The `Demo` chip's `repeating-linear-gradient` is why axe
+  cannot compute those 54 nodes; measured from pixels they are 15.21:1 light and 15.09:1 dark, which
+  agrees with §4.1. Worth knowing that any gradient behind text converts an axe **violation** into an
+  axe **incomplete** — a rule that stops gating — so a gradient behind body copy would need the same
+  pixel measurement, every time.
+- **`release-auditor`** — **GREEN WITH FINDINGS**, and the product verdict is unchanged: §15.16
+  stands, no AA failure is open on any served route, and the 88 axe runs reproduce. The rubric line
+  that changes is the one about the accessibility gate itself: it is real, it can fail, and it does
+  not yet cover the `§17` states or hold its own checks to a coverage floor. F43–F50 are test-suite
+  findings, not product defects, and none of them is a release blocker on its own.
+
+---
+
+## 17. Revision history
+
+| Date       | Phase                                                    | Verdict                                                  | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------- | -------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-11 | Phase 9 (visual-overhaul session S2)                     | **BLOCKED — 6 blockers**                                 | First revision. Tokens, contrast, focus, reduced motion, primitive semantics, mark legibility, motif inventory. Route-level, keyboard, screen-reader, zoom and Lighthouse results are Phase 12 and are recorded as Not run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+| 2026-09-11 | Phase 9 re-review, tree `63005a3`                        | **BLOCKED — 1 blocker (B7)**                             | B1–B6 verified closed and B7 raised: the fix for B3 put the band word inside a `role="progressbar"`, whose children are presentational, so `bandLabel` reaches the eye and not the accessibility tree (SC 1.3.1). Thirteen of the seventeen findings closed; F15, F22 and F23 remain with their original owners. Contrast re-measured: 101 unique rendered pairs, 202 measurements, zero below floor. Mark decision unchanged — the artwork is byte-identical. Phase 12 cells still Not run, for the same reason.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| 2026-09-11 | Phase 9 B7 re-review, tree at `9dd1f75`                  | **GREEN**                                                | B7 closed: `aria-valuetext` carries the reading and the band, verified from three rendered fixture states, with the visible readout intact. The `aria-describedby` alternative I had offered is recorded as rejected, correctly — it would have forced either a doubled announcement or a screen-reader-computed percentage, which is a published-precision defect. No token changed, so the contrast result is unchanged. F24 raised (copy, `ux-copy-steward`). Phase 9 has no open blocker; F15, F22, F23 and F24 remain with their owners for Phases 10–11, and every Phase 12 cell is still Not run.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| 2026-09-12 | Phase 10 (visual-overhaul session S3), tree `d35f69c`    | **BLOCKED — 2 blockers (B8, B9), 14 findings (F25–F38)** | Route-level review of the twenty served S3 routes plus `/accessibility/` and `/contact/` from a scratch build. 88 axe runs, both themes and both motion preferences, zero violations. Keyboard walks, focus measured from rendered pixels, reduced motion measured from computed styles (ADR 0003 rule 4), reflow and zoom, touch targets, motif-behind-text pixel diff, and the accessibility statement reviewed sentence by sentence (§13.1). B8: SC 1.4.10 Reflow fails at 320 CSS px on `/` and `/connection-risk/`. B9: the `/delay-risk/` band meter is announced as a connection-slack measurement (SC 2.4.6). F22 and F24 closed by measurement; F15 closed on every shipped surface. §10.2 moved from `Not run` to measured results; §13 citation `§35` corrected to `§3.4`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| 2026-09-12 | Phase 10 re-review after the S3 fix loop, tree `692ad3f` | **GREEN**                                                | B8 and B9 closed, each by the measurement the blocker named: reflow exact at 320 on 20 of 20 routes, and the `/delay-risk/` meter read back from the built HTML as `aria-label="Delay and cancellation assessment"` with `aria-valuetext="Risk band, Watch"`. Eleven of the fourteen findings closed; F31 closed on three of four items with the `<caption>` re-owned to `content-editorial-lead`; F17 and F23 unchanged. 88 axe runs again, zero violations and now zero best-practice. Four new findings: F39 the same "Status" detail one component over in `ItineraryTimeline`, F40 the accessibility statement now listing closed issues as open, F41 the 196 × 23 px feedback address, F42 the loading message announced twice. None blocks. The given `apps/web/dist` was proved byte-identical to a fresh build of the committed tree before anything was measured on it. §13.2 re-reads the statement against all twelve §13.1 rows. The Callout heading-size decision is accepted, with axe's `heading-order` named as the guard that replaces the visual cue.                                                                                                                                                                                                                                                                                       |
+| 2026-09-13 | Phase 10 residue round, tree `af24302`                   | **GREEN**                                                | F39, F41 and F42 closed by measurement: 0 `dp-status-pill__detail` elements and 0 of 39 pills ending in a field label anywhere in the build; the feedback address 196 × 47 px with 0 targets under 44 × 44 on either conditional route; one `StaticText "Looking up this flight."` in the CDP tree where there were two. No new finding. The given `apps/web/dist` proved byte-identical to a build of the working tree, which also showed the one dirty file (`cockpit.ts`, deleting a dead export) changes no rendered byte. 88 axe runs again, zero violations; reflow exact at 320 on 22 of 22 routes; keyboard walks clean. The accessibility statement was re-read and **may not publish as written** — three of its six known issues are now closed, one of them a claim about the page itself — and §15.16 rules the exact three-entry list (F15, F23, F31) and the date it must carry, so no further round trip is needed.                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| 2026-09-20 | S4 review of the accessibility gate, tree `6d8bb3d`      | **GREEN WITH FINDINGS**                                  | A review of `pnpm test:a11y` rather than of the product, and the first pass in which the object under review is a test suite. `docs/ACCESSIBILITY.md §12` executed clause by clause against `tests/a11y/**`: the tags, the threshold, the themes, the CSP delivery and all five regression assertions are implemented, and all seven defects seeded into the bytes of a scratch `dist` were caught, exit 1. Three classes of defect pass the gate, each measured rather than argued: an `aria-busy` element whose `hidden` attribute has been defeated and which paints at 446 × 170 px (F-QA-1's own shape, F43), a visible `position: fixed` element carrying `aria-busy` (F44), and any axe violation inside a `§17` state that is hidden until interaction — an alt-less image inside the provider-unavailable panel returned zero violations (F45). The 20 `incomplete` results were re-dispositioned from pixels in both themes: 89 nodes in three classes, not one, **zero below the 4.5:1 floor**, and §15.3's "every one is overlapped by another element" is superseded — 54 of them are the `Demo` chip's gradient (F47). `--conditional` exercised: 88 runs, `/accessibility/` and `/contact/` conform. §12 gains items 6–9 and amendments to items 2 and 4. F43–F50 filed against `tests/**`; no product defect raised and §15.16's GREEN stands. |

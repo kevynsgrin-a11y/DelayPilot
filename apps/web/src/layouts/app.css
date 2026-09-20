@@ -35,6 +35,47 @@
  */
 
 /* --------------------------------------------------------------------------------------------- */
+/* 0. The `hidden` attribute means hidden. One rule, for the whole site.                          */
+/*                                                                                                */
+/* WHY THIS EXISTS AT ALL. `hidden` is a content attribute whose entire effect comes from ONE     */
+/* user-agent rule, `[hidden] { display: none }`, and a user-agent declaration loses to every     */
+/* author declaration. `.dpp-state { display: grid }` (section 14) therefore defeated the         */
+/* `hidden` attribute LookupForm.astro writes on the provider-unavailable panel, and `/` painted  */
+/* "Unavailable — No licensed flight-data provider is connected…" to every reader before they     */
+/* typed anything: 446x408px at 1440, 293x502px at 375 (docs/TESTING.md §11, F-QA-1). Two states  */
+/* of DIRECTIVE.md §17 — `initial` and `unavailable` — were on screen at once, so the state       */
+/* change a reader is meant to perceive on submit had already happened.                           */
+/*                                                                                                */
+/* WHY IT IS GLOBAL AND NOT PER COMPONENT. This file used to patch the same defect one class at a */
+/* time. That pattern fails silently the next time someone adds a `display`-setting class and     */
+/* does not think of it — which is exactly how `.dpp-state` was missed, while three of the four   */
+/* local rules that DID exist guarded elements that never set `display` in the first place. Four  */
+/* rules written by reflex, one real hole. The four are removed; this is the only one.            */
+/*                                                                                                */
+/* WHY `!important`. `[hidden]` is an attribute selector, specificity (0,1,0) — identical to a    */
+/* single class. Without `!important` this rule would win or lose on source order against         */
+/* `.dpp-state`, and lose outright to any two-class or descendant selector wherever it sat. A     */
+/* reset whose correctness depends on where the next author puts their rule is not a reset. No    */
+/* other `display` declaration in the loaded cascade is `!important` (the only one in the tree is */
+/* `.dp-no-print` inside `@media print`, which agrees with this), so nothing is being overridden  */
+/* that meant something.                                                                          */
+/*                                                                                                */
+/* WHAT IT COSTS. `hidden="until-found"` — the value that lets find-in-page and a fragment        */
+/* navigation reveal collapsed content — is implemented by the user agent as                      */
+/* `content-visibility: hidden`, and this rule would flatten it to `display: none` and break that */
+/* reveal. Nothing in this tree uses it (zero matches across apps/web/src and packages/ui/src). A */
+/* surface that wants it must opt out here, deliberately, rather than discover it by accident.    */
+/*                                                                                                */
+/* `e2e/hidden-states.e2e.mjs` (qa-test-architect) sweeps every emitted route for a `[hidden]`    */
+/* element whose COMPUTED display is not `none`, so this rule's removal is a failing build rather */
+/* than a quiet regression. It is what replaces the four local rules, not an addition to them.    */
+/* --------------------------------------------------------------------------------------------- */
+
+[hidden] {
+  display: none !important;
+}
+
+/* --------------------------------------------------------------------------------------------- */
 /* 1. Document and shell.                                                                         */
 /* --------------------------------------------------------------------------------------------- */
 
@@ -239,10 +280,6 @@
   list-style: none;
 }
 
-.dpx-nav__panel[hidden] {
-  display: none;
-}
-
 .dpx-nav__panel-link {
   display: flex;
   align-items: center;
@@ -273,11 +310,11 @@
 /* No-JavaScript degradation. The server renders a plain LINK to the group's first item and a
    HIDDEN disclosure button with identical inner markup; `nav.ts` swaps which of the two is hidden
    once its module runs. Identical markup means identical width, so the swap shifts nothing. With
-   no JavaScript the link is what remains, and every destination is still reachable. */
-.dpx-nav__link[hidden],
-.dpx-nav__trigger[hidden] {
-  display: none;
-}
+   no JavaScript the link is what remains, and every destination is still reachable.
+
+   The `display: inline-flex` above is what the swap has to survive, and section 0 is what makes it
+   survive — the local `.dpx-nav__link[hidden]` / `.dpx-nav__trigger[hidden]` pair that used to sit
+   here is removed with the other three. */
 
 /* --------------------------------------------------------------------------------------------- */
 /* 3. Mobile navigation — a native <dialog>.                                                      */
@@ -1019,16 +1056,8 @@ html:has(.dpx-drawer[open]) {
   margin-block-start: var(--space-24);
 }
 
-.dpx-lookup__result[hidden] {
-  display: none;
-}
-
 .dpx-errors {
   margin-block-end: var(--space-16);
-}
-
-.dpx-errors[hidden] {
-  display: none;
 }
 
 .dpx-errors__list {

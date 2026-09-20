@@ -37,6 +37,15 @@
  * allowance, and `AGENTS.md §4` forbids an ad on a privacy or terms page outright. The `kind` prop
  * is what a page declares that with; it is emitted as `data-page-kind` so the rule is inspectable
  * in the built HTML and testable by `apps/web/scripts/verify-dist.mjs`.
+ *
+ * STRUCTURED DATA. One `<script type="application/ld+json">` per indexable page, built by
+ * `src/lib/seo/schema.ts` (`seo-engineer`) and rendered here because this layout owns the `<head>`
+ * (`docs/SEO.md §6.5`). This layout composes nothing: the graph, the allowlist and the refusals are
+ * that module's, it validates its own output and throws, and a block that broke the policy would
+ * fail the build rather than ship. What is emitted is the sitewide identity — `Organization` and
+ * `WebSite` — whose only prose claim is the wordmark "DelayPilot", which every page renders as text
+ * in the header and the footer. `Article` and `ItemList` are built and have no call site yet
+ * (`docs/SEO.md §12` item 9); this layout does not invent one.
  */
 import '../styles/tokens.css'
 import '@delaypilot/ui/primitives.css'
@@ -47,6 +56,9 @@ import { nav } from '../lib/copy/nav.ts'
 import SiteFooter from '../components/SiteFooter.astro'
 import SiteHeader from '../components/SiteHeader.astro'
 import { pages } from '../lib/copy/pages.ts'
+import { pageSchemaJson } from '../lib/seo/schema.ts'
+import { COMMITTED_ORIGIN } from '../lib/seo/site-url.mjs'
+import { bingSiteVerification, googleSiteVerification } from '../lib/seo/verification.ts'
 
 interface Props {
   title: string
@@ -75,13 +87,59 @@ const {
 } = Astro.props
 
 /**
+ * THE ERROR DOCUMENT HAS NO ADDRESS OF ITS OWN.
+ *
+ * Astro builds every route to `<path>/index.html`, with one exception: its error documents are
+ * emitted as bare `/404.html` and `/500.html`, and that file is served as the BODY OF A 404
+ * RESPONSE to whatever address the reader actually asked for. `/404/` is not a route this site
+ * serves, so a self-referencing canonical there names an address that does not resolve — a dead
+ * reference (`AGENTS.md §1.6`), and a canonical is the one tag a crawler acts on without asking.
+ *
+ * MEASURED, NOT PREDICTED. A build with `PUBLIC_SITE_URL=https://delaypilot.app` on 2026-09-20
+ * emitted twenty canonicals; nineteen were correct self-references and the twentieth was
+ * `https://delaypilot.app/404/` (`docs/SEO.md §10.1`). `pnpm test:seo` fails that case by name,
+ * `canonical.on-error-document`.
+ *
+ * `/500` is named alongside `/404` because it is the same class of file, not because the route
+ * exists: if one is ever added, it inherits the rule instead of re-finding this defect.
+ */
+const ERROR_DOCUMENTS = new Set(['/404', '/500'])
+const isErrorDocument = ERROR_DOCUMENTS.has(Astro.url.pathname.replace(/\/$/, ''))
+
+/**
  * A canonical URL and an `og:url` need an absolute origin, which comes from `PUBLIC_SITE_URL`
  * through `site` in `astro.config.mjs`. That variable is deliberately undefined until a real domain
  * is configured, so both tags are omitted rather than emitted against a guessed origin: inventing
  * one is exactly the fabricated value `AGENTS.md §1.1` forbids.
+ *
+ * `og:image` and `twitter:image` follow the error document too: a shared card belongs to a page a
+ * reader can arrive at and share, and this one is a response body, not a page.
  */
-const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined
-const ogImage = Astro.site ? new URL('/og/default-1200x630.png', Astro.site).href : undefined
+const canonicalUrl =
+  Astro.site && !isErrorDocument ? new URL(Astro.url.pathname, Astro.site).href : undefined
+const ogImage =
+  Astro.site && !isErrorDocument ? new URL('/og/default-1200x630.png', Astro.site).href : undefined
+
+/**
+ * The JSON-LD graph for this page, or `undefined` where markup does not belong.
+ *
+ * WHICH PAGES. Indexable ones only. Structured data is a search surface, and a page that is not in
+ * the index has none; `pnpm test:seo` fails a block on a `noindex` page by name
+ * (`schema.on-noindex-page`). That excludes the error document, which is `noindex` already.
+ *
+ * WHICH ORIGIN, AND WHY A BUILD WITH NO `PUBLIC_SITE_URL` STILL EMITS. `@id` and `url` have no form
+ * a crawler resolves except an absolute one, which is the same reason `sitemap.xml`, the `Sitemap:`
+ * line in `robots.txt` and `llms.txt` all write `COMMITTED_ORIGIN` on every build, configured or
+ * not (`docs/SEO.md §3`). This block therefore asserts nothing the built artifact does not already
+ * assert three times over, and it asserts it about the ORGANISATION and the SITE — not about this
+ * page's address, which is what a canonical claims and why that tag is still omitted. When
+ * `PUBLIC_SITE_URL` is set, both come from it, so the two can never disagree.
+ */
+const schemaOrigin = Astro.site ? Astro.site.origin : COMMITTED_ORIGIN
+const schemaJson =
+  robots === 'noindex'
+    ? undefined
+    : pageSchemaJson({ origin: schemaOrigin, pathname: Astro.url.pathname })
 
 /**
  * `docs/ACCESSIBILITY.md` F22: both strings baked into the card artwork, as text.
@@ -112,6 +170,24 @@ const reviewedDate =
     <meta name="description" content={description} />
     {robots === 'noindex' && <meta name="robots" content="noindex" />}
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    {
+      /*
+       * SEARCH CONSOLE AND BING VERIFICATION — `docs/SEO.md §10.3`.
+       *
+       * Rendered only when a token is configured. `src/lib/seo/verification.ts` has already refused
+       * anything that is not 8 to 128 characters of `A-Za-z0-9_-.:=`, so nothing here can break out
+       * of the attribute it is written into, and an empty or invented token resolves to `undefined`
+       * and emits no tag: a verification that silently never completes is worse than none.
+       * `pnpm test:seo` fails if a token is set and no page carries the tag.
+       */
+    }
+    {
+      googleSiteVerification && (
+        <meta name="google-site-verification" content={googleSiteVerification} />
+      )
+    }
+    {bingSiteVerification && <meta name="msvalidate.01" content={bingSiteVerification} />}
 
     <link
       rel="preload"
@@ -157,6 +233,24 @@ const reviewedDate =
     <meta name="twitter:description" content={description} />
     {ogImage && <meta name="twitter:image" content={ogImage} />}
     {ogImage && <meta name="twitter:image:alt" content={ogImageAlt} />}
+
+    {
+      /*
+       * `is:inline` so Astro leaves the element exactly as authored — it must not be treated as a
+       * module, bundled, or given a build-time attribute. `set:html` so the body is written as the
+       * JSON text it is rather than HTML-escaped into `&quot;`, which no JSON parser accepts.
+       * `pageSchemaJson` has already replaced every `<` with its six-character JSON unicode
+       * escape, so the element cannot be closed early; that is the whole injection surface of a data
+       * block, and it is handled at the source rather than trusted to this call site.
+       *
+       * A JSON-LD block is DATA, not executable script. Measured under the served
+       * `script-src 'self'` policy with no hash sources: zero CSP violations and zero console
+       * errors, while an executable inline `<script>` in the same page produces one of each
+       * (`docs/SEO.md §6.2`). `apps/web/scripts/verify-dist.mjs` carries that exception scoped to
+       * this `type` and to nothing else, with a paired negative case in its `--self-test`.
+       */
+    }
+    {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
 
     <script is:inline src="/theme-init.js"></script>
   </head>

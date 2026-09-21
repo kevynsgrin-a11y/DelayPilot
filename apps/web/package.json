@@ -6,7 +6,7 @@
   "description": "DelayPilot public site and authenticated app shell. Pre-rendered Astro; the build output is served by apps/edge through the ASSETS binding.",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/prune-dist.mjs && node scripts/verify-dist.mjs --self-test && node scripts/verify-dist.mjs",
+    "build": "node ../../scripts/seo/site-url-guard.mjs && astro build && node scripts/prune-dist.mjs && node scripts/verify-dist.mjs --self-test && node scripts/verify-dist.mjs",
     "typecheck": "astro check",
     "astro": "astro"
   },

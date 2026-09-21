@@ -15,10 +15,15 @@
  * prints the policy the build was actually held to.
  *
  * As served today that policy is `script-src 'self'; style-src 'self'` with no hash sources, so the
- * derived allowlist is empty and the build must contain ZERO inline `<script>`, ZERO inline
- * `<style>` and zero `style="…"` attributes. If a future session adds a `client:*` directive, Astro
- * will inject an inline island style and two inline island scripts, this check will fail, and the
- * hashes it prints are what the header policy would then have to carry.
+ * derived allowlist is empty and the build must contain ZERO EXECUTABLE inline `<script>`, ZERO
+ * inline `<style>` and zero `style="…"` attributes. If a future session adds a `client:*`
+ * directive, Astro will inject an inline island style and two inline island scripts, this check
+ * will fail, and the hashes it prints are what the header policy would then have to carry.
+ *
+ * THE ONE EXCEPTION IS A DATA BLOCK, AND IT IS SCOPED TO ITS `type`.
+ * `<script type="application/ld+json">` is never parsed or executed as script, so `script-src` has
+ * nothing to govern in it — measured, with a control, in `docs/SEO.md §6.2`. See `DATA_BLOCK_TYPES`
+ * below for the measurement and for what the exception deliberately does not cover.
  *
  * WHAT ELSE IT REFUSES, and the invariant behind each:
  *
@@ -302,18 +307,60 @@ const internalLinks = (html) =>
     .map((href) => href.split('#')[0])
     .filter((href) => href !== '')
 
+/**
+ * The ONE inline `<script>` type this gate lets through, and the measurement that earns it.
+ *
+ * `<script type="application/ld+json">` is a DATA BLOCK: the HTML specification calls a `type` a
+ * user agent does not recognise as a script language a "data block", and the user agent neither
+ * parses nor executes it. Content-Security-Policy's `script-src` governs script EXECUTION, so it
+ * has nothing to govern here — which is a claim about a browser, and was therefore measured rather
+ * than argued (`docs/SEO.md §6.2`, seo-engineer, Chromium 1194, under the real served `_headers`):
+ *
+ *   a JSON-LD block injected into a built page      0 CSP violations   0 console errors
+ *   an executable inline <script> in the same page  1 (script-src-elem, blockedURI: inline)   1
+ *   13 real builder blocks over 5 routes            0                  0
+ *
+ * The control on the second row is what makes the first row mean anything: the probe detects a
+ * violation when there is one, so the zero on row one is a measurement and not a blind spot.
+ *
+ * THE EXCEPTION IS SCOPED TO THE `type`, AND TO NOTHING ELSE. A bare `<script>`, a `type` this
+ * constant does not name, `type="module"`, a `text/javascript` spelling, and every `style="…"`
+ * attribute still fail the build. `--self-test` carries both directions: one case proving a JSON-LD
+ * block passes, one proving an executable inline `<script>` in the SAME document still fails. An
+ * exception with no paired negative case is how a guard quietly stops guarding.
+ */
+const DATA_BLOCK_TYPES = new Set(['application/ld+json'])
+
+/** The `type` attribute of a `<script>`, lower-cased and unquoted, or `undefined` when absent. */
+const scriptType = (attributes) => {
+  const match = /\stype\s*=\s*("([^"]*)"|'([^']*)'|([^\s"'>]+))/i.exec(attributes)
+  if (match === null) return undefined
+  return (match[2] ?? match[3] ?? match[4] ?? '').trim().toLowerCase()
+}
+
 function checkInlineElements(file, html) {
   for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
     const attributes = match[1]
     const body = match[2]
     if (/\ssrc=/i.test(attributes)) continue
     if (body.trim() === '') continue
+
+    const type = scriptType(attributes)
+    if (type !== undefined && DATA_BLOCK_TYPES.has(type)) {
+      /* A data block a browser never executes. Its CONTENT is still held to every text check
+         below, through the same `visibleText`/attribute passes every other element gets. */
+      continue
+    }
+
     const hash = sha256(body)
     if (!ALLOWED_INLINE_HASHES.has(hash)) {
       fail(
         file,
         `inline <script> is not in the served policy. The header would need script-src '${hash}'. ` +
-          `Move it to an external same-origin module, or coordinate a _headers change first.`,
+          `Move it to an external same-origin module, or coordinate a _headers change first. ` +
+          `The only exception is a data block a browser never executes: ` +
+          `${[...DATA_BLOCK_TYPES].map((entry) => `type="${entry}"`).join(', ')} ` +
+          `(docs/SEO.md §6.2, measured).`,
       )
     }
   }
@@ -1176,7 +1223,48 @@ const CONTACT_LINK = '<a href="/app/trip/x">Contact the airline</a>'
 const EVIDENCE_LABELLED =
   '<span id="ev-1">Save the evidence</span><a href="/x" aria-labelledby="ev-1"></a>'
 
+/*
+ * The `DATA_BLOCK_TYPES` exception, in both directions, in ONE document.
+ *
+ * The pair is the point. The passing case alone would prove only that the gate can be made quiet;
+ * the failing case in the SAME document proves the gate is still awake while it is quiet — that
+ * `checkInlineElements` skipped the block on its `type` and not because it stopped looking at
+ * `<script>` elements. `docs/SEO.md §6.2` earns the exception with the same shape of evidence,
+ * measured in a browser: a JSON-LD block produces zero CSP violations, an executable inline script
+ * in the same page produces one.
+ */
+const JSON_LD = `<script type="application/ld+json">${JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [{ '@type': 'Organization', name: 'DelayPilot' }],
+})}</script>`
+const EXECUTABLE_INLINE = '<script>window.dataLayer = []</script>'
+
 const SELF_TESTS = [
+  {
+    name: 'a JSON-LD data block is not an inline script',
+    run: () => collect((f) => checkInlineElements(f, `<head>${JSON_LD}</head>`)),
+    expect: null,
+  },
+  {
+    name: 'an executable inline <script> beside a JSON-LD block still fails',
+    run: () =>
+      collect((f) => checkInlineElements(f, `<head>${JSON_LD}${EXECUTABLE_INLINE}</head>`)),
+    expect: /inline <script> is not in the served policy/,
+  },
+  {
+    name: 'a <script> type the exception does not name still fails',
+    run: () =>
+      collect((f) =>
+        checkInlineElements(f, '<head><script type="module">export {}</script></head>'),
+      ),
+    expect: /inline <script> is not in the served policy/,
+  },
+  {
+    name: 'a style="…" attribute beside a JSON-LD block still fails',
+    run: () => collect((f) => checkInlineElements(f, `${JSON_LD}<p style="color:red">x</p>`)),
+    expect: /style="…" attribute/,
+  },
+
   {
     name: 'ad above the primary search',
     run: () => findAdPositionViolations(`${AD}${LOOKUP_FORM}`),
@@ -1486,10 +1574,18 @@ async function main() {
   )
   checkOrphanScripts(scripts, referrers)
 
+  /** Data blocks let through by `DATA_BLOCK_TYPES`, counted so the summary states them. */
+  let dataBlocks = 0
+
   for (const file of html) {
     const label = relative(DIST, file)
     const route = `/${relative(DIST, file).replace(/index\.html$/, '')}`
     const source = await readFile(file, 'utf8')
+
+    for (const match of source.matchAll(/<script\b([^>]*)>[\s\S]*?<\/script>/gi)) {
+      const type = scriptType(match[1])
+      if (type !== undefined && DATA_BLOCK_TYPES.has(type)) dataBlocks += 1
+    }
 
     checkInlineElements(label, source)
     checkBrandImages(label, source)
@@ -1516,7 +1612,10 @@ async function main() {
   console.log(
     `verify-dist: ${html.length} page(s) and ${scripts.length} chunk(s) checked, 0 findings.\n` +
       `  Held to the policy served by apps/web/public/_headers:\n    ${SERVED_POLICY}\n` +
-      `  No inline script or style and no data: URI, so that policy needs no additional source.`,
+      `  No EXECUTABLE inline script, no inline style and no data: URI, so that policy needs no\n` +
+      `  additional source. ${dataBlocks} data block(s) ` +
+      `(${[...DATA_BLOCK_TYPES].map((entry) => `type="${entry}"`).join(', ')}) — never parsed as\n` +
+      `  script, 0 CSP violations measured under this policy (docs/SEO.md §6.2).`,
   )
 }
 

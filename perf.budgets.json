@@ -1,0 +1,412 @@
+{
+  "version": 1,
+  "owner": "performance-engineer",
+  "documentation": "docs/PERFORMANCE.md",
+  "unbudgetedRoutes": "fail",
+
+  "measurement": {
+    "dist": "apps/web/dist",
+    "takenAt": "2026-09-20",
+    "takenFrom": {
+      "branch": "claude/intelligent-knuth-d3s8za",
+      "headAtMeasurement": "4725e28",
+      "sessionBase": "b3e6aae",
+      "session": "visual-overhaul S4",
+      "build": "20 pre-rendered routes, 52 emitted files",
+      "distFingerprint": "sha256 28f14da706e02c6a869f0fb8ca8e35d17c395603471f1afb87f279745ac49f89 over `find . -type f | sort | xargs sha256sum`",
+      "why": "apps/web/dist was rebuilt underneath this measurement three times while the parallel seo-engineer landed structured data. Every figure below was taken from one frozen copy of that tree, identified by the fingerprint above, so the numbers describe a build that existed rather than an average of builds that were passing through. That copy is the PRODUCTION shape: it carries the JSON-LD that apps/web/src/lib/seo/site.ts emits only when PUBLIC_SITE_URL is set (owner input I-4), which a local build does not have. Budgeting against the heavier tree makes a local green result a conservative one — the measured difference is +183 B gz on / and +2528 B gz across the build (docs/PERFORMANCE.md §3.1a). Reproduce with `pnpm build` then `node scripts/perf/check-budgets.mjs --report`, and record which state the build was in."
+    },
+    "unit": "byte",
+    "wireModel": {
+      "compressible": "gzip level 9 of the file contents — html, css, js, mjs, json, map, svg, txt, xml, webmanifest",
+      "incompressible": "byte length unchanged — woff2 (brotli inside the format), png, webp, avif, jpg, ico",
+      "why": "Every budget in .claude/agents/performance-engineer.md:80-85 is stated in gzipped kilobytes. gzip level 9 is reproducible from the Node standard library with no pinned tool and is an upper bound on brotli, which is what a browser negotiating `br` actually receives. Brotli quality 11 is measured alongside every figure and reported in docs/PERFORMANCE.md, never gated.",
+      "excludesResponseHeaders": "These are payload bytes. Lighthouse transferSize additionally counts response headers — about 600 B per response once the apps/web/public/_headers security policy is attached — so a Lighthouse network total reads higher. scripts/perf/lighthouse.mjs reconciles the two and reports the residual."
+    },
+    "criticalPath": "The document plus every same-origin subresource a browser fetches before the page is rendered and interactive: stylesheets, scripts, and preloaded fonts. Icons, the web manifest and the Open Graph images are measured but excluded, because none is on the path to first paint and a headless browser does not request them — verified against the Lighthouse network log, which recorded exactly the 8 critical requests this model predicts for `/`."
+  },
+
+  "global": {
+    "hydratedIslands": {
+      "budget": 0,
+      "comparison": "max",
+      "unit": "island",
+      "owner": "frontend-ui-engineer",
+      "why": "Nothing on this site hydrates. React renders on the server only and no client:* directive exists anywhere (docs/BUILD_PLAN.md §10, S3 record). One client:load pulls in the React runtime and the 2 KB JavaScript story ends permanently, so this is budgeted exactly, with no headroom. A deliberate island is an orchestrator decision that raises this number with its measured chunk size recorded."
+    },
+    "inlineExecutableScripts": {
+      "budget": 0,
+      "comparison": "max",
+      "unit": "script",
+      "owner": "frontend-ui-engineer",
+      "why": "Bytes inside a <script> element are JavaScript that no per-file budget can see, so one inline script makes the JavaScript budget silently wrong. Counted here for byte accounting; the Content-Security-Policy rule that also forbids it lives in apps/web/public/_headers and is enforced by apps/web/scripts/verify-dist.mjs. An inline application/ld+json data block is NOT executable, is required by search engines to sit in the page, and is not counted here — its bytes land in the document budget, where they belong. Measured at this baseline: 0 inline executable scripts and 13 inline application/ld+json data blocks, 461 B raw on twelve routes and 1416 B on /guides/."
+    },
+    "inlineStyleElements": {
+      "budget": 0,
+      "comparison": "max",
+      "unit": "element",
+      "owner": "brand-design-director",
+      "why": "Same accounting reason as inline scripts, and the same CSP constraint: style-src 'self' with no 'unsafe-inline'. apps/web/astro.config.mjs pins inlineStylesheets to 'never' for exactly this."
+    },
+    "scriptFileCount": {
+      "budget": 4,
+      "comparison": "max",
+      "unit": "file",
+      "owner": "frontend-ui-engineer",
+      "why": "Measured 4: /theme-init.js and the three bundled module scripts for the header, the theme control and the lookup form. A fifth script is a decision, not an accident, so this has no headroom."
+    },
+    "scriptWireBytesTotal": {
+      "budget": 2400,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "frontend-ui-engineer",
+      "why": "Measured 2050 B gz across all four scripts. 17% headroom — enough for the lookup reducer to grow a state, not enough to hide a library."
+    },
+    "largestScriptWireBytes": {
+      "budget": 1200,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "frontend-ui-engineer",
+      "why": "Measured 944 B gz (the lookup form's combobox reducer). 27% headroom. Catches a single script swelling even when the total is masked by another shrinking."
+    },
+    "stylesheetFileCount": {
+      "budget": 1,
+      "comparison": "max",
+      "unit": "file",
+      "owner": "brand-design-director",
+      "why": "Measured 1: every route links the same BaseLayout stylesheet, so it is fetched once and cached for the rest of the session. Splitting it is a real option later (an /app/** shell sheet), and it is a decision that raises this number with the split measured."
+    },
+    "stylesheetWireBytesTotal": {
+      "budget": 13000,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "brand-design-director",
+      "why": "Measured 10948 B gz (65907 B raw). 18.7% headroom. The charter ceiling is 25 KB gz for a marketing route; this is tightened to the measurement because one shared sheet serves 20 routes and every unused rule is paid for on all of them."
+    },
+    "fontFileCount": {
+      "budget": 2,
+      "comparison": "max",
+      "unit": "file",
+      "owner": "brand-design-director",
+      "why": "DIRECTIVE §7 and .claude/agents/performance-engineer.md:99 allow one family and at most two faces. Measured 2: Geist Sans latin 400 and 600. Exact, no headroom."
+    },
+    "fontWireBytesTotal": {
+      "budget": 34000,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "brand-design-director",
+      "why": "Measured 33128 B (16324 + 16804, woff2, not re-encoded on the wire). Charter ceiling 45 KB; tightened to the measurement with 2.6% headroom because a subset does not drift by accident — a change here is a new subset or a new face, and both are decisions."
+    },
+    "largestImageWireBytes": {
+      "budget": 20000,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "visual-asset-director",
+      "why": "Measured 16248 B (og/default-1200x630.webp). The charter's 120 KB LCP-image budget does not bind here: the built site contains no <img> element on any route — every graphic is inline SVG — so the only raster files are icons and the Open Graph images, which a browser never fetches during a page load. This budget guards the social image, not the LCP."
+    },
+    "imageWireBytesTotal": {
+      "budget": 64000,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "visual-asset-director",
+      "why": "Measured 56912 B gz across 18 files: the icon set, both Open Graph renditions, and eight standalone brand/motif SVGs that no page references because the motifs are inlined into the HTML. 12.5% headroom."
+    },
+    "documentWireBytesTotal": {
+      "budget": 175000,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "frontend-ui-engineer",
+      "why": "Measured 154507 B gz across 20 documents. 13.3% headroom. This is the budget that catches the regression per-route ceilings miss — every page getting a little heavier at once, which is what a layout or footer change does."
+    },
+    "buildWireBytesTotal": {
+      "budget": 300000,
+      "comparison": "max",
+      "unit": "byte",
+      "owner": "frontend-ui-engineer",
+      "why": "Measured 270163 B gz over 52 emitted files. 11.0% headroom. Deploy weight, not wire weight: it also covers files no page requests."
+    },
+    "routeCount": {
+      "budget": 20,
+      "comparison": "min",
+      "unit": "route",
+      "owner": "frontend-ui-engineer",
+      "why": "A build that emits fewer routes than it did is a broken build, and a broken build is the cheapest way to make every byte budget pass. Measured 20 (DIRECTIVE §18.1 contract-free routes plus the 404). This is the only floor in the manifest."
+    }
+  },
+
+  "fontFormats": {
+    "allowed": [".woff2"],
+    "owner": "brand-design-director",
+    "why": "woff2 only. A woff, ttf or otf fallback face would double the font payload for browsers that have not needed one since 2018."
+  },
+
+  "routeClasses": {
+    "home": {
+      "match": ["/"],
+      "owner": "frontend-ui-engineer",
+      "why": "The homepage alone carries the §28 demonstration cockpit, the inline SVG route globe, the scroll-scrubbed chronology and the lookup form, so its document is 2.6x the next heaviest. It gets its own class rather than inflating everyone else's ceiling.",
+      "budgets": {
+        "documentWireBytes": {
+          "budget": 34000,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured 28182 B gz (144843 B raw, 20882 B brotli). 20.6% headroom, sized for the structured-data markup seo-engineer is landing in this same session and for the pricing cards and affiliate module the S3 record deliberately omitted."
+        },
+        "criticalPathWireBytes": {
+          "budget": 81000,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured 74308 B gz. 46126 B of that is shared and fixed (fonts 33128, stylesheet 10948, four scripts 2050); the headroom is the document headroom plus 1 KB."
+        },
+        "totalRouteWireBytes": {
+          "budget": 84000,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured 76949 B gz — the critical path plus 2641 B of icons and the web manifest. Catches a third icon link or a newly referenced asset."
+        },
+        "criticalRequestCount": {
+          "budget": 8,
+          "comparison": "max",
+          "unit": "request",
+          "why": "Measured 8: document, stylesheet, two preloaded fonts, four scripts. Confirmed against the Lighthouse network log, which recorded the same 8. A ninth request is an architecture change."
+        },
+        "renderBlockingCount": {
+          "budget": 2,
+          "comparison": "max",
+          "unit": "resource",
+          "why": "Measured 2: /theme-init.js (a classic script in <head>, deliberately blocking so the theme is applied pre-paint and there is no flash) and the stylesheet. Module scripts are deferred by default and do not block."
+        },
+        "preloadCount": {
+          "budget": 2,
+          "comparison": "max",
+          "unit": "link",
+          "why": ".claude/agents/performance-engineer.md:107 allows at most two <link rel=preload> per route. Measured 2, both font faces. A third preload de-prioritises the LCP resource and is a finding, not an optimisation."
+        }
+      }
+    },
+
+    "tool": {
+      "match": ["/flight-status/", "/delay-risk/", "/connection-risk/"],
+      "owner": "frontend-ui-engineer",
+      "why": "DIRECTIVE §18.1 tool routes. They explain and will eventually host the lookup surfaces, so they are budgeted apart from editorial pages even though today they ship the same three scripts as everything else.",
+      "budgets": {
+        "documentWireBytes": {
+          "budget": 9000,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured worst case 7266 B gz (/connection-risk/). 23.9% headroom — the widest in the manifest, because these are the routes that gain real result states first."
+        },
+        "criticalPathWireBytes": {
+          "budget": 55000,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured worst case 52448 B gz. Shared and fixed: 45182 B."
+        },
+        "totalRouteWireBytes": {
+          "budget": 58000,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured worst case 55089 B gz."
+        },
+        "criticalRequestCount": {
+          "budget": 7,
+          "comparison": "max",
+          "unit": "request",
+          "why": "Measured 7: document, stylesheet, two preloaded fonts, three scripts. These routes do not ship the lookup script today because they contain no form."
+        },
+        "renderBlockingCount": {
+          "budget": 2,
+          "comparison": "max",
+          "unit": "resource",
+          "why": "Measured 2."
+        },
+        "preloadCount": {
+          "budget": 2,
+          "comparison": "max",
+          "unit": "link",
+          "why": "Measured 2, both font faces."
+        }
+      }
+    },
+
+    "content": {
+      "match": [
+        "/about/",
+        "/methodology/",
+        "/data-sources/",
+        "/guides/",
+        "/guides/**",
+        "/passenger-rights/",
+        "/passenger-rights/**",
+        "/privacy/",
+        "/terms/",
+        "/advertising-policy/",
+        "/affiliate-disclosure/",
+        "/editorial-policy/",
+        "/404.html"
+      ],
+      "owner": "content-editorial-lead",
+      "why": "Editorial and policy routes: one shared layout over prose of varying length. The class ceiling is sized to its heaviest member so a normal editorial edit does not fail a build, and the global documentWireBytesTotal budget is what catches drift across all of them at once.",
+      "budgets": {
+        "documentWireBytes": {
+          "budget": 13500,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured worst case 11113 B gz (/editorial-policy/); the lightest is 3619 B (/404.html). 21.5% headroom over the heaviest member."
+        },
+        "criticalPathWireBytes": {
+          "budget": 59500,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured worst case 56295 B gz. Shared and fixed: 45182 B."
+        },
+        "totalRouteWireBytes": {
+          "budget": 62500,
+          "comparison": "max",
+          "unit": "byte",
+          "why": "Measured worst case 58936 B gz."
+        },
+        "criticalRequestCount": {
+          "budget": 7,
+          "comparison": "max",
+          "unit": "request",
+          "why": "Measured 7 on all 16 routes in this class."
+        },
+        "renderBlockingCount": {
+          "budget": 2,
+          "comparison": "max",
+          "unit": "resource",
+          "why": "Measured 2."
+        },
+        "preloadCount": {
+          "budget": 2,
+          "comparison": "max",
+          "unit": "link",
+          "why": "Measured 2, both font faces."
+        }
+      }
+    }
+  },
+
+  "routeOverrides": {},
+
+  "lighthouse": {
+    "runner": "scripts/perf/lighthouse.mjs",
+    "conditions": {
+      "tool": "lighthouse 13.5.0 (a direct devDependency, so the measured version is the one this manifest names)",
+      "browser": "Chromium 141.0.7390.37 at /opt/pw-browsers/chromium-1194, launched by @playwright/test 1.56.1 with --remote-debugging-port",
+      "server": "scripts/perf/serve-dist.mjs, applying the /* block of apps/web/public/_headers",
+      "compression": "auto",
+      "formFactor": "mobile",
+      "viewport": "375x667 at DPR 2 — the narrowest DIRECTIVE §18.7 breakpoint",
+      "throttling": "Lighthouse simulated: 150 ms RTT, 1638.4 Kbps, 4x CPU slowdown",
+      "runsPerRoute": 3,
+      "representativeRun": "the run whose LCP is the median LCP — one whole load, not a per-metric median of loads that never happened"
+    },
+    "routes": [
+      {
+        "route": "/",
+        "why": "Heaviest document in the build and the only route with four scripts and eight requests. It is also the only route carrying the ADR 0003 motion allowance — scroll-driven reveals, ambient motifs, the scroll-scrubbed chronology — and the §28 demonstration cockpit, so it is the highest risk for both LCP and CLS."
+      },
+      { "route": "/connection-risk/", "why": "Heaviest tool document." },
+      {
+        "route": "/flight-status/",
+        "why": "The lookup entry route and the second-heaviest raw document in the build."
+      },
+      {
+        "route": "/editorial-policy/",
+        "why": "Heaviest content document — the ceiling of the content class."
+      },
+      {
+        "route": "/passenger-rights/",
+        "why": "The rights surface. .claude/agents/performance-engineer.md:163 names a rights page explicitly in the definition of done.",
+        "gateOverrides": {
+          "seo": null,
+          "failingSeoAudits": {
+            "threshold": 0,
+            "comparison": "max",
+            "allow": ["is-crawlable"],
+            "owner": "seo-engineer",
+            "why": "This route carries <meta name=\"robots\" content=\"noindex\"> by editorial decision — it is `publishable`, not `published` (docs/EDITORIAL_POLICY.md, S3 serving rule). Lighthouse scores `is-crawlable` 0 and the SEO category drops to 63 with no defect present, so the category-score gate is removed and replaced with the assertion that actually means something: `is-crawlable` is the ONLY failing SEO audit. Measured 2026-09-20 — it is. When the route publishes, delete this override rather than editing the number."
+          }
+        }
+      },
+      {
+        "route": "/guides/data-freshness-and-provider-limits/",
+        "why": "Heaviest guide — the ArticleLayout path, which the other four guides share.",
+        "gateOverrides": {
+          "seo": null,
+          "failingSeoAudits": {
+            "threshold": 0,
+            "comparison": "max",
+            "allow": ["is-crawlable"],
+            "owner": "seo-engineer",
+            "why": "Same as /passenger-rights/: `noindex` by editorial decision, `is-crawlable` the only failing SEO audit, measured 2026-09-20."
+          }
+        }
+      }
+    ],
+    "routeSelection": "Six of twenty. The other fourteen are the same layout over different prose, and their byte deltas are already gated per route by scripts/perf/check-budgets.mjs; running them through Lighthouse would add about six minutes to measure the same three resources. The six chosen are the byte-wise worst case of each route class plus the two surfaces whose content changes shape first. `node scripts/perf/lighthouse.mjs --routes all` runs the full sweep.",
+    "gates": {
+      "default": {
+        "owner": "frontend-ui-engineer",
+        "performance": {
+          "threshold": 95,
+          "comparison": "min",
+          "why": "DIRECTIVE §22: public Lighthouse >= 95."
+        },
+        "accessibility": {
+          "threshold": 100,
+          "comparison": "min",
+          "owner": "accessibility-lead",
+          "why": "DIRECTIVE §22: public accessibility 100."
+        },
+        "bestPractices": {
+          "threshold": 100,
+          "comparison": "min",
+          "why": "DIRECTIVE §22: public best practices 100."
+        },
+        "seo": {
+          "threshold": 100,
+          "comparison": "min",
+          "owner": "seo-engineer",
+          "why": "DIRECTIVE §22: public SEO 100."
+        },
+        "lcpMs": {
+          "threshold": 2500,
+          "comparison": "max",
+          "why": "DIRECTIVE §22 target: LCP < 2.5 s. Left at the release ceiling rather than tightened to the measurement, deliberately. Measured on 2026-09-20: 1203-1726 ms compressed and 1803-2408 ms uncompressed, so a budget tight enough to be an early warning under one condition would fail under the other, and LCP timing is the noisiest number this harness produces. On a site that ships 2 KB of JavaScript and blocks on nothing else, LCP is a function of transferred bytes and round trips — so the tight, zero-noise early warning for LCP is the byte budget above, and this gate is the release contract it sits under."
+        },
+        "clsScore": {
+          "threshold": 0.02,
+          "comparison": "max",
+          "why": "DIRECTIVE §22 ceiling is 0.1. Tightened to 0.02 because the measurement is not noisy: CLS was exactly 0 on all 18 mobile runs and all 12 desktop runs of the 2026-09-20 baseline, with `cls-culprits-insight` scoring 1 and `unsized-images` scoring 1. A layout shift is a defect that appears, not a number that drifts, so this fires at a fifth of the release ceiling and still leaves a page room for one sub-threshold blip."
+        },
+        "tbtMs": {
+          "threshold": 150,
+          "comparison": "max",
+          "why": "The lab proxy for INP. Lighthouse never interacts with the page, so it reports no INP; TBT is what a load run can honestly say about main-thread availability. Measured 0 ms on every route in every run of the 2026-09-20 baseline. 150 ms is not headroom over a measurement — it is the point at which a page has started doing real work during load, which on a site that hydrates nothing means something is wrong."
+        }
+      }
+    },
+    "interactionLatency": {
+      "runner": "scripts/perf/interaction-latency.mjs",
+      "gatedInCi": false,
+      "why": "Measured, recorded, and deliberately NOT a gate yet. The worst interaction on the site is the theme control, measured at 160/176/176/192 ms INP across four runs at 1440x900 under a 4x CPU throttle against a 200 ms target — a gate there would fail on noise about a quarter of the time while nothing had regressed. The right sequence is: reduce the theme-switch style recalculation first (see docs/PERFORMANCE.md, finding P-4), then gate. Until then the script reports and exits non-zero only above the DIRECTIVE §22 200 ms target.",
+      "target": { "inpMs": 200, "source": "DIRECTIVE.md §22" },
+      "baseline": {
+        "takenAt": "2026-09-20",
+        "at375x667cpu4": {
+          "worstInpMs": 144,
+          "worstInteraction": "choose the dark theme (drawer control)"
+        },
+        "at1440x900cpu4": {
+          "worstInpMs": 192,
+          "medianOfFourRunsMs": 176,
+          "worstInteraction": "choose the dark theme (header control)"
+        },
+        "note": "Chrome quantises Event Timing durations to 8 ms and clamps the observer threshold to a 16 ms floor, so every figure is a multiple of 8 and an interaction under 16 ms produces no entry at all."
+      }
+    }
+  }
+}

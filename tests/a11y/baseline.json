@@ -1,0 +1,429 @@
+{
+  "recordedAt": "2026-09-20",
+  "recordedFrom": "apps/web/dist, 20 emitted route(s), axe-core 4.13.0",
+  "routes": [
+    "/",
+    "/404.html",
+    "/about/",
+    "/advertising-policy/",
+    "/affiliate-disclosure/",
+    "/connection-risk/",
+    "/data-sources/",
+    "/delay-risk/",
+    "/editorial-policy/",
+    "/flight-status/",
+    "/guides/",
+    "/guides/data-freshness-and-provider-limits/",
+    "/guides/how-delaypilot-estimates-connection-risk/",
+    "/guides/how-delaypilot-estimates-disruption-risk/",
+    "/guides/minimum-connection-time-vs-realistic-connection/",
+    "/guides/saving-receipts-and-evidence/",
+    "/methodology/",
+    "/passenger-rights/",
+    "/privacy/",
+    "/terms/"
+  ],
+  "populations": {
+    "/ [error summary]": {
+      "state-container-elements": 15,
+      "progressbar": 2,
+      "progressbar-readout": 2,
+      "table": 2,
+      "th": 17,
+      "aria-busy": 1,
+      "live-candidate": 0,
+      "dl-row": 41,
+      "dl-named-value": 0,
+      "dt-label-word": 21,
+      "status-pill": 72,
+      "hidden-attribute": 7
+    },
+    "/ [searching]": {
+      "state-container-elements": 8,
+      "progressbar": 2,
+      "progressbar-readout": 2,
+      "table": 2,
+      "th": 17,
+      "aria-busy": 1,
+      "live-candidate": 0,
+      "dl-row": 41,
+      "dl-named-value": 0,
+      "dt-label-word": 21,
+      "status-pill": 72,
+      "hidden-attribute": 8
+    },
+    "/ [provider unavailable]": {
+      "state-container-elements": 13,
+      "progressbar": 2,
+      "progressbar-readout": 2,
+      "table": 2,
+      "th": 17,
+      "aria-busy": 1,
+      "live-candidate": 0,
+      "dl-row": 41,
+      "dl-named-value": 0,
+      "dt-label-word": 21,
+      "status-pill": 72,
+      "hidden-attribute": 8
+    },
+    "/": {
+      "body-elements": 1669,
+      "progressbar": 2,
+      "progressbar-readout": 2,
+      "table": 2,
+      "th": 17,
+      "aria-busy": 1,
+      "live-candidate": 0,
+      "dl-row": 41,
+      "dl-named-value": 0,
+      "dt-label-word": 21,
+      "status-pill": 72,
+      "hidden-attribute": 8
+    },
+    "/404.html": {
+      "body-elements": 171,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/about/": {
+      "body-elements": 173,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/advertising-policy/": {
+      "body-elements": 227,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/affiliate-disclosure/": {
+      "body-elements": 220,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/connection-risk/": {
+      "body-elements": 662,
+      "progressbar": 3,
+      "progressbar-readout": 3,
+      "table": 3,
+      "th": 30,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 15,
+      "dl-named-value": 0,
+      "dt-label-word": 4,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/data-sources/": {
+      "body-elements": 244,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 10,
+      "dl-named-value": 0,
+      "dt-label-word": 10,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/delay-risk/": {
+      "body-elements": 267,
+      "progressbar": 1,
+      "progressbar-readout": 1,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 15,
+      "hidden-attribute": 4
+    },
+    "/editorial-policy/": {
+      "body-elements": 293,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/flight-status/": {
+      "body-elements": 712,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 52,
+      "dl-named-value": 0,
+      "dt-label-word": 11,
+      "status-pill": 12,
+      "hidden-attribute": 4
+    },
+    "/guides/": {
+      "body-elements": 184,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/guides/data-freshness-and-provider-limits/": {
+      "body-elements": 260,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 1,
+      "th": 8,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/guides/how-delaypilot-estimates-connection-risk/": {
+      "body-elements": 235,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/guides/how-delaypilot-estimates-disruption-risk/": {
+      "body-elements": 246,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/guides/minimum-connection-time-vs-realistic-connection/": {
+      "body-elements": 215,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/guides/saving-receipts-and-evidence/": {
+      "body-elements": 223,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/methodology/": {
+      "body-elements": 304,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 2,
+      "dl-named-value": 0,
+      "dt-label-word": 2,
+      "status-pill": 18,
+      "hidden-attribute": 4
+    },
+    "/passenger-rights/": {
+      "body-elements": 276,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 1,
+      "th": 8,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/privacy/": {
+      "body-elements": 238,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/terms/": {
+      "body-elements": 211,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/accessibility/": {
+      "body-elements": 244,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 5,
+      "dl-named-value": 0,
+      "dt-label-word": 5,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    },
+    "/contact/": {
+      "body-elements": 167,
+      "progressbar": 0,
+      "progressbar-readout": 0,
+      "table": 0,
+      "th": 0,
+      "aria-busy": 0,
+      "live-candidate": 0,
+      "dl-row": 0,
+      "dl-named-value": 0,
+      "dt-label-word": 0,
+      "status-pill": 0,
+      "hidden-attribute": 4
+    }
+  },
+  "incomplete": {
+    "/": {
+      "color-contrast": {
+        "overlapped": 29,
+        "gradient": 39,
+        "non-text": 2
+      }
+    },
+    "/connection-risk/": {
+      "color-contrast": {
+        "gradient": 6
+      }
+    },
+    "/data-sources/": {
+      "color-contrast": {
+        "gradient": 1
+      }
+    },
+    "/flight-status/": {
+      "color-contrast": {
+        "non-text": 4,
+        "gradient": 6
+      }
+    },
+    "/methodology/": {
+      "color-contrast": {
+        "gradient": 2
+      }
+    },
+    "/ [error summary]": {
+      "color-contrast": {
+        "overlapped": 36,
+        "gradient": 39,
+        "non-text": 2
+      }
+    },
+    "/ [searching]": {
+      "color-contrast": {
+        "overlapped": 29,
+        "gradient": 39,
+        "non-text": 2
+      }
+    },
+    "/ [provider unavailable]": {
+      "color-contrast": {
+        "overlapped": 34,
+        "gradient": 39,
+        "non-text": 2
+      }
+    }
+  }
+}

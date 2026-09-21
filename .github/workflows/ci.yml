@@ -1,56 +1,134 @@
-# DelayPilot CI — the Phase 1 subset of the required checks. THIS IS NOT FULL CI.
+# DelayPilot CI — eleven of the eighteen required checks. THIS IS STILL NOT FULL CI.
 #
-# DIRECTIVE.md §23 requires 18 checks in a fixed order. This workflow runs the six that exist and
-# genuinely pass today (Phase 1, "Foundation"), plus two repo-local gates. Every other required
-# check is deliberately absent: the script behind it exits 1 on purpose until its owning phase
-# lands (read the stub messages in the root package.json). AGENTS.md §6 — a stub reporting a false
-# green is worse than a failure, and a permanently red pipeline is a pipeline everyone stops
-# reading. Do not conclude from this file that the repository has full CI. It does not.
+# DIRECTIVE.md §23 requires 18 checks in a fixed order. This workflow runs the eleven that exist and
+# genuinely pass today, plus four repo-local gates. Every other required check is deliberately
+# absent: the script behind it exits 1 on purpose until its owning phase lands (read the stub
+# messages in the root package.json). AGENTS.md §6 — a stub reporting a false green is worse than a
+# failure, and a permanently red pipeline is a pipeline everyone stops reading. Do not conclude from
+# this file that the repository has full CI. It does not.
 #
-# Present here, with §23 numbering:
+# Present here, with §23 numbering (steps below carry the same numbers):
 #    1  frozen-lockfile install   pnpm install --frozen-lockfile
 #    2  format                    pnpm format:check
 #    3  lint                      pnpm lint
 #    4  typecheck                 pnpm typecheck   (runs `wrangler types` for apps/edge first)
-#    8  web build                 pnpm build → @delaypilot/web  (astro build)
+#    5  unit                      pnpm test        (vitest: 18 files, 888 tests, ~3–5 s;
+#                                                   docs/TESTING.md §10 is the maintained count —
+#                                                   do not duplicate it, point at it)
+#    8  web build                 pnpm build → @delaypilot/web  (astro build + verify-dist)
 #    9  edge build                pnpm build → @delaypilot/edge (wrangler deploy --dry-run)
+#   13  SEO validation            pnpm test:seo    (nine suites over the BUILT apps/web/dist)
+#   14  accessibility smoke       pnpm test:a11y   (80 axe runs; ~109 s locally)
+#   15  Playwright                pnpm test:e2e    (desktop + mobile-375 only — see "VISUAL" below)
+#   16  bundle budgets            pnpm perf:budgets
 #
 # Absent, with the phase that adds each (DIRECTIVE.md §5 phase list):
-#    5  unit                  pnpm test             Phase 2  — no test file exists; vitest exits 1
-#    6  property              pnpm test             Phase 2  — lands with contracts + domain
-#    7  Workers integration   pnpm test:workers     Phase 12 — qa-test-architect
+#    6  property              pnpm test             Phase 2  — no property test exists yet. It will
+#                                                   run inside the SAME `pnpm test` step as check 5;
+#                                                   do not read check 5's green as covering it.
+#    7  Workers integration   pnpm test:workers     Phase 12 — qa-test-architect (loud stub, exit 1)
 #   10  migration validation  pnpm db:migrate:local Phase 3  — no migrations/ directory yet
 #   11  rights-rule validation                      Phase 5  — rights-rules-engineer
 #   12  content-quality gate                        Phase 11 — content-editorial-lead
-#   13  SEO validation        pnpm test:seo         Phase 11 — seo-engineer
-#   14  accessibility smoke   pnpm test:a11y        Phase 12 — accessibility-lead
-#   15  Playwright            pnpm test:e2e         Phase 12 — qa-test-architect
-#   16  bundle budgets                              Phase 12 — performance-engineer
 #   17  dependency audit                            Phase 12 — security-privacy-engineer
-#   18  secret scan           pnpm test:security    Phase 12 — security-privacy-engineer
+#   18  secret scan           pnpm test:security    Phase 12 — security-privacy-engineer (stub)
 #
-# Also absent for the same reason: pnpm quality (it chains all of the above), pnpm smoke
-# (Phase 13), pnpm model:validate (Phase 6), pnpm db:seed:local (Phase 3).
+# ── DO NOT REPLACE THESE STEPS WITH `pnpm quality` ───────────────────────────────────────────────
+# `pnpm quality` chains twelve commands with `&&`, and the seventh is `pnpm test:workers`, a
+# deliberate Phase 12 stub that exits 1. Everything after it — test:e2e, test:a11y, test:seo,
+# perf:budgets, test:security — is unreachable, so `quality` would turn four real gates into a
+# single red line that proves nothing about any of them (docs/BUILD_PLAN.md §10, "S4 opened";
+# docs/PERFORMANCE.md §1). CI invokes the real gates individually and must keep doing so until
+# Phase 12 implements `test:workers` and `test:security`. At that point `quality` becomes a
+# candidate for this file, and not before.
 #
-# The last two steps below are repo-local gates, not part of the 18, and they substitute for none
-# of them:
-#   - scripts/validate-build-system.mjs   — charter frontmatter, ownership collisions, overclaim
-#                                           lint over the agent system (Phase 0 artifact).
-#   - scripts/assets/compress-images.mjs  — per-image byte budgets on emitted AVIF/WebP (Phase 9
-#                                           asset pipeline). This is an *image* budget only; §23
-#                                           check 16, JS/CSS bundle budgets, is still absent.
+# ── PLAYWRIGHT BROWSERS: WHY THIS WORKFLOW RUNS `playwright install` ──────────────────────────────
+# docs/TESTING.md §13 says "never run `playwright install` here" and points at
+# PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers. That is correct **for the development container**,
+# which ships a pre-installed Chromium at revision 1194 that `@playwright/test@1.56.1` is pinned to
+# match; a second download there would be a second copy or a mismatched revision.
 #
-# There is no deploy job, on purpose. Deployment is Phase 13. `wrangler deploy` requires four
-# external inputs this repository does not have: CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN, a
-# real D1 `database_id`, and a real KV namespace `id` (both omitted in apps/edge/wrangler.jsonc
-# rather than invented — see the comment at its "Required bindings" section). A deploy job today
-# would fail closed on every run and teach people to ignore red. When it lands: preview per PR,
-# production only from the protected branch, and no secret ever exposed to a fork-triggered run.
+# A GitHub-hosted `ubuntu-latest` runner has neither that directory nor any pre-installed Playwright
+# browser, so setting the variable alone would leave `chromium.launch()` with nothing to launch. On
+# a runner, `playwright install chromium` IS the pinned path: the revision it downloads is resolved
+# from the pinned `@playwright/test` version in package.json, which is the same pinning discipline
+# the container expresses by a different mechanism. PLAYWRIGHT_BROWSERS_PATH is therefore left
+# **unset** here, so Playwright uses its own default cache — `$XDG_CACHE_HOME || ~/.cache` +
+# `/ms-playwright` on Linux (verified in playwright-core@1.56.1 lib/server/registry/index.js, not
+# from memory) — which is exactly the directory the cache step below restores.
+# `tests/tools/browser.mjs` prints a warning when the variable is unset; on this runner that warning
+# is expected and the default cache is the right answer. It is not a failure.
+#
+# Only Chromium is installed. WebKit and Firefox are recorded as **Not run** (docs/TESTING.md §4)
+# and installing them here would imply a coverage nobody has measured.
+#
+# ── VISUAL REGRESSION IS DELIBERATELY EXCLUDED FROM CI ────────────────────────────────────────────
+# `pnpm test:e2e` has three Playwright projects. This workflow runs `desktop` and `mobile-375`
+# (168 of the 237 tests) and **not** `visual` (69 tests). That is a decision, not an oversight:
+#
+#   · The 68 baselines in `e2e/__screenshots__/visual/` were generated in the development container,
+#     on its fonts, its GPU-less rasterisation and its Chromium build.
+#   · The tolerance is `maxDiffPixels: 0` (docs/TESTING.md §5) — chosen because two runs on that
+#     toolchain produce byte-identical PNGs, which makes any non-zero diff a real product change
+#     THERE. The same zero tolerance on a different image turns font hinting into a test failure.
+#   · docs/TESTING.md §5 states it outright: "A different OS, GPU or Chromium revision will need a
+#     deliberate rebaseline; the baselines are valid for the pinned toolchain and nothing else."
+#
+# A suite that fails for reasons unrelated to the change under review gets muted, and a muted suite
+# is worse than an absent one. So `visual` stays a local and pre-merge check, run by the agent that
+# owns the surface being changed:
+#
+#     pnpm exec playwright test --project=visual            # all 69 frames
+#     pnpm exec playwright test --project=visual -g "home"  # one set
+#
+# Making it a CI gate needs a runner image whose rendering the baselines were generated on — a
+# container action or a self-hosted image pinned to the same Chromium and fonts. Asked and
+# answered: qa-test-architect's ruling is **not yet**, recorded in docs/TESTING.md §5 under "The
+# `visual` project is deliberately excluded from runner CI". It would rather land a concrete image
+# pinned to Chromium 141.0.7390.37 and this font set than have this workflow changed speculatively.
+# When that image exists, this file gains one `--project=visual` and nothing else. Nothing under
+# `e2e/__screenshots__/` is this workflow's to touch, and nothing here touches it.
+#
+# ── WHY CHECK 15 EARNS ITS FIVE MINUTES ──────────────────────────────────────────────────────────
+# Green as of 6d8bb3d: `pnpm exec playwright test` measured 236 passed / 1 skipped / 0 failed on
+# 2026-09-20. **This is not a standing exception — a red check 15 is a real failure.**
+#
+# It went red exactly once, in the session that wired it, on F-QA-1: a `.dpp-state` rule setting
+# `display: grid` outranked the user-agent `[hidden] { display: none }`, so the homepage painted
+# "Unavailable — no licensed flight-data provider is connected" to every reader before they had
+# typed anything, and showed two mutually exclusive DIRECTIVE.md §17 states at once. Fixed in
+# 27764f3 with a `[hidden]` reset at the top of the cascade; the twelve §17 state-panel frames that
+# fix shifted were ruled on and rebaselined in 6d8bb3d; closed in docs/TESTING.md §11.
+#
+# Kept here for HOW it hid, which is the argument for spending the five minutes: the markup was
+# correct, so verify-dist passed; the rendered page was perfectly accessible, so the whole axe sweep
+# passed; the element is `tabindex="-1"`, so the keyboard walk never landed on it. Only a check that
+# reads COMPUTED STYLE in a real browser could see it.
+#
+# ── THE FOUR REPO-LOCAL GATES ────────────────────────────────────────────────────────────────────
+# Not part of the 18, and they substitute for none of them:
+#   - scripts/validate-build-system.mjs     — charter frontmatter, ownership collisions, overclaim
+#                                             lint over the agent system (Phase 0 artifact).
+#   - scripts/validate-security-headers.mjs — four-way parity between apps/web/public/_headers,
+#                                             apps/edge SECURITY_HEADERS and the two vercel.json
+#                                             copies (docs/DEPLOYMENT.md §3).
+#   - scripts/validate-contrast.mjs         — measured WCAG 2.2 AA contrast over the token palette.
+#   - scripts/assets/compress-images.mjs    — per-image byte budgets on emitted AVIF/WebP. An
+#                                             *image* budget; §23 check 16 is the JS/CSS one.
+#
+# ── DEPLOY ───────────────────────────────────────────────────────────────────────────────────────
+# There is no deploy job here. `.github/workflows/deploy.yml` owns that, and it re-runs this exact
+# gate list before it calls wrangler, because it can also be triggered by workflow_dispatch and must
+# not assume a CI run happened on the same commit. **The two lists must stay in step.** Add a check
+# here and add it there in the same change; the step names are identical in both files so a
+# side-by-side diff is the whole review. Two workflows asserting different standards is how a
+# regression reaches production through the door nobody was watching.
 #
 # Owner: platform-release-sre (docs/agents/ROSTER.md §3, `.github/workflows/**`).
-# Every command below was executed locally and exited zero before this file was added
-# (AGENTS.md §6). Node and pnpm versions are read from package.json (`engines.node`,
-# `packageManager`) so this workflow cannot drift from the repository's declared toolchain.
+# Node and pnpm versions are read from package.json (`engines.node`, `packageManager`) so this
+# workflow cannot drift from the repository's declared toolchain. Every command below exists and is
+# invoked exactly as docs/TESTING.md §1 documents it; this file itself executes on GitHub and has
+# not been run in the session that wrote it (AGENTS.md §6 — Not run).
 
 name: CI
 
@@ -60,7 +138,8 @@ on:
     branches: [main]
 
 # Least privilege. This workflow reads code and nothing else: no packages:write, no id-token, no
-# contents:write. Fork PRs therefore run with a read-only token and no repository secrets.
+# contents:write. Fork PRs therefore run with a read-only token and no repository secrets — and
+# nothing below needs one, which is why every check can gate a fork's pull request.
 permissions:
   contents: read
 
@@ -70,9 +149,16 @@ concurrency:
 
 jobs:
   verify:
-    name: Verify (Phase 1 subset of DIRECTIVE.md §23)
+    # RENAMING THIS JOB CHANGES THE REQUIRED-STATUS-CHECK NAME in branch protection for `main`. If
+    # the ruleset names the old string, update it in the same change or the check silently stops
+    # being required.
+    name: Verify (11 of the 18 DIRECTIVE.md §23 checks)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Measured locally: ~4 min of non-browser work plus ~109 s (a11y) and ~126 s (Playwright,
+    # 2 workers), before the browser download. A hosted runner is slower than the machine those
+    # were measured on, so the ceiling is generous on purpose: a timeout that fires on a slow
+    # runner while nothing has regressed teaches people to re-run red builds without reading them.
+    timeout-minutes: 30
     env:
       # Verified against the installed wrangler 4.114.0 CLI text, not from memory:
       # "You can override this for individual projects with the environment variable
@@ -80,7 +166,9 @@ jobs:
       WRANGLER_SEND_METRICS: 'false'
     steps:
       # Actions are pinned to a full commit SHA, never a moving tag. The trailing comment records
-      # the tag that SHA resolved to at the time of pinning; re-resolve before bumping.
+      # the tag that SHA resolved to at the time of pinning; re-resolve before bumping
+      # (`git ls-remote --tags https://github.com/<owner>/<repo>`, and take the `^{}` peel when the
+      # tag is annotated — that is the commit, the unpeeled object is the tag).
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -102,28 +190,44 @@ jobs:
           # which must be reproduced on every run rather than trusted from a previous one.
           cache: true
 
-      - name: Install dependencies (frozen lockfile)
+      # ── §23 checks 1–5: cheap failures fail first ────────────────────────────────────────────
+      - name: 1 · Install dependencies (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
-      - name: Format check
+      - name: 2 · Format check
         run: pnpm format:check
 
-      - name: Lint
+      - name: 3 · Lint
         run: pnpm lint
 
-      - name: Typecheck
+      - name: 4 · Typecheck
         run: pnpm typecheck
 
-      - name: Build (web then edge)
+      # Vitest at the repository root: in-package unit tests only. `pnpm test` and `pnpm test:e2e`
+      # have file sets that are disjoint by construction — every Playwright spec ends `.e2e.mjs`,
+      # which Vitest's `*.test.*` / `*.spec.*` glob cannot match (docs/TESTING.md §2). Needs no
+      # build: it imports source, not apps/web/dist.
+      - name: 5 · Unit tests
+        run: pnpm test
+
+      # ── §23 checks 8 and 9. Everything after this point reads apps/web/dist ──────────────────
+      # PUBLIC_SITE_URL is deliberately NOT set here. Without it the build omits canonical, og:url
+      # and the JSON-LD blocks rather than guessing an origin, and `pnpm test:seo` asserts exactly
+      # that all-or-nothing property: one self-referencing canonical per page, or none anywhere.
+      # deploy.yml sets it, so the production-shaped (heavier) build is the one the deploy gates
+      # measure — docs/PERFORMANCE.md §3.1a, where the budgets were set against that heavier tree.
+      - name: 8+9 · Build (web then edge)
         run: pnpm build
 
+      # ── Repo-local gates. Seconds each, and they run before the multi-minute browser block. ──
       - name: Validate build system
         run: node scripts/validate-build-system.mjs
 
-      # The security policy is necessarily written twice — apps/web/public/_headers covers static
-      # assets, which never invoke the Worker, and the middleware in apps/edge/src/index.ts covers
-      # Worker-generated responses, which never see _headers. This check fails the build when the
-      # two drift apart, because nothing else in the toolchain would notice a half-protected site.
+      # The security policy is necessarily written four times — apps/web/public/_headers covers
+      # Cloudflare static assets, the middleware in apps/edge/src/index.ts covers Worker-generated
+      # responses, and the two vercel.json copies cover whichever Root Directory Vercel is reading
+      # (docs/DEPLOYMENT.md §2, §3). This check fails the build when they drift apart, because
+      # nothing else in the toolchain would notice a half-protected site.
       - name: Validate security-header parity
         run: node scripts/validate-security-headers.mjs
 
@@ -136,3 +240,81 @@ jobs:
 
       - name: Check image budgets
         run: node scripts/assets/compress-images.mjs --check apps/web/public/images
+
+      # ── §23 check 13 ─────────────────────────────────────────────────────────────────────────
+      # Nine suites over the built site: site-url, canonical, title, description, robots, sitemap,
+      # schema, public-root, privacy (docs/SEO.md §9). It must run AFTER the build and must never
+      # be folded into apps/web's own `build` script (docs/SEO.md §11). `pnpm seo:verify` is the
+      # faster manifest+sitemap subset and is not repeated here — `test:seo` runs both as child
+      # processes. `scripts/seo/site-url-guard.mjs` is invoked by apps/web's build and reaches CI
+      # through the step above; do not add a second invocation.
+      - name: 13 · SEO validation
+        run: pnpm test:seo
+
+      # ── Browsers, installed once, cached on the pinned Playwright version ────────────────────
+      - name: Resolve the pinned Playwright version
+        id: playwright
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').devDependencies['@playwright/test']")"
+          case "$version" in
+            *[!0-9.]*) echo "@playwright/test is not pinned to an exact version: $version"; exit 1 ;;
+          esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Pinned @playwright/test: $version"
+
+      # The browser binary, not the pnpm store. Keyed on the exact pinned Playwright version, so a
+      # version bump gets a fresh browser instead of silently reusing a mismatched revision. No
+      # `restore-keys`: a prefix hit here would hand the run the wrong Chromium.
+      - name: Cache the Playwright browser download
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+
+      # Chromium only. Runs on every job even on a cache hit: the download is skipped when the
+      # revision is already present, but `--with-deps` installs the OS packages Chromium links
+      # against, and those live outside the cached path.
+      - name: Install the pinned Chromium (only Chromium)
+        run: pnpm exec playwright install --with-deps chromium
+
+      # ── §23 check 14 ─────────────────────────────────────────────────────────────────────────
+      # axe-core 4.13.0, tags wcag2a/2aa/21a/21aa/22aa, every emitted route × {light, dark} ×
+      # {no-preference, reduce} = 80 runs, zero violations at any impact, plus five non-axe
+      # regression assertions (docs/TESTING.md §3). Serves apps/web/dist on port 4521 under the
+      # real _headers policy. `--conditional` is NOT passed: those two extra routes need a second
+      # astro build with a contact address, and the 80-run sweep is the gate.
+      - name: 14 · Accessibility smoke
+        run: pnpm test:a11y
+
+      # ── §23 check 15 ─────────────────────────────────────────────────────────────────────────
+      # `--project` is variadic in @playwright/test 1.56.1 (`--project <project-name...>`), so this
+      # selects desktop + mobile-375 and leaves `visual` out — see the VISUAL block in the header
+      # for why. GitHub sets CI=true, which the config reads to pin workers to 2 and add the
+      # `github` reporter for inline annotations. retries: 0, forbidOnly: true.
+      - name: 15 · Playwright (desktop + mobile-375; visual is a local check)
+        id: e2e
+        run: pnpm test:e2e --project=desktop --project=mobile-375
+
+      # A red browser run that cannot be diagnosed without reproducing it locally gets ignored.
+      # playwright.config.mjs sets trace: 'retain-on-failure' and screenshot: 'only-on-failure'
+      # into outputDir './test-results/e2e' (gitignored), so this uploads exactly the failures.
+      # The condition is scoped to THIS step's conclusion — a bare `failure()` would also fire
+      # after a lint failure, when there is nothing to collect.
+      - name: Upload Playwright traces and failure screenshots
+        if: ${{ failure() && steps.e2e.conclusion == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          # run_attempt keeps a re-run from colliding with the previous attempt's artifact.
+          name: playwright-failures-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/e2e
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # ── §23 check 16 ─────────────────────────────────────────────────────────────────────────
+      # Ordered last because §23 orders it last, not because it is expensive — it reads
+      # apps/web/dist and takes seconds. It asserts perf.budgets.json: script count, hydrated-island
+      # count and inline-executable-script count exactly, byte budgets with stated headroom
+      # (docs/PERFORMANCE.md §5). The Lighthouse harness is a separate script and is not a gate yet.
+      - name: 16 · Bundle budgets
+        run: pnpm perf:budgets

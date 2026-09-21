@@ -20,7 +20,8 @@
 #   Zone    · DNS                    · Edit    (the Custom Domain rewrites the apex/www records)
 #
 # Scope it to the delaypilot.app zone and the owning account, not to All Accounts. Until the secret
-# exists this workflow is skipped, not failed — an unarmed deploy is a pending task, not a red build.
+# exists the deploy job is skipped, not failed — an unarmed deploy is a pending task, not a red
+# build.
 #
 # CLOUDFLARE_ACCOUNT_ID is read from the same secret store rather than committed, because it
 # identifies the account even though it is not itself a credential.
@@ -33,13 +34,42 @@
 # the conflicting records, the run fails loudly with that error and the records have to be removed
 # before retrying — a clear failure, not a half-migrated domain.
 #
+# THIS IS NOT A FAST PATH, ON PURPOSE
+# -----------------------------------
+# The gate list below is the SAME eleven DIRECTIVE.md §23 checks `.github/workflows/ci.yml` runs, in
+# the same order, under the same step names. Three reasons it is repeated here rather than assumed:
+#
+#   1. This workflow can be triggered by workflow_dispatch and by a direct push, so it cannot rely
+#      on a CI run having happened on this exact commit.
+#   2. Two workflows asserting different standards is how a regression reaches production through
+#      the door nobody was watching. If CI gates a pull request on accessibility and Playwright and
+#      the deploy does not, the deploy is the weaker gate and the weaker gate is the real one.
+#   3. This is the ONLY place the gates ever measure the production-shaped build. PUBLIC_SITE_URL is
+#      set here and nowhere else, so canonical tags, og:url and the JSON-LD blocks exist in the
+#      output that `pnpm test:seo`, `pnpm test:a11y`, `pnpm test:e2e` and `pnpm perf:budgets` read.
+#      docs/PERFORMANCE.md §3.1a records that every budget in perf.budgets.json was set against that
+#      heavier tree, so a local green is the conservative result and this is the exact one.
+#
+# **KEEP THE TWO LISTS IN STEP.** Add a check to ci.yml and add it here in the same change. The step
+# names are identical in both files so a side-by-side diff is the whole review.
+#
+# Five minutes of browser work before a production deploy is not a cost worth optimising away.
+#
 # WHAT IT DOES NOT DO YET
 # -----------------------
-# DIRECTIVE.md section 23 additionally requires per-PR preview deploys, ordered D1 migrations with a
-# migration record, and post-deploy smoke tests. None of those exist yet: there are no migrations
-# (migrations/ is empty and pnpm db:migrate:local deliberately exits 1), and pnpm smoke is a stub.
-# Adding steps that pretend to run them would be worse than their absence. platform-release-sre owns
-# closing that gap in Phase 13.
+# DIRECTIVE.md §23 additionally requires per-PR preview deploys, ordered D1 migrations with a
+# migration record, and post-deploy smoke tests beyond the health-and-headers probe below. None of
+# those exist yet: there are no migrations (migrations/ is empty and pnpm db:migrate:local
+# deliberately exits 1), and pnpm smoke is a stub. Adding steps that pretend to run them would be
+# worse than their absence. platform-release-sre owns closing that gap in Phase 13.
+#
+# Seven of the eighteen §23 checks are still absent here for the same reason they are absent from
+# ci.yml — 6 property, 7 Workers integration, 10 migration validation, 11 rights-rule validation,
+# 12 content-quality gate, 17 dependency audit, 18 secret scan. Read ci.yml's header for the phase
+# and owner of each. Do not substitute `pnpm quality`: it short-circuits at `pnpm test:workers`, a
+# Phase 12 stub that exits 1, before it reaches four of the gates below.
+#
+# Owner: platform-release-sre (docs/agents/ROSTER.md §3, `.github/workflows/**`).
 
 name: Deploy
 
@@ -60,97 +90,116 @@ permissions:
   contents: read
 
 jobs:
-  deploy:
-    name: Deploy to Cloudflare
+  # The deploy is armed by a secret this repository does not yet hold. Without this guard the deploy
+  # job would fail on every push to main until someone adds it, training everyone to ignore a red
+  # build. A missing credential is a pending setup task, not a broken pipeline.
+  #
+  # Secrets are not usable in a job-level `if:`, so the check is its own job that publishes an
+  # output. That also means an unarmed repository skips the whole gate-and-deploy job rather than
+  # spending ten minutes proving a build it is not going to ship.
+  guard:
+    name: Is the deploy armed?
     runs-on: ubuntu-latest
-    environment: production
+    timeout-minutes: 5
+    outputs:
+      armed: ${{ steps.check.outputs.armed }}
     steps:
-      # The deploy is armed by a secret this repository does not yet hold. Without this guard the
-      # job would fail on every push to main until someone adds it, training everyone to ignore a
-      # red build. A missing credential is a pending setup task, not a broken pipeline, so the
-      # deploy steps below are skipped and the job ends green with an explanation.
-      #
-      # Secrets are not usable in a job-level `if:`, so the check is a step that publishes an
-      # output the later steps gate on.
-      - name: Check whether the deploy is armed
-        id: guard
+      - name: Check whether the Cloudflare credentials are present
+        id: check
         env:
+          # These expand to the strings "true"/"false", never to the secret values themselves.
           HAS_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
           HAS_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID != '' }}
         run: |
+          set -euo pipefail
           if [ "$HAS_TOKEN" = "true" ] && [ "$HAS_ACCOUNT" = "true" ]; then
             echo "armed=true" >> "$GITHUB_OUTPUT"
-            echo "Both secrets present — this run will deploy."
+            echo "Both secrets present — this run will gate and deploy."
           else
             echo "armed=false" >> "$GITHUB_OUTPUT"
             echo "::notice::Deploy skipped. Add the CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID repository secrets to arm it. See the header of this file for the exact token scopes."
           fi
 
+  deploy:
+    name: Gate and deploy to Cloudflare
+    needs: guard
+    if: needs.guard.outputs.armed == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    # The ci.yml gate list (~30 min ceiling) plus the Worker upload and the post-deploy probe.
+    timeout-minutes: 45
+    env:
+      WRANGLER_SEND_METRICS: 'false'
+    steps:
+      # Actions are pinned to a full commit SHA, never a moving tag — matching ci.yml. A moving tag
+      # in the one workflow that holds a Cloudflare API token is the highest-value supply-chain
+      # target in this repository. The trailing comment records the tag the SHA resolved to at the
+      # time of pinning; re-resolve with `git ls-remote --tags <url>` before bumping, and take the
+      # `^{}` peel when the tag is annotated — that is the commit, the unpeeled object is the tag.
       - name: Checkout
-        if: steps.guard.outputs.armed == 'true'
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Nothing here pushes. Do not leave a git credential in .git/config for later steps —
+          # including third-party actions — to find, in a job that also holds a deploy token.
+          persist-credentials: false
 
       - name: Set up Node from package.json engines
-        if: steps.guard.outputs.armed == 'true'
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version-file: package.json
 
       - name: Set up pnpm from package.json packageManager, with a cached store
-        if: steps.guard.outputs.armed == 'true'
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
         with:
           cache: true
 
-      - name: Install dependencies (frozen lockfile)
-        if: steps.guard.outputs.armed == 'true'
+      # ── §23 checks 1–5. Identical to ci.yml. ─────────────────────────────────────────────────
+      - name: 1 · Install dependencies (frozen lockfile)
         run: pnpm install --frozen-lockfile
 
-      # The same gates ci.yml runs. They are repeated here rather than assumed: this workflow can be
-      # triggered manually and by a direct push, so it must not rely on a CI run having happened on
-      # this exact commit. A deploy that skips the gates is how an unreviewed regression reaches
-      # production.
-      - name: Format check
-        if: steps.guard.outputs.armed == 'true'
+      - name: 2 · Format check
         run: pnpm format:check
 
-      - name: Lint
-        if: steps.guard.outputs.armed == 'true'
+      - name: 3 · Lint
         run: pnpm lint
 
-      - name: Typecheck
-        if: steps.guard.outputs.armed == 'true'
+      - name: 4 · Typecheck
         run: pnpm typecheck
 
-      - name: Validate build system
-        if: steps.guard.outputs.armed == 'true'
-        run: node scripts/validate-build-system.mjs
+      - name: 5 · Unit tests
+        run: pnpm test
 
-      - name: Validate security-header parity
-        if: steps.guard.outputs.armed == 'true'
-        run: node scripts/validate-security-headers.mjs
-
-      - name: Validate colour contrast
-        if: steps.guard.outputs.armed == 'true'
-        run: node scripts/validate-contrast.mjs
-
-      - name: Check image budgets
-        if: steps.guard.outputs.armed == 'true'
-        run: node scripts/assets/compress-images.mjs --check apps/web/public/images
-
+      # ── §23 checks 8 and 9. THE ONE INTENDED DIVERGENCE FROM ci.yml. ─────────────────────────
       # PUBLIC_SITE_URL is what turns on the canonical and og:url tags in
-      # apps/web/src/layouts/BaseLayout.astro. Without it the build omits them rather than guessing
-      # an origin, so a deploy that forgets it ships pages with no canonical — correct, but not what
-      # production wants.
-      - name: Build the site
-        if: steps.guard.outputs.armed == 'true'
-        run: pnpm --filter @delaypilot/web build
+      # apps/web/src/layouts/BaseLayout.astro and the JSON-LD blocks. Without it the build omits
+      # them rather than guessing an origin, so a deploy that forgets it ships pages with no
+      # canonical — correct, but not what production wants. It also makes every gate below measure
+      # the production-shaped output; see reason 3 in this file's header.
+      - name: 8+9 · Build (web then edge)
+        run: pnpm build
         env:
           PUBLIC_SITE_URL: https://delaypilot.app
 
+      # ── Repo-local gates. Identical to ci.yml. ───────────────────────────────────────────────
+      - name: Validate build system
+        run: node scripts/validate-build-system.mjs
+
+      - name: Validate security-header parity
+        run: node scripts/validate-security-headers.mjs
+
+      - name: Validate colour contrast
+        run: node scripts/validate-contrast.mjs
+
+      - name: Check image budgets
+        run: node scripts/assets/compress-images.mjs --check apps/web/public/images
+
+      # Deploy-only. `pnpm test:seo` asserts an all-or-nothing canonical property — one
+      # self-referencing canonical per page, OR none anywhere — so it passes on a build with no
+      # origin. Only this workflow knows the origin was supposed to be there, so only this workflow
+      # can catch PUBLIC_SITE_URL having failed to reach the build.
       - name: Confirm the built pages carry a canonical
-        if: steps.guard.outputs.armed == 'true'
         run: |
+          set -euo pipefail
           if ! grep -q 'rel="canonical"' apps/web/dist/index.html; then
             echo "No canonical in the built homepage — PUBLIC_SITE_URL did not reach the build."
             exit 1
@@ -158,21 +207,70 @@ jobs:
           echo "Canonical present:"
           grep -o '<link rel="canonical"[^>]*>' apps/web/dist/index.html
 
+      # ── §23 check 13. Identical to ci.yml. ───────────────────────────────────────────────────
+      - name: 13 · SEO validation
+        run: pnpm test:seo
+
+      # ── Browsers. Identical to ci.yml; see its header for why `playwright install` is the
+      #    pinned path on a hosted runner and the development container's ban is not. ───────────
+      - name: Resolve the pinned Playwright version
+        id: playwright
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./package.json').devDependencies['@playwright/test']")"
+          case "$version" in
+            *[!0-9.]*) echo "@playwright/test is not pinned to an exact version: $version"; exit 1 ;;
+          esac
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Pinned @playwright/test: $version"
+
+      - name: Cache the Playwright browser download
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ runner.arch }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install the pinned Chromium (only Chromium)
+        run: pnpm exec playwright install --with-deps chromium
+
+      # ── §23 checks 14 and 15. Identical to ci.yml, including the `visual` exclusion: the 68
+      #    baselines were generated on the development container's rendering and are valid for
+      #    that toolchain and nothing else (docs/TESTING.md §5). ─────────────────────────────────
+      - name: 14 · Accessibility smoke
+        run: pnpm test:a11y
+
+      - name: 15 · Playwright (desktop + mobile-375; visual is a local check)
+        id: e2e
+        run: pnpm test:e2e --project=desktop --project=mobile-375
+
+      - name: Upload Playwright traces and failure screenshots
+        if: ${{ failure() && steps.e2e.conclusion == 'failure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-failures-${{ github.run_id }}-${{ github.run_attempt }}
+          path: test-results/e2e
+          if-no-files-found: ignore
+          retention-days: 7
+
+      # ── §23 check 16. Identical to ci.yml. ───────────────────────────────────────────────────
+      - name: 16 · Bundle budgets
+        run: pnpm perf:budgets
+
+      # ── Everything above this line has to be green before anything is uploaded. ──────────────
       - name: Deploy the Worker and its static assets
-        if: steps.guard.outputs.armed == 'true'
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@9681c2997648301493e78cacbfb790a9f19c833f # v3.9.0
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: apps/edge
           # apps/web must already be built: wrangler.jsonc points the ASSETS binding at ../web/dist.
+          # It was, in the "8+9 · Build" step above, with PUBLIC_SITE_URL set.
           command: deploy
 
       # A deploy that returns success while the site 500s is the failure mode worth catching here.
       # This asserts the liveness endpoint answers and that the security headers the audit added are
       # actually present on the real origin, not just in local dev.
       - name: Smoke check the deployed origin
-        if: steps.guard.outputs.armed == 'true'
         run: |
           set -euo pipefail
           for attempt in 1 2 3 4 5; do

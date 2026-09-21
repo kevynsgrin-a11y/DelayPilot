@@ -238,6 +238,13 @@ adds `apps/web/vercel.json`). That PR currently targets the retired branch
 `claude/inkling-multimodal-subagents-stn4l5`; it must be retargeted to `main` before merging or the
 fix never reaches the deployment that serves the domain. The overhaul never touches `vercel.json`.
 
+> **Superseded 2026-09-20 (S4).** Both halves of that paragraph are now history rather than
+> instruction. PR #16 was merged on 2026-09-11 **without** being retargeted — into the retired
+> branch, where its commit `d44d234` is not an ancestor of `main` — so the warning above was
+> correct and was not acted on, and `apps/web/vercel.json` was absent from `main` for nine more
+> days. And the owner explicitly authorised S4 to edit `vercel.json`, so "the overhaul never
+> touches `vercel.json`" no longer holds. See **S4 delivered** below.
+
 **Session sequence.** One draft PR per session; the owner reviews and merges between sessions;
 merging to `main` deploys. Disjointness is proved per batch below (`ROSTER.md §3` globs).
 
@@ -459,3 +466,109 @@ Ruling adopted (`DIRECTIVE.md §3.1`): the demo sentence is triggered by fixture
 - `visual-asset-director` — `design/**` carries 11 copy-lint hits (negations, reference only, excluded by documented reason) and the route-globe SVG carries the attributes the inliner adds (F38 source side).
 - `ux-copy-steward` — F36's statement sentences are re-reviewed by `accessibility-lead` before `/accessibility/` publishes (I-3); the rank-claim lint rules are live.
 - `seo-engineer` — one `description` changed (`guides/flight-cancelled-what-to-do`); the noindex list and sitemap set are unchanged; `<link rel="canonical">` on every page waits on I-4.
+
+---
+
+### S4 opened (2026-09-20)
+
+PR C merged to `main` as `b3e6aae` on 2026-09-13; the production deployment built from that commit is
+live and serving the S3 build. The session branch was restarted from `origin/main` and S4 is running
+the `§9` dispatch: `seo-engineer` (Phase 11 technical SEO) with `performance-engineer` (budgets and
+the Lighthouse gate) and `qa-test-architect` (the axe runner, the end-to-end suite, visual
+regression) in parallel, after `principal-architect` landed the harness dependencies and turned four
+deliberate exit-1 stubs into real commands.
+
+**Two facts recorded here because the files they belong to cannot carry them.**
+
+`@playwright/test` is pinned to **1.56.1 exactly** because `playwright-core@1.56.1` declares chromium
+revision **1194**, and `/opt/pw-browsers/chromium-1194` is the browser this environment has
+pre-installed. `package.json` is JSON and cannot hold the reason. A future bump must either land on a
+version whose `browsers.json` still names revision 1194, or launch with
+`executablePath: '/opt/pw-browsers/chromium'`. Bumping blind fails at launch with a missing-browser
+error, and `playwright install` must never be run here. `axe-core` is pinned to **4.13.0 exactly**
+for the same class of reason: `docs/ACCESSIBILITY.md §12` records the 88-run baseline at that rule
+set, and a silent drift to a newer one invalidates the recorded measurement rather than improving it.
+
+`pnpm quality` short-circuits at `pnpm test:workers`, a deliberate Phase 12 stub, **before** it
+reaches `test:e2e`, `test:a11y`, `test:seo` or `perf:budgets`. Running `quality` alone therefore
+exercises none of the four new harnesses. Until Phase 12 lands the Workers pool, every gate run must
+invoke them individually, and any report claiming `quality` covered them is wrong.
+
+---
+
+### S4 delivered (2026-09-20) — draft [PR #21](https://github.com/kevynsgrin-a11y/DelayPilot/pull/21)
+
+Nine commits on `b3e6aae`. Four stubs became real gates, CI went from 6 to 11 of the 18
+`DIRECTIVE.md §23` checks, and running the new gates found two defects that were **already live on
+`main`**. That is the shape of the session: the value was not in the harnesses, it was in what they
+saw the first time they ran.
+
+**Defect 1 — production was serving no security headers, and a merged PR is why we believed
+otherwise.** The strict CSP was declared in `apps/web/public/_headers`, a Netlify and Cloudflare
+Pages convention Vercel does not read. Vercel reads `vercel.json` from the project's Root
+Directory, and the Vercel integration publishes that as `apps/web` — confirmed from the `[vc]:`
+metadata on PR #21, which settles the question ADR 0002 had recorded and no tool here could verify.
+So the repository-root `vercel.json`, declaring four headers and no CSP, was inert; the file that
+would have been read did not exist on `main`.
+
+The uncomfortable part is that this was already diagnosed correctly on 2026-09-11, fixed in PR #16,
+and **merged** — into `claude/inkling-multimodal-subagents-stn4l5`, the branch retired by D1 that
+same week. `d44d234` is not an ancestor of `main`. The paragraph above warned in writing that the
+PR had to be retargeted first or "the fix never reaches the deployment that serves the domain", and
+that is exactly what happened. A merged pull request read as a shipped fix for nine days.
+**A fix is shipped when it is on the branch that deploys, not when its PR turns purple.**
+
+Fixed in `bd90057`: both `vercel.json` files byte-identical, the dead root `_headers` deleted,
+framing resolved to `DENY`/`frame-ancestors 'none'`, and `scripts/validate-security-headers.mjs`
+grown to a four-way parity proof with a `--self-test` that seeds six divergences. The inert copy is
+kept deliberately, as insurance against the Root Directory setting changing.
+
+**Defect 2 — the homepage rendered a `hidden` error panel to every reader.** `.dpp-state
+{ display: grid }` outranked the user-agent `[hidden] { display: none }`, so `/` painted
+"Unavailable — No licensed flight-data provider is connected…" at 446 × 408 px before anyone typed,
+presenting two mutually exclusive `§17` states at once. Invisible to every existing check: the
+markup is correct, the rendered page is perfectly accessible, and the element is `tabindex="-1"`.
+Only computed style saw it. Filed as F-QA-1 by the agent that found it, fixed by its owner in
+`27764f3`, and the twelve element-scoped baselines the fix shifted were ruled on in `6d8bb3d`
+rather than rebaselined on sight.
+
+**The finding worth carrying forward is neither of those.** `tests/a11y/regressions.mjs`'s row
+check walked `list.children` for direct `<dt>`/`<dd>`, and every row in this product is wrapped in
+`<div class="dpp-row">`: measured against the built HTML, **0 direct `<dd>` children and 120
+wrapped**. The check examined nothing on every run since it was written — while carrying a
+_passing_ can-fail proof, because its seed injected a flat `<dl>` the product never emits.
+**A negative test is worth exactly the fidelity of its fixture**, and a green can-fail proof
+against an unrepresentative one is worse than none, because it buys confidence it has not earned.
+Every self-test in this repository should be read with that in mind.
+
+**Decisions taken.**
+
+| Decision                                                            | Detail                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Both `vercel.json` copies retained                                  | The Root Directory is settled as `apps/web`, so the root file is inert. It stays as insurance against the setting changing, and the four-way check makes drift impossible. **Do not delete it because it is inert.**                                    |
+| CI runs the gates individually, never `pnpm quality`                | `quality` short-circuits at the `test:workers` stub before reaching five real gates. Written into `ci.yml` where someone would be tempted.                                                                                                              |
+| `visual` excluded from runner CI                                    | 69 of 237 tests. 68 baselines at `maxDiffPixels: 0` are defensible only on the toolchain they were taken on; on a runner, font hinting becomes a test failure, and a suite that cries wolf gets muted. Local and pre-merge only (`docs/TESTING.md §5`). |
+| `deploy.yml` held at parity with `ci.yml`                           | It can be triggered manually, so it cannot assume CI ran on the same commit, and it is the only place the gates see a `PUBLIC_SITE_URL`-set build.                                                                                                      |
+| Undispositioned `incomplete` classes fail; dispositioned ones print | Reversible in one constant. The measurement and the disposition are both `accessibility-lead`'s.                                                                                                                                                        |
+| Five unowned paths assigned                                         | Three agents independently had to infer ownership from `git log`. `ROSTER.md §3` now names `apps/web/scripts/**`, `apps/web/package.json`, `apps/web/vercel.json` and the three root validators.                                                        |
+
+**Gate verdicts, each executed on the final tree.** `pnpm test:a11y` **Passing** — 92 runs (80 route
+
+- 12 state), 135 regression assertions, 0 findings; `--conditional` 100 runs. `pnpm test:e2e`
+  **Passing** — 236 passed, 1 skipped. `pnpm test` **Passing** — 18 files, 888 tests. `pnpm test:seo`
+  **Passing** — 13 JSON-LD blocks where there were none. `pnpm build`, `pnpm lint`, `pnpm typecheck`,
+  `pnpm format:check`, `pnpm lint:copy`, `validate-build-system`, `validate-security-headers` and its
+  self-test all **Passing**. `pnpm quality` **Failing by construction** at the Phase 12 stubs.
+
+**Blocked (external), and owner-verifiable only.** The security-header fix is proven by parity
+between files. **No response from a real server has been observed by anyone.** This environment's
+egress policy denies `delaypilot.app` and `*.vercel.app` — curl and the Vercel fetch tool both
+return 403 from the proxy. The `curl -I` check on the branch preview, before merge, is the owner's
+and is the last unverified link in the chain. `docs/DEPLOYMENT.md §5` has the sequence.
+
+**Open, and named rather than implied.** WebKit and Mobile Safari **Not run** — only Chromium is
+installed here. F-QA-2's ruling (does `§12` item 5 cover `<dd>` prose?) is `accessibility-lead`'s;
+24 observations report without gating until it lands. F-QA-3: 12 contrast nodes the state sweep
+exposed that nobody has measured. Owner inputs I-3 (`PUBLIC_CONTACT_EMAIL`), I-4
+(`PUBLIC_SITE_URL`), I-6 and I-8 still gate real coverage. `main` carries no branch protection
+(`protected: false`), so nothing mechanical requires a green CI before a merge deploys.

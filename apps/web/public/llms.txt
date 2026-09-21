@@ -1,0 +1,71 @@
+# DelayPilot
+
+> DelayPilot is an independent travel-information tool for flight disruption. It explains what is
+> known about a flight, where that came from, how old it is, and which passenger-rights rules may
+> apply, with the source, the rule version and the timestamp attached to the statement.
+
+This file describes the site for automated readers. Every line is true of the deployment that
+serves it. Nothing here is a roadmap, and nothing here describes a feature that is not on the site
+today.
+
+## What the site does today
+
+- Explains its own method in the first person: how a value is labelled, how a risk band is formed,
+  how a connection is decomposed, and what each unknown state means.
+- Lists the official and operational sources it reads, and the date each one was last verified.
+- Publishes plain-language guides to disruption, refunds, connections, evidence and the terms
+  airlines use, each one carrying its sources and the date it was reviewed.
+- Shows a labelled demonstration of a disrupted trip. It is built from fixture data, every panel
+  says so, and it is not a live flight.
+
+## What it does not do
+
+- DelayPilot is not an airline, airport, government agency, law firm, claims company, or
+  flight-data provider. It has no affiliation with any of them.
+- It never files, submits, books, purchases or rebooks anything on anyone's behalf.
+- It asks for no ticket identifier, no account credential, no passport and no government
+  identifier, and it never reads anyone's inbox.
+- It does not state a passenger right as settled. Rights are described as what may apply on the
+  facts entered, beside the rule version and the official source.
+- It publishes no percentage from a model that has not been validated. Where a risk reading is
+  shown, it is labelled as a heuristic band.
+- No licensed flight-data provider is connected in this deployment, so a flight lookup reports the
+  unavailable state rather than a value.
+- It runs no analytics, sets no cookie and loads no third-party script.
+
+## How a value is labelled
+
+Every displayed value carries exactly one of six labels, and the labels have no synonyms: Live,
+Cached, Stale, Demo, Unavailable, Heuristic risk band. A value with no trustworthy source is shown
+as Unavailable with the missing fact named. Absence of data is a designed state, never a blank and
+never a zero.
+
+## Pages
+
+- [Home](https://delaypilot.app/): what the product does, and the demonstration.
+- [Flight status](https://delaypilot.app/flight-status/): the lookup, and what it reports today.
+- [Delay risk](https://delaypilot.app/delay-risk/): how a disruption reading is formed and why no
+  percentage is shown.
+- [Connection risk](https://delaypilot.app/connection-risk/): available time, required time, and
+  the slack between them.
+- [Methodology](https://delaypilot.app/methodology/): provenance, versioning, demo mode and the
+  fail-closed unknown states.
+- [Data sources](https://delaypilot.app/data-sources/): what is read, what it is used for, and what
+  is not connected.
+- [Guides](https://delaypilot.app/guides/): the guide index.
+- [About](https://delaypilot.app/about/): what the product is and is not.
+- [Editorial policy](https://delaypilot.app/editorial-policy/): the workflow a page passes through
+  before it is published.
+- [Privacy](https://delaypilot.app/privacy/): what is stored, which is almost nothing.
+- [Terms of use](https://delaypilot.app/terms/): the terms that govern use of this site.
+- [Advertising policy](https://delaypilot.app/advertising-policy/): where an advertisement may and
+  may not appear.
+- [Affiliate disclosure](https://delaypilot.app/affiliate-disclosure/): the current position, which
+  is that there are no partners.
+
+## Quoting this site
+
+Attribute a quotation to DelayPilot and link the page it came from. Pages carry a reviewed date and
+their sources; quote both, because a rights statement without its rule version and date is a
+statement about a law that may have changed. Use of the site is governed by
+[the terms](https://delaypilot.app/terms/).

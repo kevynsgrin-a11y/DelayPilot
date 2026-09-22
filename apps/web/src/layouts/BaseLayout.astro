@@ -253,6 +253,9 @@ const reviewedDate =
     {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
 
     <script is:inline src="/theme-init.js"></script>
+    <!-- GA4 aggregate analytics (GSC Ops BATCH-1 native tag) — CSP in vercel.json admits the gtag loader + GA endpoints -->
+    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-PH0X9DNQ3J"></script>
+    <script is:inline>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-PH0X9DNQ3J');</script>
   </head>
 
   <body class="dpx-body" data-page-kind={kind}>

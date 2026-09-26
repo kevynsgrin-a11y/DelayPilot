@@ -250,6 +250,10 @@ jobs:
       # through the step above; do not add a second invocation.
       - name: 13 · SEO validation
         run: pnpm test:seo
+        env:
+          # The IndexNow key is public by design (served at /<key>.txt, added in #22);
+          # declaring it here tells test-seo the served key file is intentional.
+          INDEXNOW_KEY: d390aee0a606d453b3585684871efd3e
 
       # ── Browsers, installed once, cached on the pinned Playwright version ────────────────────
       - name: Resolve the pinned Playwright version

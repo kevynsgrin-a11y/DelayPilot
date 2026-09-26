@@ -31,5 +31,6 @@ this file credits the work, and no private individual is identified anywhere on 
   Doctype: HTML5
   Last update: 2026-09-20
 
-  No analytics, no cookies, no third-party scripts, no tracking pixels. The only value this site
-  stores in a browser is the theme you chose, and it stays on the device.
+  Google Analytics 4 measures aggregate traffic (Google sets _ga cookies); Cloudflare Web
+  Analytics counts page views without cookies. No other third-party scripts, no tracking pixels.
+  The only value DelayPilot itself stores in a browser is the theme you chose.

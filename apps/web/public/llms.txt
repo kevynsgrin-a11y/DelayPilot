@@ -31,7 +31,8 @@ today.
   shown, it is labelled as a heuristic band.
 - No licensed flight-data provider is connected in this deployment, so a flight lookup reports the
   unavailable state rather than a value.
-- It runs no analytics, sets no cookie and loads no third-party script.
+- It measures aggregate traffic with Google Analytics 4 (which sets Google's `_ga` cookies) and
+  Cloudflare Web Analytics (cookieless). It loads no other third-party script.
 
 ## How a value is labelled
 

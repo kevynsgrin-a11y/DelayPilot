@@ -30,15 +30,17 @@
  *    calls `event.preventDefault()` and ends in `setTimeout(() => show('unavailable'), 0)`. There
  *    is no `fetch(`, no `XMLHttpRequest` and no `sendBeacon` anywhere in apps/web/src. The chunk is
  *    referenced only by dist/index.html.
- *  · No cookie. No `document.cookie` in the repository, and apps/edge/wrangler.jsonc:72 runs the
- *    Worker first only for /api/*, /auth/*, /webhooks/* and /go/* — no Worker is in the path of an
- *    HTML response, so no Set-Cookie can be added to one.
- *  · No third party. A grep of every built page for an absolute http(s) `href`, `src` or `action`
- *    returns zero matches, as does a grep for `data:` URIs. apps/web/public/_headers serves
- *    `default-src 'self'` with `img-src 'self'`, `connect-src 'self'` and no third-party origin.
- *  · Four scripts, all same-origin: /theme-init.js and the three Astro modules emitted for
- *    ThemeToggle, SiteHeader and LookupForm. Three of the four load on this page; the lookup script
- *    is homepage-only.
+ *  · No DelayPilot cookie. No `document.cookie` in the repository, and apps/edge/wrangler.jsonc:72
+ *    runs the Worker first only for /api/*, /auth/*, /webhooks/* and /go/* — no Worker is in the
+ *    path of an HTML response, so no Set-Cookie can be added to one. Google's gtag.js sets `_ga` and
+ *    `_ga_*` (first-party cookies written by Google's script).
+ *  · Third parties: exactly the analytics origins. BaseLayout loads Google's gtag.js
+ *    (G-PH0X9DNQ3J) with the same-origin /ga4.js bootstrap, and the served CSP admits the GA4 and
+ *    Cloudflare Web Analytics hosts and nothing else third-party (scripts/validate-security-headers.mjs
+ *    pins the list). Corrected 2026-09-26: the previous revision said no analytics ran, which
+ *    stopped being true when the GA4 tag shipped.
+ *  · Five same-origin scripts: /theme-init.js, /ga4.js and the three Astro modules emitted for
+ *    ThemeToggle, SiteHeader and LookupForm; the lookup script is homepage-only.
  *
  * WHAT THIS PAGE MUST NEVER DO is state a retention period, a sub-processor, a data-processing
  * agreement, or a legal basis that nothing in the repository establishes. docs/PRIVACY.md (owner:
@@ -63,13 +65,13 @@ import { pages } from '../lib/copy/pages.ts'
 
 const title = 'Privacy — DelayPilot'
 const description =
-  'DelayPilot sets no cookie, runs no analytics, and loads no third-party script. The only value stored in your browser is the theme you chose, and it never leaves your device.'
+  'DelayPilot measures aggregate traffic with Google Analytics 4. No account, no advertising, and the only value DelayPilot itself stores is the theme you chose.'
 
 const intro =
-  'DelayPilot collects nothing about you. No account, no cookie, no analytics, no advertising, and nothing loaded from another company. The only value stored in your browser is the light-or-dark theme you picked, and it never leaves your device.'
+  'DelayPilot has no account and no advertising. It measures aggregate traffic with Google Analytics 4, which sets Google cookies, and with Cloudflare Web Analytics, which sets none. The only value DelayPilot itself stores in your browser is the light-or-dark theme you picked, and it never leaves your device.'
 
 /** The reviewed date. BaseLayout renders it; this page does not print a second copy. */
-const REVIEWED_AT = '2026-09-12'
+const REVIEWED_AT = '2026-09-26'
 ---
 
 <BaseLayout
@@ -85,28 +87,37 @@ const REVIEWED_AT = '2026-09-12'
     <div class="dpx-shell">
       <article class="prose">
         <p>
-          Reading this site sends nothing to DelayPilot beyond the request your browser has to make
-          to fetch the page. There is no analytics call behind that request, no tracking pixel
-          inside the page, and no third-party resource the page reaches for afterwards. Everything
-          below was checked against the code this site is built from on the reviewed date, not
-          against a plan — where the product does not yet do something, this page says so rather
-          than describing it in advance.
+          Reading this site sends DelayPilot the request your browser has to make to fetch the page,
+          and sends an aggregate page-view measurement to Google Analytics 4 and Cloudflare Web
+          Analytics, described below. Beyond those two, there is no tracking pixel inside the page
+          and no third-party resource the page reaches for afterwards. Everything below was checked
+          against the code this site is built from on the reviewed date, not against a plan — where
+          the product does not yet do something, this page says so rather than describing it in
+          advance.
         </p>
 
-        <h2>What is collected today: nothing</h2>
+        <h2>What is collected today</h2>
 
         <ul>
           <li>
             <strong>No account.</strong> There is no sign-up, no sign-in, no password, and no profile.
           </li>
           <li>
-            <strong>No cookies.</strong> DelayPilot sets none — not a session cookie, not a preference
-            cookie, not an analytics cookie. There is no consent banner because there is nothing to consent
-            to.
+            <strong>Cookies: Google Analytics only.</strong> DelayPilot's own code sets none — not a session
+            cookie, not a preference cookie. Google Analytics sets its own cookies,{' '}
+            <code>_ga</code> and <code>_ga_*</code>, to tell visits apart.
           </li>
           <li>
-            <strong>No analytics.</strong> No analytics product, tag manager, pixel, session recorder,
-            heatmap, or experiment framework is loaded. No page view is counted by DelayPilot.
+            <strong>Google Analytics 4.</strong> Measures aggregate traffic: which pages are viewed, approximate
+            location, and device. Google handles that data under the{' '}
+            <a href="https://policies.google.com/privacy">Google Privacy Policy</a>, and you can
+            turn it off with the <a href="https://tools.google.com/dlpage/gaoptout"
+              >Google Analytics opt-out browser add-on</a
+            >.
+          </li>
+          <li>
+            <strong>Cloudflare Web Analytics.</strong> A cookieless, aggregate page-view count. No session
+            recorder, heatmap, or experiment framework is loaded.
           </li>
           <li>
             <strong>No advertising.</strong> No ad network, no ad script, no ad identifier. See the
@@ -114,9 +125,9 @@ const REVIEWED_AT = '2026-09-12'
             that ever changes.
           </li>
           <li>
-            <strong>No third-party requests.</strong> No embedded video, no hosted font, no external image,
-            no social widget, no error-reporting service. The typeface these pages render in is served
-            from this site, so reading DelayPilot does not disclose your visit to a font provider.
+            <strong>No other third-party requests.</strong> No embedded video, no hosted font, no external
+            image, no social widget, no error-reporting service. The typeface these pages render in is
+            served from this site, so reading DelayPilot does not disclose your visit to a font provider.
           </li>
         </ul>
 
@@ -148,9 +159,9 @@ const REVIEWED_AT = '2026-09-12'
         <h2>The scripts this site loads, and what each one does</h2>
 
         <p>
-          Four small scripts exist across the whole site. All four are served from this site's own
-          address, none is a library from another company, and none makes a network request, sets a
-          cookie, or measures anything. Named honestly, they are:
+          Five small scripts are served from this site's own address, and one more — Google's
+          analytics loader — comes from Google. Only the analytics pair measures anything. Named
+          honestly, they are:
         </p>
 
         <ul>
@@ -161,8 +172,15 @@ const REVIEWED_AT = '2026-09-12'
           </li>
           <li>
             <strong>The theme control.</strong> Keeps the appearance control in step with the saved choice
-            and writes your choice when you make one. This is the only code on the site that writes to
-            storage.
+            and writes your choice when you make one. This is the only DelayPilot code on the site that
+            writes to storage.
+          </li>
+          <li>
+            <strong>The analytics start-up and Google's loader.</strong> Together they send the aggregate
+            page-view measurement described above to Google Analytics 4. Google's loader sets the{
+              ' '
+            }
+            <code>_ga</code> cookies.
           </li>
           <li>
             <strong>The navigation.</strong> Opens and closes the menus in the header and the menu drawer
@@ -203,8 +221,9 @@ const REVIEWED_AT = '2026-09-12'
         <ul>
           <li>
             Scripts, styles, fonts, images, and network connections may come only from DelayPilot's
-            own address. A third-party tracker added by accident would be refused by your browser
-            rather than quietly run.
+            own address, plus the named Google Analytics and Cloudflare Web Analytics addresses. A
+            third-party tracker added by accident would be refused by your browser rather than
+            quietly run.
           </li>
           <li>
             Plugin content is blocked outright, and the page may not be embedded in another site's
@@ -256,8 +275,8 @@ const REVIEWED_AT = '2026-09-12'
         <p>
           These pages are static files served by a hosting provider, and that provider may keep
           standard request logs under its own policy. DelayPilot does not receive, store, or analyse
-          them. No DelayPilot code sits in the path of a page request to add to them, and no
-          DelayPilot record of your visit exists anywhere.
+          them. No DelayPilot code sits in the path of a page request to add to them, and the only
+          record of your visit DelayPilot can see is the aggregate analytics described above.
         </p>
 
         <h2>What changes when the product does</h2>
@@ -271,22 +290,28 @@ const REVIEWED_AT = '2026-09-12'
         </p>
 
         <p>
-          No retention period appears on this page, because nothing is retained. Publishing a number
-          now would be inventing one. The rules already binding on that future work are these: an
-          email address is stored encrypted and matched by a keyed one-way fingerprint rather than
-          by the address itself; analytics, if enabled, records privacy-minimized events that never
-          include an email address, a name, a booking reference, an exact itinerary, receipt text,
-          claim content, or a raw IP address; operational alerts about your flight stay separate
-          from marketing messages, with a one-click unsubscribe for the latter; and export and
-          deletion routes ship with the account that makes them meaningful.
+          No retention period appears on this page for DelayPilot's own records, because
+          DelayPilot's own code retains nothing; Google Analytics data is kept by Google under the
+          retention setting of this site's Google Analytics property. Publishing a number now would
+          be inventing one. The rules already binding on that future work are these: an email
+          address is stored encrypted and matched by a keyed one-way fingerprint rather than by the
+          address itself; analytics, if enabled, records privacy-minimized events that never include
+          an email address, a name, a booking reference, an exact itinerary, receipt text, claim
+          content, or a raw IP address; operational alerts about your flight stay separate from
+          marketing messages, with a one-click unsubscribe for the latter; and export and deletion
+          routes ship with the account that makes them meaningful.
         </p>
 
         <h2>Your choices today</h2>
 
         <p>
-          There is nothing to opt out of, nothing to export, and nothing to delete, because nothing
-          about you exists to act on. If you have set a theme, clearing this site's data in your
-          browser removes it. That is the whole list, and it is short on purpose.
+          You can opt out of Google Analytics with the <a
+            href="https://tools.google.com/dlpage/gaoptout"
+            >Google Analytics opt-out browser add-on</a
+          >, and the site works the same without it. There is nothing to export and nothing to
+          delete on DelayPilot's side, because DelayPilot holds nothing about you. If you have set a
+          theme, clearing this site's data in your browser removes it. That is the whole list, and
+          it is short on purpose.
         </p>
 
         <h2>Reaching us about this page</h2>

@@ -23,7 +23,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: geolocation=(), camera=(), microphone=(), payment=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
-  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' https://www.googletagmanager.com https://static.cloudflareinsights.com; style-src 'self'; img-src 'self' https://*.google-analytics.com https://*.googletagmanager.com; font-src 'self'; connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com https://*.googletagmanager.com https://cloudflareinsights.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
 # CSP notes, so the next person does not loosen this by guesswork:
 #
@@ -34,6 +34,13 @@
 #   apps/web/astro.config.mjs pins vite.build.assetsInlineLimit to 0, which is what stops Astro
 #   inlining a small script chunk into the HTML. Raise it and those scripts become inline elements
 #   this policy refuses, so the menus stop opening on the deployed site and nowhere else.
+# - Analytics origins (owner-approved). GA4: script-src https://www.googletagmanager.com (the
+#   gtag.js loader; its bootstrap is the same-origin /ga4.js endpoint, never an inline script),
+#   connect-src https://*.google-analytics.com https://*.analytics.google.com
+#   https://*.googletagmanager.com and img-src https://*.google-analytics.com
+#   https://*.googletagmanager.com (collection hits). Cloudflare Web Analytics: script-src
+#   https://static.cloudflareinsights.com and connect-src https://cloudflareinsights.com.
+#   scripts/validate-security-headers.mjs pins this exact list; nothing else is third-party.
 # - style-src 'self' — NO 'unsafe-inline'. This is earned, not assumed: apps/web/astro.config.mjs
 #   pins build.inlineStylesheets to 'never', so the build cannot emit an inline <style>, and the
 #   built HTML is verified to contain none. If that setting ever returns to 'auto', every page

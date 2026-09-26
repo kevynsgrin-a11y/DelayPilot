@@ -48,6 +48,7 @@
  */
 import { writeFileSync } from 'node:fs'
 import { resolve as resolvePath } from 'node:path'
+import { stubAnalytics } from '../tools/analytics-stub.mjs'
 import { startServer } from '../tools/serve-dist.mjs'
 import { launchChromium } from '../tools/browser.mjs'
 import { emittedRoutes, CONDITIONAL_ROUTES } from '../tools/routes.mjs'
@@ -188,6 +189,8 @@ async function runRegressions(browser, origin, routes) {
   /* Reflow needs its own viewport; the rest read structure and are viewport-independent. */
   const narrow = await browser.newContext({ viewport: { width: 320, height: 720 } })
   const wide = await browser.newContext({ viewport: AXE_VIEWPORT })
+  await stubAnalytics(narrow)
+  await stubAnalytics(wide)
   if (SEED !== undefined) {
     const script = SEEDS[SEED]
     await narrow.addInitScript(`window.addEventListener('load', () => ${script})`)

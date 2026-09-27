@@ -54,9 +54,14 @@ const SECURITY_HEADERS: Readonly<Record<string, string>> = {
   'permissions-policy': 'geolocation=(), camera=(), microphone=(), payment=()',
   'strict-transport-security': 'max-age=63072000; includeSubDomains; preload',
   'content-security-policy':
-    "default-src 'self'; script-src 'self'; style-src 'self'; " +
-    "img-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; " +
-    "frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+    "default-src 'self'; " +
+    "script-src 'self' https://www.googletagmanager.com https://static.cloudflareinsights.com; " +
+    "style-src 'self'; " +
+    "img-src 'self' https://*.google-analytics.com https://*.googletagmanager.com; " +
+    "font-src 'self'; " +
+    "connect-src 'self' https://*.google-analytics.com https://*.analytics.google.com " +
+    'https://*.googletagmanager.com https://cloudflareinsights.com; ' +
+    "object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
 }
 
 app.use('*', async (c, next) => {

@@ -49,11 +49,11 @@
       "why": "Same accounting reason as inline scripts, and the same CSP constraint: style-src 'self' with no 'unsafe-inline'. apps/web/astro.config.mjs pins inlineStylesheets to 'never' for exactly this."
     },
     "scriptFileCount": {
-      "budget": 4,
+      "budget": 5,
       "comparison": "max",
       "unit": "file",
       "owner": "frontend-ui-engineer",
-      "why": "Measured 4: /theme-init.js and the three bundled module scripts for the header, the theme control and the lookup form. A fifth script is a decision, not an accident, so this has no headroom."
+      "why": "Measured 5: /theme-init.js, /ga4.js (the owner-approved GA4 bootstrap, deferred, 2026-09-26) and the three bundled module scripts for the header, the theme control and the lookup form. A sixth script is a decision, not an accident, so this has no headroom."
     },
     "scriptWireBytesTotal": {
       "budget": 2400,
@@ -165,10 +165,10 @@
           "why": "Measured 76949 B gz — the critical path plus 2641 B of icons and the web manifest. Catches a third icon link or a newly referenced asset."
         },
         "criticalRequestCount": {
-          "budget": 8,
+          "budget": 9,
           "comparison": "max",
           "unit": "request",
-          "why": "Measured 8: document, stylesheet, two preloaded fonts, four scripts. Confirmed against the Lighthouse network log, which recorded the same 8. A ninth request is an architecture change."
+          "why": "Measured 9: document, stylesheet, two preloaded fonts, five same-origin scripts (the fifth is the deferred /ga4.js GA4 bootstrap, owner-approved 2026-09-26). Was 8 against the Lighthouse network log before /ga4.js. A tenth request is an architecture change."
         },
         "renderBlockingCount": {
           "budget": 2,
@@ -209,10 +209,10 @@
           "why": "Measured worst case 55089 B gz."
         },
         "criticalRequestCount": {
-          "budget": 7,
+          "budget": 8,
           "comparison": "max",
           "unit": "request",
-          "why": "Measured 7: document, stylesheet, two preloaded fonts, three scripts. These routes do not ship the lookup script today because they contain no form."
+          "why": "Measured 8: document, stylesheet, two preloaded fonts, four scripts (including the deferred /ga4.js GA4 bootstrap, owner-approved 2026-09-26). These routes do not ship the lookup script today because they contain no form."
         },
         "renderBlockingCount": {
           "budget": 2,
@@ -267,10 +267,10 @@
           "why": "Measured worst case 58936 B gz."
         },
         "criticalRequestCount": {
-          "budget": 7,
+          "budget": 8,
           "comparison": "max",
           "unit": "request",
-          "why": "Measured 7 on all 16 routes in this class."
+          "why": "Measured 8 on all 16 routes in this class (7 plus the deferred /ga4.js GA4 bootstrap, owner-approved 2026-09-26)."
         },
         "renderBlockingCount": {
           "budget": 2,

@@ -58,6 +58,9 @@
  *      rule, it contains `no-store` and `private`, and it contains no shared-cache directive.
  *      `AGENTS.md §2`: private routes are never stored in a shared cache. Declaring the rule before
  *      the routes exist is the point — the guard cannot be forgotten on the day they land.
+ *   F. The CSP carries no source except `'self'`, `'none'` and the origins in
+ *      `APPROVED_CSP_ORIGINS` (the owner-approved GA4 and Cloudflare Web Analytics hosts), so the
+ *      four copies cannot widen together unnoticed.
  *
  * Run:  node scripts/validate-security-headers.mjs
  * Prove it fires:  node scripts/validate-security-headers.mjs --self-test
@@ -425,6 +428,49 @@ export function checkPolicies({ headersText, workerText, vercel }) {
     }
   }
 
+  // Check F — the CSP names no source beyond the approved list. Parity (Check A) alone would let all
+  // four copies drift together toward a wider policy.
+  const csp = policies[0].headers.get('content-security-policy')
+  if (csp !== undefined) errors.push(...checkCspSources(csp, policies[0].label))
+
+  return errors
+}
+
+/**
+ * Every non-keyword source the CSP may carry, per directive. The analytics origins are
+ * owner-approved: GA4 (gtag.js loader + collection hosts) and the Cloudflare Web Analytics beacon.
+ * The GA4 bootstrap is the same-origin `/ga4.js`, so no inline-script source is ever needed.
+ */
+export const APPROVED_CSP_ORIGINS = {
+  'script-src': ['https://www.googletagmanager.com', 'https://static.cloudflareinsights.com'],
+  'img-src': ['https://*.google-analytics.com', 'https://*.googletagmanager.com'],
+  'connect-src': [
+    'https://*.google-analytics.com',
+    'https://*.analytics.google.com',
+    'https://*.googletagmanager.com',
+    'https://cloudflareinsights.com',
+  ],
+}
+
+/** Keywords a directive may carry without being on the origin allowlist. */
+const SAFE_KEYWORDS = new Set(["'self'", "'none'"])
+
+/** Check F as a pure function over one CSP string. */
+export function checkCspSources(csp, label) {
+  const errors = []
+  for (const directive of csp.split(';')) {
+    const [rawName, ...sources] = directive.trim().split(/\s+/)
+    if (rawName === undefined || rawName === '') continue
+    const name = rawName.toLowerCase()
+    const approved = APPROVED_CSP_ORIGINS[name] ?? []
+    for (const source of sources) {
+      if (SAFE_KEYWORDS.has(source) || approved.includes(source)) continue
+      errors.push(
+        `${label}: content-security-policy ${name} carries "${source}", which is not on the ` +
+          `approved list (APPROVED_CSP_ORIGINS in scripts/validate-security-headers.mjs).`,
+      )
+    }
+  }
   return errors
 }
 
@@ -439,6 +485,16 @@ function readSources() {
     headersText: readFileSync(join(repoRoot, HEADERS_FILE), 'utf8'),
     workerText: readFileSync(join(repoRoot, WORKER_FILE), 'utf8'),
     vercel,
+  }
+}
+
+/** Append `extra` after the first `anchor` in every copy, so parity (Check A) still holds. */
+function widenEverywhere(sources, anchor, extra) {
+  const widen = (text) => text.replace(anchor, `${anchor} ${extra}`)
+  return {
+    headersText: widen(sources.headersText),
+    workerText: widen(sources.workerText),
+    vercel: sources.vercel.map((file) => ({ ...file, text: widen(file.text) })),
   }
 }
 
@@ -518,6 +574,17 @@ function selfTest() {
         })),
       }),
       expect: 'shared-cache directive',
+    },
+    {
+      name: 'all four copies widened together with an unapproved script origin',
+      seed: (s) =>
+        widenEverywhere(s, 'https://www.googletagmanager.com', 'https://cdn.example.com'),
+      expect: 'is not on the approved list',
+    },
+    {
+      name: "all four copies widened together with script-src 'unsafe-inline'",
+      seed: (s) => widenEverywhere(s, "script-src 'self'", "'unsafe-inline'"),
+      expect: `carries "'unsafe-inline'"`,
     },
   ]
 

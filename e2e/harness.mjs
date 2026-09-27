@@ -9,8 +9,10 @@
  *   1. AD AND ANALYTICS HOSTS ARE BLOCKED. `DIRECTIVE.md §20` says ads "are disabled in
  *      local/test/screenshot/demo-review modes", and a suite that silently allowed a third-party
  *      script would make its own screenshots nondeterministic and its own CSP result meaningless.
- *      Every blocked and every cross-origin request is RECORDED, not just refused: this build makes
- *      zero of them, and the day that changes a spec should say so rather than quietly pass.
+ *      Every blocked and every cross-origin request is RECORDED, not just refused. The one
+ *      expected cross-origin request is the GA4 loader (`EXPECTED_ANALYTICS`): it is answered
+ *      locally with an empty script — never fetched — AFTER the browser has applied the served CSP
+ *      to it, so a policy that refused the loader still shows up as a CSP violation.
  *   2. CSP VIOLATIONS, CONSOLE ERRORS AND PAGE ERRORS ARE COLLECTED. Collected from before the
  *      first byte, through an init script, because a `securitypolicyviolation` fired during parse
  *      is exactly the one a listener attached after `goto` would miss.
@@ -26,13 +28,15 @@
 /* global document */
 
 import { test as base, expect } from '@playwright/test'
+import { GA4_LOADER_URL, stubAnalytics } from '../tests/tools/analytics-stub.mjs'
 
 export { expect }
 
 /**
- * Ad, ad-tech and analytics hosts. Nothing in this build requests any of them — `AGENTS.md §4`
- * keeps every slot behind a consent gate that does not exist yet — so this list is a tripwire
- * rather than a filter, and `thirdParty` below is what actually reports a breach.
+ * Ad, ad-tech and analytics hosts. Nothing in this build requests any of them except the exact
+ * GA4 loader in `EXPECTED_ANALYTICS` (stubbed, checked first) — `AGENTS.md §4` keeps every ad slot
+ * behind a consent gate that does not exist yet — so this list is a tripwire rather than a filter,
+ * and `thirdParty` below is what actually reports a breach.
  */
 export const BLOCKED_HOSTS = [
   'googlesyndication.com',
@@ -51,15 +55,39 @@ export const BLOCKED_HOSTS = [
 ]
 
 /**
+ * The only third-party request a page is expected to make: Google's gtag.js loader for this site's
+ * own GA4 property (BaseLayout; bootstrap in `apps/web/src/pages/ga4.js.ts`). Exact URL, not a host,
+ * so a second tag or a different measurement ID is still a finding.
+ */
+export const EXPECTED_ANALYTICS = [GA4_LOADER_URL]
+
+/**
  * @typedef {object} Problems
  * @property {string[]} consoleErrors
  * @property {string[]} pageErrors
  * @property {string[]} blocked        requests refused because the host is on the block list
  * @property {string[]} thirdParty     requests to any origin other than the server under test
+ * @property {string[]} analytics      requests matching `EXPECTED_ANALYTICS`, answered with a stub
  * @property {() => Promise<string[]>} cspViolations  read from the page, after navigation
  */
 
 export const test = base.extend({
+  /**
+   * Every test, whether or not it asks for `problems`: the GA4 loader is answered locally, so no
+   * spec fetches Google's script or sends a page view to the production property. A page-level
+   * route (`problems` below) takes precedence over this context-level one.
+   *
+   * @param {{ context: import('@playwright/test').BrowserContext }} fixtures
+   * @param {(value: undefined) => Promise<void>} use
+   */
+  analyticsStub: [
+    async ({ context }, use) => {
+      await stubAnalytics(context)
+      await use(undefined)
+    },
+    { auto: true },
+  ],
+
   /**
    * @param {{ page: import('@playwright/test').Page, baseURL: string | undefined }} fixtures
    * @param {(problems: Problems) => Promise<void>} use
@@ -71,6 +99,7 @@ export const test = base.extend({
       pageErrors: [],
       blocked: [],
       thirdParty: [],
+      analytics: [],
       cspViolations: async () =>
         page.evaluate(() => /** @type {string[]} */ (globalThis.__dpCspViolations ?? [])),
     }
@@ -94,6 +123,11 @@ export const test = base.extend({
     const origin = baseURL === undefined ? '' : new URL(baseURL).origin
     await page.route('**/*', async (route) => {
       const url = route.request().url()
+      if (EXPECTED_ANALYTICS.includes(url)) {
+        problems.analytics.push(url)
+        await route.fulfill({ status: 200, contentType: 'text/javascript', body: '' })
+        return
+      }
       if (BLOCKED_HOSTS.some((host) => url.includes(host))) {
         problems.blocked.push(url)
         await route.abort('blockedbyclient')
@@ -145,4 +179,7 @@ export async function expectCleanLoad(problems, route) {
   expect(problems.pageErrors, `${route}: page errors`).toEqual([])
   expect(problems.blocked, `${route}: requests to a blocked ad/analytics host`).toEqual([])
   expect(problems.thirdParty, `${route}: cross-origin requests`).toEqual([])
+  expect([...new Set(problems.analytics)], `${route}: the GA4 loader request`).toEqual(
+    EXPECTED_ANALYTICS,
+  )
 }

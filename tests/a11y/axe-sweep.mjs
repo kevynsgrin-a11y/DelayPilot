@@ -35,6 +35,7 @@
  */
 import { createRequire } from 'node:module'
 import { readFileSync } from 'node:fs'
+import { stubAnalytics } from '../tools/analytics-stub.mjs'
 import { CONTEXT_MATRIX } from '../tools/browser.mjs'
 import { classifyIncompleteNode } from './incomplete.mjs'
 
@@ -73,6 +74,7 @@ export async function openAxePage({ browser, colorScheme, reducedMotion, initScr
   if (initScript !== undefined) {
     await context.addInitScript(`window.addEventListener('load', () => { ${initScript} })`)
   }
+  await stubAnalytics(context)
   const page = await context.newPage()
 
   /* Same-origin delivery, so `script-src 'self'` stays enforced. See the note above. */

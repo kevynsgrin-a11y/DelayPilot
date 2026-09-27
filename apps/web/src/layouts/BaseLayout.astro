@@ -29,8 +29,10 @@
  *   F22. It is rendered here rather than by `seo-engineer` because this layout owns the head.
  * · **`theme-color`** is per colour scheme, matching the two surfaces the stylesheet paints.
  * · **`/theme-init.js`** is a blocking classic script, deliberately: see the endpoint's own
- *   docblock. It is the only script in `<head>` and it is external, so `script-src 'self'` admits
- *   it with no hash and no header change.
+ *   docblock. It is the only blocking script in `<head>` and it is external, so `script-src 'self'`
+ *   admits it with no hash and no header change.
+ * · **GA4** is `/ga4.js` (same-origin bootstrap, deferred) plus Google's async gtag.js loader —
+ *   both external, neither inline; see the comment at the tags.
  *
  * MOTION AND ADS BY KIND. `policy` and `utility` pages get no ambient motif, no scroll reveal and
  * no ad insertion point — ADR 0003 rule 1 excludes error, maintenance and status pages from the
@@ -57,6 +59,7 @@ import SiteFooter from '../components/SiteFooter.astro'
 import SiteHeader from '../components/SiteHeader.astro'
 import { pages } from '../lib/copy/pages.ts'
 import { pageSchemaJson } from '../lib/seo/schema.ts'
+import { GA4_MEASUREMENT_ID } from '../pages/ga4.js.ts'
 import { COMMITTED_ORIGIN } from '../lib/seo/site-url.mjs'
 import { bingSiteVerification, googleSiteVerification } from '../lib/seo/verification.ts'
 
@@ -253,9 +256,21 @@ const reviewedDate =
     {schemaJson && <script is:inline type="application/ld+json" set:html={schemaJson} />}
 
     <script is:inline src="/theme-init.js"></script>
-    <!-- GA4 aggregate analytics (GSC Ops BATCH-1 native tag) — CSP in vercel.json admits the gtag loader + GA endpoints -->
-    <script is:inline async src="https://www.googletagmanager.com/gtag/js?id=G-PH0X9DNQ3J"></script>
-    <script is:inline>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-PH0X9DNQ3J');</script>
+
+    {
+      /*
+       * GA4 — aggregate traffic measurement. Two EXTERNAL scripts, no inline one: `/ga4.js` is the
+       * same-origin bootstrap (`src/pages/ga4.js.ts`: defines `gtag()`, pushes `js` + `config`),
+       * and the async loader is Google's gtag.js for the same measurement ID. `script-src` admits
+       * `https://www.googletagmanager.com`; `connect-src` / `img-src` admit the GA collection hosts
+       * (all four policy copies — `scripts/validate-security-headers.mjs`).
+       */
+    }
+    <script is:inline defer src="/ga4.js"></script>
+    <script
+      is:inline
+      async
+      src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`}></script>
   </head>
 
   <body class="dpx-body" data-page-kind={kind}>

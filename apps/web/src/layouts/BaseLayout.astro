@@ -171,7 +171,13 @@ const reviewedDate =
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {robots === 'noindex' ? <meta name="robots" content="noindex" /> : <meta name="robots" content="index,follow,max-image-preview:large" />}
+    {
+      robots === 'noindex' ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <meta name="robots" content="index,follow,max-image-preview:large" />
+      )
+    }
     {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 
     {

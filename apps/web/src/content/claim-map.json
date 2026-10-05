@@ -694,50 +694,50 @@
           "claim": "The refund rule attaches to cancellation, significant change and significant delay.",
           "sourceId": "dot-refunds",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         },
         {
           "claim": "Accepting the alternative generally ends the refund question.",
           "sourceId": "dot-refunds",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         },
         {
           "claim": "The refund is the fare in the original form of payment, not a credit unless the passenger chose one.",
           "sourceId": "dot-refunds",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         },
         {
           "claim": "Where conditions are met the airline is expected to act without the passenger filing a request.",
           "sourceId": "dot-refunds",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         },
         {
           "claim": "The significance test can reach airports, added connections and cabin downgrade.",
           "sourceId": "dot-refunds",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         },
         {
           "claim": "There is no general US federal cash payment for an ordinary delay or cancellation.",
           "sourceId": "dot-refunds",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         },
         {
           "claim": "The 2026 enforcement-discretion guidance covers certain renumbered flights for a defined window.",
           "sourceId": "dot-whats-new",
           "evidenceClass": "primary",
-          "verification": "pending",
-          "lastVerifiedAt": null
+          "verification": "confirmed",
+          "lastVerifiedAt": "2026-10-05"
         }
       ],
       "ruleSlots": [
@@ -750,7 +750,7 @@
         "{{rule:us:refund.timing}}",
         "{{rule:us:refund.triggers}}"
       ],
-      "blocker": "source-unreachable-no-egress"
+      "blocker": "rule-slots-unresolved (no in_force rule set; §2.2 slot condition open despite claims confirmed)"
     },
     {
       "slug": "guides/voluntary-commitments-vs-legal-rights",

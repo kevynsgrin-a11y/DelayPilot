@@ -82,6 +82,53 @@
       "caption": "Not added. Entry bodies are CommonMark plus GFM tables with no raw HTML (§3), and GFM has no table-caption syntax, so a real caption element is not expressible from a body. The lead-in sentence carries the caption text as prose on this table and on the six-label table in guides/data-freshness-and-provider-limits.md. A programmatic caption needs a remark plugin or a layout change from frontend-ui-engineer.",
       "driftRisk": "The five labels are transcribed rather than imported, which docs/VOICE.md §12.1 item 4 names as a defect class. No copy-slot mechanism exists for Markdown bodies; a handoff is filed with ux-copy-steward and frontend-ui-engineer for either a {{copy:...}} slot or a test asserting this table against cockpit.rights.statusLabels. Verified byte-equal against the copy module in this session.",
       "entries": ["passenger-rights/overview"]
+    },
+    {
+      "id": "S22-1",
+      "date": "2026-10-05",
+      "raisedBy": "regulatory-source-steward",
+      "gate": "EDITORIAL_POLICY §2.2 — claims half (entry remains source_review pending slot resolution)",
+      "entry": "guides/us-automatic-refund-rules",
+      "finding": "Claims-half pass after the 2026-10-05 egress cycle unblocked the registry. All 7 external claims confirmed against provisions read from the cited sources this cycle; every quote below is verbatim from the fetched page.",
+      "confirmations": [
+        {
+          "claim": "The refund rule attaches to cancellation, significant change and significant delay.",
+          "sourceId": "dot-refunds",
+          "quote": "\"Cancelled Flight - A consumer is entitled to a refund if the airline cancels a flight…\" and \"Schedule Change/Significant Delay - A consumer is entitled to a refund if the airline significantly delays a flight or significantly changes a flight and the consumer chooses not to travel or accept travel credits, vouchers, or other forms of compensation offered by the airline.\""
+        },
+        {
+          "claim": "Accepting the alternative generally ends the refund question.",
+          "sourceId": "dot-refunds",
+          "quote": "The entitlement is conditioned on the consumer choosing \"not to travel or accept travel credits, vouchers, or other forms of compensation offered by the airline.\""
+        },
+        {
+          "claim": "The refund is the fare in the original form of payment, not a credit unless the passenger chose one.",
+          "sourceId": "dot-refunds",
+          "quote": "\"the airline must provide the refund to the original form of payment within 7 business days for credit card payments or 20 calendar days for other payments.\""
+        },
+        {
+          "claim": "Where conditions are met the airline is expected to act without the passenger filing a request.",
+          "sourceId": "dot-refunds",
+          "quote": "\"If you reject the offer or if you do not respond to the offer, a refund must be issued to you automatically without you having to make a request.\""
+        },
+        {
+          "claim": "The significance test can reach airports, added connections and cabin downgrade.",
+          "sourceId": "dot-refunds",
+          "quote": "\"The consumer is scheduled to depart from a different origin airport or arrive at a different destination airport; More connections - The consumer is scheduled to travel on an itinerary with more connection points than that of the original itinerary; Downgrades - The consumer is involuntarily downgraded to a lower class of service.\""
+        },
+        {
+          "claim": "There is no general US federal cash payment for an ordinary delay or cancellation.",
+          "sourceId": "dot-refunds",
+          "quote": "The page enumerates the situations with refund entitlement and frames compensation solely as refunds and as credits the passenger may choose; it names no cash payment for delay. Confirmed as a scope statement, not as an affirmative sentence on the page."
+        },
+        {
+          "claim": "The 2026 enforcement-discretion guidance covers certain renumbered flights for a defined window.",
+          "sourceId": "dot-whats-new",
+          "quote": "\"DOT has extended its temporary enforcement pause regarding ticket refunds for renumbered flights through July 7, 2027 while it engages in a new rulemaking to consider modifying the definition of a 'cancelled flight.'\""
+        }
+      ],
+      "unresolved": "The entry carries 8 rule slots ({{rule:us:*}}). §2.2 requires each to resolve against an in_force rule set or be removed with its sentence. No rule set is in_force yet — the registry now has 24 active sources, which unblocks rights-rules-engineer to propose draft -> in_force, but that is a separate workflow. This gate record covers the seven external claims only; the slot condition of §2.2 is NOT yet satisfied for this entry.",
+      "action": "Claims evidence recorded; the entry STAYS at source_review because the §2.2 slot condition is unsatisfied. The claims half of the gate is now done for this entry: §2.3 (quality gate) and the §2.2 slot condition remain open, and publishable -> published is owner-only (§2.4, BUILD_PLAN I-6)."
     }
   ],
   "entries": [

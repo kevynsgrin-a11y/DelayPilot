@@ -17,11 +17,7 @@
     "kind": "resolved_for_24_of_27",
     "observedAt": "2026-10-05",
     "resolution": "Remedy 2 executed: the steward ran on a host with egress (GscOps session, owner-approved). 24 of 27 canonical URLs opened and confirmed on-subject; provisions read for the core regulator pages are recorded in docs/RIGHTS_SOURCE_REVIEW.md cycle 2026-10-05.",
-    "remainingBlocked": [
-      "eu-council-2026-07-13",
-      "eu-reg-261-2004",
-      "bts-airlines-airports"
-    ],
+    "remainingBlocked": ["eu-council-2026-07-13", "eu-reg-261-2004", "bts-airlines-airports"],
     "remainingDetail": {
       "eu-council-2026-07-13": "HTTP 403 from this host on plain and browser-UA fetches; press-release host refuses automated clients",
       "eu-reg-261-2004": "connection timeout on three attempts from this environment; the identical regulation text WAS opened via legislation.gov.uk (uk-reg-261-2004) this cycle",

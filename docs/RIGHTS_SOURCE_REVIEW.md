@@ -402,7 +402,6 @@ Ordered, so that a later session does not have to rediscover the order:
    dates; review the rule sets and the `§15.6` golden matrix; then, and only then, record a
    publication verdict per set with a named reviewer and an approval timestamp.
 
-
 ---
 
 ## Cycle 2026-10-05 — the steward ran on a host with egress (blocker remedy 2)
@@ -432,11 +431,11 @@ clients with 403 and accept browser-UAs; their outcomes are recorded per attempt
 
 ### Still blocked (3 of 27)
 
-| id | outcome | consequence |
-| --- | --- | --- |
-| `eu-council-2026-07-13` | 403 on plain and browser-UA fetches (press-release host refuses automated clients) | none for rule values — the record is `evidenceClass: secondary`, `citableForRuleValues: false`; it can only ever support a status note |
-| `eu-reg-261-2004` | connection timeout on three attempts from this environment | the regulation text itself was read via `uk-reg-261-2004` (the legislation.gov.uk retention), which is a separate, now-`active` record; the eur-lex canonical remains `unreachable` and should be retried from another network |
-| `bts-airlines-airports` | 403 on plain and browser-UA fetches | provider-data context only; no rights claim rests on it |
+| id                      | outcome                                                                            | consequence                                                                                                                                                                                                                    |
+| ----------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `eu-council-2026-07-13` | 403 on plain and browser-UA fetches (press-release host refuses automated clients) | none for rule values — the record is `evidenceClass: secondary`, `citableForRuleValues: false`; it can only ever support a status note                                                                                         |
+| `eu-reg-261-2004`       | connection timeout on three attempts from this environment                         | the regulation text itself was read via `uk-reg-261-2004` (the legislation.gov.uk retention), which is a separate, now-`active` record; the eur-lex canonical remains `unreachable` and should be retried from another network |
+| `bts-airlines-airports` | 403 on plain and browser-UA fetches                                                | provider-data context only; no rights claim rests on it                                                                                                                                                                        |
 
 ### Effect of this cycle
 

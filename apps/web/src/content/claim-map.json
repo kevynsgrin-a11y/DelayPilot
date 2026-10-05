@@ -137,7 +137,7 @@
     },
     {
       "slug": "guides/data-freshness-and-provider-limits",
-      "status": "publishable",
+      "status": "published",
       "sources": [],
       "contextSources": [],
       "internalRefs": [
@@ -373,7 +373,7 @@
     },
     {
       "slug": "guides/how-delaypilot-estimates-connection-risk",
-      "status": "publishable",
+      "status": "published",
       "sources": [],
       "contextSources": [],
       "internalRefs": [
@@ -390,7 +390,7 @@
     },
     {
       "slug": "guides/how-delaypilot-estimates-disruption-risk",
-      "status": "publishable",
+      "status": "published",
       "sources": [],
       "contextSources": [],
       "internalRefs": [
@@ -453,7 +453,7 @@
     },
     {
       "slug": "guides/minimum-connection-time-vs-realistic-connection",
-      "status": "publishable",
+      "status": "published",
       "sources": [],
       "contextSources": [],
       "internalRefs": [
@@ -532,7 +532,7 @@
     },
     {
       "slug": "guides/saving-receipts-and-evidence",
-      "status": "publishable",
+      "status": "published",
       "sources": [],
       "contextSources": [],
       "internalRefs": [
@@ -1088,7 +1088,7 @@
     },
     {
       "slug": "passenger-rights/overview",
-      "status": "publishable",
+      "status": "published",
       "sources": [],
       "contextSources": [],
       "internalRefs": [

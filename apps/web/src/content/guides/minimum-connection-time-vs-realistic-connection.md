@@ -2,7 +2,7 @@
 title: 'Minimum connection time is a threshold, not a forecast'
 description: 'A connection minimum is what makes an itinerary sellable. A realistic connection is built from deplaning, walking, queues, bags and a gate-close time.'
 pageType: guide
-status: publishable
+status: published
 intent: 'Replace the idea that a published connection minimum predicts a successful transfer with an explicit component model of available time, required time and slack.'
 answerFirst: 'A connection minimum is a scheduling threshold: it is the shortest gap a system will sell, not a forecast about your particular day. A realistic connection is the time actually available between your arrival and the next gate closing, minus the time the transfer actually takes. DelayPilot computes both sides explicitly and shows where each number came from, because a single combined figure hides everything that matters.'
 sources: []

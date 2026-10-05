@@ -2,7 +2,7 @@
 title: 'How DelayPilot estimates connection risk'
 description: 'The method in full: available time, required time, slack, the provenance of each component, and when a probability may be computed at all.'
 pageType: guide
-status: publishable
+status: published
 intent: 'Document the connection-risk computation end to end, including the notation, the state vocabulary, and the rule that no probability is displayed without validated distributions.'
 answerFirst: 'The computation is deliberately plain: available time between getting off one aircraft and the next gate closing, minus the time the transfer requires, gives slack. Each part of the required time is shown with where it came from. A probability appears only when validated distributions exist to compute one; otherwise you get the quantities, a qualitative band, and the assumptions.'
 sources: []

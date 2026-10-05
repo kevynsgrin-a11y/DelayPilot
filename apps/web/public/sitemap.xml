@@ -9,11 +9,10 @@
 
   WHAT IS DELIBERATELY ABSENT, and why each is correct rather than missing:
 
-  - The five served guides and /passenger-rights/. Those entries are editorial status
-    "publishable", not "published". apps/web/src/components/routes.ts entryRobots() serves them and
-    marks them noindex, which is the single source of that decision; this file follows it, it does
-    not second-guess it. They appear here in the same change that promotes them to "published",
-    never before.
+  - (Historical note, 2026-10-05: the five served guides and /passenger-rights/ were listed
+    here as absent while they held editorial status "publishable". They were promoted to
+    "published" and added below in the same change — editorialActions I6-1 — per the rule this
+    file already stated: they appear in the same change that promotes them, never before.)
   - Every guide and rights entry at "draft", "source_review", "legal_review", "review_due" or
     "stale". Those five produce no route at all (content.config.ts), so a URL entry for one would
     be a dead reference (AGENTS.md section 1.6).
@@ -58,7 +57,13 @@
   <url><loc>https://delaypilot.app/editorial-policy/</loc></url>
   <url><loc>https://delaypilot.app/flight-status/</loc></url>
   <url><loc>https://delaypilot.app/guides/</loc></url>
+  <url><loc>https://delaypilot.app/guides/data-freshness-and-provider-limits/</loc><lastmod>2026-09-12</lastmod></url>
+  <url><loc>https://delaypilot.app/guides/how-delaypilot-estimates-connection-risk/</loc><lastmod>2026-09-12</lastmod></url>
+  <url><loc>https://delaypilot.app/guides/how-delaypilot-estimates-disruption-risk/</loc><lastmod>2026-09-12</lastmod></url>
+  <url><loc>https://delaypilot.app/guides/minimum-connection-time-vs-realistic-connection/</loc><lastmod>2026-09-12</lastmod></url>
+  <url><loc>https://delaypilot.app/guides/saving-receipts-and-evidence/</loc><lastmod>2026-09-12</lastmod></url>
   <url><loc>https://delaypilot.app/methodology/</loc></url>
+  <url><loc>https://delaypilot.app/passenger-rights/</loc><lastmod>2026-09-12</lastmod></url>
   <url><loc>https://delaypilot.app/privacy/</loc></url>
   <url><loc>https://delaypilot.app/terms/</loc></url>
 </urlset>

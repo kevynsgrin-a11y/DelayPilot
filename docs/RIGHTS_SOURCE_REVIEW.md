@@ -401,3 +401,59 @@ Ordered, so that a later session does not have to rediscover the order:
 6. Hand `rights-rules-engineer` the verified values, the source ids, and the computed effective
    dates; review the rule sets and the `§15.6` golden matrix; then, and only then, record a
    publication verdict per set with a named reviewer and an approval timestamp.
+
+
+---
+
+## Cycle 2026-10-05 — the steward ran on a host with egress (blocker remedy 2)
+
+**Session:** GscOps trio program (owner-approved), branch `editorial/source-cycle-2026-10-05`.
+**What ran:** every one of the 27 canonical URLs was requested from this workstation — plain UA
+first, browser-UA retry on refusal. 24 of 27 opened with HTTP 200 and were confirmed on-subject
+by title and, for the core regulator pages, by reading the relied-on provisions (quoted below).
+The three DOT hosts (`dot-refunds`, `dot-whats-new`, `dot-dashboard`) refuse plain-UA automated
+clients with 403 and accept browser-UAs; their outcomes are recorded per attempt in each record's
+`lastFetchOutcome`.
+
+### Provisions read this cycle (verbatim context, condensed)
+
+- **dot-refunds** — "Cancelled Flight - A consumer is entitled to a refund if the airline
+  cancels a flight…"; "Schedule Change/Significant Delay - A consumer is entitled to a refund if
+  the airline significantly delays a flight or significantly changes a flight and the consumer
+  chooses not to travel or accept travel credits, vouchers, or other forms of compensation
+  offered by the airline"; the 24-hour booking-cancellation provision.
+- **eu-your-europe-air** — the written-notice obligation from 2-hour departure delays; the
+  denied-boarding compensation table (EUR 250 for ≤1,500 km, 400 for >1,500 km intra-EU and
+  1,500–3,500 km, 600 for >3,500 km); the assistance framework.
+- **cta-rebooking-refunds-compensation** — the APPR structure for delays and cancellations;
+  assistance obligations (food, drinks, accommodation); the airline-control framing.
+- **us-14cfr-260 / us-14cfr-250 / uk-reg-261-2004 / ca-appr-sor-2019-150** — full regulation
+  texts fetched from eCFR / legislation.gov.uk / laws-lois.justice.gc.ca.
+
+### Still blocked (3 of 27)
+
+| id | outcome | consequence |
+| --- | --- | --- |
+| `eu-council-2026-07-13` | 403 on plain and browser-UA fetches (press-release host refuses automated clients) | none for rule values — the record is `evidenceClass: secondary`, `citableForRuleValues: false`; it can only ever support a status note |
+| `eu-reg-261-2004` | connection timeout on three attempts from this environment | the regulation text itself was read via `uk-reg-261-2004` (the legislation.gov.uk retention), which is a separate, now-`active` record; the eur-lex canonical remains `unreachable` and should be retried from another network |
+| `bts-airlines-airports` | 403 on plain and browser-UA fetches | provider-data context only; no rights claim rests on it |
+
+### Effect of this cycle
+
+- `verifiedSourceCount` / `activeSourceCount`: **24**. The publication gate recorded in this
+  registry's `publicationGate` field was "closed — no source opened"; the entry-level §2.2
+  source-review gate is now **unblocked for every claim citing the 24 active sources**.
+- `claim-map.json` `verificationState` moves `blocked-external` → `partially-verified` with the
+  per-source note above.
+- Nothing was promoted past any editorial gate by this cycle: no entry changed status, no rule
+  set left draft, no effective date was populated. This cycle verifies **sources**, which is the
+  precondition the §2.2 gate names. Entry-level claim confirmation remains to be run per entry,
+  and `publishable → published` remains owner-only (EDITORIAL_POLICY §2.4, BUILD_PLAN I-6).
+
+### Ready for the §2.2 gate now (demand-ordered)
+
+`guides/us-automatic-refund-rules` (cites dot-refunds, us-14cfr-260 — both read this cycle),
+`guides/flight-cancelled-what-to-do`, `guides/uk261-delay-and-cancellation`,
+`guides/eu-rights-under-the-current-rule`, `guides/missed-connection-on-one-ticket`,
+`guides/voluntary-commitments-vs-legal-rights`. Six entries already at `publishable` (served,
+noindex, awaiting the owner's I-6 promotion) remain exactly as they were.

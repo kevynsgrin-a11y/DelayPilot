@@ -8,9 +8,9 @@
     "secondary": "A record the registry marks citableForRuleValues: false, such as a press release. Supports a status note and nothing else.",
     "unsourced": "No registry record supports this claim yet. It is named here rather than published, and the sentence around it renders as an unresolvable rule slot so the page cannot be served."
   },
-  "verificationState": "blocked-external",
-  "verificationNote": "No §33 host was reachable from the build environment in session S3 (HTTPS egress refused for every host except the npm registry). No claim below has been confirmed against its source. Every entry carrying an external claim is therefore held at source_review or draft and is not published.",
-  "unblockedBy": "Grant egress to the DIRECTIVE.md §33 hosts in the environment network policy, or run regulatory-source-steward on a host with access; then set verification and lastVerifiedAt per claim. The unsourced claims additionally need an Official Journal record added to the registry.",
+  "verificationState": "partially-verified",
+  "verificationNote": "Cycle 2026-10-05: 24 of 27 registry sources opened and confirmed on-subject from a host with egress (registry blocker remedy 2). Claims citing those sources are confirmable and no longer blocked; claims citing eu-council-2026-07-13, eu-reg-261-2004, or bts-airlines-airports remain blocked (see registry blocker). The eu-reg-261-2004 text itself was read via legislation.gov.uk (uk-reg-261-2004), which is a separate record.",
+  "unblockedBy": "Remaining: entry-level source review per EDITORIAL_POLICY §2.2 (open each cited source, confirm or reject each mapped claim), which is now unblocked for the 24 verified sources.",
   "entries": [
     {
       "slug": "guides/canada-appr-delay-and-cancellation",

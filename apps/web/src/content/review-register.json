@@ -81,9 +81,7 @@
       "action": "Added an On a rights card column carrying the five labels from cockpit.rights.statusLabels, extended the lead-in sentence to say what each column is, and rewrote the sentence under the table so it names the identifier and the label together instead of mixing registers.",
       "caption": "Not added. Entry bodies are CommonMark plus GFM tables with no raw HTML (§3), and GFM has no table-caption syntax, so a real caption element is not expressible from a body. The lead-in sentence carries the caption text as prose on this table and on the six-label table in guides/data-freshness-and-provider-limits.md. A programmatic caption needs a remark plugin or a layout change from frontend-ui-engineer.",
       "driftRisk": "The five labels are transcribed rather than imported, which docs/VOICE.md §12.1 item 4 names as a defect class. No copy-slot mechanism exists for Markdown bodies; a handoff is filed with ux-copy-steward and frontend-ui-engineer for either a {{copy:...}} slot or a test asserting this table against cockpit.rights.statusLabels. Verified byte-equal against the copy module in this session.",
-      "entries": [
-        "passenger-rights/overview"
-      ]
+      "entries": ["passenger-rights/overview"]
     },
     {
       "id": "S22-1",
@@ -145,14 +143,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "cta-delays-cancellations",
-        "cta-rebooking-refunds-compensation"
-      ],
+      "sources": ["cta-delays-cancellations", "cta-rebooking-refunds-compensation"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.4"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.4"],
       "ruleSetRefs": [
         {
           "jurisdiction": "canada",
@@ -184,24 +177,16 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "dot-dashboard",
-        "dot-refunds"
-      ],
+      "sources": ["dot-dashboard", "dot-refunds"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.1",
-        "AGENTS.md §1.3"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.1", "AGENTS.md §1.3"],
       "ruleSetRefs": [
         {
           "jurisdiction": "us",
           "version": "none-in-force"
         }
       ],
-      "ruleSlots": [
-        "{{rule:us:dashboard.commitmentCategories}}"
-      ],
+      "ruleSlots": ["{{rule:us:dashboard.commitmentCategories}}"],
       "claimCount": 5,
       "unsourcedClaimCount": 0
     },
@@ -244,17 +229,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "eu-your-europe-air"
-      ],
-      "contextSources": [
-        "eu-council-2026-07-13"
-      ],
-      "internalRefs": [
-        "DIRECTIVE.md §3.5",
-        "DIRECTIVE.md §15.2",
-        "AGENTS.md §1.3"
-      ],
+      "sources": ["eu-your-europe-air"],
+      "contextSources": ["eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §3.5", "DIRECTIVE.md §15.2", "AGENTS.md §1.3"],
       "ruleSetRefs": [
         {
           "jurisdiction": "eu",
@@ -289,15 +266,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "eu-your-europe-air"
-      ],
-      "contextSources": [
-        "eu-council-2026-07-13"
-      ],
-      "internalRefs": [
-        "DIRECTIVE.md §15.2"
-      ],
+      "sources": ["eu-your-europe-air"],
+      "contextSources": ["eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §15.2"],
       "ruleSetRefs": [
         {
           "jurisdiction": "eu",
@@ -358,10 +329,7 @@
         "cta-rebooking-refunds-compensation"
       ],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15",
-        "DIRECTIVE.md §26"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15", "DIRECTIVE.md §26"],
       "ruleSetRefs": [],
       "ruleSlots": [],
       "claimCount": 6,
@@ -430,15 +398,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "awc-data-api"
-      ],
+      "sources": ["awc-data-api"],
       "contextSources": [],
-      "internalRefs": [
-        "AGENTS.md §1.3",
-        "AGENTS.md §2",
-        "DIRECTIVE.md §13"
-      ],
+      "internalRefs": ["AGENTS.md §1.3", "AGENTS.md §2", "DIRECTIVE.md §13"],
       "ruleSetRefs": [],
       "ruleSlots": [],
       "claimCount": 5,
@@ -487,9 +449,7 @@
         "cta-rebooking-refunds-compensation"
       ],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15"],
       "ruleSetRefs": [
         {
           "jurisdiction": "eu",
@@ -544,16 +504,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "eu-your-europe-air",
-        "uk-caa-delays"
-      ],
+      "sources": ["eu-your-europe-air", "uk-caa-delays"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §13",
-        "DIRECTIVE.md §15.3",
-        "DIRECTIVE.md §27"
-      ],
+      "internalRefs": ["DIRECTIVE.md §13", "DIRECTIVE.md §15.3", "DIRECTIVE.md §27"],
       "ruleSetRefs": [
         {
           "jurisdiction": "eu",
@@ -564,10 +517,7 @@
           "version": "none-in-force"
         }
       ],
-      "ruleSlots": [
-        "{{rule:eu:care.thresholds}}",
-        "{{rule:uk:care.thresholds}}"
-      ],
+      "ruleSlots": ["{{rule:eu:care.thresholds}}", "{{rule:uk:care.thresholds}}"],
       "claimCount": 3,
       "unsourcedClaimCount": 0
     },
@@ -582,16 +532,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "dot-refunds",
-        "eu-your-europe-air"
-      ],
+      "sources": ["dot-refunds", "eu-your-europe-air"],
       "contextSources": [],
-      "internalRefs": [
-        "AGENTS.md §4",
-        "DIRECTIVE.md §20",
-        "DIRECTIVE.md §26"
-      ],
+      "internalRefs": ["AGENTS.md §4", "DIRECTIVE.md §20", "DIRECTIVE.md §26"],
       "ruleSetRefs": [],
       "ruleSlots": [],
       "claimCount": 2,
@@ -608,14 +551,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "uk-caa-delays",
-        "eu-your-europe-air"
-      ],
+      "sources": ["uk-caa-delays", "eu-your-europe-air"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.3"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.3"],
       "ruleSetRefs": [
         {
           "jurisdiction": "uk",
@@ -644,14 +582,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "dot-refunds",
-        "dot-whats-new"
-      ],
+      "sources": ["dot-refunds", "dot-whats-new"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.1"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.1"],
       "ruleSetRefs": [
         {
           "jurisdiction": "us",
@@ -682,15 +615,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "dot-dashboard",
-        "dot-refunds",
-        "dot-whats-new"
-      ],
+      "sources": ["dot-dashboard", "dot-refunds", "dot-whats-new"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.1"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.1"],
       "ruleSetRefs": [
         {
           "jurisdiction": "us",
@@ -717,15 +644,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "faa-nas-status",
-        "awc-data-api"
-      ],
+      "sources": ["faa-nas-status", "awc-data-api"],
       "contextSources": [],
-      "internalRefs": [
-        "AGENTS.md §1.3",
-        "DIRECTIVE.md §13"
-      ],
+      "internalRefs": ["AGENTS.md §1.3", "DIRECTIVE.md §13"],
       "ruleSetRefs": [],
       "ruleSlots": [],
       "claimCount": 5,
@@ -749,9 +670,7 @@
         "cta-rebooking-refunds-compensation"
       ],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15"],
       "ruleSetRefs": [
         {
           "jurisdiction": "us",
@@ -787,14 +706,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "cta-delays-cancellations",
-        "cta-rebooking-refunds-compensation"
-      ],
+      "sources": ["cta-delays-cancellations", "cta-rebooking-refunds-compensation"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.4"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.4"],
       "ruleSetRefs": [
         {
           "jurisdiction": "canada",
@@ -828,16 +742,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "eu-your-europe-air"
-      ],
-      "contextSources": [
-        "eu-council-2026-07-13"
-      ],
-      "internalRefs": [
-        "DIRECTIVE.md §15.2",
-        "DIRECTIVE.md §3.5"
-      ],
+      "sources": ["eu-your-europe-air"],
+      "contextSources": ["eu-council-2026-07-13"],
+      "internalRefs": ["DIRECTIVE.md §15.2", "DIRECTIVE.md §3.5"],
       "ruleSetRefs": [
         {
           "jurisdiction": "eu",
@@ -894,16 +801,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-12-11",
-      "sources": [
-        "uk-caa-delays",
-        "eu-your-europe-air",
-        "icao-montreal"
-      ],
+      "sources": ["uk-caa-delays", "eu-your-europe-air", "icao-montreal"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.3",
-        "DIRECTIVE.md §15.5"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.3", "DIRECTIVE.md §15.5"],
       "ruleSetRefs": [
         {
           "jurisdiction": "uk",
@@ -933,16 +833,9 @@
       "inSitemap": false,
       "reviewedAt": "2026-09-12",
       "nextReviewDue": "2026-10-12",
-      "sources": [
-        "dot-refunds",
-        "dot-whats-new",
-        "dot-dashboard"
-      ],
+      "sources": ["dot-refunds", "dot-whats-new", "dot-dashboard"],
       "contextSources": [],
-      "internalRefs": [
-        "DIRECTIVE.md §15.1",
-        "docs/EDITORIAL_POLICY.md"
-      ],
+      "internalRefs": ["DIRECTIVE.md §15.1", "docs/EDITORIAL_POLICY.md"],
       "ruleSetRefs": [
         {
           "jurisdiction": "us",

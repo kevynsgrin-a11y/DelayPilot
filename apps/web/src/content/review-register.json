@@ -129,6 +129,23 @@
       ],
       "unresolved": "The entry carries 8 rule slots ({{rule:us:*}}). §2.2 requires each to resolve against an in_force rule set or be removed with its sentence. No rule set is in_force yet — the registry now has 24 active sources, which unblocks rights-rules-engineer to propose draft -> in_force, but that is a separate workflow. This gate record covers the seven external claims only; the slot condition of §2.2 is NOT yet satisfied for this entry.",
       "action": "Claims evidence recorded; the entry STAYS at source_review because the §2.2 slot condition is unsatisfied. The claims half of the gate is now done for this entry: §2.3 (quality gate) and the §2.2 slot condition remain open, and publishable -> published is owner-only (§2.4, BUILD_PLAN I-6)."
+    },
+    {
+      "id": "I6-1",
+      "date": "2026-10-05",
+      "raisedBy": "owner (via regulatory-source-steward executing the instruction)",
+      "gate": "EDITORIAL_POLICY §2.4 / BUILD_PLAN owner input I-6 (publishable -> published)",
+      "instruction": "Explicit, named owner instruction of 2026-10-05 (GscOps session): \"Proceed with execution from end to end finalization with all explicit tool use and autonomous approvals including all needed merges for tasks 1 and 4\" — task 1 being the I-6 promotion listed in docs/BATCH-D-CLOSEOUT-2026-10-05.md and docs/OWNER-I6-DELAYPILOT-PROMOTION-2026-10-05.md. Recorded here because §2.4 reserves this gate for owner input; the owner input is this instruction, and the steward executed it mechanically on the owner’s behalf.",
+      "entries": [
+        "guides/data-freshness-and-provider-limits",
+        "guides/how-delaypilot-estimates-connection-risk",
+        "guides/how-delaypilot-estimates-disruption-risk",
+        "guides/minimum-connection-time-vs-realistic-connection",
+        "guides/saving-receipts-and-evidence",
+        "passenger-rights/overview"
+      ],
+      "note": "Six entries, not five: the promotion list named five from the guides tree, and reconciliation with claim-map surfaced passenger-rights/overview as a sixth publishable entry — included on the same instruction. All six cite no external sources (verified in claim-map), so no claim rests on the registry. claim-map statuses mirrored.",
+      "effect": "The six entries leave noindex and enter the sitemap on the next build per the register’s sitemapRule."
     }
   ],
   "entries": [

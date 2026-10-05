@@ -2,7 +2,7 @@
 title: 'How DelayPilot estimates disruption risk'
 description: 'Today the answer is a labelled heuristic band, not a percentage. What goes into it, why no number is shown, and the gate a model must pass first.'
 pageType: guide
-status: publishable
+status: published
 intent: 'Document DelayPilot disruption-risk method honestly, including the absence of a calibrated model and the pre-declared gate any future model must pass.'
 answerFirst: 'DelayPilot currently shows a heuristic risk band, labelled as one, and not a probability. No calibrated model is deployed, and showing a percentage from an uncalibrated model would be borrowing the authority of statistics without doing the work. This page describes what the band reflects, how confidence is kept separate from risk, and the gate a model must pass before any number replaces the band.'
 sources: []

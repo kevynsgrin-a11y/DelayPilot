@@ -3,7 +3,7 @@ title: 'How DelayPilot assesses passenger rights'
 description: 'The five rights statuses DelayPilot can report, the facts that decide which one applies, and why each jurisdiction page waits for source verification.'
 pageType: rights-explainer
 jurisdiction: overview
-status: publishable
+status: published
 intent: 'Teach a reader to interpret any DelayPilot rights result by explaining the five statuses, the facts that produce them, and the rule-set versioning behind every value.'
 answerFirst: 'DelayPilot reports which of five statuses your situation reaches under a dated rule set. It never reports that a payment is due, because that determination belongs to the airline or the regulator, not to us. Every value we show comes from a versioned rule set with an effective date, and every fact we are missing is named rather than assumed.'
 sources: []

@@ -2,7 +2,7 @@
 title: 'Data freshness, provider limits, and the six labels we use'
 description: 'Every figure here carries a label saying where it came from and how old it is. What each label means, why data goes stale, and what the limits are.'
 pageType: guide
-status: publishable
+status: published
 intent: 'Explain DelayPilot provenance and freshness vocabulary and the real constraints — licensing, call budgets, provider disagreement — that produce each state.'
 answerFirst: 'Every displayed value in DelayPilot carries one of six labels: Live, Cached, Stale, Demo, Unavailable, or Heuristic risk band. The label and the age travel with the value from the provider all the way to the screen. Where nothing trustworthy exists, you get Unavailable rather than a confident-looking guess.'
 sources: []

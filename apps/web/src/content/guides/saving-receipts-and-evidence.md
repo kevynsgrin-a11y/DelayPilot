@@ -2,7 +2,7 @@
 title: 'What to save during a disruption, and in what order'
 description: 'An assessment is only as good as the facts behind it. The short list worth capturing during a disruption, in the order things become unrecoverable.'
 pageType: guide
-status: publishable
+status: published
 intent: 'Give a disrupted traveller a capture checklist ordered by how quickly each item becomes unrecoverable, and explain which facts a rights assessment actually consumes.'
 answerFirst: 'Capture the things that disappear first: the itinerary as it was sold, the message that changed it, and the times that only exist in your memory. Receipts and correspondence can be gathered later; a screen that has already refreshed cannot. Five items, captured in the first few minutes, turn a vague complaint into something someone can actually assess.'
 sources: []
